@@ -1,0 +1,88 @@
+# Sign, archive, and upload the escape room app to App Store Connect / TestFlight.
+# Triggered by the Release Manager Agent (gh workflow run release.yml).
+#
+# PLACEHOLDER: all signing/archiving/upload steps are stubs. Fill in once there is an
+# Xcode project and the user has stored signing material as encrypted GitHub Secrets.
+#
+# Required secrets (create via `gh secret set NAME` or Settings > Secrets > Actions —
+# never commit any of these to the repo):
+#   BUILD_CERTIFICATE_BASE64    # Apple Distribution .p12, base64-encoded
+#   P12_PASSWORD                # password for the .p12
+#   PROVISIONING_PROFILE_BASE64 # App Store provisioning profile, base64-encoded
+#   KEYCHAIN_PASSWORD           # throwaway password for the temp CI keychain
+#   ASC_API_KEY_ID              # App Store Connect API key ID
+#   ASC_API_ISSUER_ID           # App Store Connect API issuer ID
+#   ASC_API_KEY_P8_BASE64       # App Store Connect API .p8 key, base64-encoded
+
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Marketing version (e.g. 1.0.0)"
+        required: true
+      build_number:
+        description: "Build number (e.g. 42)"
+        required: true
+
+jobs:
+  archive-and-upload:
+    runs-on: macos-15
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install signing certificate and provisioning profile
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          # TODO: standard temp-keychain dance — decode .p12 + profile from secrets,
+          # create a throwaway keychain, import the cert, install the profile under
+          # ~/Library/MobileDevice/Provisioning Profiles/.
+          echo "PLACEHOLDER: signing setup — fill in once secrets are configured"
+
+      - name: Archive
+        run: |
+          # TODO: replace with the real archive invocation, e.g.:
+          # xcodebuild archive \
+          #   -project EscapeRoom/EscapeRoom.xcodeproj \
+          #   -scheme EscapeRoom \
+          #   -destination 'generic/platform=iOS' \
+          #   -archivePath build/EscapeRoom.xcarchive \
+          #   MARKETING_VERSION=${{ github.event.inputs.version }} \
+          #   CURRENT_PROJECT_VERSION=${{ github.event.inputs.build_number }}
+          echo "PLACEHOLDER: no Xcode project in repo yet — nothing to archive"
+
+      - name: Export .ipa
+        run: |
+          # TODO: xcodebuild -exportArchive with an ExportOptions.plist (app-store method)
+          echo "PLACEHOLDER: export step"
+
+      - name: Upload to App Store Connect (TestFlight)
+        env:
+          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
+          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
+          ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+        run: |
+          # TODO: xcrun altool is deprecated — use:
+          # xcrun notarytool / "xcrun altool --upload-app" replacement:
+          # xcrun iTMSTransporter or `xcodebuild -exportArchive` + App Store Connect API,
+          # or simplest: xcrun altool successor `xcrun asc` equivalent via fastlane pilot.
+          # Decide tooling when implementing; keep the API key in secrets only.
+          echo "PLACEHOLDER: TestFlight upload step"
+
+      - name: Upload .ipa and logs as workflow artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            build/*.ipa
+            build/*.xcarchive/Info.plist
+          if-no-files-found: warn

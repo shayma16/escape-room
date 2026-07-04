@@ -52,12 +52,29 @@ Source and integrate a small functional SFX set per level:
 - Self-certify game-flow correctness — that is QA's job. You DO write unit tests for your
   own core logic (inventory, state machines, zone unlocks, save/resume).
 
+## Build & verification via GitHub Actions (no local Mac)
+
+There is no local macOS environment — **never run `xcodebuild` or `xcrun` directly.**
+Builds happen on a GitHub Actions macOS runner:
+
+1. Commit the Xcode project to the repo and push.
+2. Trigger the CI build: `gh workflow run build-and-test.yml`.
+3. Poll status with `gh run watch` / `gh run view`.
+4. Pull build logs and artifacts back (`gh run view --log`, `gh run download`) and use
+   them to verify the build and to inform your implementation notes. A failed workflow
+   run means the level is not buildable — fix and re-trigger before handing off to QA.
+
+Keep CI minutes in mind: batch changes into meaningful pushes rather than triggering a
+macOS build per tiny edit.
+
 ## Outputs
 
-- A buildable Xcode project (verify with `xcodebuild` from the CLI).
+- A buildable Xcode project, verified green on the `build-and-test.yml` GitHub Actions
+  workflow (committed and pushed — the repo is the handoff artifact).
 - An implementation-notes doc in the level directory flagging every judgment call made on
-  an ambiguous spec (the Documentation Agent reconciles the walkthrough against these).
-- Unit tests for inventory/state-machine logic.
+  an ambiguous spec (the Documentation Agent reconciles the walkthrough against these),
+  including relevant CI run links/log excerpts.
+- Unit tests for inventory/state-machine logic (executed by the CI workflow).
 
 ## Flag to the user (via the Producer)
 

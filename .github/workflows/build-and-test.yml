@@ -1,0 +1,64 @@
+# Build & simulator-test the escape room app on a macOS runner.
+# Triggered by the Developer Agent (gh workflow run build-and-test.yml) after pushing
+# the Xcode project; the QA Agent reads results via gh run download.
+#
+# PLACEHOLDER: the xcodebuild/simctl steps below are stubs. Fill in the real scheme,
+# project path, and destinations once the Xcode project exists in this repo.
+
+name: Build and Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "EscapeRoom/**"        # TODO: adjust to the actual Xcode project directory
+      - ".github/workflows/build-and-test.yml"
+
+jobs:
+  build-and-test:
+    runs-on: macos-15          # macOS runners bill at 10x minutes on private repos
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select Xcode version
+        run: |
+          # TODO: pin the Xcode version once the project's toolchain is decided
+          sudo xcode-select -s /Applications/Xcode.app
+          xcodebuild -version
+
+      - name: Build
+        run: |
+          # TODO: replace with the real project/scheme once it exists, e.g.:
+          # xcodebuild build \
+          #   -project EscapeRoom/EscapeRoom.xcodeproj \
+          #   -scheme EscapeRoom \
+          #   -destination 'generic/platform=iOS Simulator' \
+          #   CODE_SIGNING_ALLOWED=NO
+          echo "PLACEHOLDER: no Xcode project in repo yet — nothing to build"
+
+      - name: Unit tests + simulator device matrix
+        run: |
+          # TODO: replace with real test invocations across the QA device matrix, e.g.:
+          # xcrun simctl list devices
+          # xcodebuild test \
+          #   -project EscapeRoom/EscapeRoom.xcodeproj \
+          #   -scheme EscapeRoom \
+          #   -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M4)' \
+          #   -destination 'platform=iOS Simulator,name=iPhone 16' \
+          #   -resultBundlePath TestResults/EscapeRoom.xcresult \
+          #   CODE_SIGNING_ALLOWED=NO
+          echo "PLACEHOLDER: no tests yet"
+          mkdir -p TestResults
+          echo "placeholder — replace once tests exist" > TestResults/README.txt
+
+      - name: Upload test results and logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: TestResults/
+          if-no-files-found: warn

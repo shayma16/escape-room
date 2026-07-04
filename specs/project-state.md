@@ -27,8 +27,16 @@ key still not provided.
 ## Blockers / open questions
 
 - fal.ai API key not yet provided (needed before the Asset Generation stage, not before).
-- Xcode/macOS build environment not yet confirmed (needed before the Developer stage —
-  `xcodebuild` and `xcrun simctl` require macOS).
+- ~~Xcode/macOS build environment~~ RESOLVED 2026-07-04: no local Mac — all
+  `xcodebuild`/`xcrun simctl` work runs on GitHub Actions macOS runners. Repo:
+  https://github.com/shayma16/escape-room (private). Workflows scaffolded:
+  `.github/workflows/build-and-test.yml` (Developer/QA) and `release.yml` (Release
+  Manager); placeholder steps to be filled in once an Xcode project exists. Note:
+  macOS runners bill at 10x minutes on private repos.
+- Signing material (distribution cert, provisioning profile, ASC API key) not yet stored
+  as encrypted GitHub Secrets (needed before the Release stage; secret names are listed
+  in `release.yml`'s header comment — user creates them via `gh secret set`, never
+  pasted in chat or committed).
 - Apple Developer Program enrollment not yet done (needed before the Release stage; user
   enrolls and authenticates themselves — agents never touch Apple credentials).
 - App name / bundle identifier undecided (needed at Release-stage metadata prep).
