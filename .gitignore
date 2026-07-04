@@ -1,0 +1,26 @@
+# Secrets — never commit API keys or credentials
+.env
+.env.*
+*.key
+fal-key*
+secrets/
+
+# Xcode
+build/
+DerivedData/
+*.xcarchive
+*.ipa
+xcuserdata/
+*.xcuserstate
+*.xccheckout
+*.moved-aside
+*.hmap
+
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# macOS / Windows cruft
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,535 @@
+{
+  "level": 1,
+  "title": "The Wizard's Cabin",
+  "spec_revision": "1.2",
+  "revision_notes": [
+    "Rev 1.2 applies user-approved Blind Playtester recommendations R1 (feed-cup theory-magnet defused: ANY inventory item offered at the brass feed cup gets the same categorical terminal-refusal grammar as the cage reach -- new developer_notes D4; D1's block-or-allow decision for the DRAUGHT specifically is unchanged) and R2 (clock de-escalated: cuckoo-crow pops ONCE on first XII only, thereafter visibly inert with a limp broken spring; toy is clearly carved/paint-chipped, not an echo of the live crow -- new developer_notes D5; numeral ring untouched as p01 reference). Also records the playtest-calibrated blind-solve estimate (60-100 min). No puzzle, solution value, zone, or item changed.",
+    "Rev 1.1 applied Validator required fixes 1 & 2 (corrected example orderings; beam-at-alcove respecified as a latched derived CONDITION over moonbeam-on AND mirror-at-detent-3, not an event order) plus advisories A3 (brass feed cup as recognized mis-pour target), A6 (edge-list harmonization), and the p11 terminal-refusal annotation. No puzzle, solution value, zone, or item changed."
+  ],
+  "theme": "Abandoned wizard's cabin deep in gloomy woods. Caged crow, potion-making, grimoire, arcane apparatus, hidden cellar.",
+  "framing_line": "The wizard is gone. The crow remains.",
+  "time_of_day": "Night, clear sky, visible moon and stars (required by puzzles p02, p03, p08-p10).",
+  "win_condition": {
+    "description": "Brew the Unbinding Draught, pour it into the front door's rune basin to wither the thorn-vine seal, then slide the bolt and exit.",
+    "node": "p17-escape"
+  },
+
+  "zones": [
+    {
+      "id": "z1-cabin",
+      "name": "Main Cabin Room",
+      "hidden": false,
+      "start_zone": true,
+      "unlock": null,
+      "views": [
+        {
+          "id": "v-hearth",
+          "elements": ["fireplace with cold ash pile", "iron poker leaning against hearth (takeable)", "mantel clock with Roman numerals and movable hands", "carved wooden toy crow inside clock -- crude, round-bodied, paint-chipped, clearly a TOY, visually distinct from the live crow; pops ONCE on the first XII setting only, thereafter the little door hangs ajar showing the toy tipped over on a limp broken spring (see developer_notes D5)", "small hand bellows hung by hearth with AIR rune + numeral I scratched on handle", "FIRE rune + numeral II scorched into hearth lintel", "worn armchair", "floor rug (freely movable, hides trapdoor)"]
+        },
+        {
+          "id": "v-study",
+          "elements": ["writing desk", "grimoire on desk (fixed, browsable; black-feather bookmark at recipe page)", "triptych of three small framed night paintings of one tree", "dead flowerpot with EARTH rune + numeral III on its clay side", "bookshelf with inert decoy books"]
+        },
+        {
+          "id": "v-entry",
+          "elements": ["front door sealed by living thorn-vines over the bolt", "shallow crow's-beak rune basin set into the door at lock height", "rusted bent key on a hook beside the door (red herring)", "window showing moonlit woods", "WATER rune + numeral IV etched into windowsill", "caged crow on a tall stand; cage has a tiny star-shaped keyhole; brass feed cup (offering ANY inventory item here triggers the crow's terminal refusal -- developer_notes D4; the draught mis-pour case specifically follows D1)"]
+        }
+      ]
+    },
+    {
+      "id": "z2-workshop",
+      "name": "Potion Workshop",
+      "hidden": false,
+      "unlock": { "condition": "p01-rune-door solved", "gate_description": "Heavy inner door in z1 v-study wall, barred by a four-rune press-lock." },
+      "views": [
+        {
+          "id": "v-bench",
+          "elements": ["cauldron of clear water over a fire pit", "large floor bellows at fire pit (pump raises flame stage)", "flame-stage runes I / II / III embossed on cauldron rim, each with an ember channel that lights at that stage", "long-handled ladle in cauldron (stir clockwise or counterclockwise)", "workbench with fixed mortar and pestle", "hanging dried herbs (ambient)"]
+        },
+        {
+          "id": "v-cabinet",
+          "elements": ["locked ingredient cabinet with two inset slots: circle-with-rays slot (sun) and crescent slot (moon)", "shelf of assorted stoppered potion bottles, varied shapes, illegible pictogram labels (red herring)", "brass astrolabe / star-globe on a pedestal: rotating pointer and six engraved star-pattern plates, base drawer", "workshop window framing a night sky with three bright stars in a short straight row (Orion's Belt) between trees"]
+        }
+      ]
+    },
+    {
+      "id": "z3-cellar",
+      "name": "Hidden Cellar",
+      "hidden": true,
+      "unlock": { "condition": "p02-moon-trapdoor solved", "gate_description": "Trapdoor under the rug in z1 v-hearth, locked by a three-dial rotary lock; each dial shows the eight moon phases as embossed shapes." },
+      "views": [
+        {
+          "id": "v-cellar",
+          "elements": ["earthen root cellar", "sealed barrel with nailed lid", "small drawer in a root shelf containing a tarnished silver spoon", "heavy sliding shelf flush against far wall, with an empty counterweight hook and pulley above it", "vertical light shaft in ceiling with a closed wooden shutter, winch mechanism missing its crank handle", "tilting mirror on a floor stand near the shaft, rotatable through three detents; faint scratch marks on the floor at the third detent"]
+        }
+      ]
+    },
+    {
+      "id": "z4-alcove",
+      "name": "Walled Alcove (behind the sliding shelf)",
+      "hidden": true,
+      "nested_in": "z3-cellar",
+      "unlock": { "condition": "p07-shelf-counterweight solved", "gate_description": "Sliding shelf in z3 rolls aside when the iron weight is hung on its counterweight hook." },
+      "views": [
+        {
+          "id": "v-alcove",
+          "elements": ["stone niche", "planter of moonflowers with tightly closed buds", "carved wooden crow statue holding a small star-bit key in its beak", "dusty empty shelf ledge (ambient)"]
+        }
+      ]
+    }
+  ],
+
+  "derived_conditions": [
+    {
+      "id": "cond-beam-at-alcove",
+      "name": "beam-at-alcove",
+      "definition": "moonbeam-on AND mirror-at-detent-3",
+      "evaluation": "Continuously evaluated boolean over two persistent latched states. TRUE the moment both inputs hold, REGARDLESS of the order in which the player achieved them (the mirror may be set to detent-3 before the shutter is ever cranked open, or after). Both inputs persist (no timers), so once true it stays true. This is a condition, never an event sequence. (Validator required fix 2.)",
+      "inputs": ["state: moonbeam-on (from p08-shutter-winch)", "state: mirror-at-detent-3 (from p09-mirror-aim)"],
+      "consumed_by": ["p10-moonflower-bloom"]
+    }
+  ],
+
+  "nodes": [
+    { "id": "itm-poker", "type": "item", "name": "Iron poker", "location": "z1 v-hearth", "obtained_by": "pickup", "uses": ["p05-ash-sift", "p06-barrel-pry"] },
+    { "id": "itm-rusted-key", "type": "item", "name": "Rusted bent key", "location": "z1 v-entry hook", "obtained_by": "pickup", "uses": [], "red_herring": true },
+    { "id": "itm-gold-ring", "type": "item", "name": "Gold ring (plain round band)", "obtained_by": "p05-ash-sift", "uses": ["p04-cabinet-sun-moon"] },
+    { "id": "itm-crank", "type": "item", "name": "Winch crank handle", "obtained_by": "p03-astrolabe-orion", "uses": ["p08-shutter-winch"] },
+    { "id": "itm-silver-coin", "type": "item", "name": "Silver coin stamped with a crescent", "obtained_by": "p03-astrolabe-orion", "uses": ["p04-cabinet-sun-moon"] },
+    { "id": "itm-file", "type": "item", "name": "Metal file", "obtained_by": "p04-cabinet-sun-moon", "uses": ["p12-file-shavings"] },
+    { "id": "itm-phial", "type": "item", "name": "Empty glass phial", "obtained_by": "p04-cabinet-sun-moon", "uses": ["p15-fill-phial"] },
+    { "id": "itm-spoon", "type": "item", "name": "Tarnished silver spoon", "location": "z3 drawer", "obtained_by": "pickup", "uses": ["p12-file-shavings"] },
+    { "id": "itm-shavings", "type": "item", "name": "Silver shavings", "obtained_by": "p12-file-shavings", "uses": ["p14-brew"] },
+    { "id": "itm-weight", "type": "item", "name": "Iron plumb weight", "obtained_by": "p06-barrel-pry", "uses": ["p07-shelf-counterweight"] },
+    { "id": "itm-cage-key", "type": "item", "name": "Star-bit cage key", "location": "z4 crow statue beak", "obtained_by": "pickup", "uses": ["p11-cage-unlock"] },
+    { "id": "itm-blossom", "type": "item", "name": "Moonflower blossom", "obtained_by": "p10-moonflower-bloom", "uses": ["p13-grind-paste"] },
+    { "id": "itm-paste", "type": "item", "name": "Moonflower paste", "obtained_by": "p13-grind-paste", "uses": ["p14-brew"] },
+    { "id": "itm-feather", "type": "item", "name": "Black crow feather (freely given)", "obtained_by": "p11-cage-unlock", "uses": ["p14-brew"] },
+    { "id": "itm-phial-draught", "type": "item", "name": "Phial of Unbinding Draught", "obtained_by": "p15-fill-phial", "uses": ["p16-door-unseal"], "notes": "The brass feed cup (z1 cage) is a plausible mis-pour target -- see developer_notes D1. Cauldron remains draught-ready after filling, so a refill always exists." },
+
+    { "id": "clu-grimoire-elements", "type": "clue", "location": "z1 grimoire (open page A)", "content": "Four element runes drawn beside pictograms: upward triangle + flame; downward triangle + wave; upward triangle with bar + cloud; downward triangle with bar + mountain. Maps pictogram to rune.", "supports": ["p01-rune-door"] },
+    { "id": "clu-mark-air", "type": "clue", "location": "z1 v-hearth, hand bellows handle", "content": "AIR rune scratched beside Roman numeral I.", "supports": ["p01-rune-door"] },
+    { "id": "clu-mark-fire", "type": "clue", "location": "z1 v-hearth, hearth lintel", "content": "FIRE rune scorched beside Roman numeral II.", "supports": ["p01-rune-door"] },
+    { "id": "clu-mark-earth", "type": "clue", "location": "z1 v-study, flowerpot", "content": "EARTH rune beside Roman numeral III.", "supports": ["p01-rune-door"] },
+    { "id": "clu-mark-water", "type": "clue", "location": "z1 v-entry, windowsill", "content": "WATER rune beside Roman numeral IV.", "supports": ["p01-rune-door"] },
+    { "id": "clu-clock-numerals", "type": "clue", "location": "z1 v-hearth, mantel clock face", "content": "Full Roman numeral ring I-XII; in-room reference for reading the numerals on the element marks. (Ring remains fully readable in all clock states, including the post-pop spent state -- R2.)", "supports": ["p01-rune-door"] },
+    { "id": "clu-triptych", "type": "clue", "location": "z1 v-study wall", "content": "Three night paintings of the same tree. Painting with ONE crow: waxing crescent moon. TWO crows: full moon. THREE crows: waning gibbous moon. Crow count gives dial order; moon shape gives dial value.", "supports": ["p02-moon-trapdoor"] },
+    { "id": "clu-window-orion", "type": "clue", "location": "z2 v-cabinet window", "content": "Night sky with three bright stars in a short straight diagonal row (Orion's Belt) plus fainter surrounding stars matching the Orion plate's dot pattern.", "supports": ["p03-astrolabe-orion"] },
+    { "id": "clu-slot-shapes", "type": "clue", "location": "z2 ingredient cabinet", "content": "Sun slot is a circular recess ringed with rays (fits the round gold ring); moon slot is a crescent recess (fits the crescent-stamped coin). Grimoire margin (page B) shows sun symbol beside a ring pictogram and crescent symbol beside a coin pictogram.", "supports": ["p04-cabinet-sun-moon"] },
+    { "id": "clu-recipe-page", "type": "clue", "location": "z1 grimoire, black-feather-bookmarked page", "content": "Pictographic recipe: moonflower blossom crushed in mortar; crescent-stamped metal filed into shavings; a black feather drawn floating INTO an open hand (freely given); flame pictogram with numeral III; spiral with arrowhead pointing counterclockwise and five dots along the spiral.", "supports": ["p13-grind-paste", "p12-file-shavings", "p11-cage-unlock", "p14-brew"] },
+    { "id": "clu-detent-scratches", "type": "clue", "location": "z3 floor by mirror stand", "content": "Scratch marks worn into the floor at the mirror's third detent position.", "supports": ["p09-mirror-aim"] },
+    { "id": "clu-crow-refusal", "type": "clue", "location": "z1 crow cage", "content": "Reaching into the cage (for a feather or anything else) OR offering any inventory item at the brass feed cup triggers the SAME terminal refusal: the crow snaps once, then turns its back and guards its wing; any offered item returns to inventory unspent. Tone is categorical rejection ('this will never work'), NOT a near-miss 'try again' cue. Repeats replay the identical closed-off pose with no escalation or variation, signaling a dead interaction -- reaching in and feeding are BOTH non-paths (R1). Echoes the recipe's 'freely given' pictogram.", "supports": ["p11-cage-unlock"] },
+
+    {
+      "id": "p01-rune-door",
+      "type": "puzzle",
+      "name": "Workshop rune lock",
+      "location": "z1 v-study inner door",
+      "mechanic": "environmental-scavenger + symbol mapping + ordered code entry",
+      "input": "Press four rune tiles in sequence.",
+      "solution_fixed": ["AIR", "FIRE", "EARTH", "WATER"],
+      "derivation": "Four element runes hidden around z1, each paired with a Roman numeral I-IV giving press order. Grimoire page A maps runes to element pictograms; mantel clock provides Roman-numeral reference.",
+      "requires": [],
+      "clues": ["clu-grimoire-elements", "clu-mark-air", "clu-mark-fire", "clu-mark-earth", "clu-mark-water", "clu-clock-numerals"],
+      "yields": { "zone_unlock": "z2-workshop" },
+      "failure_behavior": "Wrong sequence: tiles reset with a dull knock. No lockout."
+    },
+    {
+      "id": "p02-moon-trapdoor",
+      "type": "puzzle",
+      "name": "Moon-phase trapdoor",
+      "location": "z1 v-hearth, under rug",
+      "mechanic": "hidden discovery (move rug) + observation + shape-matching dial code",
+      "input": "Three rotary dials, each with eight embossed moon-phase shapes.",
+      "solution_fixed": ["waxing-crescent", "full", "waning-gibbous"],
+      "derivation": "Triptych paintings: crow count (1/2/3) = dial index; moon shape in that painting = dial value. Waxing vs waning crescents/gibbous are mirrored shapes; exact orientation matters.",
+      "requires": ["free-action: move rug"],
+      "clues": ["clu-triptych"],
+      "yields": { "zone_unlock": "z3-cellar" },
+      "failure_behavior": "Trapdoor stays shut. Dials keep position; no lockout."
+    },
+    {
+      "id": "p03-astrolabe-orion",
+      "type": "puzzle",
+      "name": "Astrolabe star plate",
+      "location": "z2 v-cabinet",
+      "mechanic": "real-world-knowledge assisted pattern matching",
+      "input": "Rotate pointer to one of six engraved star-pattern plates.",
+      "solution_fixed": "plate-2 (Orion: three aligned belt stars with four shoulder/foot stars)",
+      "plate_set": ["plate-1 swan cross (Cygnus)", "plate-2 Orion", "plate-3 seven-star ladle (Big Dipper)", "plate-4 scorpion hook", "plate-5 five-star crown arc", "plate-6 zigzag fish"],
+      "derivation": "Workshop window sky shows Orion (belt prominent). Match the visible star pattern to plate-2. Recognizing Orion's Belt shortcuts it; pure dot-pattern matching also suffices.",
+      "requires": ["zone: z2-workshop"],
+      "clues": ["clu-window-orion"],
+      "yields": { "items": ["itm-silver-coin", "itm-crank"], "via": "base drawer springs open" },
+      "failure_behavior": "Wrong plate: drawer stays shut. No lockout."
+    },
+    {
+      "id": "p04-cabinet-sun-moon",
+      "type": "puzzle",
+      "name": "Sun-and-moon cabinet",
+      "location": "z2 v-cabinet",
+      "mechanic": "item placement, dual-cue (alchemical symbol + physical shape fit)",
+      "input": "Place one item in each of two shaped slots.",
+      "solution_fixed": { "sun-slot": "itm-gold-ring", "moon-slot": "itm-silver-coin" },
+      "derivation": "Alchemy: sun=gold, moon=silver. Redundant non-knowledge path: round ring physically fits round sun recess, crescent-stamped coin fits crescent recess; grimoire page B margin confirms.",
+      "requires": ["itm-gold-ring", "itm-silver-coin", "zone: z2-workshop"],
+      "clues": ["clu-slot-shapes"],
+      "yields": { "items": ["itm-file", "itm-phial"] },
+      "failure_behavior": "Wrong/swapped placement: item pops back out and returns to inventory. No loss, no lockout."
+    },
+    {
+      "id": "p05-ash-sift",
+      "type": "puzzle",
+      "name": "Sift the hearth ash",
+      "location": "z1 v-hearth",
+      "mechanic": "tool-on-hotspot hidden item",
+      "input": "Use iron poker on ash pile.",
+      "solution_fixed": "poker + ash",
+      "requires": ["itm-poker"],
+      "clues": ["faint glint visible in ash on close-up (secondary discoverability cue)"],
+      "yields": { "items": ["itm-gold-ring"] }
+    },
+    {
+      "id": "p06-barrel-pry",
+      "type": "puzzle",
+      "name": "Pry the barrel lid",
+      "location": "z3 v-cellar",
+      "mechanic": "tool-on-hotspot",
+      "input": "Use iron poker on nailed barrel lid.",
+      "solution_fixed": "poker + barrel",
+      "requires": ["itm-poker", "zone: z3-cellar"],
+      "clues": ["lid visibly nailed; pry gap rendered at rim"],
+      "yields": { "items": ["itm-weight"] }
+    },
+    {
+      "id": "p07-shelf-counterweight",
+      "type": "puzzle",
+      "name": "Counterweight shelf",
+      "location": "z3 v-cellar",
+      "mechanic": "mechanism completion",
+      "input": "Hang iron weight on the empty pulley hook.",
+      "solution_fixed": "itm-weight on hook",
+      "requires": ["itm-weight", "zone: z3-cellar"],
+      "clues": ["empty hook and taut pulley rope visibly connected to shelf runners"],
+      "yields": { "zone_unlock": "z4-alcove" }
+    },
+    {
+      "id": "p08-shutter-winch",
+      "type": "puzzle",
+      "name": "Open the light-shaft shutter",
+      "location": "z3 v-cellar",
+      "mechanic": "mechanism completion (cross-zone item)",
+      "input": "Fit crank handle to winch, turn.",
+      "solution_fixed": "itm-crank on winch",
+      "requires": ["itm-crank", "zone: z3-cellar"],
+      "clues": ["winch has an empty square socket matching crank bit"],
+      "yields": { "state": "moonbeam-on", "state_semantics": "Persistent latched flag; vertical beam onto cellar floor near mirror stand. Feeds derived condition cond-beam-at-alcove." }
+    },
+    {
+      "id": "p09-mirror-aim",
+      "type": "puzzle",
+      "name": "Aim the mirror",
+      "location": "z3 v-cellar",
+      "mechanic": "apparatus adjustment with positional cue",
+      "input": "Rotate mirror stand among three detents.",
+      "solution_fixed": "detent-3",
+      "requires": ["zone: z3-cellar"],
+      "clues": ["clu-detent-scratches", "if moonbeam-on already holds, the reflected beam visibly sweeps as the mirror rotates and enters the alcove doorway at detent-3 (live feedback); if the shutter is still closed, the floor scratch marks alone justify detent-3"],
+      "yields": { "state": "mirror-at-detent-3", "state_semantics": "Persistent latched flag; may be achieved BEFORE the shutter is ever opened -- order is irrelevant. Feeds derived condition cond-beam-at-alcove." },
+      "notes": "VALIDATOR REQUIRED FIX 2 APPLIED: p09 no longer requires moonbeam-on. beam-at-alcove is the derived condition cond-beam-at-alcove (moonbeam-on AND mirror-at-detent-3), evaluated continuously and latching whenever both inputs hold, regardless of order. Developer: implement as a condition check, never an ordered event pair (see developer_notes D2). Playtest R4 (art): when the beam reaches detent-3 while the sliding shelf is still closed, render a bright blocked-light spot ON the shelf face so the beat reads as 'blocked, look here', not 'bugged'."
+    },
+    {
+      "id": "p10-moonflower-bloom",
+      "type": "puzzle",
+      "name": "Bloom the moonflowers",
+      "location": "z4 v-alcove",
+      "mechanic": "environmental convergence (light routing)",
+      "input": "Automatic once conditions met; then pick blossom.",
+      "solution_fixed": "cond-beam-at-alcove AND z4 open",
+      "requires": ["condition: cond-beam-at-alcove", "zone: z4-alcove"],
+      "clues": ["buds visibly stir/tremble when the beam lands anywhere in the cellar (progress feedback)", "recipe page shows moonflower under a moon ray"],
+      "yields": { "items": ["itm-blossom"] },
+      "notes": "Blossom stays available while the condition holds; both condition inputs are persistent latched states (no timer)."
+    },
+    {
+      "id": "p11-cage-unlock",
+      "type": "puzzle",
+      "name": "Free the crow",
+      "location": "z1 v-entry",
+      "mechanic": "key + character interaction; 'freely given' beat",
+      "input": "Use star-bit key on star-shaped cage keyhole; open door.",
+      "solution_fixed": "itm-cage-key on cage",
+      "requires": ["itm-cage-key"],
+      "clues": ["clu-crow-refusal", "clu-recipe-page (feather-into-open-hand pictogram)", "star keyhole visibly matches star key bit (and visibly rejects itm-rusted-key's plain bit)"],
+      "yields": { "items": ["itm-feather"], "via": "crow flies to rafters, preens, one feather drifts down; crow remains perched for the rest of the level", "state": "crow-freed" },
+      "notes": "VALIDATOR ADVISORY + PLAYTEST R1 APPLIED: the terminal-refusal grammar (crow snaps once, turns its back, guards its wing; identical pose on every repeat, no escalation) covers BOTH reaching into the cage AND offering any inventory item at the brass feed cup -- the 'feed the crow' theory must die fast, not read as 'wrong food, keep trying'. See clu-crow-refusal and developer_notes D3/D4. The draught mis-pour case specifically remains governed by D1."
+    },
+    {
+      "id": "p12-file-shavings",
+      "type": "puzzle",
+      "name": "File silver shavings",
+      "location": "anywhere (inventory combination); workbench close-up also accepts it",
+      "mechanic": "item combination",
+      "input": "Combine metal file + silver spoon.",
+      "solution_fixed": "itm-file + itm-spoon",
+      "requires": ["itm-file", "itm-spoon"],
+      "clues": ["clu-recipe-page (crescent-metal filed pictogram); spoon bowl is stamped with the same crescent hallmark as the coin, identifying it as silver"],
+      "yields": { "items": ["itm-shavings"] },
+      "notes": "Spoon is not consumed until a successful brew completes; re-filing is impossible only after the draught exists (no longer needed)."
+    },
+    {
+      "id": "p13-grind-paste",
+      "type": "puzzle",
+      "name": "Grind moonflower paste",
+      "location": "z2 v-bench mortar (fixed apparatus)",
+      "mechanic": "apparatus use",
+      "input": "Place blossom in mortar, grind.",
+      "solution_fixed": "itm-blossom in mortar",
+      "requires": ["itm-blossom", "zone: z2-workshop"],
+      "clues": ["clu-recipe-page (blossom + pestle pictogram)"],
+      "yields": { "items": ["itm-paste"] }
+    },
+    {
+      "id": "p14-brew",
+      "type": "puzzle",
+      "name": "Brew the Unbinding Draught",
+      "location": "z2 v-bench cauldron",
+      "mechanic": "procedural apparatus puzzle with fixed parameters; ingredient order-free",
+      "input": "Set flame stage; add ingredients in ANY order; stir with ladle (direction + count); release ladle to resolve.",
+      "solution_fixed": {
+        "flame_stage": 3,
+        "ingredients_set": ["itm-paste", "itm-shavings", "itm-feather"],
+        "stir": { "direction": "counterclockwise", "count": 5 }
+      },
+      "flame_mechanics": "Floor bellows pump raises stage; stages cycle 1 -> 2 -> 3 -> 1. Current stage shown by flame height AND which embossed rim rune (I/II/III) has its ember channel lit.",
+      "derivation": "clu-recipe-page: flame pictogram + III; spiral with CCW arrowhead and five dots; three ingredient pictograms.",
+      "requires": ["itm-paste", "itm-shavings", "itm-feather", "zone: z2-workshop"],
+      "clues": ["clu-recipe-page"],
+      "yields": { "state": "draught-ready (cauldron liquid takes a pearlescent sheen with a slow spiral surface pattern -- pattern, not color, is the success cue)" },
+      "failure_behavior": "Wrong stir direction/count or wrong flame at resolve: gray fizzle puff, all three ingredients float to the surface intact and auto-return to inventory, cauldron reverts to water. Infinitely retryable; nothing is consumed on failure.",
+      "notes": "Playtest R3 (art/dev requirement): the recipe page's CCW spiral and the in-scene cauldron view must be orientation-consistent (both read top-down, same handedness), and the ladle's stir-direction affordance must make CW vs CCW unmistakable from the actual camera angle."
+    },
+    {
+      "id": "p15-fill-phial",
+      "type": "puzzle",
+      "name": "Bottle the draught",
+      "location": "z2 v-bench cauldron",
+      "mechanic": "item on state",
+      "input": "Use empty phial on ready cauldron.",
+      "solution_fixed": "itm-phial + draught-ready",
+      "requires": ["itm-phial", "state: draught-ready"],
+      "yields": { "items": ["itm-phial-draught"] },
+      "notes": "Cauldron remains draught-ready after filling; refills possible. This refill invariant is load-bearing for the feed-cup mis-pour case (developer_notes D1)."
+    },
+    {
+      "id": "p16-door-unseal",
+      "type": "puzzle",
+      "name": "Feed the door",
+      "location": "z1 v-entry",
+      "mechanic": "item on hotspot; endgame",
+      "input": "Pour phial into the crow's-beak rune basin on the door.",
+      "solution_fixed": "itm-phial-draught on basin",
+      "requires": ["itm-phial-draught"],
+      "clues": ["basin sits directly over the vine-wrapped bolt; if crow is freed, it perches on the door lintel above the basin (silent nudge)"],
+      "yields": { "state": "door-unsealed (thorn-vines wither and crumble off the bolt)" },
+      "notes": "The rune basin is the ONLY pour target that advances state. See developer_notes D1 for the brass feed cup mis-pour case."
+    },
+    {
+      "id": "p17-escape",
+      "type": "puzzle",
+      "name": "Slide the bolt and leave",
+      "location": "z1 v-entry",
+      "mechanic": "free action once unsealed",
+      "input": "Slide bolt, open door.",
+      "solution_fixed": "requires door-unsealed",
+      "requires": ["state: door-unsealed"],
+      "yields": { "win": true, "beat": "the crow flies out over the player's shoulder into the moonlit woods" }
+    }
+  ],
+
+  "edges": [
+    { "from": "p01-rune-door", "to": "z2-workshop", "type": "zone_unlock" },
+    { "from": "p02-moon-trapdoor", "to": "z3-cellar", "type": "zone_unlock" },
+    { "from": "p07-shelf-counterweight", "to": "z4-alcove", "type": "zone_unlock" },
+
+    { "from": "z1-cabin", "to": "itm-poker", "type": "contains" },
+    { "from": "z1-cabin", "to": "itm-rusted-key", "type": "contains" },
+    { "from": "z3-cellar", "to": "itm-spoon", "type": "contains" },
+    { "from": "z4-alcove", "to": "itm-cage-key", "type": "contains" },
+
+    { "from": "itm-poker", "to": "p05-ash-sift", "type": "requires" },
+    { "from": "itm-poker", "to": "p06-barrel-pry", "type": "requires" },
+    { "from": "z3-cellar", "to": "p06-barrel-pry", "type": "requires" },
+    { "from": "p05-ash-sift", "to": "itm-gold-ring", "type": "yields" },
+    { "from": "z2-workshop", "to": "p03-astrolabe-orion", "type": "requires" },
+    { "from": "p03-astrolabe-orion", "to": "itm-silver-coin", "type": "yields" },
+    { "from": "p03-astrolabe-orion", "to": "itm-crank", "type": "yields" },
+    { "from": "itm-gold-ring", "to": "p04-cabinet-sun-moon", "type": "requires" },
+    { "from": "itm-silver-coin", "to": "p04-cabinet-sun-moon", "type": "requires" },
+    { "from": "z2-workshop", "to": "p04-cabinet-sun-moon", "type": "requires" },
+    { "from": "p04-cabinet-sun-moon", "to": "itm-file", "type": "yields" },
+    { "from": "p04-cabinet-sun-moon", "to": "itm-phial", "type": "yields" },
+    { "from": "p06-barrel-pry", "to": "itm-weight", "type": "yields" },
+    { "from": "itm-weight", "to": "p07-shelf-counterweight", "type": "requires" },
+    { "from": "z3-cellar", "to": "p07-shelf-counterweight", "type": "requires" },
+    { "from": "itm-crank", "to": "p08-shutter-winch", "type": "requires" },
+    { "from": "z3-cellar", "to": "p08-shutter-winch", "type": "requires" },
+    { "from": "z3-cellar", "to": "p09-mirror-aim", "type": "requires" },
+    { "from": "p08-shutter-winch", "to": "cond-beam-at-alcove", "type": "contributes_condition" },
+    { "from": "p09-mirror-aim", "to": "cond-beam-at-alcove", "type": "contributes_condition" },
+    { "from": "cond-beam-at-alcove", "to": "p10-moonflower-bloom", "type": "requires_condition" },
+    { "from": "z4-alcove", "to": "p10-moonflower-bloom", "type": "requires" },
+    { "from": "p10-moonflower-bloom", "to": "itm-blossom", "type": "yields" },
+    { "from": "itm-cage-key", "to": "p11-cage-unlock", "type": "requires" },
+    { "from": "p11-cage-unlock", "to": "itm-feather", "type": "yields" },
+    { "from": "itm-file", "to": "p12-file-shavings", "type": "requires" },
+    { "from": "itm-spoon", "to": "p12-file-shavings", "type": "requires" },
+    { "from": "p12-file-shavings", "to": "itm-shavings", "type": "yields" },
+    { "from": "itm-blossom", "to": "p13-grind-paste", "type": "requires" },
+    { "from": "z2-workshop", "to": "p13-grind-paste", "type": "requires" },
+    { "from": "p13-grind-paste", "to": "itm-paste", "type": "yields" },
+    { "from": "itm-paste", "to": "p14-brew", "type": "requires" },
+    { "from": "itm-shavings", "to": "p14-brew", "type": "requires" },
+    { "from": "itm-feather", "to": "p14-brew", "type": "requires" },
+    { "from": "z2-workshop", "to": "p14-brew", "type": "requires" },
+    { "from": "p14-brew", "to": "p15-fill-phial", "type": "requires_state" },
+    { "from": "itm-phial", "to": "p15-fill-phial", "type": "requires" },
+    { "from": "p15-fill-phial", "to": "itm-phial-draught", "type": "yields" },
+    { "from": "itm-phial-draught", "to": "p16-door-unseal", "type": "requires" },
+    { "from": "p16-door-unseal", "to": "p17-escape", "type": "requires_state" }
+  ],
+
+  "solve_path_notes": {
+    "structure": "Two parallel mid-game branches after z1: WORKSHOP branch (p01 -> p03 -> p04) and CELLAR branch (p02 -> p06 -> p07; spoon; cage key). They cross-link twice: crank (workshop) is needed for the cellar light shaft; file (workshop) is needed with the cellar spoon. Any interleaving that satisfies the requirement edges is valid.",
+    "example_ordering_A": ["move rug", "p02", "take poker", "p06", "p07", "take cage key", "p11", "p01", "p03", "p05", "p04", "p08", "p09", "p10", "take spoon", "p12", "p13", "p14", "p15", "p16", "p17"],
+    "example_ordering_B": ["take poker", "p01", "p03", "p05", "p04", "move rug", "p02", "take spoon", "p06", "p07", "take cage key", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17"],
+    "example_ordering_C_mirror_first": ["take poker", "move rug", "p02", "p09 (mirror set to detent-3 BEFORE the shutter ever opens)", "p06", "p07", "take cage key", "take spoon", "p01", "p03", "p05", "p04", "p08 (cond-beam-at-alcove latches here; mirror was already set)", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17"],
+    "state_model": "All progression stored as satisfied-requirement flags (zone unlocked, item held, state on) plus derived boolean conditions (see derived_conditions); never as step sequences. cond-beam-at-alcove is the canonical example: an AND over two latched states, order-free by construction (ordering C exercises the mirror-first path). Ingredient-add order in p14 is explicitly order-free; only stir direction/count and flame stage are parameterized.",
+    "revision_note": "Validator required fix 1 applied: ordering A previously listed p04 before its prerequisite p05 and omitted the poker/spoon pickups; both orderings now include all free pickups (Validator's proposed correction of A confirmed by Designer)."
+  },
+
+  "developer_notes": [
+    {
+      "id": "D1",
+      "topic": "Brass feed cup mis-pour of the DRAUGHT (Validator advisory A3)",
+      "note": "The brass feed cup on the crow cage is a plausible mis-pour target for itm-phial-draught. Developer must implement exactly ONE of: (a) BLOCK the pour -- phial-on-cup plays a small crow head-shake and the phial returns to inventory unspent (preferred: zero state churn); or (b) ALLOW it -- draught is spent, cup shows a filled state, and the player refills the phial at the still-draught-ready cauldron (the p15 refill invariant is load-bearing in this case). Either choice is soft-lock-free; do not ship any third behavior. This note governs the DRAUGHT specifically; all other offered items follow D4."
+    },
+    {
+      "id": "D2",
+      "topic": "cond-beam-at-alcove implementation (Validator required fix 2)",
+      "note": "Implement beam-at-alcove strictly as the derived condition defined in derived_conditions: re-evaluate on every change to moonbeam-on or mirror-at-detent-3. Never gate it on the order in which those two were achieved."
+    },
+    {
+      "id": "D3",
+      "topic": "p11 cage-reach refusal tone (Validator advisory)",
+      "note": "The reach-into-cage refusal is terminal in tone (see clu-crow-refusal): same closed-off pose on every repeat, no escalation, no randomized variation that could read as progress toward grabbing a feather."
+    },
+    {
+      "id": "D4",
+      "topic": "Feed-cup universal refusal (Playtest R1, user-approved)",
+      "note": "ANY inventory item offered/dragged onto the brass feed cup (herbs cannot be taken, but e.g. blossom, shavings, paste, feather, coin, ring, keys, spoon, poker) triggers the SAME terminal-refusal grammar as the cage reach: crow snaps once, turns its back, guards its wing; identical pose on every repeat, no escalation; the offered item returns to inventory unspent. There must be NO neutral 'item pops back' response at the cup -- neutrality reads as 'wrong food, keep trying' and sustains the false feeding theory. EXCEPTION: itm-phial-draught follows D1 (if D1 option (a) is chosen, its refusal should reuse this same grammar for consistency)."
+    },
+    {
+      "id": "D5",
+      "topic": "Clock cuckoo-crow one-shot (Playtest R2, user-approved)",
+      "note": "The XII cuckoo-crow pop fires ONCE per save file: first time the hands are set to XII, the carved toy crow pops briefly with a dry wooden clack, then retreats. Every subsequent XII setting produces the SPENT state: the little door hangs ajar, the toy lies tipped over on a visibly limp/broken spring, no motion, no sound beyond a faint creak. The one-shot flag is a persistent cosmetic latch (saved; never gates progression). The toy must read as a crude carved, paint-chipped TOY -- round body, painted dot eyes -- clearly distinct from the live crow's silhouette so it does not teach 'the clock matters to the crow'. The Roman-numeral ring remains fully readable in all clock states (it is the in-room numeral reference for p01)."
+    }
+  ],
+
+  "red_herrings": [
+    { "id": "rh-rusted-key", "node": "itm-rusted-key", "design": "Bent, plain-bit key by the door. Tempts use on the front door and cage. Fairness valve: close-up shows the bit is snapped and plain; cage keyhole is visibly star-shaped." },
+    { "id": "rh-potion-shelf", "node": "z2 potion bottle shelf", "design": "Ready-made potions tempt a shortcut (pour one in the door basin). Bottles are inspectable but stoppered with fused wax; pictogram labels depict unrelated effects (sleep, frost, growth). Differentiated by bottle SHAPE and label pictogram, never by liquid color alone." },
+    { "id": "rh-clock", "node": "z1 mantel clock", "design": "Hands are movable; the FIRST XII setting pops a crude carved toy crow once (dry wooden clack, charm beat, no reward); every later XII shows the spent state -- door ajar, toy tipped on a limp broken spring, inert. De-escalated per Playtest R2 so it reads as flavor, not signal; the toy is paint-chipped and round-bodied, clearly NOT the live crow. Not pure noise: the numeral ring is the in-room Roman-numeral reference for p01, so time spent here still pays forward." },
+    { "id": "rh-feed-cup", "node": "z1 brass feed cup", "design": "Not an item, but the level's biggest theory magnet (Playtest F1): the cup invites a 'feed the crow to get the feather' theory. Defused per R1: every offered item gets the crow's terminal refusal (see D4), so the theory dies on first contact instead of sustaining a food hunt." },
+    { "id": "rh-grimoire-decoys", "node": "z1 grimoire other pages", "design": "Two decoy spreads (a zodiac wheel; an anatomical bird diagram) invite over-reading. Neither encodes anything; the bird diagram softly foreshadows the crow's role. (Validator A4: the zodiac wheel shares a star theme with the astrolabe -- time-cost only; playtest confirmed ~3-4 min, fair. Keep the wheel visually non-systematic: no highlighted constellation.)" }
+  ],
+
+  "anti_softlock_invariants": [
+    "No consumable is destroyed by a failed attempt anywhere (p14 returns all ingredients on failure; p04 rejects wrong placements back to inventory; feed-cup offers return the item unspent per D4).",
+    "itm-poker, itm-file, itm-crank, mirror, winch, bellows, ladle, mortar are reusable and never consumed.",
+    "moonbeam-on and mirror-at-detent-3 are persistent latched states (no timers); cond-beam-at-alcove is a derived AND over them, true whenever both hold regardless of achievement order.",
+    "Locks (p01, p02, p03) have unlimited attempts, no lockout, dials retain position.",
+    "The crow cannot be interacted with harmfully; feather is granted exactly once and cannot be lost (it CAN be added to the cauldron anytime; failed brews return it).",
+    "itm-phial-draught can be refilled from the still-ready cauldron (p15 note); this covers the feed-cup mis-pour case if Developer chooses allow-behavior (developer_notes D1).",
+    "The clock's one-shot cuckoo pop (D5) is purely cosmetic and never gates progression; spending it changes nothing solvable."
+  ],
+
+  "visually_necessary_elements": {
+    "z1-cabin": [
+      "fireplace + ash pile (states: undisturbed / sifted-with-glint / ring-taken)",
+      "iron poker (present / taken)",
+      "mantel clock: readable Roman numerals I-XII in ALL states, movable hands; cuckoo toy states per D5: (1) unspent (door shut), (2) first-XII pop animation -- crude carved toy crow, round-bodied, paint-chipped, painted dot eyes, clearly a TOY distinct from the live crow, pops with dry wooden clack, (3) spent -- door ajar, toy tipped over on visibly limp/broken spring, inert on all later XII settings",
+      "hand bellows with AIR rune + numeral I legible in close-up",
+      "FIRE rune + numeral II on lintel; EARTH rune + numeral III on flowerpot; WATER rune + numeral IV on windowsill (all legible in close-up, subtle in wide shot)",
+      "rug (states: flat / moved) and trapdoor with 3 moon-phase dials (8 embossed phase shapes each, crisp silhouettes with UNMISTAKABLE waxing/waning orientation at iPhone close-up size -- Validator A5 / Playtest R5, load-bearing; states: locked / open)",
+      "desk + grimoire: page A (element runes + pictograms), page B (sun-ring / moon-coin margin), recipe page with black-feather bookmark (moonflower, filed crescent-metal, feather-into-open-hand, flame+III, CCW 5-dot spiral -- spiral orientation must match the in-scene cauldron camera handedness, Playtest R3), 2 decoy spreads (zodiac wheel with NO highlighted constellation)",
+      "triptych: same tree x3; crow counts 1/2/3; moons waxing-crescent / full / waning-gibbous with unmistakable silhouette orientation",
+      "front door: thorn-vines over bolt (states: alive / withered / gone), crow's-beak rune basin (empty / filled / drained), sliding bolt, rusted bent key on hook (close-up shows snapped plain bit)",
+      "crow cage on stand: star-shaped keyhole close-up, crow (states: caged / cage open / crow on rafters / crow on door lintel), brass feed cup (plus a filled state IF Developer chooses allow-behavior in D1), terminal-refusal animation (crow snaps once, turns back, guards wing -- identical on repeat) triggered by BOTH cage-reach AND any item offered at the feed cup (D4), falling feather moment",
+      "workshop inner door with 4 pressable rune tiles",
+      "window with moonlit woods"
+    ],
+    "z2-workshop": [
+      "cauldron + fire pit + floor bellows; flame stages 0-3 by HEIGHT plus rim runes I/II/III with lit ember channels (state per stage)",
+      "ladle with stir-direction affordance that makes CW vs CCW unmistakable from the actual camera angle (Playtest R3)",
+      "cauldron liquid states: clear water / gray fizzle puff / pearlescent draught with slow spiral surface pattern",
+      "workbench with fixed mortar & pestle (empty / blossom / paste)",
+      "ingredient cabinet: circle-with-rays recess + crescent recess (empty / correct items seated / open, revealing file + phial)",
+      "potion bottle shelf: >=5 distinct bottle SHAPES, wax-fused stoppers, pictogram labels",
+      "astrolabe: rotating pointer, six star-pattern plates (dot patterns per plate_set, plate-2 = Orion), base drawer (shut / open with coin + crank)",
+      "window: night sky with clear Orion including three-in-a-row belt"
+    ],
+    "z3-cellar": [
+      "trapdoor ladder entry, earthen walls",
+      "barrel (nailed / pried, weight visible inside)",
+      "root-shelf drawer (shut / open with crescent-hallmarked silver spoon)",
+      "sliding shelf + pulley + empty hook (states: hook empty / weight hung / shelf slid revealing alcove)",
+      "ceiling light shaft with shutter + winch with empty square socket (states: shut / crank fitted / open with vertical moonbeam)",
+      "mirror on stand, 3 detents, floor scratch marks at detent-3; render ALL shutter x detent x shelf combinations: no beam (shutter shut, any detent incl. detent-3 pre-set) / beam at floor (shutter open, detent 1-2) / beam blocked with bright spot ON the closed shelf face (shutter open, detent-3, shelf not yet slid -- Playtest R4: must read 'blocked, look here', not 'bugged') / beam redirected into alcove (shutter open, detent-3, shelf slid -- regardless of order set)"
+    ],
+    "z4-alcove": [
+      "stone niche behind shelf",
+      "moonflower planter (buds closed / trembling when beam is anywhere in cellar / blooming in beam / one blossom picked)",
+      "carved crow statue with star-bit key in beak (key present / taken)"
+    ]
+  },
+
+  "colorblind_safety": [
+    "Moon phases: pure silhouette shapes, no color reliance.",
+    "Element runes: distinct geometric glyphs (triangles/bars), paired with pictograms.",
+    "Gold ring vs silver coin: shape (round band vs crescent-stamped disc) + slot shape fit + hallmark stamps; never metal color alone.",
+    "Flame stages: height + which embossed numeral rune's ember channel is lit; never flame color alone.",
+    "Brew success: spiral surface PATTERN + pearlescent sheen animation, not a color change alone.",
+    "Potion-shelf red herrings: distinct bottle shapes + pictogram labels, not liquid color."
+  ],
+
+  "designer_difficulty_estimate": {
+    "scale": "1-10 (Validator assigns official ledger score)",
+    "estimate": 6.5,
+    "validator_official_score": 6.0,
+    "validator_per_zone": { "z1-cabin": 5.0, "z2-workshop": 6.0, "z3-cellar": 4.0, "z4-alcove": 5.0 },
+    "blind_solve_estimate": "60-100 min for a first-time player (playtest-calibrated, R6; designer's original 45-75 min superseded)",
+    "rationale": "17 puzzle nodes, 4 zones (2 nested hidden), two cross-linked parallel branches, one mirrored-shape precision code (p02), one multi-parameter procedure (p14), 4 red herrings + 1 defused theory magnet. No timers, no lockouts."
+  },
+
+  "mechanics_used_for_ledger": [
+    "environmental scavenger hunt + symbol mapping (ordered code)",
+    "shape-orientation dial code (moon phases)",
+    "star-pattern matching (real-world-knowledge assisted)",
+    "dual-cue item placement (knowledge + physical fit)",
+    "tool-on-hotspot hidden items",
+    "counterweight/mechanism completion (nested zone unlocks)",
+    "light-routing apparatus (winch + mirror)",
+    "character interaction beat (freely-given feather)",
+    "item combination (file + spoon)",
+    "procedural brewing (parameterized apparatus, order-free ingredients)"
+  ],
+
+  "real_world_knowledge_register": [
+    { "fact": "Roman numerals I-IV", "confidence": "clearly fair", "in_room_backup": "clock face numeral ring I-XII" },
+    { "fact": "Orion / Orion's Belt three-star pattern", "confidence": "clearly fair (explicitly cited in project brief)", "in_room_backup": "pure dot-pattern matching between window and plate suffices" },
+    { "fact": "Alchemical sun=gold, moon=silver", "confidence": "borderline -- FLAGGED (Validator: pass-advisory; playtest confirmed solvable by shape fit alone, alchemy never invoked)", "in_room_backup": "physical shape-fit of ring/coin into slots + grimoire page B margin pictograms make it solvable with zero prior knowledge" },
+    { "fact": "Moonflowers bloom in moonlight", "confidence": "borderline-soft -- FLAGGED (Validator ruling: pass-advisory, acceptable)", "in_room_backup": "buds visibly tremble when the beam appears; recipe page draws the blossom under a moon ray" },
+    { "fact": "Waxing vs waning moon orientation", "confidence": "NOT required as knowledge -- pure shape copying from paintings to dials", "in_room_backup": "n/a (matching task)" }
+  ]
+}
