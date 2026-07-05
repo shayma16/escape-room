@@ -3,8 +3,8 @@
 # the Xcode project; the QA Agent reads results via gh run download.
 #
 # Device matrix covers the QA test-matrix floor from
-# specs/global-ui-style.md Section 11: 12.9" iPad + smallest supported iPhone.
-# A failed job here means the level is not buildable — steps are NOT allowed to
+# specs/global-ui-style.md Section 11: 12.9 inch iPad + smallest supported iPhone.
+# A failed job here means the level is not buildable - steps are NOT allowed to
 # silently swallow failures (no trailing `|| true` on the actual build/test commands);
 # `set -o pipefail` ensures a failing xcodebuild fails the step even when piped through
 # xcpretty for readability.
@@ -43,35 +43,16 @@ jobs:
         id: sims
         run: |
           set -euo pipefail
-          IPAD_NAME=$(xcrun simctl list devices available -j \
-            | python3 -c "
-import json, sys
-data = json.load(sys.stdin)
-names = []
-for runtime, devices in data['devices'].items():
-    if 'iOS' not in runtime:
-        continue
-    for d in devices:
-        names.append(d['name'])
-candidates = [n for n in names if 'iPad Pro' in n and ('13-inch' in n or '12.9' in n)]
-print(candidates[0] if candidates else '')
-" || true)
+          ALL_DEVICES=$(xcrun simctl list devices available)
+
+          IPAD_NAME=$(echo "$ALL_DEVICES" | grep -Eo 'iPad Pro \(13-inch[^)]*\)[^ ]*' | head -n1 || true)
+          if [ -z "${IPAD_NAME:-}" ]; then
+            IPAD_NAME=$(echo "$ALL_DEVICES" | grep -Eo 'iPad Pro \([0-9.]+-inch[^)]*\)[^ ]*' | head -n1 || true)
+          fi
           if [ -z "${IPAD_NAME:-}" ]; then IPAD_NAME="iPad Pro 13-inch (M4)"; fi
           echo "ipad_name=$IPAD_NAME" >> "$GITHUB_OUTPUT"
 
-          IPHONE_NAME=$(xcrun simctl list devices available -j \
-            | python3 -c "
-import json, sys
-data = json.load(sys.stdin)
-names = []
-for runtime, devices in data['devices'].items():
-    if 'iOS' not in runtime:
-        continue
-    for d in devices:
-        names.append(d['name'])
-candidates = [n for n in names if 'iPhone SE' in n]
-print(candidates[0] if candidates else '')
-" || true)
+          IPHONE_NAME=$(echo "$ALL_DEVICES" | grep -Eo 'iPhone SE \([0-9a-zA-Z ]*generation\)' | head -n1 || true)
           if [ -z "${IPHONE_NAME:-}" ]; then IPHONE_NAME="iPhone SE (3rd generation)"; fi
           echo "iphone_name=$IPHONE_NAME" >> "$GITHUB_OUTPUT"
 
@@ -88,7 +69,7 @@ print(candidates[0] if candidates else '')
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
 
-      - name: Unit tests — iPad (12.9"/13" class)
+      - name: Unit tests - iPad 13-inch class
         run: |
           set -o pipefail
           mkdir -p TestResults
@@ -100,7 +81,7 @@ print(candidates[0] if candidates else '')
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
 
-      - name: Unit tests — smallest supported iPhone
+      - name: Unit tests - smallest supported iPhone
         run: |
           set -o pipefail
           xcodebuild test \
