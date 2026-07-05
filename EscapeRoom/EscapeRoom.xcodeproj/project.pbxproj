@@ -28,7 +28,7 @@
 		};
 		F5A5D7C2359ABF4E7278AA85 /* Resources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ../Resources;
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
