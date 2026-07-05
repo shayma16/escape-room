@@ -3,45 +3,83 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 77;
+	objectVersion = 60;
 	objects = {
+
+/* Begin PBXBuildFile section */
+		189B11F42331E8F7FE36BC85 /* Entitlements.swift in Sources */ = {isa = PBXBuildFile; fileRef = 220F0A288A683BD3EBD3090D /* Entitlements.swift */; };
+		20BA70ABDFC09E62B7D50C38 /* GameAssetLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = D251BB0A118E20067DFDC6F5 /* GameAssetLoader.swift */; };
+		CCF76A87FC0E601943F859AB /* SaveGameStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9A603F957294CF4643F0EB8 /* SaveGameStore.swift */; };
+		0E473EFCF35421FECE8B04AC /* SoundManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C30FFC81284D6585053828A3 /* SoundManager.swift */; };
+		7FF0C772C3CA10020E13A308 /* EscapeRoomApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 598EF038DC7E98165FDA93DB /* EscapeRoomApp.swift */; };
+		6A8EF6A41074D5C54B9FDAA0 /* GameState.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D0F8F2D0C48F18649150302 /* GameState.swift */; };
+		BC26BBA51B02A066E2C266FA /* Hotspot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44AAB690C94FD2C810AB330F /* Hotspot.swift */; };
+		F1B72D669671A94328AB75FA /* ItemCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = EFEC03AC02D9B650C90148DC /* ItemCatalog.swift */; };
+		33C0A36C24DCBDE2AAB003F2 /* LevelSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECECD3B6DD1585E721106D94 /* LevelSession.swift */; };
+		F2BCE3A23AF5396B7C5B7E7B /* OverlayRectCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC1CF9CBB2922286DA823964 /* OverlayRectCatalog.swift */; };
+		4CB438A0DED62F18583F9895 /* PuzzleEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1B450504E2186D041036E758 /* PuzzleEngine.swift */; };
+		57FAD61BADE91EE3279FF6BE /* PuzzleGraphModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09B310BDEAEFDB114D15964E /* PuzzleGraphModel.swift */; };
+		381F735E835669AE314B33EF /* RoomScene.swift in Sources */ = {isa = PBXBuildFile; fileRef = C7BAC6AD5811852BCCA3A0FE /* RoomScene.swift */; };
+		DB5CCF8B47A3FED5AADC37CA /* RoomSceneCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = FDC47FEE6DF9761B18E47B30 /* RoomSceneCoordinator.swift */; };
+		B18F555A73991C8D1388DDDE /* RoomViewState.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB9598650547AFFAEDA12320 /* RoomViewState.swift */; };
+		DD1D65E812585885DA988696 /* BrewControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5BEB31C8E2E135F23403C12 /* BrewControlView.swift */; };
+		3FCB6E024E44442748BF87C9 /* ChromeTheme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 641F9F1051307566D35726AB /* ChromeTheme.swift */; };
+		62F0639B1E76F7FCB21B09AF /* GameImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 60DFE7C84C2932EE2549C430 /* GameImage.swift */; };
+		D67FF013FA45CE4278216848 /* GameRoomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 183E7C41A272CB1D87E25744 /* GameRoomView.swift */; };
+		C8173E72DE0F9853E55AD86C /* InventoryBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6C16B99B02BDED5DA7B90ADE /* InventoryBarView.swift */; };
+		C79D449933960E2DAC2FA646 /* LevelLoadingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E52A0A72F3165AFC71BBE14B /* LevelLoadingView.swift */; };
+		EF70C145A99971D6450A5CFE /* LevelSelectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 980568EC4B336C8BDCF4413A /* LevelSelectView.swift */; };
+		C478D031DA78CE8964C97D0D /* MainMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9D0C9B8FC5DD9A97F571886 /* MainMenuView.swift */; };
+		3E9E6D79E5C0F44BD9AC99E9 /* MoonDialControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7D45780DA6F8010EE755461 /* MoonDialControlView.swift */; };
+		836EFD2B0E83CB78CC346DF7 /* PauseMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F9D270ACBD145BD34366535 /* PauseMenuView.swift */; };
+		5B71EE058892C8403E6B60BB /* RootAppView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D8084D6DF6EF903022A869 /* RootAppView.swift */; };
+		6AA808213C444636B11DC8C1 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4215641A14AACA1E96BF336E /* SettingsView.swift */; };
+		B866D936880CC13B4F75A8AB /* SpriteKitContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C517A0FFBB7B1C1B8B5F4D5 /* SpriteKitContainerView.swift */; };
+		E4E7AC3FC3B4FC0DDB9D85F9 /* PuzzleEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30DA02CBB2F8E11CDA407A87 /* PuzzleEngineTests.swift */; };
+/* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		E2B72F70E381850453DA7754 /* EscapeRoom.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = EscapeRoom.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5CD5CD15D231843B896E8BFC /* EscapeRoomTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EscapeRoomTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		97089C281AED5CEE81170720 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		220F0A288A683BD3EBD3090D /* Entitlements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entitlements.swift; sourceTree = "<group>"; };
+		D251BB0A118E20067DFDC6F5 /* GameAssetLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameAssetLoader.swift; sourceTree = "<group>"; };
+		E9A603F957294CF4643F0EB8 /* SaveGameStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SaveGameStore.swift; sourceTree = "<group>"; };
+		C30FFC81284D6585053828A3 /* SoundManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundManager.swift; sourceTree = "<group>"; };
+		598EF038DC7E98165FDA93DB /* EscapeRoomApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EscapeRoomApp.swift; sourceTree = "<group>"; };
+		0D0F8F2D0C48F18649150302 /* GameState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameState.swift; sourceTree = "<group>"; };
+		44AAB690C94FD2C810AB330F /* Hotspot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Hotspot.swift; sourceTree = "<group>"; };
+		EFEC03AC02D9B650C90148DC /* ItemCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ItemCatalog.swift; sourceTree = "<group>"; };
+		ECECD3B6DD1585E721106D94 /* LevelSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelSession.swift; sourceTree = "<group>"; };
+		CC1CF9CBB2922286DA823964 /* OverlayRectCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OverlayRectCatalog.swift; sourceTree = "<group>"; };
+		1B450504E2186D041036E758 /* PuzzleEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleEngine.swift; sourceTree = "<group>"; };
+		09B310BDEAEFDB114D15964E /* PuzzleGraphModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleGraphModel.swift; sourceTree = "<group>"; };
+		C7BAC6AD5811852BCCA3A0FE /* RoomScene.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomScene.swift; sourceTree = "<group>"; };
+		FDC47FEE6DF9761B18E47B30 /* RoomSceneCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomSceneCoordinator.swift; sourceTree = "<group>"; };
+		CB9598650547AFFAEDA12320 /* RoomViewState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoomViewState.swift; sourceTree = "<group>"; };
+		C5BEB31C8E2E135F23403C12 /* BrewControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BrewControlView.swift; sourceTree = "<group>"; };
+		641F9F1051307566D35726AB /* ChromeTheme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChromeTheme.swift; sourceTree = "<group>"; };
+		60DFE7C84C2932EE2549C430 /* GameImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameImage.swift; sourceTree = "<group>"; };
+		183E7C41A272CB1D87E25744 /* GameRoomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameRoomView.swift; sourceTree = "<group>"; };
+		6C16B99B02BDED5DA7B90ADE /* InventoryBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryBarView.swift; sourceTree = "<group>"; };
+		E52A0A72F3165AFC71BBE14B /* LevelLoadingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelLoadingView.swift; sourceTree = "<group>"; };
+		980568EC4B336C8BDCF4413A /* LevelSelectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LevelSelectView.swift; sourceTree = "<group>"; };
+		C9D0C9B8FC5DD9A97F571886 /* MainMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuView.swift; sourceTree = "<group>"; };
+		E7D45780DA6F8010EE755461 /* MoonDialControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoonDialControlView.swift; sourceTree = "<group>"; };
+		1F9D270ACBD145BD34366535 /* PauseMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PauseMenuView.swift; sourceTree = "<group>"; };
+		C2D8084D6DF6EF903022A869 /* RootAppView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootAppView.swift; sourceTree = "<group>"; };
+		4215641A14AACA1E96BF336E /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		4C517A0FFBB7B1C1B8B5F4D5 /* SpriteKitContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpriteKitContainerView.swift; sourceTree = "<group>"; };
+		30DA02CBB2F8E11CDA407A87 /* PuzzleEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleEngineTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		901B8E2415166F3C88793695 /* EscapeRoom */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				9B1023F648B61D416F086023 /* Exceptions for "EscapeRoom" folder in "EscapeRoom" target */,
-			);
-			path = EscapeRoom;
-			sourceTree = "<group>";
-		};
-		491B078963F3FF3ABF4CEE48 /* EscapeRoomTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = EscapeRoomTests;
-			sourceTree = "<group>";
-		};
 		F5A5D7C2359ABF4E7278AA85 /* Resources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
-
-/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		9B1023F648B61D416F086023 /* Exceptions for "EscapeRoom" folder in "EscapeRoom" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				Info.plist,
-			);
-			target = 38856AF1670C4C2658B238FA /* EscapeRoom */;
-		};
-/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		6351140A0B480F1E52809627 /* Frameworks */ = {
@@ -66,10 +104,77 @@
 			children = (
 				901B8E2415166F3C88793695 /* EscapeRoom */,
 				F5A5D7C2359ABF4E7278AA85 /* Resources */,
-				97089C281AED5CEE81170720 /* Info.plist */,
 				491B078963F3FF3ABF4CEE48 /* EscapeRoomTests */,
 				BD33FD055F9C6B76F0347B72 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		901B8E2415166F3C88793695 /* EscapeRoom */ = {
+			isa = PBXGroup;
+			children = (
+				598EF038DC7E98165FDA93DB /* EscapeRoomApp.swift */,
+				97089C281AED5CEE81170720 /* Info.plist */,
+				00358468E24AC846CF2B3D4C /* Core */,
+				A1C083ACDE4A4893FB1A4B46 /* Game */,
+				CE5B4264944694770DD48105 /* UI */,
+			);
+			path = EscapeRoom;
+			sourceTree = "<group>";
+		};
+		00358468E24AC846CF2B3D4C /* Core */ = {
+			isa = PBXGroup;
+			children = (
+				220F0A288A683BD3EBD3090D /* Entitlements.swift */,
+				D251BB0A118E20067DFDC6F5 /* GameAssetLoader.swift */,
+				E9A603F957294CF4643F0EB8 /* SaveGameStore.swift */,
+				C30FFC81284D6585053828A3 /* SoundManager.swift */,
+			);
+			path = Core;
+			sourceTree = "<group>";
+		};
+		A1C083ACDE4A4893FB1A4B46 /* Game */ = {
+			isa = PBXGroup;
+			children = (
+				0D0F8F2D0C48F18649150302 /* GameState.swift */,
+				44AAB690C94FD2C810AB330F /* Hotspot.swift */,
+				EFEC03AC02D9B650C90148DC /* ItemCatalog.swift */,
+				ECECD3B6DD1585E721106D94 /* LevelSession.swift */,
+				CC1CF9CBB2922286DA823964 /* OverlayRectCatalog.swift */,
+				1B450504E2186D041036E758 /* PuzzleEngine.swift */,
+				09B310BDEAEFDB114D15964E /* PuzzleGraphModel.swift */,
+				C7BAC6AD5811852BCCA3A0FE /* RoomScene.swift */,
+				FDC47FEE6DF9761B18E47B30 /* RoomSceneCoordinator.swift */,
+				CB9598650547AFFAEDA12320 /* RoomViewState.swift */,
+			);
+			path = Game;
+			sourceTree = "<group>";
+		};
+		CE5B4264944694770DD48105 /* UI */ = {
+			isa = PBXGroup;
+			children = (
+				C5BEB31C8E2E135F23403C12 /* BrewControlView.swift */,
+				641F9F1051307566D35726AB /* ChromeTheme.swift */,
+				60DFE7C84C2932EE2549C430 /* GameImage.swift */,
+				183E7C41A272CB1D87E25744 /* GameRoomView.swift */,
+				6C16B99B02BDED5DA7B90ADE /* InventoryBarView.swift */,
+				E52A0A72F3165AFC71BBE14B /* LevelLoadingView.swift */,
+				980568EC4B336C8BDCF4413A /* LevelSelectView.swift */,
+				C9D0C9B8FC5DD9A97F571886 /* MainMenuView.swift */,
+				E7D45780DA6F8010EE755461 /* MoonDialControlView.swift */,
+				1F9D270ACBD145BD34366535 /* PauseMenuView.swift */,
+				C2D8084D6DF6EF903022A869 /* RootAppView.swift */,
+				4215641A14AACA1E96BF336E /* SettingsView.swift */,
+				4C517A0FFBB7B1C1B8B5F4D5 /* SpriteKitContainerView.swift */,
+			);
+			path = UI;
+			sourceTree = "<group>";
+		};
+		491B078963F3FF3ABF4CEE48 /* EscapeRoomTests */ = {
+			isa = PBXGroup;
+			children = (
+				30DA02CBB2F8E11CDA407A87 /* PuzzleEngineTests.swift */,
+			);
+			path = EscapeRoomTests;
 			sourceTree = "<group>";
 		};
 		BD33FD055F9C6B76F0347B72 /* Products */ = {
@@ -97,7 +202,6 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				901B8E2415166F3C88793695 /* EscapeRoom */,
 				F5A5D7C2359ABF4E7278AA85 /* Resources */,
 			);
 			name = EscapeRoom;
@@ -117,9 +221,6 @@
 			dependencies = (
 				CB775EF76EE4B09FABC39D34 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				491B078963F3FF3ABF4CEE48 /* EscapeRoomTests */,
-			);
 			name = EscapeRoomTests;
 			productName = EscapeRoomTests;
 			productReference = 5CD5CD15D231843B896E8BFC /* EscapeRoomTests.xctest */;
@@ -132,14 +233,14 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
-				LastSwiftUpdateCheck = 1600;
-				LastUpgradeCheck = 1600;
+				LastSwiftUpdateCheck = 1620;
+				LastUpgradeCheck = 1620;
 				TargetAttributes = {
 					38856AF1670C4C2658B238FA = {
-						CreatedOnToolsVersion = 16.0;
+						CreatedOnToolsVersion = 16.2;
 					};
 					569E14637B0719B12090B53B = {
-						CreatedOnToolsVersion = 16.0;
+						CreatedOnToolsVersion = 16.2;
 						TestTargetID = 38856AF1670C4C2658B238FA;
 					};
 				};
@@ -178,6 +279,34 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				189B11F42331E8F7FE36BC85 /* Entitlements.swift in Sources */,
+				20BA70ABDFC09E62B7D50C38 /* GameAssetLoader.swift in Sources */,
+				CCF76A87FC0E601943F859AB /* SaveGameStore.swift in Sources */,
+				0E473EFCF35421FECE8B04AC /* SoundManager.swift in Sources */,
+				7FF0C772C3CA10020E13A308 /* EscapeRoomApp.swift in Sources */,
+				6A8EF6A41074D5C54B9FDAA0 /* GameState.swift in Sources */,
+				BC26BBA51B02A066E2C266FA /* Hotspot.swift in Sources */,
+				F1B72D669671A94328AB75FA /* ItemCatalog.swift in Sources */,
+				33C0A36C24DCBDE2AAB003F2 /* LevelSession.swift in Sources */,
+				F2BCE3A23AF5396B7C5B7E7B /* OverlayRectCatalog.swift in Sources */,
+				4CB438A0DED62F18583F9895 /* PuzzleEngine.swift in Sources */,
+				57FAD61BADE91EE3279FF6BE /* PuzzleGraphModel.swift in Sources */,
+				381F735E835669AE314B33EF /* RoomScene.swift in Sources */,
+				DB5CCF8B47A3FED5AADC37CA /* RoomSceneCoordinator.swift in Sources */,
+				B18F555A73991C8D1388DDDE /* RoomViewState.swift in Sources */,
+				DD1D65E812585885DA988696 /* BrewControlView.swift in Sources */,
+				3FCB6E024E44442748BF87C9 /* ChromeTheme.swift in Sources */,
+				62F0639B1E76F7FCB21B09AF /* GameImage.swift in Sources */,
+				D67FF013FA45CE4278216848 /* GameRoomView.swift in Sources */,
+				C8173E72DE0F9853E55AD86C /* InventoryBarView.swift in Sources */,
+				C79D449933960E2DAC2FA646 /* LevelLoadingView.swift in Sources */,
+				EF70C145A99971D6450A5CFE /* LevelSelectView.swift in Sources */,
+				C478D031DA78CE8964C97D0D /* MainMenuView.swift in Sources */,
+				3E9E6D79E5C0F44BD9AC99E9 /* MoonDialControlView.swift in Sources */,
+				836EFD2B0E83CB78CC346DF7 /* PauseMenuView.swift in Sources */,
+				5B71EE058892C8403E6B60BB /* RootAppView.swift in Sources */,
+				6AA808213C444636B11DC8C1 /* SettingsView.swift in Sources */,
+				B866D936880CC13B4F75A8AB /* SpriteKitContainerView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -185,6 +314,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E4E7AC3FC3B4FC0DDB9D85F9 /* PuzzleEngineTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -245,7 +375,6 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -307,7 +436,6 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
