@@ -59,6 +59,11 @@ jobs:
           echo "Resolved iPad destination: $IPAD_NAME"
           echo "Resolved iPhone destination: $IPHONE_NAME"
 
+      - name: Diagnose project/scheme (debug aid)
+        run: |
+          xcodebuild -project EscapeRoom/EscapeRoom.xcodeproj -list
+          xcodebuild -project EscapeRoom/EscapeRoom.xcodeproj -scheme EscapeRoom -showdestinations || true
+
       - name: Build (iOS Simulator)
         run: |
           set -o pipefail
