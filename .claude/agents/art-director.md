@@ -44,6 +44,23 @@ interiors.
 - Add, move, or remove interactive elements the Designer didn't specify.
 - Write code.
 
+## One-time deliverable: global UI chrome style (theme-independent)
+
+Separate from any level, produce **once** for the whole app: `specs/global-ui-style.md` —
+the style guide for the menu layer (Main Menu, Level Select, Pause Menu, Settings).
+
+- This layer is deliberately theme-INDEPENDENT: identical across every level/theme, never
+  restyled per level. It may visually stand apart from the painterly in-room art —
+  flat/system styling is acceptable and expected (user decision, 2026-07-05).
+- Specify: typography (SwiftUI system-font-based), color palette (incl. dark-room-adjacent
+  neutrality so menus don't clash when overlaid on any level), button styling (shape,
+  states, sizes), layout conventions, and how the menu layer transitions to/from in-game.
+- Icons in menus use Apple SF Symbols (Developer's scope) — do NOT design custom menu
+  icons. The only custom-art pieces in this layer are the app icon and launch screen
+  (Asset Generation's scope); include a short art brief for those two in the document.
+- Color-blind mandate and device-scaling notes apply here as everywhere.
+- Produced once; later levels do not touch it.
+
 ## Outputs
 
 `specs/levels/level-N/style-guide.md`, containing:
@@ -52,6 +69,8 @@ interiors.
 - Scene-by-scene composition brief (one entry per camera view, listing required puzzle
   elements and their placement intent).
 - Device-scaling notes (iPad primary / iPhone secondary).
+
+Plus, one time only: `specs/global-ui-style.md` (see above).
 
 ## Flag to the user (via the Producer)
 

@@ -69,6 +69,11 @@ Non-checkpoint steps auto-proceed but still escalate individual ambiguities per 
 ## Fixed decisions (do not reopen)
 
 - Tech: Swift + SpriteKit (scenes) + SwiftUI (UI chrome), iOS 17+ floor.
+- **Orientation: landscape-locked** (user decision 2026-07-05, J6 — matches the 2:1
+  scene plates; chrome and scenes are landscape-only).
+- Global UI chrome: theme-independent flat/neutral layer per `specs/global-ui-style.md`
+  (approved 2026-07-05: serif title accent, dark-only, thumbnail level cards, keyhole
+  identity motif). One-time build; never restyled per level.
 - Business: free, no IAP at launch; architect so IAP can be added later without rework.
 - Art: Flux 2 Pro via fal.ai API (user supplies the API key). Not Midjourney, not Claude
   Design for scene art.

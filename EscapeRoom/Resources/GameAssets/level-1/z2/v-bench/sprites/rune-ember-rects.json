@@ -1,0 +1,23 @@
+{
+ "rune-ember-I": {
+  "paste_xy_3x": [
+   169,
+   654
+  ],
+  "applies_to": "cu-brew-* plates"
+ },
+ "rune-ember-II": {
+  "paste_xy_3x": [
+   812,
+   1102
+  ],
+  "applies_to": "cu-brew-* plates"
+ },
+ "rune-ember-III": {
+  "paste_xy_3x": [
+   1714,
+   654
+  ],
+  "applies_to": "cu-brew-* plates"
+ }
+}

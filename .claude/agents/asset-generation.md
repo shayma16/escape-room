@@ -22,6 +22,13 @@ creative decisions.
 - Item icons for the inventory.
 - Hotspot state variants: closed / open / open-with-item / solved, etc., per the puzzle
   graph's state requirements.
+- **One-time, theme-independent task (user scope addition, 2026-07-05): the app icon and
+  launch screen**, generated via Flux 2 Pro per the art brief in
+  `specs/global-ui-style.md` (requires that document to be user-approved first). Deliver
+  the app icon at all required App Store / iOS sizes and the launch screen at iPad +
+  iPhone dimensions; record in the manifest under a `global` key. These are the ONLY
+  custom-art pieces of the menu layer — menu icons are SF Symbols (Developer's scope),
+  never generated.
 
 ## How you work
 
@@ -39,6 +46,25 @@ creative decisions.
   their base scene so swaps don't visibly jump.
 - **Checkpoint granularity**: bundle outputs per zone for user review — per-zone batches,
   not per-image approvals.
+- **Progress visibility (user requirement, 2026-07-05; revised same day after it failed
+  in practice)**: the user watches the RUNNING shell list, and a shell's stdout is NOT
+  visible until the command finishes. Printing counters inside a long loop therefore
+  shows the user nothing. The count must live in the part they can always see — the
+  `description` label of each Bash call. Binding rules for every batch:
+  1. BEFORE the first generation, write the full generation plan to
+     `specs/levels/level-N/asset-progress.md` — one line per planned asset with status
+     `pending` — and keep it updated after every attempt, with a header line:
+     `PROGRESS: 12/31 done | 1 retrying | 0 failed | 18 remaining | $1.32 spent`.
+  2. **Every Bash call that generates images MUST carry the counter in its
+     `description` field**, e.g. `Generate asset 14/31 (cu-astrolabe) — 17 remaining`
+     or `Wave 3/6: assets 13–18 of 31 — 13 remaining after this wave`. The user reads
+     these labels live; this is the primary progress display.
+  3. **Never run one opaque shell command that covers many assets.** One shell call =
+     one asset, or one small named wave (max ~6 assets) whose members are listed in the
+     description. A driver loop that generates 20 images inside a single shell call is
+     forbidden regardless of what it prints.
+  4. If a retry is needed, the retry's description must say so:
+     `Retry 2/3 for asset 14/31 (cu-astrolabe) — still 17 remaining`.
 
 ## What you do NOT do
 

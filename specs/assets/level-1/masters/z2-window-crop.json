@@ -1,0 +1,93 @@
+{
+ "z2_master_crop": [
+  760,
+  10,
+  1450,
+  1360
+ ],
+ "cu_band_within_crop": [
+  280,
+  1101
+ ],
+ "wide_pane_quad": [
+  [
+   1985,
+   99
+  ],
+  [
+   2322,
+   59
+  ],
+  [
+   2322,
+   730
+  ],
+  [
+   1987,
+   739
+  ]
+ ],
+ "cu_glass_rect": [
+  404,
+  24,
+  1296,
+  1100
+ ],
+ "cu_mullions": {
+  "v_x": [
+   856,
+   944
+  ],
+  "h_y": [
+   100,
+   170
+  ]
+ },
+ "belt2_wide_xy": [
+  2224.2,
+  446.4
+ ],
+ "belt2_cu_xy": [
+  1037.0,
+  664.9
+ ],
+ "note": "Same master region in both windows; Orion geometry = masters/orion-canonical.json",
+ "cu_crop_master": [
+  496.0,
+  105.3,
+  1434.9,
+  1263.2
+ ],
+ "cu_scale": 0.95,
+ "cu_star_coords_3x": {
+  "belt-1": [
+   1031,
+   703
+  ],
+  "belt-2": [
+   1120,
+   640
+  ],
+  "belt-3": [
+   1209,
+   577
+  ],
+  "shoulder-L": [
+   1024,
+   351
+  ],
+  "shoulder-R": [
+   1282,
+   397
+  ],
+  "foot-L": [
+   958,
+   883
+  ],
+  "foot-R": [
+   1216,
+   929
+  ]
+ },
+ "note2": "cu uses its own slightly wider crop of the same master (parallax between wide and close-up cameras); all 7 Orion dots verified clear of mullion"
+}

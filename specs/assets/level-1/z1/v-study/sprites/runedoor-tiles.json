@@ -1,0 +1,38 @@
+{
+ "tile1": {
+  "rect_in_plate_3x": [
+   902,
+   170,
+   1144,
+   421
+  ],
+  "rune": "FIRE"
+ },
+ "tile2": {
+  "rect_in_plate_3x": [
+   902,
+   473,
+   1144,
+   724
+  ],
+  "rune": "WATER"
+ },
+ "tile3": {
+  "rect_in_plate_3x": [
+   902,
+   776,
+   1144,
+   1027
+  ],
+  "rune": "AIR"
+ },
+ "tile4": {
+  "rect_in_plate_3x": [
+   902,
+   1079,
+   1144,
+   1330
+  ],
+  "rune": "EARTH"
+ }
+}

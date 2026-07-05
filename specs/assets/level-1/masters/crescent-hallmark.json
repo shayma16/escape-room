@@ -1,0 +1,6 @@
+{
+ "shape": "crescent from outer circle R=0.42*S minus inner circle r=0.90R offset +0.38R on x",
+ "orientation": "horns pointing RIGHT (C-shape opening right), matches z2 cabinet crescent recess",
+ "usage": "coin faces + batch-3 silver spoon bowl hallmark MUST reuse identical geometry",
+ "engrave": "pit darken 0.42 + lower-right lip highlight"
+}

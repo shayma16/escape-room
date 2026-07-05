@@ -411,7 +411,7 @@
   "developer_notes": [
     {
       "id": "D1",
-      "topic": "Brass feed cup mis-pour of the DRAUGHT (Validator advisory A3)",
+      "topic": "Brass feed cup mis-pour of the DRAUGHT (Validator advisory A3) -- RESOLVED 2026-07-04: user chose option (a) BLOCK at the style checkpoint. Implement (a), reusing the D4 refusal grammar; option (b) text retained for context only.",
       "note": "The brass feed cup on the crow cage is a plausible mis-pour target for itm-phial-draught. Developer must implement exactly ONE of: (a) BLOCK the pour -- phial-on-cup plays a small crow head-shake and the phial returns to inventory unspent (preferred: zero state churn); or (b) ALLOW it -- draught is spent, cup shows a filled state, and the player refills the phial at the still-draught-ready cauldron (the p15 refill invariant is load-bearing in this case). Either choice is soft-lock-free; do not ship any third behavior. This note governs the DRAUGHT specifically; all other offered items follow D4."
     },
     {

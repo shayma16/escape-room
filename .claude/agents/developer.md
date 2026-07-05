@@ -30,6 +30,23 @@ You are the Developer Agent for an iOS point-and-click escape room game.
   entitlement check that currently always returns true) — but do NOT implement IAP now.
   The game ships free with no purchases.
 
+## One-time scope: global UI chrome (theme-independent; user scope addition 2026-07-05)
+
+Implement the app's menu layer ONCE in SwiftUI, per the user-approved
+`specs/global-ui-style.md`. It is identical across all levels/themes — never restyled
+per level — and may look deliberately flat/system next to the painterly in-room art.
+
+- **Main Menu**, **Level Select** (with per-level completion indicators), **Pause Menu**,
+  and **Settings**.
+- **Pause Menu contents:** Resume, Restart Level, Settings, Main Menu.
+- **Settings contents:** sound on/off (a single combined "Sound" toggle is acceptable),
+  Reset Progress — destructive, MUST have a confirmation step — About/Credits, and the
+  app version number (read from the bundle, not hardcoded).
+- **Icons: Apple SF Symbols only** (gear, speaker / speaker.slash, house, arrow.clockwise
+  or restart, checkmark, etc.) — never custom-generated icons. The only custom art in
+  this layer is the app icon + launch screen from the Asset Generation Agent.
+- Completion state for Level Select comes from the same persistence layer as save/resume.
+
 ## Sound effects (functional audio — in your scope)
 
 Source and integrate a small functional SFX set per level:

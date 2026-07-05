@@ -1,0 +1,899 @@
+#!/usr/bin/env python3
+"""Build the app bundle asset set for Level 1 from the approved specs/assets art.
+
+Developer Agent pipeline (deterministic, re-runnable):
+  1. Ships every needed @3x plate: opaque plates -> JPEG (q87), RGBA sprites/icons -> PNG.
+  2. Computes state-overlay crops by diffing base plates against state-variant plates,
+     so the SpriteKit layer can compose ANY combination of latched states
+     (condition-driven plate selection, never event-ordered).
+  3. Inpaints (onion-peel) "item taken" variants where the art batch shipped no
+     emptied-container state, and erases the painted clock hands so the movable-hands
+     mechanic can render synthetic hands.
+  4. Generates placeholder chrome art (app icon, keyhole emblem, pause rune glyph,
+     level thumbnail, synthetic clock hands).
+  5. Synthesizes the functional SFX set + per-zone ambient loops (original works,
+     no third-party license needed) as 22.05 kHz 16-bit WAV.
+
+Run from repo root:  python tools/build_game_assets.py
+"""
+
+import json
+import math
+import os
+import random
+import shutil
+import struct
+import wave
+
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
+
+ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+SRC = os.path.join(ROOT, "specs", "assets", "level-1")
+OUT = os.path.join(ROOT, "EscapeRoom", "Resources", "GameAssets", "level-1")
+AUDIO_OUT = os.path.join(ROOT, "EscapeRoom", "Resources", "Audio")
+CHROME_OUT = os.path.join(ROOT, "EscapeRoom", "Resources", "GameAssets", "chrome")
+XCASSETS = os.path.join(ROOT, "EscapeRoom", "Resources", "Assets.xcassets")
+
+JPEG_Q = 87
+
+
+def src(path):
+    return os.path.join(SRC, path.replace("/", os.sep))
+
+
+def load(path):
+    return Image.open(src(path))
+
+
+def ensure(d):
+    os.makedirs(d, exist_ok=True)
+    return d
+
+
+def out_path(rel):
+    p = os.path.join(OUT, rel.replace("/", os.sep))
+    ensure(os.path.dirname(p))
+    return p
+
+
+def save_plate(im, rel):
+    """Save an opaque plate as JPEG."""
+    p = out_path(rel)
+    im.convert("RGB").save(p, "JPEG", quality=JPEG_Q, subsampling=1)
+    return p
+
+
+def save_png(im, rel):
+    p = out_path(rel)
+    im.save(p, "PNG")
+    return p
+
+
+# ---------------------------------------------------------------- inpainting
+
+def flatten_hue(rgb, mask, ring=70):
+    """Recolour masked pixels to the average surround hue, keeping luminance."""
+    grown = mask.filter(ImageFilter.MaxFilter(ring * 2 + 1))
+    ring_mask = ImageChops.subtract(grown, mask)
+    px = rgb.load()
+    rm = ring_mask.load()
+    mk = mask.load()
+    w, h = rgb.size
+    sr = sg = sb = cnt = 0
+    for y in range(0, h, 3):
+        for x in range(0, w, 3):
+            if rm[x, y] > 127:
+                r, g, b = px[x, y]
+                sr += r; sg += g; sb += b; cnt += 1
+    if not cnt:
+        return rgb
+    ar, ag, ab = sr / cnt, sg / cnt, sb / cnt
+    alum = max(1.0, 0.299 * ar + 0.587 * ag + 0.114 * ab)
+    for y in range(h):
+        for x in range(w):
+            if mk[x, y] > 127:
+                r, g, b = px[x, y]
+                lum = 0.299 * r + 0.587 * g + 0.114 * b
+                f = lum / alum
+                px[x, y] = (int(min(255, ar * f)), int(min(255, ag * f)),
+                            int(min(255, ab * f)))
+    return rgb
+
+
+def inpaint(im, mask, blur=3.0, noise=5, seed=7, recolor=False):
+    """Onion-peel (BFS) inpaint of masked pixels, then blur+grain inside mask."""
+    rgb = im.convert("RGB")
+    w, h = rgb.size
+    px = rgb.load()
+    mk = mask.load()
+    unknown = set()
+    for y in range(h):
+        for x in range(w):
+            if mk[x, y] > 127:
+                unknown.add((x, y))
+    if not unknown:
+        return rgb
+    # frontier = unknown pixels with a known neighbour
+    from collections import deque
+    def known_neighbours(x, y):
+        vals = []
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                if dx == 0 and dy == 0:
+                    continue
+                nx, ny = x + dx, y + dy
+                if 0 <= nx < w and 0 <= ny < h and (nx, ny) not in unknown:
+                    vals.append(px[nx, ny])
+        return vals
+
+    frontier = deque(p for p in unknown if known_neighbours(*p))
+    while unknown:
+        if not frontier:  # isolated island; seed arbitrarily
+            frontier = deque([next(iter(unknown))])
+        progressed = False
+        next_frontier = deque()
+        while frontier:
+            x, y = frontier.popleft()
+            if (x, y) not in unknown:
+                continue
+            vals = known_neighbours(x, y)
+            if not vals:
+                next_frontier.append((x, y))
+                continue
+            r = sum(v[0] for v in vals) // len(vals)
+            g = sum(v[1] for v in vals) // len(vals)
+            b = sum(v[2] for v in vals) // len(vals)
+            px[x, y] = (r, g, b)
+            unknown.discard((x, y))
+            progressed = True
+            for dx in (-1, 0, 1):
+                for dy in (-1, 0, 1):
+                    n = (x + dx, y + dy)
+                    if n in unknown:
+                        next_frontier.append(n)
+        frontier = next_frontier
+        if not progressed and not frontier and unknown:
+            # give up on leftovers (shouldn't happen)
+            for (x, y) in list(unknown):
+                px[x, y] = (40, 36, 32)
+                unknown.discard((x, y))
+    if recolor:
+        rgb = flatten_hue(rgb, mask)
+        px = rgb.load()
+    # blur + grain inside mask only
+    blurred = rgb.filter(ImageFilter.GaussianBlur(blur))
+    rng = random.Random(seed)
+    bx = blurred.load()
+    mk = mask.load()
+    for y in range(h):
+        for x in range(w):
+            if mk[x, y] > 127:
+                r, g, b = bx[x, y]
+                n = rng.randint(-noise, noise)
+                px[x, y] = (max(0, min(255, r + n)),
+                            max(0, min(255, g + n)),
+                            max(0, min(255, b + n)))
+    return rgb
+
+
+def clone_patch(im, src_box, dst_xy, feather=25, mirror=True):
+    """Clone src rect over dst (top-left), horizontally mirrored, feathered edges."""
+    rgb = im.convert("RGB")
+    patch = rgb.crop(src_box)
+    if mirror:
+        patch = patch.transpose(Image.FLIP_LEFT_RIGHT)
+    w, h = patch.size
+    m = Image.new("L", (w, h), 0)
+    ImageDraw.Draw(m).rectangle((feather, feather, w - feather, h - feather), fill=255)
+    m = m.filter(ImageFilter.GaussianBlur(feather * 0.6))
+    rgb.paste(patch, dst_xy, m)
+    return rgb
+
+
+def polygon_mask(size, polys=(), ellipses=(), grow=0):
+    """polys: list of point lists; ellipses: list of (cx, cy, rx, ry)."""
+    m = Image.new("L", size, 0)
+    d = ImageDraw.Draw(m)
+    for poly in polys:
+        d.polygon(poly, fill=255)
+    for (cx, cy, rx, ry) in ellipses:
+        d.ellipse((cx - rx, cy - ry, cx + rx, cy + ry), fill=255)
+    if grow:
+        m = m.filter(ImageFilter.MaxFilter(grow * 2 + 1))
+    return m
+
+
+def strip_poly(p0, p1, w0, w1, extend=0):
+    """Thick line polygon from p0 to p1, half-widths w0/w1, tip extended."""
+    x0, y0 = p0
+    x1, y1 = p1
+    dx, dy = x1 - x0, y1 - y0
+    L = math.hypot(dx, dy) or 1.0
+    ux, uy = dx / L, dy / L
+    nx, ny = -uy, ux
+    x1, y1 = x1 + ux * extend, y1 + uy * extend
+    return [(x0 + nx * w0, y0 + ny * w0), (x1 + nx * w1, y1 + ny * w1),
+            (x1 - nx * w1, y1 - ny * w1), (x0 - nx * w0, y0 - ny * w0)]
+
+
+# ------------------------------------------------------------- diff overlays
+
+def diff_overlay(base_im, var_im, pad=12, thresh=14, clamp=None):
+    """Return (bbox, crop) covering where var differs from base, or None."""
+    diff = ImageChops.difference(base_im.convert("RGB"), var_im.convert("RGB"))
+    gray = diff.convert("L")
+    mask = gray.point(lambda v: 255 if v > thresh else 0)
+    mask = mask.filter(ImageFilter.MinFilter(5))   # kill speckle
+    mask = mask.filter(ImageFilter.MaxFilter(5))
+    if clamp is not None:
+        clip = Image.new("L", mask.size, 0)
+        ImageDraw.Draw(clip).rectangle(clamp, fill=255)
+        mask = ImageChops.multiply(mask, clip)
+    bbox = mask.getbbox()
+    if bbox is None:
+        return None
+    w, h = base_im.size
+    x0 = max(0, bbox[0] - pad)
+    y0 = max(0, bbox[1] - pad)
+    x1 = min(w, bbox[2] + pad)
+    y1 = min(h, bbox[3] + pad)
+    return (x0, y0, x1, y1), var_im.convert("RGB").crop((x0, y0, x1, y1))
+
+
+def ring_gain(base_im, target_im, bbox, ring=40):
+    """Mean-luminance gain between two plates in a ring around bbox."""
+    def mean_lum(im):
+        x0, y0, x1, y1 = bbox
+        w, h = im.size
+        rx0, ry0 = max(0, x0 - ring), max(0, y0 - ring)
+        rx1, ry1 = min(w, x1 + ring), min(h, y1 + ring)
+        outer = im.convert("L").crop((rx0, ry0, rx1, ry1))
+        hist_sum = 0
+        count = 0
+        op = outer.load()
+        ow, oh = outer.size
+        for y in range(0, oh, 4):
+            for x in range(0, ow, 4):
+                # ring only: skip inner bbox
+                gx, gy = rx0 + x, ry0 + y
+                if x0 <= gx < x1 and y0 <= gy < y1:
+                    continue
+                hist_sum += op[x, y]
+                count += 1
+        return hist_sum / max(count, 1)
+    g = mean_lum(target_im) / max(mean_lum(base_im), 1e-6)
+    return max(0.3, min(1.2, g))
+
+
+def apply_gain(im, gain):
+    return im.point(lambda v: max(0, min(255, int(v * gain))))
+
+
+# ------------------------------------------------------------------- config
+
+# plates shipped verbatim (JPEG), path relative to level dir
+PLAIN_PLATES = [
+    # z1 wides (bases; variants become overlays)
+    "z1/v-hearth/z1-hearth-base@3x.png",
+    "z1/v-study/z1-study-base@3x.png",
+    "z1/v-entry/z1-entry-base@3x.png",
+    # z1 close-ups
+    "z1/v-hearth/cu-ash-undisturbed@3x.png",
+    "z1/v-hearth/cu-ash-sifted@3x.png",
+    "z1/v-hearth/cu-ash-ring-taken@3x.png",
+    "z1/v-hearth/cu-bellows@3x.png",
+    "z1/v-hearth/cu-lintel@3x.png",
+    "z1/v-hearth/cu-dial-panel@3x.png",
+    "z1/v-hearth/cu-trapdoor-open@3x.png",
+    "z1/v-study/cu-grimoire-pageA@3x.png",
+    "z1/v-study/cu-grimoire-pageB@3x.png",
+    "z1/v-study/cu-grimoire-recipe@3x.png",
+    "z1/v-study/cu-grimoire-zodiac@3x.png",
+    "z1/v-study/cu-grimoire-bird@3x.png",
+    "z1/v-study/cu-triptych-1@3x.png",
+    "z1/v-study/cu-triptych-2@3x.png",
+    "z1/v-study/cu-triptych-3@3x.png",
+    "z1/v-study/cu-flowerpot@3x.png",
+    "z1/v-study/cu-runedoor-tiles@3x.png",
+    "z1/v-entry/cu-door-lock@3x.png",
+    "z1/v-entry/cu-door-lock-basin-filled@3x.png",
+    "z1/v-entry/cu-door-lock-basin-drained@3x.png",
+    "z1/v-entry/cu-door-lock-vines-withered@3x.png",
+    "z1/v-entry/cu-door-lock-vines-gone@3x.png",
+    "z1/v-entry/cu-door-lock-bolt-slid@3x.png",
+    "z1/v-entry/cu-rusted-key@3x.png",
+    "z1/v-entry/cu-windowsill@3x.png",
+    "z1/v-entry/cu-cage-crow@3x.png",
+    "z1/v-entry/cu-cage-crow-refusal@3x.png",
+    "z1/v-entry/cu-cage-open-empty@3x.png",
+    "z1/v-entry/cu-star-keyhole@3x.png",
+    "z1/v-entry/cu-star-keyhole-key@3x.png",
+    "z1/v-entry/cu-crow-rafters@3x.png",
+    # z2
+    "z2/v-bench/z2-bench-base@3x.png",
+    "z2/v-bench/cu-brew-clear@3x.png",
+    "z2/v-bench/cu-brew-fizzle@3x.png",
+    "z2/v-bench/cu-brew-draught@3x.png",
+    "z2/v-bench/cu-mortar-empty@3x.png",
+    "z2/v-bench/cu-mortar-blossom@3x.png",
+    "z2/v-bench/cu-mortar-paste@3x.png",
+    "z2/v-cabinet/z2-cabinet-base@3x.png",
+    "z2/v-cabinet/cu-slots-empty@3x.png",
+    "z2/v-cabinet/cu-slots-seated@3x.png",
+    "z2/v-cabinet/cu-potion-shelf@3x.png",
+    "z2/v-cabinet/cu-astrolabe@3x.png",
+    "z2/v-cabinet/cu-window-orion@3x.png",
+    # z3 (beam matrix = full-plate selection)
+    "z3/v-cellar/z3-cellar-base@3x.png",
+    "z3/v-cellar/z3-cellar-shelf-slid@3x.png",
+    "z3/v-cellar/z3-cellar-weight-hung@3x.png",
+    "z3/v-cellar/z3-cellar-beam-floor@3x.png",
+    "z3/v-cellar/z3-cellar-beam-floor-shelf-slid@3x.png",
+    "z3/v-cellar/z3-cellar-beam-blocked@3x.png",
+    "z3/v-cellar/z3-cellar-beam-alcove@3x.png",
+    "z3/v-cellar/cu-barrel-gap@3x.png",
+    "z3/v-cellar/cu-mirror-scratches@3x.png",
+    "z3/v-cellar/cu-winch-socket@3x.png",
+    "z3/v-cellar/cu-winch-crank@3x.png",
+    "z3/v-cellar/cu-spoon-drawer@3x.png",
+    # z4 (full-plate matrix)
+    "z4/v-alcove/z4-alcove-base@3x.png",
+    "z4/v-alcove/z4-alcove-trembling@3x.png",
+    "z4/v-alcove/z4-alcove-blooming@3x.png",
+    "z4/v-alcove/z4-alcove-picked@3x.png",
+    "z4/v-alcove/z4-alcove-blooming-keytaken@3x.png",
+    "z4/v-alcove/z4-alcove-picked-keytaken@3x.png",
+    "z4/v-alcove/cu-planter-closed@3x.png",
+    "z4/v-alcove/cu-planter-trembling@3x.png",
+    "z4/v-alcove/cu-planter-blooming@3x.png",
+    "z4/v-alcove/cu-planter-picked@3x.png",
+    "z4/v-alcove/cu-statue-key@3x.png",
+    "z4/v-alcove/cu-statue-key-taken@3x.png",
+]
+
+RGBA_SPRITES = [
+    "z1/v-hearth/sprites/dial-face@3x.png",
+    "z2/v-bench/sprites/rune-ember-I@3x.png",
+    "z2/v-bench/sprites/rune-ember-II@3x.png",
+    "z2/v-bench/sprites/rune-ember-III@3x.png",
+    "z2/v-bench/sprites/ladle-ripple-ccw@3x.png",
+    "z2/v-cabinet/sprites/astrolabe-pointer@3x.png",
+    "z2/v-cabinet/sprites/astrolabe-plate-1@3x.png",
+    "z2/v-cabinet/sprites/astrolabe-plate-2@3x.png",
+    "z2/v-cabinet/sprites/astrolabe-plate-3@3x.png",
+    "z2/v-cabinet/sprites/astrolabe-plate-4@3x.png",
+    "z2/v-cabinet/sprites/astrolabe-plate-5@3x.png",
+    "z2/v-cabinet/sprites/astrolabe-plate-6@3x.png",
+    # runedoor pressed tiles are opaque rect swaps but tiny; ship as png
+    "z1/v-study/sprites/runedoor-tile1-pressed@3x.png",
+    "z1/v-study/sprites/runedoor-tile2-pressed@3x.png",
+    "z1/v-study/sprites/runedoor-tile3-pressed@3x.png",
+    "z1/v-study/sprites/runedoor-tile4-pressed@3x.png",
+]
+
+ICONS = [
+    "z1/icons/icon-poker@3x.png",
+    "z1/icons/icon-rusted-key@3x.png",
+    "z1/icons/icon-gold-ring@3x.png",
+    "z1/icons/icon-feather@3x.png",
+    "z2/icons/icon-crank@3x.png",
+    "z2/icons/icon-silver-coin@3x.png",
+    "z2/icons/icon-file@3x.png",
+    "z2/icons/icon-phial@3x.png",
+    "z2/icons/icon-phial-draught@3x.png",
+    "z2/icons/icon-paste@3x.png",
+    "z3/icons/icon-spoon@3x.png",
+    "z3/icons/icon-weight@3x.png",
+    "z3/icons/icon-shavings@3x.png",
+    "z4/icons/icon-blossom@3x.png",
+    "z4/icons/icon-cage-key@3x.png",
+]
+
+SPRITE_JSONS = [
+    "z1/v-study/sprites/runedoor-tiles.json",
+    "z2/v-bench/sprites/rune-ember-rects.json",
+]
+
+# (view_dir, base, variant, overlay_name, needs_dim_variant)
+# Optional 6th element: clamp rect (x0, y0, x1, y1) restricting the diff, used where
+# a re-rendered variant carries low-level drift outside the intended element
+# (asset-manifest flag: cage re-render brightness shift).
+OVERLAYS = [
+    ("z1/v-hearth", "z1-hearth-base", "z1-hearth-poker-taken", "ov-poker-taken", False),
+    ("z1/v-hearth", "z1-hearth-base", "z1-hearth-rug-moved", "ov-rug-moved", False),
+    ("z1/v-hearth", "z1-hearth-rug-moved", "z1-hearth-trapdoor-open", "ov-trapdoor-open", False),
+    ("z1/v-entry", "z1-entry-base", "z1-entry-cage-open", "ov-cage-open", False,
+     (1620, 0, 2560, 1280)),
+    ("z1/v-entry", "z1-entry-base", "z1-entry-crow-lintel", "ov-crow-lintel", False),
+    ("z1/v-entry", "z1-entry-base", "z1-entry-vines-withered", "ov-vines-withered", False),
+    ("z1/v-entry", "z1-entry-base", "z1-entry-vines-gone", "ov-vines-gone", False),
+    ("z2/v-bench", "z2-bench-base", "z2-bench-flame1", "ov-flame1", False),
+    ("z2/v-bench", "z2-bench-base", "z2-bench-flame2", "ov-flame2", False),
+    ("z2/v-bench", "z2-bench-base", "z2-bench-flame3", "ov-flame3", False),
+    ("z2/v-cabinet", "z2-cabinet-base", "z2-cabinet-slots-seated", "ov-slots-seated", False),
+    ("z2/v-cabinet", "z2-cabinet-base", "z2-cabinet-open", "ov-cab-open", False),
+    ("z2/v-cabinet", "z2-cabinet-base", "z2-cabinet-drawer-open", "ov-adrawer-open", False),
+    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-barrel-pried", "ov-barrel-pried", True),
+    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-drawer-open", "ov-drawer-open", False),
+    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-mirror-d2", "ov-mirror-d2", False),
+    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-mirror-d3", "ov-mirror-d3", False),
+    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-crank-fitted", "ov-crank-fitted", False),
+    ("z4/v-alcove", "z4-alcove-base", "z4-alcove-key-taken", "ov-key-taken", False),
+]
+
+
+# ------------------------------------------------------- inpainted variants
+
+def build_inpainted(report):
+    """Create emptied-container variants + hands-erased clock plates.
+
+    Returns dict of extra full plates {out_rel: PIL image} to feed overlay pass.
+    """
+    extras = {}
+
+    # --- clock hands erased (same mask for unspent/pop/spent: same camera) ---
+    C = (1055, 850)
+    polys = [
+        strip_poly(C, (815, 715), 60, 42, extend=26),      # hour hand
+        strip_poly(C, (1262, 703), 58, 44, extend=30),     # minute hand
+        strip_poly((1000, 880), (800, 795), 70, 55),       # hour-hand shadow
+        strip_poly((1120, 800), (1300, 745), 55, 45),      # minute-hand shadow
+    ]
+    ellipses = [
+        (940, 768, 105, 75),    # hour-hand S-curl cluster
+        (1105, 782, 85, 60),    # minute-hand curl
+        (1240, 715, 55, 45),    # minute arrowhead
+        (1055, 850, 100, 100),  # centre boss + hand bases (synthetic boss covers)
+        (1290, 655, 85, 80),    # minute shadow remnant upper right
+        (1150, 950, 95, 65),    # soft shadow lower right of boss
+    ]
+    for name in ("cu-clock-unspent", "cu-clock-pop", "cu-clock-spent"):
+        im = load(f"z1/v-hearth/{name}@3x.png")
+        mask = polygon_mask(im.size, polys, ellipses)
+        fixed = inpaint(im, mask, blur=3.5, noise=6, recolor=True)
+        save_plate(fixed, f"z1/v-hearth/{name}.jpg")
+        report.append(f"inpaint hands  -> z1/v-hearth/{name}.jpg")
+
+    # NOTE (implementation-notes): no emptied-container close-up is generated for the
+    # spoon drawer or ingredient cabinet -- inpaint quality was not shippable there.
+    # Instead those close-ups become inert once their item is collected.
+
+    # --- cu-astrolabe-drawer-open -> empty ---
+    im = load("z2/v-cabinet/cu-astrolabe-drawer-open@3x.png")
+    mask = polygon_mask(im.size,
+                        polys=[[(725, 1225), (1430, 1225), (1430, 1392), (725, 1392)]],
+                        ellipses=[(830, 1300, 125, 82)])
+    fixed = inpaint(im, mask, blur=4.0, noise=5, seed=12)
+    save_plate(fixed, "z2/v-cabinet/cu-astrolabe-drawer-empty.jpg")
+    report.append("inpaint drawer -> z2/v-cabinet/cu-astrolabe-drawer-empty.jpg")
+
+    # --- z3 wide: drawer-open without spoon (extra plate for overlay pass) ---
+    im = load("z3/v-cellar/z3-cellar-drawer-open@3x.png")
+    mask = polygon_mask(im.size, polys=[[(830, 790), (1050, 790), (1050, 880), (830, 880)]])
+    extras["z3/v-cellar#drawer-empty"] = inpaint(im, mask, blur=2.5, noise=5, seed=14)
+    report.append("inpaint spoon  -> wide drawer-empty (overlay source)")
+
+    # --- z3 wide: barrel pried without weight (clone contents from left of weight) ---
+    im = load("z3/v-cellar/z3-cellar-barrel-pried@3x.png")
+    extras["z3/v-cellar#barrel-empty"] = clone_patch(
+        im, (1926, 618, 2136, 828), (2101, 618), feather=28)
+    report.append("clone weight   -> wide barrel-empty (overlay source)")
+
+    # --- z2 wide: cabinet open without file+phial ---
+    im = load("z2/v-cabinet/z2-cabinet-open@3x.png")
+    mask = polygon_mask(im.size, polys=[[(455, 540), (810, 540), (810, 680), (455, 680)]])
+    extras["z2/v-cabinet#cab-open-empty"] = inpaint(im, mask, blur=2.5, noise=5, seed=16)
+    report.append("inpaint shelf  -> wide cab-open-empty (overlay source)")
+
+    return extras
+
+
+# --------------------------------------------------------------- chrome art
+
+def gen_clock_hands():
+    """Synthetic clock hands (RGBA), pivot at canvas centre, pointing up."""
+    def hand(length, base_w, tip_w, tail, fname):
+        S = 2 * (length + 60)
+        im = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+        d = ImageDraw.Draw(im)
+        cx = cy = S // 2
+        dark = (30, 27, 24, 255)
+        lite = (74, 66, 58, 255)
+        # tail
+        d.polygon([(cx - base_w * 0.55, cy), (cx + base_w * 0.55, cy),
+                   (cx + base_w * 0.35, cy + tail), (cx - base_w * 0.35, cy + tail)],
+                  fill=dark)
+        # shaft
+        d.polygon([(cx - base_w, cy), (cx + base_w, cy),
+                   (cx + tip_w, cy - length), (cx - tip_w, cy - length)], fill=dark)
+        # spade ornament at 62% length
+        oy = cy - length * 0.62
+        ow = base_w * 2.1
+        d.polygon([(cx, oy - ow * 1.4), (cx + ow, oy), (cx, oy + ow * 1.4), (cx - ow, oy)],
+                  fill=dark)
+        d.ellipse((cx - ow * 0.42, oy - ow * 0.42, cx + ow * 0.42, oy + ow * 0.42),
+                  fill=(0, 0, 0, 0))
+        # tip
+        d.polygon([(cx - tip_w * 1.8, cy - length), (cx + tip_w * 1.8, cy - length),
+                   (cx, cy - length - tip_w * 6)], fill=dark)
+        # sheen line
+        d.line([(cx - 2, cy - 8), (cx - 2, cy - length + 10)], fill=lite, width=3)
+        # boss
+        d.ellipse((cx - base_w * 1.9, cy - base_w * 1.9, cx + base_w * 1.9, cy + base_w * 1.9),
+                  fill=dark)
+        d.ellipse((cx - base_w * 0.8, cy - base_w * 0.8, cx + base_w * 0.8, cy + base_w * 0.8),
+                  fill=lite)
+        im.save(os.path.join(ensure(CHROME_OUT), fname), "PNG")
+
+    hand(430, 26, 10, 90, "clock-hand-hour.png")
+    hand(560, 22, 8, 110, "clock-hand-minute.png")
+
+
+def gen_pause_glyph():
+    """Engraved-rune pause glyph (placeholder until bespoke art exists)."""
+    S = 300
+    im = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    bone = (242, 245, 248, 255)
+    d.ellipse((10, 10, S - 10, S - 10), outline=bone, width=10)
+    # twin runic staves with cross-cuts
+    for x in (S * 0.40, S * 0.60):
+        d.line([(x, S * 0.28), (x, S * 0.72)], fill=bone, width=14)
+    d.line([(S * 0.34, S * 0.34), (S * 0.46, S * 0.28)], fill=bone, width=8)
+    d.line([(S * 0.54, S * 0.72), (S * 0.66, S * 0.66)], fill=bone, width=8)
+    im.save(os.path.join(ensure(CHROME_OUT), "pause-rune.png"), "PNG")
+
+
+def keyhole_path(d, cx, cy, r, stem_h, stem_w, fill):
+    d.ellipse((cx - r, cy - r, cx + r, cy + r), fill=fill)
+    d.polygon([(cx - stem_w * 0.45, cy + r * 0.55),
+               (cx + stem_w * 0.45, cy + r * 0.55),
+               (cx + stem_w, cy + r * 0.55 + stem_h),
+               (cx - stem_w, cy + r * 0.55 + stem_h)], fill=fill)
+
+
+def gen_emblem():
+    S = 800
+    im = Image.new("RGBA", (S, S), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    keyhole_path(d, S / 2, S * 0.38, S * 0.17, S * 0.34, S * 0.10, (255, 255, 255, 255))
+    im.save(os.path.join(ensure(CHROME_OUT), "keyhole-emblem.png"), "PNG")
+
+
+def gen_app_icon():
+    """PLACEHOLDER app icon (keyhole in dark wood) until the approved art lands."""
+    S = 1024
+    rng = random.Random(3)
+    im = Image.new("RGB", (S, S), (26, 23, 20))
+    d = ImageDraw.Draw(im)
+    # wood grain streaks
+    for _ in range(140):
+        x = rng.randint(0, S)
+        w = rng.randint(2, 6)
+        shade = rng.randint(-8, 8)
+        col = (26 + shade, 23 + shade, 20 + shade)
+        d.line([(x, 0), (x + rng.randint(-30, 30), S)], fill=col, width=w)
+    im = im.filter(ImageFilter.GaussianBlur(2))
+    d = ImageDraw.Draw(im)
+    # warm glow behind keyhole
+    glow = Image.new("RGB", (S, S), (0, 0, 0))
+    gd = ImageDraw.Draw(glow)
+    keyhole_path(gd, S / 2, S * 0.40, S * 0.155, S * 0.30, S * 0.09, (217, 151, 63))
+    glow = glow.filter(ImageFilter.GaussianBlur(40))
+    im = ImageChops.add(im, glow)
+    d = ImageDraw.Draw(im)
+    # brass escutcheon ring
+    cx, cy, r = S / 2, S * 0.40, S * 0.155
+    plate_r = S * 0.30
+    d.ellipse((cx - plate_r, cy - plate_r * 0.85, cx + plate_r, cy + plate_r * 1.45),
+              outline=(140, 114, 58), width=14)
+    # keyhole (lit interior)
+    hole = Image.new("RGB", (S, S), (0, 0, 0))
+    hd = ImageDraw.Draw(hole)
+    keyhole_path(hd, cx, cy, r, S * 0.29, S * 0.085, (232, 176, 90))
+    hole = hole.filter(ImageFilter.GaussianBlur(3))
+    im = ImageChops.lighter(im, hole)
+    ensure(os.path.join(XCASSETS, "AppIcon.appiconset"))
+    im.save(os.path.join(XCASSETS, "AppIcon.appiconset", "AppIcon1024.png"), "PNG")
+
+
+def gen_thumbnail():
+    im = load("z1/v-entry/z1-entry-base@3x.png")
+    # 4:3 crop centred on door + cage
+    crop = im.crop((760, 0, 2467, 1280)).resize((660, 495), Image.LANCZOS)
+    p = os.path.join(ensure(CHROME_OUT), "level1-thumb.jpg")
+    crop.convert("RGB").save(p, "JPEG", quality=85)
+
+
+# ------------------------------------------------------------------- audio
+
+SR = 22050
+
+
+def write_wav(name, samples):
+    p = os.path.join(ensure(AUDIO_OUT), name)
+    clipped = bytearray()
+    for s in samples:
+        v = int(max(-1.0, min(1.0, s)) * 32000)
+        clipped += struct.pack("<h", v)
+    with wave.open(p, "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(SR)
+        w.writeframes(bytes(clipped))
+
+
+def env(i, n, a=0.005, r=0.3):
+    """attack/release envelope, times in fraction of n."""
+    at = max(1, int(n * a))
+    rt = max(1, int(n * r))
+    if i < at:
+        return i / at
+    if i > n - rt:
+        return max(0.0, (n - i) / rt)
+    return 1.0
+
+
+def lp_noise(n, cutoff, seed, gain=1.0):
+    """One-pole lowpassed white noise."""
+    rng = random.Random(seed)
+    a = math.exp(-2 * math.pi * cutoff / SR)
+    y = 0.0
+    out = []
+    for _ in range(n):
+        y = a * y + (1 - a) * (rng.uniform(-1, 1))
+        out.append(y * gain)
+    return out
+
+
+def sine(n, f0, f1=None, amp=1.0, phase=0.0):
+    f1 = f1 if f1 is not None else f0
+    out = []
+    ph = phase
+    for i in range(n):
+        f = f0 + (f1 - f0) * (i / n)
+        ph += 2 * math.pi * f / SR
+        out.append(math.sin(ph) * amp)
+    return out
+
+
+def gen_sfx():
+    # interact click: soft wooden tick
+    n = int(0.07 * SR)
+    ns = lp_noise(n, 1400, 1, 3.2)
+    tone = sine(n, 780, 620, 0.35)
+    write_wav("sfx-click.wav", [(ns[i] * 0.7 + tone[i]) * env(i, n, 0.01, 0.75) * 0.5
+                                for i in range(n)])
+    # pickup: two quick soft blips
+    n = int(0.16 * SR)
+    b1 = sine(n, 660, amp=0.5)
+    b2 = sine(n, 990, amp=0.4)
+    out = []
+    for i in range(n):
+        g1 = math.exp(-i / (0.03 * SR))
+        j = i - int(0.07 * SR)
+        g2 = math.exp(-j / (0.04 * SR)) if j > 0 else 0.0
+        out.append((b1[i] * g1 + b2[i] * g2) * 0.6)
+    write_wav("sfx-pickup.wav", out)
+    # wrong: dull knock
+    n = int(0.28 * SR)
+    thud = sine(n, 120, 64, 0.9)
+    ns = lp_noise(n, 500, 2, 1.6)
+    write_wav("sfx-wrong.wav", [(thud[i] + ns[i] * 0.5) * math.exp(-i / (0.05 * SR)) * 0.85
+                                for i in range(n)])
+    # solve: warm plucked dyad + octave shimmer
+    n = int(1.0 * SR)
+    c5 = sine(n, 523.25, amp=0.42)
+    g5 = sine(n, 784.0, amp=0.34)
+    c6 = sine(n, 1046.5, amp=0.16)
+    out = []
+    for i in range(n):
+        g = math.exp(-i / (0.32 * SR))
+        go = math.exp(-max(0, i - int(0.12 * SR)) / (0.4 * SR)) if i > int(0.12 * SR) else 0
+        out.append((c5[i] + g5[i]) * g * 0.7 + c6[i] * go * 0.5)
+    write_wav("sfx-solve.wav", out)
+    # zone unlock: stone rumble + soft chime tail
+    n = int(1.5 * SR)
+    rumble = lp_noise(n, 140, 3, 5.0)
+    chime = sine(n, 392, amp=0.22)
+    out = []
+    for i in range(n):
+        sw = math.sin(math.pi * min(1.0, i / (n * 0.6)))
+        ct = math.exp(-max(0, i - int(0.8 * SR)) / (0.25 * SR)) if i > int(0.8 * SR) else 0
+        out.append(rumble[i] * sw * 0.8 + chime[i] * ct)
+    write_wav("sfx-unlock.wav", out)
+    # crow refusal: wing-flap snap (three quick air puffs)
+    n = int(0.5 * SR)
+    ns = lp_noise(n, 900, 4, 3.0)
+    out = []
+    for i in range(n):
+        g = 0.0
+        for k, t0 in enumerate((0.02, 0.16, 0.30)):
+            j = i - int(t0 * SR)
+            if j > 0:
+                g += math.exp(-j / (0.025 * SR)) * (1.0 - k * 0.25)
+        out.append(ns[i] * g * 0.7)
+    write_wav("sfx-refusal.wav", out)
+    # cuckoo clack: two dry wooden knocks
+    n = int(0.4 * SR)
+    ns = lp_noise(n, 2200, 5, 2.4)
+    tone = sine(n, 310, amp=0.5)
+    out = []
+    for i in range(n):
+        g = 0.0
+        for t0 in (0.02, 0.18):
+            j = i - int(t0 * SR)
+            if j > 0:
+                g += math.exp(-j / (0.02 * SR))
+        out.append((ns[i] * 0.8 + tone[i] * 0.6) * g * 0.7)
+    write_wav("sfx-clack.wav", out)
+    # brew fizzle: hiss decay
+    n = int(0.9 * SR)
+    ns = lp_noise(n, 3000, 6, 1.8)
+    write_wav("sfx-fizzle.wav", [ns[i] * math.exp(-i / (0.3 * SR)) * 0.6 for i in range(n)])
+
+
+def loopable(samples, fade=1.0):
+    """Crossfade tail into head for a seamless loop."""
+    nf = int(fade * SR)
+    n = len(samples)
+    out = samples[:n - nf]
+    for i in range(nf):
+        t = i / nf
+        out.append(samples[n - nf + i] * (1 - t) + samples[i] * t)
+    # note: result length n; loop point at start
+    return out
+
+
+def gen_ambients():
+    dur = 24
+    n = dur * SR
+    # z1 cabin: soft wind, mid lowpass, slow swell (integer LFO cycles => seamless)
+    base = lp_noise(n + SR, 420, 10, 5.5)
+    out = [base[i] * (0.55 + 0.35 * math.sin(2 * math.pi * 3 * i / n)) * 0.16
+           for i in range(n + SR)]
+    write_wav("amb-z1.wav", loopable(out))
+    # z2 workshop: warmer, brighter noise + ember crackle pops + faint hum
+    base = lp_noise(n + SR, 700, 11, 4.5)
+    hum = sine(n + SR, 98, amp=0.05)
+    rng = random.Random(20)
+    pops = [0.0] * (n + SR)
+    for _ in range(90):
+        t = rng.randint(0, n - 1)
+        ln = rng.randint(60, 300)
+        amp = rng.uniform(0.15, 0.5)
+        for j in range(ln):
+            if t + j < len(pops):
+                pops[t + j] += math.exp(-j / 40.0) * amp * rng.uniform(-1, 1)
+    out = [(base[i] * (0.5 + 0.2 * math.sin(2 * math.pi * 2 * i / n)) + pops[i] * 0.8
+            + hum[i]) * 0.15 for i in range(n + SR)]
+    write_wav("amb-z2.wav", loopable(out))
+    # z3 cellar: deep dark drone + sparse drips
+    base = lp_noise(n + SR, 180, 12, 7.0)
+    drone = sine(n + SR, 55, amp=0.08)
+    rng = random.Random(30)
+    drips = [0.0] * (n + SR)
+    for t0 in (3.1, 9.4, 15.2, 20.6):
+        t = int(t0 * SR)
+        f = rng.uniform(1400, 2100)
+        for j in range(int(0.09 * SR)):
+            drips[t + j] += math.sin(2 * math.pi * f * j / SR) \
+                * math.exp(-j / (0.012 * SR)) * 0.22
+            drips[t + j] += math.sin(2 * math.pi * f * 0.75 * j / SR) \
+                * math.exp(-(j - 400) / (0.05 * SR)) * (0.05 if j > 400 else 0)
+    out = [(base[i] * (0.6 + 0.25 * math.sin(2 * math.pi * 2 * i / n)) + drone[i]
+            + drips[i]) * 0.16 for i in range(n + SR)]
+    write_wav("amb-z3.wav", loopable(out))
+    # z4 alcove: reverent airy shimmer - soft consonant cluster w/ slow beating
+    t1 = sine(n + SR, 196.0, amp=0.05)
+    t2 = sine(n + SR, 294.3, amp=0.04)
+    t3 = sine(n + SR, 392.4, amp=0.03)
+    air = lp_noise(n + SR, 1200, 13, 0.9)
+    out = [((t1[i] + t2[i] + t3[i]) * (0.7 + 0.3 * math.sin(2 * math.pi * 4 * i / n))
+            + air[i] * 0.05) * 0.5 for i in range(n + SR)]
+    write_wav("amb-z4.wav", loopable(out))
+
+
+# -------------------------------------------------------------------- main
+
+def main():
+    report = []
+    if os.path.isdir(OUT):
+        shutil.rmtree(OUT)
+    ensure(OUT)
+
+    print("== 1/6 plain plates ==", flush=True)
+    for rel in PLAIN_PLATES:
+        im = load(rel)
+        save_plate(im, rel.replace("@3x.png", ".jpg"))
+    print(f"   {len(PLAIN_PLATES)} plates")
+
+    print("== 2/6 sprites + icons + records ==", flush=True)
+    for rel in RGBA_SPRITES + ICONS:
+        im = Image.open(src(rel))
+        save_png(im, rel.replace("@3x.png", ".png"))
+    for rel in SPRITE_JSONS:
+        p = out_path(rel)
+        shutil.copyfile(src(rel), p)
+
+    print("== 3/6 inpainted variants ==", flush=True)
+    extras = build_inpainted(report)
+
+    print("== 4/6 diff overlays ==", flush=True)
+    overlays = {}
+    base_cache = {}
+    for spec in OVERLAYS:
+        (view, base, var, name, dim), clamp = spec[:5], (spec[5] if len(spec) > 5 else None)
+        bkey = f"{view}/{base}"
+        if bkey not in base_cache:
+            base_cache[bkey] = load(f"{view}/{base}@3x.png").convert("RGB")
+        base_im = base_cache[bkey]
+        var_im = load(f"{view}/{var}@3x.png")
+        res = diff_overlay(base_im, var_im, clamp=clamp)
+        if res is None:
+            print(f"   !! no diff for {name}")
+            continue
+        bbox, crop = res
+        rel = f"{view}/overlays/{name}.jpg"
+        save_plate(crop, rel)
+        w, h = base_im.size
+        entry = {"file": rel, "rect": [bbox[0] / w, bbox[1] / h,
+                                       (bbox[2] - bbox[0]) / w, (bbox[3] - bbox[1]) / h]}
+        if dim:
+            beam = load("z3/v-cellar/z3-cellar-beam-floor@3x.png")
+            gain = ring_gain(base_im, beam, bbox)
+            dim_crop = apply_gain(crop, gain)
+            drel = f"{view}/overlays/{name}-dim.jpg"
+            save_plate(dim_crop, drel)
+            entry["dimFile"] = drel
+            entry["dimGain"] = round(gain, 3)
+        overlays.setdefault(view, {})[name] = entry
+        print(f"   {name}: bbox={bbox}")
+
+    # overlays from inpainted extras
+    for key, (viewbase, name) in {
+        "z3/v-cellar#drawer-empty": ("z3/v-cellar/z3-cellar-base", "ov-drawer-empty"),
+        "z3/v-cellar#barrel-empty": ("z3/v-cellar/z3-cellar-base", "ov-barrel-empty"),
+        "z2/v-cabinet#cab-open-empty": ("z2/v-cabinet/z2-cabinet-base", "ov-cab-open-empty"),
+    }.items():
+        view = key.split("#")[0]
+        base_im = base_cache.get(viewbase)
+        if base_im is None:
+            base_im = load(viewbase + "@3x.png").convert("RGB")
+        res = diff_overlay(base_im, extras[key])
+        bbox, crop = res
+        rel = f"{view}/overlays/{name}.jpg"
+        save_plate(crop, rel)
+        w, h = base_im.size
+        entry = {"file": rel, "rect": [bbox[0] / w, bbox[1] / h,
+                                       (bbox[2] - bbox[0]) / w, (bbox[3] - bbox[1]) / h]}
+        if name == "ov-barrel-empty":
+            beam = load("z3/v-cellar/z3-cellar-beam-floor@3x.png")
+            gain = ring_gain(base_im, beam, bbox)
+            drel = f"{view}/overlays/{name}-dim.jpg"
+            save_plate(apply_gain(crop, gain), drel)
+            entry["dimFile"] = drel
+            entry["dimGain"] = round(gain, 3)
+        overlays.setdefault(view, {})[name] = entry
+        print(f"   {name}: bbox={bbox}")
+
+    with open(out_path("overlays.json"), "w") as f:
+        json.dump(overlays, f, indent=1, sort_keys=True)
+
+    print("== 5/6 chrome art ==", flush=True)
+    gen_clock_hands()
+    gen_pause_glyph()
+    gen_emblem()
+    gen_app_icon()
+    gen_thumbnail()
+
+    print("== 6/6 audio ==", flush=True)
+    gen_sfx()
+    gen_ambients()
+
+    print("\n".join(report))
+    print("DONE")
+
+
+if __name__ == "__main__":
+    main()
