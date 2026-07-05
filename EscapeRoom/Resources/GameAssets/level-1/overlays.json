@@ -1,0 +1,216 @@
+{
+ "z1/v-entry": {
+  "ov-cage-open": {
+   "file": "z1/v-entry/overlays/ov-cage-open.jpg",
+   "rect": [
+    0.7328125,
+    0.20390625,
+    0.24921875,
+    0.47578125
+   ]
+  },
+  "ov-crow-lintel": {
+   "file": "z1/v-entry/overlays/ov-crow-lintel.jpg",
+   "rect": [
+    0.361328125,
+    0.01796875,
+    0.228125,
+    0.33984375
+   ]
+  },
+  "ov-vines-gone": {
+   "file": "z1/v-entry/overlays/ov-vines-gone.jpg",
+   "rect": [
+    0.245703125,
+    0.171875,
+    0.358984375,
+    0.828125
+   ]
+  },
+  "ov-vines-withered": {
+   "file": "z1/v-entry/overlays/ov-vines-withered.jpg",
+   "rect": [
+    0.247265625,
+    0.171875,
+    0.35546875,
+    0.73515625
+   ]
+  }
+ },
+ "z1/v-hearth": {
+  "ov-poker-taken": {
+   "file": "z1/v-hearth/overlays/ov-poker-taken.jpg",
+   "rect": [
+    0.189453125,
+    0.39765625,
+    0.089453125,
+    0.565625
+   ]
+  },
+  "ov-rug-moved": {
+   "file": "z1/v-hearth/overlays/ov-rug-moved.jpg",
+   "rect": [
+    0.103125,
+    0.71953125,
+    0.598828125,
+    0.28046875
+   ]
+  },
+  "ov-trapdoor-open": {
+   "file": "z1/v-hearth/overlays/ov-trapdoor-open.jpg",
+   "rect": [
+    0.230078125,
+    0.72421875,
+    0.3859375,
+    0.2453125
+   ]
+  }
+ },
+ "z2/v-bench": {
+  "ov-flame1": {
+   "file": "z2/v-bench/overlays/ov-flame1.jpg",
+   "rect": [
+    0.109375,
+    0.3609375,
+    0.328125,
+    0.41328125
+   ]
+  },
+  "ov-flame2": {
+   "file": "z2/v-bench/overlays/ov-flame2.jpg",
+   "rect": [
+    0.1109375,
+    0.3671875,
+    0.32734375,
+    0.4203125
+   ]
+  },
+  "ov-flame3": {
+   "file": "z2/v-bench/overlays/ov-flame3.jpg",
+   "rect": [
+    0.10625,
+    0.37421875,
+    0.33203125,
+    0.41640625
+   ]
+  }
+ },
+ "z2/v-cabinet": {
+  "ov-adrawer-open": {
+   "file": "z2/v-cabinet/overlays/ov-adrawer-open.jpg",
+   "rect": [
+    0.711328125,
+    0.66484375,
+    0.19921875,
+    0.1921875
+   ]
+  },
+  "ov-cab-open": {
+   "file": "z2/v-cabinet/overlays/ov-cab-open.jpg",
+   "rect": [
+    0.104296875,
+    0.09453125,
+    0.308984375,
+    0.90546875
+   ]
+  },
+  "ov-cab-open-empty": {
+   "file": "z2/v-cabinet/overlays/ov-cab-open-empty.jpg",
+   "rect": [
+    0.104296875,
+    0.09453125,
+    0.308984375,
+    0.90546875
+   ]
+  },
+  "ov-slots-seated": {
+   "file": "z2/v-cabinet/overlays/ov-slots-seated.jpg",
+   "rect": [
+    0.13515625,
+    0.16484375,
+    0.272265625,
+    0.37734375
+   ]
+  }
+ },
+ "z3/v-cellar": {
+  "ov-barrel-empty": {
+   "dimFile": "z3/v-cellar/overlays/ov-barrel-empty-dim.jpg",
+   "dimGain": 1.035,
+   "file": "z3/v-cellar/overlays/ov-barrel-empty.jpg",
+   "rect": [
+    0.758984375,
+    0.48359375,
+    0.241015625,
+    0.515625
+   ]
+  },
+  "ov-barrel-pried": {
+   "dimFile": "z3/v-cellar/overlays/ov-barrel-pried-dim.jpg",
+   "dimGain": 1.04,
+   "file": "z3/v-cellar/overlays/ov-barrel-pried.jpg",
+   "rect": [
+    0.758984375,
+    0.51953125,
+    0.241015625,
+    0.4796875
+   ]
+  },
+  "ov-crank-fitted": {
+   "file": "z3/v-cellar/overlays/ov-crank-fitted.jpg",
+   "rect": [
+    0.1171875,
+    0.15,
+    0.15,
+    0.3109375
+   ]
+  },
+  "ov-drawer-empty": {
+   "file": "z3/v-cellar/overlays/ov-drawer-empty.jpg",
+   "rect": [
+    0.281640625,
+    0.528125,
+    0.16484375,
+    0.2171875
+   ]
+  },
+  "ov-drawer-open": {
+   "file": "z3/v-cellar/overlays/ov-drawer-open.jpg",
+   "rect": [
+    0.281640625,
+    0.528125,
+    0.16484375,
+    0.2171875
+   ]
+  },
+  "ov-mirror-d2": {
+   "file": "z3/v-cellar/overlays/ov-mirror-d2.jpg",
+   "rect": [
+    0.480859375,
+    0.56796875,
+    0.190234375,
+    0.40859375
+   ]
+  },
+  "ov-mirror-d3": {
+   "file": "z3/v-cellar/overlays/ov-mirror-d3.jpg",
+   "rect": [
+    0.480859375,
+    0.56328125,
+    0.18984375,
+    0.4140625
+   ]
+  }
+ },
+ "z4/v-alcove": {
+  "ov-key-taken": {
+   "file": "z4/v-alcove/overlays/ov-key-taken.jpg",
+   "rect": [
+    0.5046875,
+    0.12109375,
+    0.157421875,
+    0.253125
+   ]
+  }
+ }
+}
