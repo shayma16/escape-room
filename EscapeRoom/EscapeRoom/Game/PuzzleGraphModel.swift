@@ -93,6 +93,11 @@ enum PuzzleGraph {
         static let z4Alcove = "z4-alcove"
     }
 
+    /// zones[0].start_zone == true in puzzle-graph.json. The start zone is unlocked
+    /// from the very first frame of a fresh save (QA-BUG-001: nothing else ever adds
+    /// it to unlockedZones, which left all z1 views unreachable).
+    static let startZoneID = ZoneID.z1Cabin
+
     enum StateFlag {
         static let moonbeamOn = "moonbeam-on"
         static let mirrorDetent3 = "mirror-at-detent-3"
@@ -101,6 +106,13 @@ enum PuzzleGraph {
         static let doorUnsealed = "door-unsealed"
         /// D5: one-shot cosmetic latch for the clock cuckoo pop. Never gates progression.
         static let clockCuckooSpent = "clock-cuckoo-spent"
+        /// p02's "free-action: move rug" requirement (QA-BUG-010). A satisfied-
+        /// requirement flag like any other: once the rug has been moved it stays moved.
+        /// The dial panel is only reachable through the trapdoor discovered underneath,
+        /// so the UI gates the dial close-up on this flag; the engine's dial evaluation
+        /// itself stays flag-free because the dials are physically unreachable before
+        /// discovery (verified by coordinator tests, not an engine gate).
+        static let rugMoved = "rug-moved"
     }
 }
 

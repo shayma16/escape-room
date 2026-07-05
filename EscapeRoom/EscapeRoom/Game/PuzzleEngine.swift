@@ -36,6 +36,12 @@ enum PuzzleEngine {
 
     // MARK: - p02 moon-phase trapdoor
 
+    /// The "free-action: move rug" requirement (p02 `requires`; QA-BUG-010). A latched
+    /// satisfied-requirement flag: moving the rug once reveals the trapdoor forever.
+    static func moveRug(state: GameState) {
+        state.setFlag(PuzzleGraph.StateFlag.rugMoved)
+    }
+
     /// Dials retain position between attempts (no lockout); checked whenever the
     /// player commits (e.g. taps a "try" affordance or on every dial settle — Scene
     /// layer decides the trigger, this just evaluates current dial state).
@@ -127,14 +133,17 @@ enum PuzzleEngine {
     /// Order-free by construction (D2 / Validator required fix 2): setting the mirror
     /// to detent-3 before OR after the shutter is opened both work identically, because
     /// cond-beam-at-alcove is re-evaluated from latched flags, not from event order.
+    /// QA-BUG-008 fix: p09's solution_fixed is detent-3, so the solved marker is only
+    /// set when detent-3 is reached (the mirror-at-detent-3 flag stays the live latch
+    /// and is still cleared whenever the mirror is rotated away).
     static func rotateMirror(toDetent detent: Int, state: GameState) {
         state.setMirrorDetent(detent)
         if detent == MirrorSolution.solutionDetent {
             state.setFlag(PuzzleGraph.StateFlag.mirrorDetent3)
+            state.markSolved(PuzzleGraph.PuzzleID.mirrorAim)
         } else {
             state.clearFlag(PuzzleGraph.StateFlag.mirrorDetent3)
         }
-        state.markSolved(PuzzleGraph.PuzzleID.mirrorAim)
     }
 
     // MARK: - p10 moonflower bloom
@@ -145,6 +154,9 @@ enum PuzzleEngine {
     static func pickBlossom(state: GameState) -> Bool {
         guard state.isZoneUnlocked(PuzzleGraph.ZoneID.z4Alcove) else { return false }
         guard state.evaluateCondition("cond-beam-at-alcove") else { return false }
+        // QA-BUG-007 fix: the single blossom is picked exactly once (visual state:
+        // "one blossom picked"); the same already-solved guard every sibling has.
+        guard !state.hasSolved(PuzzleGraph.PuzzleID.moonflowerBloom) else { return true }
         state.markSolved(PuzzleGraph.PuzzleID.moonflowerBloom)
         state.addItem(PuzzleGraph.ItemID.blossom)
         return true
@@ -205,6 +217,11 @@ enum PuzzleEngine {
     /// retryable) and reverts the cauldron to water.
     static func resolveBrew(flameStage: Int, stirDirection: BrewSolution.StirDirection, stirCount: Int, state: GameState) -> BrewOutcome {
         guard state.isZoneUnlocked(PuzzleGraph.ZoneID.z2Workshop) else { return .notReady }
+        // QA-BUG-006 fix: once the draught is ready, the brew is done — re-stirring an
+        // already-successful cauldron must never fizzle it back nor re-grant the spent
+        // ingredients (they were consumed INTO the draught). The cauldron stays
+        // draught-ready forever (p15 refill invariant).
+        guard !state.hasFlag(PuzzleGraph.StateFlag.draughtReady) else { return .notReady }
         let ingredients = state.data.cauldronIngredients
         guard ingredients == BrewSolution.requiredIngredients else { return .notReady }
 
@@ -215,10 +232,9 @@ enum PuzzleEngine {
         if success {
             state.markSolved(PuzzleGraph.PuzzleID.brew)
             state.setFlag(PuzzleGraph.StateFlag.draughtReady)
-            // Cauldron remains draught-ready after filling (p15 note); ingredients are
-            // considered "spent into" the draught but the ready state persists so a
-            // refill always exists — no separate ingredient bookkeeping needed beyond
-            // the draught-ready flag.
+            // QA-BUG-006 fix (second half): the ingredients are spent into the draught —
+            // clear the cauldron set so no later resolve can "return" them to inventory.
+            state.setCauldronIngredients([])
             return .success
         } else {
             // Fizzle: nothing consumed, ingredients float back to inventory intact.

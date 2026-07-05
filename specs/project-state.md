@@ -13,7 +13,47 @@ caged crow, potions/potion-making (user-specified elements).
 
 ## Pipeline position
 
-**Step 11 — Developer stage COMPLETE, green CI.** All approvals landed 2026-07-05: z3+z4
+**Step 11/12 loop — Developer QA-fix pass IN PROGRESS (2026-07-06).** User approved a
+full fix pass on the 22 QA bugs. Developer has implemented fixes for all
+Developer-scoped bugs (21 of 22 fully; QA-BUG-004 hotspot alignment deferred by design
+pending the Asset Generation agent's concurrent art re-frame batch — 0/11 done at
+Developer handoff; Developer owns the final integration step when it lands). Includes
+the new close-up/inspection layer, astrolabe mini-game, rug-discovery beat,
+item-combination UI, exact drag-drop conversion, bundle-resource fix (folder refs),
+a new XCUITest full-playthrough target with screenshot artifacts, and a Dynamic Island
+device added to the CI matrix. 9 of QA's 10 expected-failure bug records unwrapped into
+permanent assertions (BUG-004's stays wrapped). Per-bug detail + new judgment calls
+10–18 in `specs/levels/level-1/implementation-notes.md` ("QA fix pass" section).
+Next: CI green → re-QA (step 12) → step-13 user go/no-go.
+
+_Prior position:_ **Step 13 — USER CHECKPOINT: QA go/no-go review — resolved 2026-07-06
+as "full fix pass approved" (with BUG-004 = art re-frame, run concurrently).** QA stage (step 12) completed
+2026-07-05: `specs/levels/level-1/qa-report.md` delivered (commit 7fd5372) with QA test
+suite `EscapeRoom/EscapeRoomTests/QALevelFlowTests.swift` (57 tests × 2 simulators,
+green run https://github.com/shayma16/escape-room/actions/runs/28745951536, incl. 10
+strict expected-failure `testQA_BUG_*` records that flip loudly when each bug is fixed).
+
+**QA recommendation: NO-GO.** Engine layer is a faithful graph implementation (all 3
+example orderings incl. mirror-first C, all failure behaviors, D1–D5, all anti-softlock
+invariants pass), but the interaction/presentation layer is unfinished: level currently
+uncompletable in-app by any path (22 bugs: 7 critical / 8 major / 4 moderate / 3 minor).
+Headline criticals: game art unreachable in app bundle (BUG-022, black scenes); z1 never
+unlocked from fresh save (001); no UI path for p12/p15/p17 (012/002/003); close-up/clue
+layer entirely missing (013); iPad 4:3 crop pushes p11 keyhole + feed cup off-screen
+(004 — needs a CROSS-AGENT decision: approved art plates place critical elements outside
+the style-guide §8 dual-safe zone; fix = art re-framing vs hotspot relayout vs display
+policy; may loop in Art Director/Asset Gen, not just Developer).
+
+Judgment-call verification: hotspot rects FAIL (004/009/015); tap-placeholder controls —
+semantics PASS, interaction shape defective (006/010/011); vine mid-state unwired PASS;
+drag-drop conversion FAIL systematic (014); J5 no-confirm exit premise HOLDS.
+
+Awaiting user: (a) go/no-go on routing the 21 Developer-scoped bugs back to the
+Developer (QA's suggested fix order in report: bundle assets first), and (b) the
+BUG-004 cross-agent decision. After fixes → re-QA → step 13 again → Documentation
+second pass (step 14).
+
+_Prior stage summary:_ **Step 11 — Developer stage COMPLETE, green CI.** All approvals landed 2026-07-05: z3+z4
 batch (F11 diagonal beam, F12 fogged moon, F15 flower shift, F17 icon cleanup — all
 accepted) → LEVEL 1 ART COMPLETE ($8.11). global-ui-style.md approved as recommended
 (J1 serif accent, J2 dark-only, J3 thumbnail cards, J4 keyhole motif, J5 no-confirm
@@ -46,6 +86,16 @@ vine mid-wither state, drag/drop coordinate conversion, etc.) is in
 
 **Next:** step-12 QA (simulator via CI artifacts) → step-13 user go/no-go →
 Documentation second pass.
+
+## Security posture note (user directive 2026-07-06)
+
+No dedicated Security Review agent for now: the app has no backend, no user accounts,
+and no web views, so the attack surface is limited to the two checks folded into the
+existing agents (Developer: no dev-time secrets bundled + minimal entitlements;
+Release Manager: independent re-check of both on the archived .ipa as a final
+pre-submission gate — see the two agent definition files). **Revisit and add a
+dedicated Security Review agent if any of these are ever introduced: cloud saves,
+user accounts, IAP, or embedded web content.**
 
 ## Blockers / open questions
 

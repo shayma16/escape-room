@@ -37,6 +37,12 @@
 		B866D936880CC13B4F75A8AB /* SpriteKitContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C517A0FFBB7B1C1B8B5F4D5 /* SpriteKitContainerView.swift */; };
 		E4E7AC3FC3B4FC0DDB9D85F9 /* PuzzleEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30DA02CBB2F8E11CDA407A87 /* PuzzleEngineTests.swift */; };
 		AB12CD34EF56AB78CD90EF12 /* QALevelFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB12CD34EF56AB78CD90EF11 /* QALevelFlowTests.swift */; };
+		AA20000000000000000000B1 /* CloseUps.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000000000000000000A1 /* CloseUps.swift */; };
+		AA20000000000000000000B2 /* CloseUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000000000000000000A2 /* CloseUpView.swift */; };
+		AA10000000000000000000B1 /* GameAssets in Resources */ = {isa = PBXBuildFile; fileRef = AA10000000000000000000A1 /* GameAssets */; };
+		AA10000000000000000000B2 /* Audio in Resources */ = {isa = PBXBuildFile; fileRef = AA10000000000000000000A2 /* Audio */; };
+		AA10000000000000000000B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA10000000000000000000A3 /* Assets.xcassets */; };
+		AA30000000000000000000D4 /* EscapeRoomUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA30000000000000000000D3 /* EscapeRoomUITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -73,15 +79,14 @@
 		4C517A0FFBB7B1C1B8B5F4D5 /* SpriteKitContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpriteKitContainerView.swift; sourceTree = "<group>"; };
 		30DA02CBB2F8E11CDA407A87 /* PuzzleEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleEngineTests.swift; sourceTree = "<group>"; };
 		AB12CD34EF56AB78CD90EF11 /* QALevelFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QALevelFlowTests.swift; sourceTree = "<group>"; };
+		AA20000000000000000000A1 /* CloseUps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloseUps.swift; sourceTree = "<group>"; };
+		AA20000000000000000000A2 /* CloseUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloseUpView.swift; sourceTree = "<group>"; };
+		AA10000000000000000000A1 /* GameAssets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = GameAssets; sourceTree = "<group>"; };
+		AA10000000000000000000A2 /* Audio */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Audio; sourceTree = "<group>"; };
+		AA10000000000000000000A3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA30000000000000000000D2 /* EscapeRoomUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = EscapeRoomUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA30000000000000000000D3 /* EscapeRoomUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EscapeRoomUITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
-
-/* Begin PBXFileSystemSynchronizedRootGroup section */
-		F5A5D7C2359ABF4E7278AA85 /* Resources */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = Resources;
-			sourceTree = "<group>";
-		};
-/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		6351140A0B480F1E52809627 /* Frameworks */ = {
@@ -98,6 +103,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA30000000000000000000D7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -105,10 +117,29 @@
 			isa = PBXGroup;
 			children = (
 				901B8E2415166F3C88793695 /* EscapeRoom */,
-				F5A5D7C2359ABF4E7278AA85 /* Resources */,
+				AA10000000000000000000C1 /* Resources */,
 				491B078963F3FF3ABF4CEE48 /* EscapeRoomTests */,
+				AA30000000000000000000D5 /* EscapeRoomUITests */,
 				BD33FD055F9C6B76F0347B72 /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		AA10000000000000000000C1 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				AA10000000000000000000A3 /* Assets.xcassets */,
+				AA10000000000000000000A2 /* Audio */,
+				AA10000000000000000000A1 /* GameAssets */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		AA30000000000000000000D5 /* EscapeRoomUITests */ = {
+			isa = PBXGroup;
+			children = (
+				AA30000000000000000000D3 /* EscapeRoomUITests.swift */,
+			);
+			path = EscapeRoomUITests;
 			sourceTree = "<group>";
 		};
 		901B8E2415166F3C88793695 /* EscapeRoom */ = {
@@ -143,6 +174,7 @@
 				ECECD3B6DD1585E721106D94 /* LevelSession.swift */,
 				CC1CF9CBB2922286DA823964 /* OverlayRectCatalog.swift */,
 				1B450504E2186D041036E758 /* PuzzleEngine.swift */,
+				AA20000000000000000000A1 /* CloseUps.swift */,
 				09B310BDEAEFDB114D15964E /* PuzzleGraphModel.swift */,
 				C7BAC6AD5811852BCCA3A0FE /* RoomScene.swift */,
 				FDC47FEE6DF9761B18E47B30 /* RoomSceneCoordinator.swift */,
@@ -156,6 +188,7 @@
 			children = (
 				C5BEB31C8E2E135F23403C12 /* BrewControlView.swift */,
 				641F9F1051307566D35726AB /* ChromeTheme.swift */,
+				AA20000000000000000000A2 /* CloseUpView.swift */,
 				60DFE7C84C2932EE2549C430 /* GameImage.swift */,
 				183E7C41A272CB1D87E25744 /* GameRoomView.swift */,
 				6C16B99B02BDED5DA7B90ADE /* InventoryBarView.swift */,
@@ -185,6 +218,7 @@
 			children = (
 				E2B72F70E381850453DA7754 /* EscapeRoom.app */,
 				5CD5CD15D231843B896E8BFC /* EscapeRoomTests.xctest */,
+				AA30000000000000000000D2 /* EscapeRoomUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -203,9 +237,6 @@
 			buildRules = (
 			);
 			dependencies = (
-			);
-			fileSystemSynchronizedGroups = (
-				F5A5D7C2359ABF4E7278AA85 /* Resources */,
 			);
 			name = EscapeRoom;
 			productName = EscapeRoom;
@@ -229,6 +260,23 @@
 			productReference = 5CD5CD15D231843B896E8BFC /* EscapeRoomTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		AA30000000000000000000D1 /* EscapeRoomUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA30000000000000000000DA /* Build configuration list for PBXNativeTarget "EscapeRoomUITests" */;
+			buildPhases = (
+				AA30000000000000000000D6 /* Sources */,
+				AA30000000000000000000D7 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AA30000000000000000000D8 /* PBXTargetDependency */,
+			);
+			name = EscapeRoomUITests;
+			productName = EscapeRoomUITests;
+			productReference = AA30000000000000000000D2 /* EscapeRoomUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -243,6 +291,10 @@
 						CreatedOnToolsVersion = 16.2;
 					};
 					569E14637B0719B12090B53B = {
+						CreatedOnToolsVersion = 16.2;
+						TestTargetID = 38856AF1670C4C2658B238FA;
+					};
+					AA30000000000000000000D1 = {
 						CreatedOnToolsVersion = 16.2;
 						TestTargetID = 38856AF1670C4C2658B238FA;
 					};
@@ -263,6 +315,7 @@
 			targets = (
 				38856AF1670C4C2658B238FA /* EscapeRoom */,
 				569E14637B0719B12090B53B /* EscapeRoomTests */,
+				AA30000000000000000000D1 /* EscapeRoomUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -272,6 +325,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA10000000000000000000B3 /* Assets.xcassets in Resources */,
+				AA10000000000000000000B2 /* Audio in Resources */,
+				AA10000000000000000000B1 /* GameAssets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -292,6 +348,8 @@
 				F1B72D669671A94328AB75FA /* ItemCatalog.swift in Sources */,
 				33C0A36C24DCBDE2AAB003F2 /* LevelSession.swift in Sources */,
 				F2BCE3A23AF5396B7C5B7E7B /* OverlayRectCatalog.swift in Sources */,
+				AA20000000000000000000B1 /* CloseUps.swift in Sources */,
+				AA20000000000000000000B2 /* CloseUpView.swift in Sources */,
 				4CB438A0DED62F18583F9895 /* PuzzleEngine.swift in Sources */,
 				57FAD61BADE91EE3279FF6BE /* PuzzleGraphModel.swift in Sources */,
 				381F735E835669AE314B33EF /* RoomScene.swift in Sources */,
@@ -322,6 +380,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AA30000000000000000000D6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA30000000000000000000D4 /* EscapeRoomUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -330,10 +396,22 @@
 			target = 38856AF1670C4C2658B238FA /* EscapeRoom */;
 			targetProxy = 8721B942D7B9B27BE56F258C /* PBXContainerItemProxy */;
 		};
+		AA30000000000000000000D8 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 38856AF1670C4C2658B238FA /* EscapeRoom */;
+			targetProxy = AA30000000000000000000D9 /* PBXContainerItemProxy */;
+		};
 /* End PBXTargetDependency section */
 
 /* Begin PBXContainerItemProxy section */
 		8721B942D7B9B27BE56F258C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 23710D78932D26350BC785AC /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 38856AF1670C4C2658B238FA;
+			remoteInfo = EscapeRoom;
+		};
+		AA30000000000000000000D9 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 23710D78932D26350BC785AC /* Project object */;
 			proxyType = 1;
@@ -554,6 +632,48 @@
 			};
 			name = Release;
 		};
+		AA30000000000000000000DB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.escaperoom.app.wizardscabin.uitests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = EscapeRoom;
+			};
+			name = Debug;
+		};
+		AA30000000000000000000DC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.escaperoom.app.wizardscabin.uitests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = EscapeRoom;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -580,6 +700,15 @@
 			buildConfigurations = (
 				0950F148A0A59D4749DB2BC6 /* Debug */,
 				776DEAABC4C716AA5DDCED96 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA30000000000000000000DA /* Build configuration list for PBXNativeTarget "EscapeRoomUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA30000000000000000000DB /* Debug */,
+				AA30000000000000000000DC /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

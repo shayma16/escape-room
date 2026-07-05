@@ -56,7 +56,10 @@ private struct LevelCardView: View {
     private var cardSize: CGSize { isPad ? CGSize(width: 220, height: 165) : CGSize(width: 150, height: 112) }
 
     var body: some View {
-        NavigationLink(destination: destinationView) {
+        // Value-based link into the app's single NavigationStack (QA-BUG-019): the
+        // level screen is pushed onto the shared path, so "Main Menu" can pop to the
+        // existing root instead of covering it.
+        NavigationLink(value: level.id) {
             ZStack(alignment: .topTrailing) {
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Chrome.surface)
@@ -103,6 +106,7 @@ private struct LevelCardView: View {
         .disabled(!isUnlocked)
         .buttonStyle(.plain)
         .accessibilityLabel(isUnlocked ? (isComplete ? "Level \(level.id), completed." : "Level \(level.id)") : "Level \(level.id), locked.")
+        .accessibilityIdentifier(isComplete ? "level-card-\(level.id)-complete" : "level-card-\(level.id)")
     }
 
     @ViewBuilder
@@ -114,15 +118,6 @@ private struct LevelCardView: View {
         } else {
             Chrome.surface
                 .overlay(Text("\(level.id)").font(.chromeLevelNumber()).foregroundColor(Chrome.textSecondary))
-        }
-    }
-
-    @ViewBuilder
-    private var destinationView: some View {
-        if isUnlocked {
-            LevelLoadingView(levelID: level.id)
-        } else {
-            EmptyView()
         }
     }
 }

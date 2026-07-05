@@ -3,7 +3,7 @@ import SpriteKit
 import UIKit
 #endif
 
-/// Identifies one of the level's 11 views. zone groupings mirror puzzle-graph.json.
+/// Identifies one of the level's views. zone groupings mirror puzzle-graph.json.
 enum ViewID: String, CaseIterable {
     case hearth = "v-hearth"
     case study = "v-study"
@@ -25,9 +25,14 @@ enum ViewID: String, CaseIterable {
 
 /// Base SpriteKit scene for a single room view. Renders a full-frame base plate plus
 /// zero or more state-driven overlay sprites, exposes hotspot hit-testing, and routes
-/// taps/drops back to a delegate that owns the actual puzzle logic. Concrete per-view
-/// behavior (which hotspots exist, how taps resolve) is supplied by `RoomSceneController`
-/// subclasses/configuration rather than duplicated per view.
+/// taps back to a delegate that owns the actual puzzle logic.
+///
+/// Geometry note (QA fix pass): the 2:1 master plates (2560x1280) and the scene
+/// (2732x1366) share the same aspect ratio by construction (style guide Section 8), so
+/// the base plate is always rendered at exactly the scene's size. Normalized plate
+/// coordinates therefore map 1:1 onto normalized scene coordinates — no letterboxing,
+/// and hotspot layout never depends on whether a texture actually loaded (QA-BUG-022
+/// follow-up hardening: a missing texture must never kill input).
 final class RoomScene: SKScene {
     let viewID: ViewID
     private(set) var hotspots: [Hotspot] = []
@@ -40,15 +45,13 @@ final class RoomScene: SKScene {
     /// Called when a dragged inventory item is released over a hotspot.
     var onItemDropped: ((String, String) -> Void)?
 
-    private var draggedItemID: String?
-    private var dragGhost: SKSpriteNode?
-
     init(viewID: ViewID, size: CGSize) {
         self.viewID = viewID
         super.init(size: size)
         scaleMode = .aspectFill
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
         baseNode.anchorPoint = CGPoint(x: 0.5, y: 0.5)
+        baseNode.zPosition = 0
         addChild(baseNode)
     }
 
@@ -56,23 +59,31 @@ final class RoomScene: SKScene {
 
     func setBaseTexture(_ named: String) {
         baseNode.texture = Self.texture(named: named)
-        if let tex = baseNode.texture {
-            baseNode.size = tex.size()
-        }
+        // Plates are authored 2:1 to match the 2:1 scene exactly (Section 8); always
+        // fill the scene so plate-normalized coordinates == scene-normalized coordinates.
+        baseNode.size = size
     }
 
     /// Loose game-art files (base plates, overlays, sprites) are not in the Xcode asset
     /// catalog (see GameAssetLoader doc comment) — resolve via the on-disk index.
+    /// Textures are cached: RoomScene state refreshes re-request the same names often
+    /// and a full 2560x1280 JPEG decode per refresh causes visible hitches (QA perf note).
     static func texture(named: String) -> SKTexture? {
+        if let cached = textureCache.object(forKey: named as NSString) { return cached }
         guard let image = GameAssetLoader.shared.image(named: named) else { return nil }
-        return SKTexture(image: image)
+        let texture = SKTexture(image: image)
+        textureCache.setObject(texture, forKey: named as NSString)
+        return texture
     }
 
+    private static let textureCache = NSCache<NSString, SKTexture>()
+
     func setOverlay(_ key: String, imageNamed: String?, rectNormalized: CGRect) {
-        if let imageNamed {
+        if let imageNamed, rectNormalized != .zero {
             let node = overlayNodes[key] ?? {
                 let n = SKSpriteNode()
                 n.anchorPoint = CGPoint(x: 0, y: 1) // top-left origin to match normalized rects
+                n.zPosition = 10
                 addChild(n)
                 overlayNodes[key] = n
                 return n
@@ -86,7 +97,7 @@ final class RoomScene: SKScene {
     }
 
     private func positionOverlay(_ node: SKSpriteNode, rectNormalized: CGRect) {
-        guard let baseSize = baseNode.texture?.size(), baseSize.width > 0 else { return }
+        let baseSize = size
         let originX = -baseSize.width / 2
         let originY = baseSize.height / 2
         node.position = CGPoint(x: originX + rectNormalized.minX * baseSize.width,
@@ -99,7 +110,7 @@ final class RoomScene: SKScene {
         for node in hotspotNodes.values { node.removeFromParent() }
         hotspotNodes.removeAll()
         self.hotspots = hotspots
-        guard let baseSize = baseNode.texture?.size() else { return }
+        let baseSize = size
         for hotspot in hotspots {
             let rect = hotspot.normalizedRect
             let w = max(rect.width * baseSize.width, hotspot.minHitSize)
@@ -113,6 +124,7 @@ final class RoomScene: SKScene {
             let cx = originX + (rect.minX + rect.width / 2) * baseSize.width
             let cy = originY - (rect.minY + rect.height / 2) * baseSize.height
             node.position = CGPoint(x: cx, y: cy)
+            node.zPosition = 100
             addChild(node)
             hotspotNodes[hotspot.id] = node
         }
@@ -127,17 +139,25 @@ final class RoomScene: SKScene {
         if let hotspotID = hotspotID(at: point) {
             flashTapFeedback(at: point)
             onHotspotTap?(hotspotID)
+        } else {
+            flashTapFeedback(at: point)
         }
     }
     #endif
 
+    /// Smallest-area hotspot wins where hotspots overlap (e.g. the star keyhole and
+    /// feed cup sit inside the larger cage region; the trapdoor sits inside the rug).
     private func hotspotID(at point: CGPoint) -> String? {
+        var best: (id: String, area: CGFloat)?
         for node in nodes(at: point) {
-            if let name = node.name, name.hasPrefix("hotspot:") {
-                return String(name.dropFirst("hotspot:".count))
+            guard let name = node.name, name.hasPrefix("hotspot:") else { continue }
+            let id = String(name.dropFirst("hotspot:".count))
+            let area = node.frame.width * node.frame.height
+            if best == nil || area < best!.area {
+                best = (id, area)
             }
         }
-        return nil
+        return best?.id
     }
 
     /// Soft radial parchment-white pulse (~12pt, 150ms) — the only unsolicited tap
