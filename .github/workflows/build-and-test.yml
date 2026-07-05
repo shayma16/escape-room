@@ -45,9 +45,9 @@ jobs:
           set -euo pipefail
           ALL_DEVICES=$(xcrun simctl list devices available)
 
-          IPAD_NAME=$(echo "$ALL_DEVICES" | grep -Eo 'iPad Pro \(13-inch[^)]*\)[^ ]*' | head -n1 || true)
+          IPAD_NAME=$(echo "$ALL_DEVICES" | grep -Eo 'iPad Pro 13-inch \([^)]*\)' | head -n1 || true)
           if [ -z "${IPAD_NAME:-}" ]; then
-            IPAD_NAME=$(echo "$ALL_DEVICES" | grep -Eo 'iPad Pro \([0-9.]+-inch[^)]*\)[^ ]*' | head -n1 || true)
+            IPAD_NAME=$(echo "$ALL_DEVICES" | grep -Eo 'iPad Pro [0-9.]+-inch \([^)]*\)' | head -n1 || true)
           fi
           if [ -z "${IPAD_NAME:-}" ]; then IPAD_NAME="iPad Pro 13-inch (M4)"; fi
           echo "ipad_name=$IPAD_NAME" >> "$GITHUB_OUTPUT"
@@ -59,13 +59,13 @@ jobs:
           echo "Resolved iPad destination: $IPAD_NAME"
           echo "Resolved iPhone destination: $IPHONE_NAME"
 
-      - name: Build (generic iOS Simulator)
+      - name: Build (iOS Simulator)
         run: |
           set -o pipefail
           xcodebuild build \
             -project EscapeRoom/EscapeRoom.xcodeproj \
             -scheme EscapeRoom \
-            -destination 'generic/platform=iOS Simulator' \
+            -destination "platform=iOS Simulator,name=${{ steps.sims.outputs.ipad_name }}" \
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
 
