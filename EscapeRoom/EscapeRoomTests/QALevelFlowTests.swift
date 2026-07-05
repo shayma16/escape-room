@@ -496,22 +496,17 @@ final class QALevelFlowTests: XCTestCase {
     /// style guide Section 8 floor of >= 44 pt (e.g. star-keyhole ~21 pt tall).
     func testQA_BUG_009_hotspotEffectiveHitTargetsMeet44ptOniPhoneSE() {
         // iPhone SE (3rd gen) landscape: 667 x 375 pt; scene 2732 x 1366, .aspectFill.
+        // Plate pixel size is a repo-verified constant (all seven base plates are
+        // 2560 x 1280) rather than a bundle load, because QA-BUG-022 makes the plates
+        // unreachable through GameAssetLoader in the built bundle.
         let scale = max(667.0 / sceneSize.width, 375.0 / sceneSize.height)
-        let plates: [(ViewID, String)] = [
-            (.hearth, "z1-hearth-base"), (.study, "z1-study-base"), (.entry, "z1-entry-base"),
-            (.bench, "z2-bench-base"), (.cabinet, "z2-cabinet-base"),
-            (.cellar, "z3-cellar-base"), (.alcove, "z4-alcove-base"),
-        ]
+        let plateSize = CGSize(width: 2560, height: 1280)
         var offenders: [String] = []
-        for (viewID, plateName) in plates {
-            guard let plate = GameAssetLoader.shared.image(named: plateName) else {
-                XCTFail("base plate \(plateName) missing from test-host bundle — cannot measure hit targets")
-                continue
-            }
+        for viewID in ViewID.allCases {
             let coordinator = RoomSceneCoordinator(viewID: viewID, state: makeState(tempDir()), size: sceneSize)
             for hotspot in coordinator.scene.hotspots {
-                let w = max(hotspot.normalizedRect.width * plate.size.width, hotspot.minHitSize) * scale
-                let h = max(hotspot.normalizedRect.height * plate.size.height, hotspot.minHitSize) * scale
+                let w = max(hotspot.normalizedRect.width * plateSize.width, hotspot.minHitSize) * scale
+                let h = max(hotspot.normalizedRect.height * plateSize.height, hotspot.minHitSize) * scale
                 if min(w, h) < 44 {
                     offenders.append("\(viewID.rawValue)/\(hotspot.id) ~\(Int(w))x\(Int(h))pt")
                 }
@@ -519,6 +514,24 @@ final class QALevelFlowTests: XCTestCase {
         }
         XCTExpectFailure("QA-BUG-009: minHitSize enforced in scene px, not screen pt; sub-44pt targets on iPhone") {
             XCTAssertTrue(offenders.isEmpty, "hotspots below the 44pt floor on iPhone SE: \(offenders.joined(separator: "; "))")
+        }
+    }
+
+    /// QA-BUG-022 (critical): no game art is reachable through GameAssetLoader in the
+    /// built app bundle (empirically: image(named:) returns nil for every base plate in
+    /// the hosted test runner, whose Bundle.main IS the app bundle). GameAssetLoader
+    /// expects GameAssets/ and Audio/ directory trees under the bundle resource root,
+    /// but the pbxproj ships Resources via a file-system-synchronized group, which does
+    /// not preserve that folder hierarchy. Consequence in the shipped app: every
+    /// RoomScene base texture is nil (black scenes) AND configureHotspots() returns
+    /// early without creating hotspot nodes, so scene tap targets are dead too.
+    func testQA_BUG_022_gameArtReachableThroughAssetLoaderInAppBundle() {
+        XCTExpectFailure("QA-BUG-022: GameAssets folder tree not reachable in app bundle; scenes render black, taps dead") {
+            for plate in ["z1-hearth-base", "z1-study-base", "z1-entry-base", "z2-bench-base",
+                          "z2-cabinet-base", "z3-cellar-base", "z4-alcove-base", "dial-face"] {
+                XCTAssertNotNil(GameAssetLoader.shared.image(named: plate),
+                                "\(plate) must be loadable from the app bundle at runtime")
+            }
         }
     }
 
