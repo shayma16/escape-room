@@ -28,10 +28,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode version
+      - name: Show Xcode version
         run: |
-          sudo xcode-select -s /Applications/Xcode_16.2.app
+          # Intentionally NOT pinning a specific /Applications/Xcode_*.app here: side-
+          # installed Xcode versions on macos-15 runners can be missing their iOS
+          # Simulator platform support (observed: xcodebuild -showdestinations returned
+          # zero simulator destinations, only an ineligible "iOS 18.2 is not installed"
+          # device placeholder, when pinned to Xcode 16.2 explicitly). The runner's
+          # default `xcodebuild` has the platform support pre-cached and matching the
+          # preinstalled simulator runtimes reported by `xcrun simctl list`.
           xcodebuild -version
+          xcode-select -p
 
       - name: Install xcpretty
         run: gem install xcpretty --no-document
