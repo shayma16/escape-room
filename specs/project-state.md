@@ -13,28 +13,39 @@ caged crow, potions/potion-making (user-specified elements).
 
 ## Pipeline position
 
-**Step 11 — Developer stage RUNNING.** All approvals landed 2026-07-05: z3+z4 batch
-(F11 diagonal beam, F12 fogged moon, F15 flower shift, F17 icon cleanup — all
+**Step 11 — Developer stage COMPLETE, green CI.** All approvals landed 2026-07-05: z3+z4
+batch (F11 diagonal beam, F12 fogged moon, F15 flower shift, F17 icon cleanup — all
 accepted) → LEVEL 1 ART COMPLETE ($8.11). global-ui-style.md approved as recommended
 (J1 serif accent, J2 dark-only, J3 thumbnail cards, J4 keyhole motif, J5 no-confirm
 Main Menu exit w/ Developer verification duty, J6 LANDSCAPE-LOCKED — now a fixed
-decision in CLAUDE.md). Asset Gen COMPLETE: app icon + launch screens delivered ($0.41; art grand total $8.52;
-user shown previews, no objection). Developer stage IN PROGRESS.
+decision in CLAUDE.md). Asset Gen COMPLETE: app icon + launch screens delivered ($0.41;
+art grand total $8.52; user shown previews, no objection).
 
-**RESUME NOTE (2026-07-05, session ended mid-Developer-run):** the user shut down while
-the Developer agent was mid-implementation. Working-tree state at commit time: partial
-`EscapeRoom/` Xcode scaffold + `tools/` committed as-is — NOT yet a green CI build, no
-implementation-notes doc yet. On resume (open session in the project directory):
-1. Inspect `EscapeRoom/` + `tools/` + git log to see how far the Developer got.
-2. Relaunch the developer agent with the same full brief (puzzle-graph rev 1.2 incl.
-   D1=block + D2–D5, asset manifest incl. `global` key, style-guide UI portion,
-   global-ui-style.md with rulings J1–J5, LANDSCAPE-LOCKED, F7/F8/F13/F14 integration
-   notes, A5/R5 dial ≥30% iPhone width, SFX licensing rules, GitHub Actions build via
-   gh.exe at "C:\Program Files\GitHub CLI\gh.exe", progress labels in shell
-   descriptions), instructing it to take stock of the partial scaffold and continue —
-   not restart.
-3. Pipeline after Developer: step-12 QA (simulator via CI artifacts) → step-13 user
-   go/no-go → Documentation second pass.
+Developer Agent implementation finished 2026-07-05: full Xcode project (SpriteKit
+rooms + SwiftUI chrome), requirement-based puzzle state machines for all 17
+puzzle-graph nodes, zone-unlock logic for both nested hidden zones, save/resume
+persistence, one-time global UI chrome, and synthesized (original, no third-party
+license needed) SFX/ambient audio. Unit tests (29 cases) cover inventory,
+zone-unlocks, the order-independent beam condition (D2), brew/endgame state machines,
+and save/restart/reset. **`build-and-test.yml` is GREEN**: build + unit tests pass on
+both a 12.9"/13" iPad Pro simulator and an iPhone SE simulator
+(https://github.com/shayma16/escape-room/actions/runs/28745052491). Getting to green
+required several CI-only fixes not visible from local inspection (all documented in
+`specs/levels/level-1/implementation-notes.md`): a stray literal quote breaking the
+workflow YAML entirely, an invalid `../Resources` path in a synchronized asset group,
+replacing Xcode's newer file-system-synchronized-groups mechanism with traditional
+explicit file references for compiled Swift sources (the synchronized-groups scheme
+resolved zero simulator destinations for unclear reasons), pinning-related simulator
+platform support gaps (fixed by using the runner's default Xcode instead of an
+explicitly side-installed version), a serial-queue self-deadlock risk in
+`SaveGameStore`, and 3 unit tests that omitted a required zone-unlock precondition.
+
+Full judgment-call list (hotspot rect placement, moon-dial/brew interaction shape,
+vine mid-wither state, drag/drop coordinate conversion, etc.) is in
+`specs/levels/level-1/implementation-notes.md` for Producer/user review before QA.
+
+**Next:** step-12 QA (simulator via CI artifacts) → step-13 user go/no-go →
+Documentation second pass.
 
 ## Blockers / open questions
 

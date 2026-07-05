@@ -1,13 +1,19 @@
 # Level 1 — Implementation Notes (Developer Agent)
 
-Status: initial Xcode project + full Swift implementation scaffolded on top of the
-previously-staged `EscapeRoom/Resources/` art/audio tree. This document records every
-judgment call made while turning `puzzle-graph.json` (rev 1.2), `asset-manifest.json`,
-`style-guide.md` (Sections 7-8), and `global-ui-style.md` into code, for the
-Documentation Agent to reconcile against the walkthrough and for the Producer/user to
-review. Puzzle logic, art direction, and difficulty were not modified — only implemented
-as specified; any place the source specs left something unstated is flagged below
-rather than silently decided.
+Status: **buildable Xcode project, GREEN on `build-and-test.yml`.** Full Swift
+implementation on top of the previously-staged `EscapeRoom/Resources/` art/audio tree.
+This document records every judgment call made while turning `puzzle-graph.json`
+(rev 1.2), `asset-manifest.json`, `style-guide.md` (Sections 7-8), and
+`global-ui-style.md` into code, for the Documentation Agent to reconcile against the
+walkthrough and for the Producer/user to review. Puzzle logic, art direction, and
+difficulty were not modified — only implemented as specified; any place the source
+specs left something unstated is flagged below rather than silently decided.
+
+**Latest green CI run:** https://github.com/shayma16/escape-room/actions/runs/28745052491
+(build + unit tests on both a 12.9"/13" iPad Pro simulator and an iPhone SE simulator).
+See "CI resolution log" near the end of this document for everything that had to be
+fixed to get there — several were CI-only failure modes invisible from local inspection
+(there is no local macOS/Xcode environment in this project, per CLAUDE.md).
 
 ## Architecture summary
 
@@ -179,21 +185,90 @@ texture variation").
 
 ## Xcode project structure
 
-- `EscapeRoom/EscapeRoom.xcodeproj` — uses Xcode 16's file-system-synchronized groups
-  (`PBXFileSystemSynchronizedRootGroup`) for `EscapeRoom/EscapeRoom` (app sources),
-  `EscapeRoom/Resources` (art/audio/xcassets), and `EscapeRoom/EscapeRoomTests`, so new
-  Swift files or art added to those folders on disk are picked up automatically without
-  further pbxproj edits.
+- `EscapeRoom/EscapeRoom.xcodeproj` — traditional explicit `PBXFileReference` /
+  `PBXBuildFile` / `PBXGroup` / `PBXSourcesBuildPhase` entries for all 28 app Swift
+  files + 1 test Swift file (see "CI resolution log" below for why the initial attempt
+  used Xcode 16's newer file-system-synchronized groups for compiled sources and had to
+  be reverted). `Resources` (art/audio/xcassets — pure bundled assets, not compiled
+  sources) still uses a `PBXFileSystemSynchronizedRootGroup`, which is a safe, low-risk
+  use of that feature since nothing there needs to appear in a build phase's file list.
+  New Swift files therefore DO need a pbxproj entry (3 new IDs: file reference, build
+  file, and a `PBXGroup` children entry) — this is the traditional/standard tradeoff and
+  is called out here so the next contributor isn't surprised.
 - Two targets: `EscapeRoom` (app) and `EscapeRoomTests` (unit tests, hosted in the app).
-- Deployment target iOS 17.0, Swift 5, `TARGETED_DEVICE_FAMILY = "1,2"` (iPhone + iPad).
+- Deployment target iOS 17.0, Swift 5, `TARGETED_DEVICE_FAMILY = "1,2"` (iPhone + iPad),
+  `objectVersion = 60` (conservative/widely-compatible pbxproj schema version).
 - Bundle id `com.escaperoom.app.wizardscabin` (placeholder — Release Manager may need to
   change this to match the final App Store Connect app record; flagging since "app name
   / bundle identifier undecided" was already an open item in `specs/project-state.md`).
-- CI (`build-and-test.yml`) pins Xcode 16.2, builds for generic iOS Simulator, then runs
-  the unit test target against both a 12.9"/13" iPad Pro simulator and an iPhone SE
-  simulator (smallest supported iPhone), resolving exact simulator names dynamically
-  from `xcrun simctl list devices` so the workflow doesn't hardcode a device name that
-  might not exist on a given runner image.
+- CI (`build-and-test.yml`) uses the macOS runner's **default** Xcode toolchain
+  (deliberately not pinned to a specific side-installed version — see CI resolution log),
+  builds for a concrete iOS Simulator destination, then runs the unit test target
+  against both a 12.9"/13" iPad Pro simulator and an iPhone SE simulator (smallest
+  supported iPhone), resolving exact simulator names dynamically from
+  `xcrun simctl list devices` so the workflow doesn't hardcode a device name that might
+  not exist on a given runner image.
+
+## CI resolution log (getting build-and-test.yml green)
+
+Getting from "no Xcode project exists" to a green CI run took six iterations, each
+diagnosed from CI logs only (no local macOS environment exists in this project). Recorded
+here in full because several of these are non-obvious CI-only failure modes that could
+recur if the project structure changes again:
+
+1. **Workflow YAML rejected outright** (`gh workflow run` said "Workflow does not have
+   'workflow_dispatch' trigger" even though it clearly did; the push-triggered run failed
+   in 0 seconds with "This run likely failed because of a workflow file issue," zero jobs
+   created). Root cause: a step name containing a stray literal double-quote
+   (`Unit tests — iPad (12.9"/13" class)`) inside an unquoted YAML scalar. Fixed by
+   removing embedded quotes/smart-punctuation from all step names and simplifying the
+   simulator-name-resolution shell script (originally embedded multi-line Python
+   heredocs inside a YAML block scalar, an unnecessary quoting-risk surface) down to a
+   plain `grep`/`head` pipeline.
+2. **`generic/platform=iOS Simulator` destination rejected**
+   (`xcodebuild: error: Unable to find a destination matching...`, only the
+   ineligible device placeholder listed). Fixed by building against the same concrete
+   resolved simulator destination used for the test steps, instead of the ambiguous
+   generic destination.
+3. **Concrete simulator destination STILL rejected** even after fix #2, and
+   `xcodebuild -showdestinations` returned literally nothing but the ineligible device
+   placeholder — no "Available destinations" section at all, for any simulator.
+   Hypothesis A (wrong): the `Resources` synchronized-group's `path = ../Resources`
+   escaped above the `.xcodeproj`'s own directory to a nonexistent location. This WAS a
+   real bug (fixed to `path = Resources`) but did not change the destination-resolution
+   symptom at all, disproving the hypothesis.
+4. **Hypothesis B (wrong):** the newer `PBXFileSystemSynchronizedRootGroup` mechanism
+   used for the app's compiled Swift sources (not just `Resources`) was somehow
+   preventing the target from resolving a valid platform/SDK combination. Rewrote the
+   entire pbxproj with traditional explicit `PBXFileReference`/`PBXBuildFile` entries
+   for every source file. Result: identical symptom, disproving this hypothesis too
+   (though the traditional structure was kept anyway as the more conservative,
+   better-understood mechanism going forward).
+5. **Actual root cause found:** the workflow explicitly pinned
+   `sudo xcode-select -s /Applications/Xcode_16.2.app` before every build/test step.
+   The `-showdestinations` error text included "iOS 18.2 is not installed. To use with
+   Xcode, first download and install the platform" attached to the *device* placeholder
+   entry — a strong hint that this specific side-installed Xcode version on the
+   `macos-15` runner image lacks pre-cached iOS Simulator platform support that the
+   image's *default* Xcode has. Removed the explicit `xcode-select` pin entirely and let
+   the workflow use whichever Xcode the runner image defaults to. **This was the actual
+   fix** — the build succeeded immediately afterward.
+6. **Build green, but 2 tests failed + 1 flaked:** `testBrewFizzleReturnsAllIngredientsIntact`
+   and `testBrewSucceedsWithCorrectParameters` asserted the wrong `BrewOutcome` case
+   because they never called `state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)` before
+   invoking `PuzzleEngine.resolveBrew`, which the puzzle graph's `p14-brew.requires`
+   correctly enforces (`"zone: z2-workshop"`) — a test setup bug, not a puzzle-logic bug.
+   `testSoundSettingPersistsIndependentlyOfProgressReset` failed once, traced to a real
+   latent bug in `SaveGameStore`: `update(_:)` called `cached ?? load()` from inside
+   `queue.sync { ... }`, and `load()` itself wrapped its body in another `queue.sync` on
+   the *same* serial queue — a classic GCD self-deadlock / reentrancy hazard. Extracted
+   the shared body into a private `loadLocked()` assumed to already be running on the
+   queue, called directly by both `load()` and `update(_:)`. All 29 unit tests pass after
+   this fix, on both simulator destinations.
+
+Net effect: none of these six fixes touched puzzle logic, art, or difficulty — all were
+either CI/tooling issues or straightforward Swift bugs in the Developer Agent's own
+infrastructure code (persistence layer, test setup), consistent with this agent's scope.
 
 ## What's not yet done / next steps before QA
 
