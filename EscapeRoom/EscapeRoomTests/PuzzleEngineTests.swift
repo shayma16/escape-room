@@ -161,6 +161,7 @@ final class PuzzleEngineTests: XCTestCase {
 
     func testBrewSucceedsWithCorrectParameters() {
         let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
         state.setCauldronIngredients(BrewSolution.requiredIngredients)
         let outcome = PuzzleEngine.resolveBrew(flameStage: BrewSolution.flameStage,
                                                 stirDirection: BrewSolution.stirDirection,
@@ -172,6 +173,7 @@ final class PuzzleEngineTests: XCTestCase {
 
     func testBrewFizzleReturnsAllIngredientsIntact() {
         let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
         state.setCauldronIngredients(BrewSolution.requiredIngredients)
         let outcome = PuzzleEngine.resolveBrew(flameStage: 1, // wrong stage
                                                 stirDirection: BrewSolution.stirDirection,
@@ -186,6 +188,7 @@ final class PuzzleEngineTests: XCTestCase {
 
     func testBrewNotReadyWithoutAllIngredients() {
         let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
         state.setCauldronIngredients([PuzzleGraph.ItemID.paste])
         let outcome = PuzzleEngine.resolveBrew(flameStage: BrewSolution.flameStage,
                                                 stirDirection: BrewSolution.stirDirection,

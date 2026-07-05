@@ -28,23 +28,29 @@ final class SaveGameStore {
     }
 
     func load() -> SaveGame {
-        queue.sync {
-            if let cached { return cached }
-            guard let data = try? Data(contentsOf: fileURL),
-                  let decoded = try? JSONDecoder().decode(SaveGame.self, from: data) else {
-                let empty = SaveGame.empty
-                cached = empty
-                return empty
-            }
-            cached = decoded
-            return decoded
+        queue.sync { loadLocked() }
+    }
+
+    /// Must only be called while already executing on `queue` (see `load()`/`update(_:)`).
+    /// Named distinctly from `load()` to make the "no nested `queue.sync`" invariant
+    /// obvious at call sites and prevent the serial-queue self-deadlock that a naive
+    /// `cached ?? load()` inside `queue.sync { ... }` would otherwise cause.
+    private func loadLocked() -> SaveGame {
+        if let cached { return cached }
+        guard let data = try? Data(contentsOf: fileURL),
+              let decoded = try? JSONDecoder().decode(SaveGame.self, from: data) else {
+            let empty = SaveGame.empty
+            cached = empty
+            return empty
         }
+        cached = decoded
+        return decoded
     }
 
     /// Read-modify-write helper used by all mutators.
     func update(_ mutate: (inout SaveGame) -> Void) {
         queue.sync {
-            var current = cached ?? load()
+            var current = loadLocked()
             mutate(&current)
             cached = current
             if let data = try? JSONEncoder().encode(current) {
