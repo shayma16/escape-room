@@ -1,0 +1,59 @@
+import Foundation
+
+/// Static metadata for every item node in puzzle-graph.json: display name, inventory
+/// icon asset, and (for red herrings) the flag that it never actually unlocks anything.
+struct ItemDefinition {
+    let id: String
+    let name: String
+    let iconAsset: String   // matches asset-manifest icon file (without extension/zone path)
+    let isRedHerring: Bool
+}
+
+enum ItemCatalog {
+    static let all: [ItemDefinition] = [
+        ItemDefinition(id: PuzzleGraph.ItemID.poker, name: "Iron Poker", iconAsset: "icon-poker", isRedHerring: false),
+        ItemDefinition(id: PuzzleGraph.ItemID.rustedKey, name: "Rusted Bent Key", iconAsset: "icon-rusted-key", isRedHerring: true),
+        ItemDefinition(id: PuzzleGraph.ItemID.goldRing, name: "Gold Ring", iconAsset: "icon-gold-ring", isRedHerring: false),
+        ItemDefinition(id: PuzzleGraph.ItemID.crank, name: "Winch Crank Handle", iconAsset: "icon-crank", isRedHerring: false),
+        ItemDefinition(id: PuzzleGraph.ItemID.silverCoin, name: "Silver Coin", iconAsset: "icon-silver-coin", isRedHerring: false),
+        ItemDefinition(id: PuzzleGraph.ItemID.file, name: "Metal File", iconAsset: "icon-file", isRedHerring: false),
+        ItemDefinition(id: PuzzleGraph.ItemID.phial, name: "Empty Glass Phial", iconAsset: "icon-phial", isRedHerring: false),
+        ItemDefinition(id: PuzzleGraph.ItemID.spoon, name: "Tarnished Silver Spoon", iconAsset: "icon-spoon", isRedHerring: false),
+        ItemDefinition(id: PuzzleGraph.ItemID.shavings, name: "Silver Shavings", iconAsset: "icon-shavings", isRedHerring: false),
+        ItemDefinition(id: PuzzleGraph.ItemID.weight, name: "Iron Plumb Weight", iconAsset: "icon-weight", isRedHerring: false),
+        ItemDefinition(id: PuzzleGraph.ItemID.cageKey, name: "Star-Bit Cage Key", iconAsset: "icon-cage-key", isRedHerring: false),
+        ItemDefinition(id: PuzzleGraph.ItemID.blossom, name: "Moonflower Blossom", iconAsset: "icon-blossom", isRedHerring: false),
+        ItemDefinition(id: PuzzleGraph.ItemID.paste, name: "Moonflower Paste", iconAsset: "icon-paste", isRedHerring: false),
+        ItemDefinition(id: PuzzleGraph.ItemID.feather, name: "Black Crow Feather", iconAsset: "icon-feather", isRedHerring: false),
+        ItemDefinition(id: PuzzleGraph.ItemID.phialDraught, name: "Phial of Unbinding Draught", iconAsset: "icon-phial-draught", isRedHerring: false),
+    ]
+
+    static let byID: [String: ItemDefinition] = Dictionary(uniqueKeysWithValues: all.map { ($0.id, $0) })
+
+    static func definition(for id: String) -> ItemDefinition? { byID[id] }
+}
+
+/// Generic item-combination resolver. Combination pairs are data (not hardcoded control
+/// flow scattered across scenes), so adding future levels' combos means adding data,
+/// not rewriting logic. Level 1 has exactly one combination puzzle (p12).
+enum ItemCombinations {
+    /// Unordered pair -> puzzle id that resolves it.
+    static let pairToPuzzle: [Set<String>: String] = [
+        Set([PuzzleGraph.ItemID.file, PuzzleGraph.ItemID.spoon]): PuzzleGraph.PuzzleID.fileShavings
+    ]
+
+    /// Attempts to combine two inventory items. Returns true if a combination existed
+    /// and was resolved (regardless of whether it had already been solved before).
+    @discardableResult
+    static func combine(_ itemA: String, _ itemB: String, state: GameState) -> Bool {
+        guard itemA != itemB else { return false }
+        let pair = Set([itemA, itemB])
+        guard let puzzleID = pairToPuzzle[pair] else { return false }
+        switch puzzleID {
+        case PuzzleGraph.PuzzleID.fileShavings:
+            return PuzzleEngine.fileShavings(state: state)
+        default:
+            return false
+        }
+    }
+}

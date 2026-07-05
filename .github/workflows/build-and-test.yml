@@ -2,8 +2,12 @@
 # Triggered by the Developer Agent (gh workflow run build-and-test.yml) after pushing
 # the Xcode project; the QA Agent reads results via gh run download.
 #
-# PLACEHOLDER: the xcodebuild/simctl steps below are stubs. Fill in the real scheme,
-# project path, and destinations once the Xcode project exists in this repo.
+# Device matrix covers the QA test-matrix floor from
+# specs/global-ui-style.md Section 11: 12.9" iPad + smallest supported iPhone.
+# A failed job here means the level is not buildable — steps are NOT allowed to
+# silently swallow failures (no trailing `|| true` on the actual build/test commands);
+# `set -o pipefail` ensures a failing xcodebuild fails the step even when piped through
+# xcpretty for readability.
 
 name: Build and Test
 
@@ -12,7 +16,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "EscapeRoom/**"        # TODO: adjust to the actual Xcode project directory
+      - "EscapeRoom/**"
       - ".github/workflows/build-and-test.yml"
 
 jobs:
@@ -26,34 +30,86 @@ jobs:
 
       - name: Select Xcode version
         run: |
-          # TODO: pin the Xcode version once the project's toolchain is decided
-          sudo xcode-select -s /Applications/Xcode.app
+          sudo xcode-select -s /Applications/Xcode_16.2.app
           xcodebuild -version
 
-      - name: Build
-        run: |
-          # TODO: replace with the real project/scheme once it exists, e.g.:
-          # xcodebuild build \
-          #   -project EscapeRoom/EscapeRoom.xcodeproj \
-          #   -scheme EscapeRoom \
-          #   -destination 'generic/platform=iOS Simulator' \
-          #   CODE_SIGNING_ALLOWED=NO
-          echo "PLACEHOLDER: no Xcode project in repo yet — nothing to build"
+      - name: Install xcpretty
+        run: gem install xcpretty --no-document
 
-      - name: Unit tests + simulator device matrix
+      - name: Show available simulator devices (debug aid)
+        run: xcrun simctl list devices available
+
+      - name: Resolve simulator destinations
+        id: sims
         run: |
-          # TODO: replace with real test invocations across the QA device matrix, e.g.:
-          # xcrun simctl list devices
-          # xcodebuild test \
-          #   -project EscapeRoom/EscapeRoom.xcodeproj \
-          #   -scheme EscapeRoom \
-          #   -destination 'platform=iOS Simulator,name=iPad Pro 13-inch (M4)' \
-          #   -destination 'platform=iOS Simulator,name=iPhone 16' \
-          #   -resultBundlePath TestResults/EscapeRoom.xcresult \
-          #   CODE_SIGNING_ALLOWED=NO
-          echo "PLACEHOLDER: no tests yet"
+          set -euo pipefail
+          IPAD_NAME=$(xcrun simctl list devices available -j \
+            | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+names = []
+for runtime, devices in data['devices'].items():
+    if 'iOS' not in runtime:
+        continue
+    for d in devices:
+        names.append(d['name'])
+candidates = [n for n in names if 'iPad Pro' in n and ('13-inch' in n or '12.9' in n)]
+print(candidates[0] if candidates else '')
+" || true)
+          if [ -z "${IPAD_NAME:-}" ]; then IPAD_NAME="iPad Pro 13-inch (M4)"; fi
+          echo "ipad_name=$IPAD_NAME" >> "$GITHUB_OUTPUT"
+
+          IPHONE_NAME=$(xcrun simctl list devices available -j \
+            | python3 -c "
+import json, sys
+data = json.load(sys.stdin)
+names = []
+for runtime, devices in data['devices'].items():
+    if 'iOS' not in runtime:
+        continue
+    for d in devices:
+        names.append(d['name'])
+candidates = [n for n in names if 'iPhone SE' in n]
+print(candidates[0] if candidates else '')
+" || true)
+          if [ -z "${IPHONE_NAME:-}" ]; then IPHONE_NAME="iPhone SE (3rd generation)"; fi
+          echo "iphone_name=$IPHONE_NAME" >> "$GITHUB_OUTPUT"
+
+          echo "Resolved iPad destination: $IPAD_NAME"
+          echo "Resolved iPhone destination: $IPHONE_NAME"
+
+      - name: Build (generic iOS Simulator)
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project EscapeRoom/EscapeRoom.xcodeproj \
+            -scheme EscapeRoom \
+            -destination 'generic/platform=iOS Simulator' \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty
+
+      - name: Unit tests — iPad (12.9"/13" class)
+        run: |
+          set -o pipefail
           mkdir -p TestResults
-          echo "placeholder — replace once tests exist" > TestResults/README.txt
+          xcodebuild test \
+            -project EscapeRoom/EscapeRoom.xcodeproj \
+            -scheme EscapeRoom \
+            -destination "platform=iOS Simulator,name=${{ steps.sims.outputs.ipad_name }}" \
+            -resultBundlePath TestResults/EscapeRoom-iPad.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty
+
+      - name: Unit tests — smallest supported iPhone
+        run: |
+          set -o pipefail
+          xcodebuild test \
+            -project EscapeRoom/EscapeRoom.xcodeproj \
+            -scheme EscapeRoom \
+            -destination "platform=iOS Simulator,name=${{ steps.sims.outputs.iphone_name }}" \
+            -resultBundlePath TestResults/EscapeRoom-iPhone.xcresult \
+            CODE_SIGNING_ALLOWED=NO \
+            | xcpretty
 
       - name: Upload test results and logs
         if: always()
