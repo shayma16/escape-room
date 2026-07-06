@@ -29,9 +29,15 @@ If the session is cut off, resume by taking stock — don't restart:
 
 ## Pipeline position
 
-**Step 14 — GO given by user 2026-07-06. Documentation second pass + Developer polish
-batch (carry-forwards) RUNNING.** After both: Level 1 complete; next is either Level 2
-theme (step 1) or Release stage when the user decides enough levels exist.
+**LEVEL 1 COMPLETE (2026-07-06) — pending one user click: merge of PR #2
+(https://github.com/shayma16/escape-room/pull/2, polish carry-forwards incl. crow
+lintel perch, CI green run 28817697097).** Step 14 done: walkthrough reconciled FINAL
+(14 divergences fixed, commit 1aa76d3); polish batch complete on branch
+`polish-carry-forwards` (QA-OBS-023 landscape harness, UI-test waits, 3 screenshot
+gaps, moonbeam seam, BUG-015 pixel pass, lintel-perch nudge). **Next: user provides a
+Level 2 theme (pipeline step 1) or declares Release stage** (which additionally needs:
+Apple Developer enrollment, signing secrets via gh secret set, app name/bundle id —
+see Blockers).
 
 _Step-13 record:_ **USER CHECKPOINT: re-QA go/no-go — GO (user, 2026-07-06). QA had recommended GO.**
 Re-QA verification pass complete 2026-07-06 (qa-report.md "Re-QA verification pass"
