@@ -11,6 +11,22 @@ Level 1 in design. Theme received from user on 2026-07-04.
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
 caged crow, potions/potion-making (user-specified elements).
 
+## RESUME NOTE (2026-07-06, written pre-session-limit by the Producer)
+
+If the session is cut off, resume by taking stock — don't restart:
+1. `git log`/`git status` + `gh run list` (gh.exe at "C:\Program Files\GitHub CLI\gh.exe";
+   check the latest run on branch `qa-fix-pass-level-1`) + the section below.
+2. Background-agent transcripts do NOT survive session-limit cutoffs — relaunch agents
+   fresh with take-stock instructions rather than assuming SendMessage resume works.
+3. Position: Developer QA-fix pass + BUG-004 integration complete (see below); if the
+   post-integration CI run isn't green yet, relaunch a developer agent to diagnose and
+   finish. Once green: re-QA (step 12, fresh qa-tester agent; prior report + suite
+   exist) → step-13 user go/no-go → Documentation second pass (step 14).
+4. Waiting on the user: merge of PR #1 (https://github.com/shayma16/escape-room/pull/1).
+   The Producer session can push to `qa-fix-pass-level-1` (not needed for main).
+5. Flux spend to date: $8.63 (progression-ledger.md). BUG-004 re-frame batch: 11/11
+   done, verified, HOLD cleared.
+
 ## Pipeline position
 
 **Step 11/12 loop — Developer QA-fix pass COMPLETE incl. BUG-004 art integration
