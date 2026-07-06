@@ -420,7 +420,52 @@ art integration step.
   (https://github.com/shayma16/escape-room/pull/1) — direct pushes to origin/main are
   blocked in this agent session's permission mode, so the merge click is the user's.
 
-### BUG-004 status at handoff
+### BUG-004 art integration (2026-07-06, after the Asset Gen HOLD cleared at 11/11 done)
+
+Executed by the Developer as the planned final step, entirely from the re-frame batch's
+verified geometry (`asset-manifest.json` → `bug004_reframe`) + direct visual
+verification of the re-framed plates:
+
+- **Bundle staging without local Python.** `tools/build_game_assets.py` (PIL) can't run
+  on this machine, so the staging steps for the 25 re-issued plates were ported 1:1 to
+  .NET (`System.Drawing` via PowerShell `Add-Type`; script preserved in the session
+  scratchpad log, results in-repo): 10 changed wide plates re-encoded @3x PNG → bundle
+  JPEG (quality 87), and the 9 move-affected overlays re-cut by the same
+  diff→threshold(14)→5x5-open→pad(12) algorithm. **Port validated two ways:** the
+  unchanged flame1 pair reproduced the original overlays.json rect within 1–2 px, and
+  the recut drawer-open landed at exactly old-rect + 132 px (the batch's rigid shift).
+  `ov-drawer-empty` (inpainted spoon-less crop, can't regenerate without PIL) keeps its
+  old pixels with its rect shifted +132 px — valid because the shift is pixel-exact
+  rigid. `overlays.json` rects updated accordingly; barrel dim gains recomputed
+  (1.014 / — ) against the new beam plate.
+- **Hotspots re-aligned** on all four re-framed views from manifest bounds + plate
+  inspection (entry cage group at x 0.674–0.814 with keyhole above the feed cup;
+  rusted key on its hook RIGHT of the door — the old left-side rect was the BUG-015
+  "swapped sides" finding; windowsill clamped to the iPad band edge; cellar +132 with
+  the barrel at its re-staged rect; cabinet potion shelf/window/astrolabe/slots;
+  hearth bellows at its new fireplace-right position). Bench/hearth left-edge rects
+  (cauldron, ladle, floor bellows, lintel) and the mortar's right edge were clamped to
+  the iPad-safe band [0.1666, 0.8334] so every puzzle-critical hotspot is WHOLLY
+  reachable on the primary device even where art continues into iPhone-only overscan.
+- **`testQA_BUG_004` unwrapped** into a permanent assertion, with the band math
+  corrected to scene-normalized coordinates (the plate now fills the scene exactly),
+  matching the manifest's safe zone x∈[427,2133]@2560 = [0.1668, 0.8332].
+- **iPad full playthrough enabled** (XCTSkip removed); UI-test coordinates updated to
+  the re-framed geometry; all scripted taps verified inside the iPad band.
+- **Barrel visual correction found during integration:** the old
+  `RoomVisuals.barrelState` overlaid PRIED art pre-solve (latent bug masked by
+  QA-BUG-022's black scenes). Now graph-exact per `visually_necessary_elements`
+  ("barrel (nailed / pried, weight visible inside)"): nailed base pre-solve, pried
+  overlay after p06. The tool's old weight-less "ov-barrel-empty" embellishment was
+  dropped (its .NET clone reconstruction against the re-staged barrel left the weight
+  visible — and the graph doesn't specify a weight-taken state; files removed from the
+  bundle, entry removed from overlays.json). Flagged for the Documentation Agent: the
+  pried barrel keeps showing the weight after it's taken, exactly as the graph's state
+  list specifies.
+- Judgment call 14 note stands: `cu-astrolabe-drawer-empty` remains the post-solve
+  astrolabe close-up.
+
+### BUG-004 status at original handoff (superseded by the integration above)
 
 The Asset Generation agent's "BUG-004 re-frame batch" (`asset-progress.md`) defines the
 11 re-frame edits (entry cage Δx −150, hearth bellows → right of fireplace, cabinet

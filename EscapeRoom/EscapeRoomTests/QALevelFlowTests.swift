@@ -550,13 +550,15 @@ final class QALevelFlowTests: XCTestCase {
     /// OFF-SCREEN on the primary device.
     func testQA_BUG_004_criticalHotspotsInsideDualSafeZone() {
         // iPad Pro 13" landscape: 1376 x 1032 pt. .aspectFill scale is height-bound
-        // (1032/1366); visible scene width = 1376 / scale ~= 1821 of 2732. The base
-        // plates are 2560 px wide, centered in the 2732-wide scene.
+        // (1032/1366); visible scene width = 1376 / scale ~= 1821 of 2732. Since the
+        // fix pass, the 2:1 base plate fills the scene exactly, so plate-normalized ==
+        // scene-normalized and the visible band is computed over the scene width
+        // (this matches the asset manifest's bug004_reframe safe zone of
+        // x in [427, 2133] on the 2560-wide @3x plates, i.e. [0.1668, 0.8332]).
         let iPadScale = max(1376.0 / sceneSize.width, 1032.0 / sceneSize.height)
         let halfVisibleScene = (1376.0 / iPadScale) / 2.0
-        let plateWidth: CGFloat = 2560
-        let minVisibleX = (plateWidth / 2 - halfVisibleScene) / plateWidth   // ~0.144
-        let maxVisibleX = 1 - minVisibleX                                    // ~0.856
+        let minVisibleX = (sceneSize.width / 2 - halfVisibleScene) / sceneSize.width // ~0.1666
+        let maxVisibleX = 1 - minVisibleX                                            // ~0.8334
 
         // (Hotspot inventory updated in the fix pass: per-tile rune hotspots became the
         // single "rune-door" close-up trigger; the bench gained "workbench" for p12.)
@@ -579,14 +581,12 @@ final class QALevelFlowTests: XCTestCase {
                 }
             }
         }
-        // STILL OPEN (deliberately): the user chose an ART RE-FRAME fix for QA-BUG-004.
-        // The Asset Generation agent is re-framing the offending plates (z1 v-entry,
-        // z3 v-cellar, z1 hearth bellows region, z2 cabinet potion-shelf/astrolabe/
-        // window region); the affected hotspots keep their old out-of-band values
-        // until that batch lands, at which point this expected failure gets unwrapped
-        // together with the final hotspot alignment.
-        XCTExpectFailure("QA-BUG-004: awaiting the art re-frame batch; affected plates' hotspots aligned last") {
-            XCTAssertTrue(offenders.isEmpty, "outside dual-safe zone: \(offenders.joined(separator: "; "))")
-        }
+        // FIXED (BUG-004 art integration, 2026-07-06): the Asset Generation agent
+        // re-framed the four offending plates (entry cage group dx -150, hearth
+        // bellows to the fireplace's right, cabinet window/drawer dx -200 + potion
+        // shelf to wall center, cellar dx +132 + barrel re-staged at 0.545 scale);
+        // hotspots re-aligned to the manifest's bug004_reframe geometry. Every
+        // puzzle-critical hotspot now sits wholly inside the dual-safe zone.
+        XCTAssertTrue(offenders.isEmpty, "outside dual-safe zone: \(offenders.joined(separator: "; "))")
     }
 }

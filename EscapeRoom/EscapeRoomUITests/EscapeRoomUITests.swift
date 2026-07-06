@@ -9,11 +9,9 @@ import UIKit
 /// Scene taps use plate-normalized coordinates converted through the same .aspectFill
 /// math the scene uses (scene 2732x1366, base plate fills the scene exactly).
 ///
-/// NOTE (QA-BUG-004 carve-out): the full playthrough currently runs on iPhone-class
-/// devices only — on iPad several puzzle-critical elements (cellar barrel, entry cage)
-/// sit outside the 4:3 crop until the Asset Generation re-frame batch lands. The
-/// menu/navigation smoke test runs on all devices. When the re-framed plates are
-/// integrated, drop the XCTSkip and update the affected coordinates.
+/// BUG-004 art integration (2026-07-06): the re-framed plates put every puzzle-
+/// critical element inside the dual-safe zone, so the full playthrough now runs on
+/// iPad too (coordinates below sit inside the iPad-visible band x in [0.167, 0.833]).
 final class EscapeRoomUITests: XCTestCase {
 
     private let sceneSize = CGSize(width: 2732, height: 1366)
@@ -117,9 +115,6 @@ final class EscapeRoomUITests: XCTestCase {
     // MARK: - Full playthrough (iPhone-class; see header note re QA-BUG-004)
 
     func testFullPlaythroughWithScreenshots() throws {
-        if UIDevice.current.userInterfaceIdiom == .pad {
-            throw XCTSkip("Full playthrough on iPad is blocked until the QA-BUG-004 re-framed plates land (barrel/cage outside the 4:3 crop).")
-        }
         let app = launchFreshApp()
         tapID(app, "menu-play")
         tapID(app, "level-card-1")
@@ -137,7 +132,7 @@ final class EscapeRoomUITests: XCTestCase {
         assertHolding(app, "itm-gold-ring")
         shoot(app, "play-02-ash-glint")
         dismissCloseUp(app)
-        tapScene(app, 0.15, 0.76)                   // move rug (upper rug edge, clear of the bar)
+        tapScene(app, 0.18, 0.76)                   // move rug (upper rug edge, clear of the bar + iPad band)
         tapScene(app, 0.42, 0.76)                   // trapdoor -> dial close-up
         shoot(app, "play-03-dial-panel")
         for _ in 0..<1 { tapID(app, "moon-dial-1") } // waxing crescent
@@ -149,15 +144,16 @@ final class EscapeRoomUITests: XCTestCase {
         shoot(app, "play-05-cellar")
 
         // z3 cellar: barrel pry, counterweight, spoon, mirror to detent-3.
-        tapScene(app, 0.87, 0.73)                   // pry barrel (poker held) -> weight
+        // (Re-framed geometry: scene dx +132, barrel re-staged at 0.545 scale.)
+        tapScene(app, 0.757, 0.665)                 // pry barrel (poker held) -> weight
         assertHolding(app, "itm-weight")
-        dragItem(app, item: "itm-weight", toScene: 0.25, 0.32) // hang weight -> z4
+        dragItem(app, item: "itm-weight", toScene: 0.29, 0.335) // hang weight -> z4
         Thread.sleep(forTimeInterval: 1.2)          // weight-hung beat + shelf slide
         shoot(app, "play-06-shelf-slid")
-        tapScene(app, 0.36, 0.63)                   // take spoon
+        tapScene(app, 0.415, 0.645)                 // take spoon
         assertHolding(app, "itm-spoon")
-        tapScene(app, 0.58, 0.76)                   // mirror detent 2
-        tapScene(app, 0.58, 0.76)                   // mirror detent 3
+        tapScene(app, 0.635, 0.78)                  // mirror detent 2
+        tapScene(app, 0.635, 0.78)                  // mirror detent 3
         tapID(app, "nav-next")                      // cellar -> alcove
         Thread.sleep(forTimeInterval: 0.8)
         shoot(app, "play-07-alcove")
@@ -181,14 +177,14 @@ final class EscapeRoomUITests: XCTestCase {
         tapID(app, "nav-next")                      // bench -> cabinet
         Thread.sleep(forTimeInterval: 0.8)
         shoot(app, "play-10-cabinet")
-        tapScene(app, 0.84, 0.72)                   // astrolabe close-up
+        tapScene(app, 0.60, 0.55)                   // astrolabe close-up (re-framed pedestal)
         shoot(app, "play-11-astrolabe")
         tapID(app, "astrolabe-plate-2")             // Orion -> drawer springs open
         assertHolding(app, "itm-crank")
         assertHolding(app, "itm-silver-coin")
         dismissCloseUp(app)
-        dragItem(app, item: "itm-gold-ring", toScene: 0.20, 0.275)   // sun slot
-        dragItem(app, item: "itm-silver-coin", toScene: 0.33, 0.275) // moon slot -> file + phial
+        dragItem(app, item: "itm-gold-ring", toScene: 0.205, 0.345)   // sun recess
+        dragItem(app, item: "itm-silver-coin", toScene: 0.315, 0.355) // moon recess -> file + phial
         assertHolding(app, "itm-file")
         assertHolding(app, "itm-phial")
         shoot(app, "play-12-cabinet-open")
@@ -197,7 +193,7 @@ final class EscapeRoomUITests: XCTestCase {
         tapID(app, "nav-previous")                  // cabinet -> bench
         tapID(app, "nav-previous")                  // bench -> entry
         Thread.sleep(forTimeInterval: 0.8)
-        tapScene(app, 0.83, 0.33)                   // star keyhole with key -> crow freed
+        tapScene(app, 0.794, 0.24)                  // star keyhole with key -> crow freed
         assertHolding(app, "itm-feather")
         shoot(app, "play-13-crow-freed")
         dismissCloseUp(app)
@@ -212,7 +208,7 @@ final class EscapeRoomUITests: XCTestCase {
         tapID(app, "nav-next")                      // bench -> cabinet
         tapID(app, "nav-next")                      // cabinet -> cellar
         Thread.sleep(forTimeInterval: 0.8)
-        tapScene(app, 0.19, 0.28)                   // fit crank, open shutter -> moonbeam
+        tapScene(app, 0.235, 0.30)                  // fit crank, open shutter -> moonbeam
         shoot(app, "play-14-beam")
         tapID(app, "nav-next")                      // cellar -> alcove
         Thread.sleep(forTimeInterval: 0.8)
@@ -245,10 +241,10 @@ final class EscapeRoomUITests: XCTestCase {
         // Endgame at the door.
         tapID(app, "nav-previous")                  // bench -> entry
         Thread.sleep(forTimeInterval: 0.8)
-        dragItem(app, item: "itm-phial-draught", toScene: 0.50, 0.55) // pour into basin
+        dragItem(app, item: "itm-phial-draught", toScene: 0.50, 0.40) // pour into basin
         shoot(app, "play-17-unsealed")
         dismissCloseUp(app)
-        tapScene(app, 0.50, 0.55)                   // slide the bolt and leave (p17)
+        tapScene(app, 0.50, 0.40)                   // slide the bolt and leave (p17)
         // The Main Menu button doubles as the completion-card existence assert.
         XCTAssertTrue(app.descendants(matching: .any)["complete-main-menu"].waitForExistence(timeout: 6),
                       "completing p17 must present the completion card")

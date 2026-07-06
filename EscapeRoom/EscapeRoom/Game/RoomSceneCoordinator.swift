@@ -92,10 +92,9 @@ final class RoomSceneCoordinator: ObservableObject {
     }
 
     // MARK: - v-hearth (z1)
-    // Rects verified against z1-hearth-base (QA-BUG-015), except "bellows": the bellows
-    // art sits at x~0.03-0.06, OUTSIDE the dual-safe zone — that region is being
-    // re-framed by the Asset Generation agent (QA-BUG-004 carve-out); its hotspot is
-    // aligned in the final BUG-004 integration step.
+    // Rects verified against the re-framed z1-hearth-base (QA-BUG-015 + BUG-004
+    // integration 2026-07-06): the hand bellows now hangs right of the fireplace at
+    // x 1577-1716 (@3x), inside the dual-safe zone.
 
     private func configureHearth() {
         scene.setBaseTexture("z1-hearth-base")
@@ -103,8 +102,8 @@ final class RoomSceneCoordinator: ObservableObject {
             Hotspot(id: "poker", 0.19, 0.40, 0.09, 0.57),        // = ov-poker-taken rect
             Hotspot(id: "ash", 0.25, 0.57, 0.15, 0.16),
             Hotspot(id: "clock", 0.26, 0.02, 0.13, 0.24),
-            Hotspot(id: "bellows", 0.62, 0.20, 0.10, 0.25),      // deferred: BUG-004 re-frame
-            Hotspot(id: "lintel", 0.15, 0.24, 0.34, 0.09),
+            Hotspot(id: "bellows", 0.615, 0.235, 0.056, 0.335),  // re-framed position
+            Hotspot(id: "lintel", 0.17, 0.24, 0.30, 0.09),   // clamped to the iPad-safe band
             Hotspot(id: "rug", 0.10, 0.72, 0.60, 0.28),          // = ov-rug-moved rect
             Hotspot(id: "trapdoor-dial", 0.23, 0.72, 0.39, 0.25) // = ov-trapdoor-open rect
         ])
@@ -141,19 +140,21 @@ final class RoomSceneCoordinator: ObservableObject {
     }
 
     // MARK: - v-entry (z1)
-    // DEFERRED (QA-BUG-004 carve-out): this whole plate is being re-framed (star
-    // keyhole, feed cup, cage sit outside the iPad-visible band). Hotspot values are
-    // unchanged here and get their final alignment when the re-framed plate lands.
+    // Rects aligned against the re-framed z1-entry-base (BUG-004 integration
+    // 2026-07-06, geometry from asset-manifest bug004_reframe + visual verification):
+    // window/sill left, door center (beak basin over the vine-wrapped bolt), rusted
+    // key on its hook right of the door, cage group at x 0.674-0.814 with the star
+    // keyhole (x 2000-2065 @3x) above the brass feed cup (1995-2075, y 510-560).
 
     private func configureEntry() {
         scene.setBaseTexture("z1-entry-base")
         scene.configureHotspots([
-            Hotspot(id: "door-lock", 0.40, 0.35, 0.20, 0.40),
-            Hotspot(id: "rusted-key", 0.15, 0.30, 0.08, 0.20),
-            Hotspot(id: "windowsill", 0.65, 0.55, 0.20, 0.15),
-            Hotspot(id: "cage", 0.73, 0.20, 0.25, 0.48),
-            Hotspot(id: "feed-cup", 0.85, 0.45, 0.08, 0.08),
-            Hotspot(id: "star-keyhole", 0.80, 0.30, 0.06, 0.06),
+            Hotspot(id: "door-lock", 0.37, 0.20, 0.24, 0.45),
+            Hotspot(id: "rusted-key", 0.615, 0.21, 0.05, 0.13),
+            Hotspot(id: "windowsill", 0.167, 0.53, 0.073, 0.09),
+            Hotspot(id: "cage", 0.675, 0.09, 0.14, 0.55),
+            Hotspot(id: "feed-cup", 0.777, 0.395, 0.034, 0.05),
+            Hotspot(id: "star-keyhole", 0.777, 0.20, 0.035, 0.08),
         ])
     }
 
@@ -173,11 +174,14 @@ final class RoomSceneCoordinator: ObservableObject {
 
     private func configureBench() {
         scene.setBaseTexture("z2-bench-base")
+        // Left-edge rects are clamped to the iPad-safe band (x >= 0.167): the cauldron
+        // belly / ladle handle / bellows nose continue into iPhone-only overscan, but
+        // every hotspot must be wholly reachable on the primary device (Section 8).
         scene.configureHotspots([
-            Hotspot(id: "cauldron", 0.15, 0.32, 0.21, 0.32),
-            Hotspot(id: "ladle", 0.12, 0.25, 0.10, 0.15),
-            Hotspot(id: "floor-bellows", 0.14, 0.77, 0.16, 0.22),
-            Hotspot(id: "mortar", 0.69, 0.30, 0.15, 0.14),
+            Hotspot(id: "cauldron", 0.167, 0.32, 0.193, 0.32),
+            Hotspot(id: "ladle", 0.167, 0.25, 0.05, 0.15),
+            Hotspot(id: "floor-bellows", 0.167, 0.77, 0.133, 0.22),
+            Hotspot(id: "mortar", 0.69, 0.30, 0.14, 0.14),   // right edge clamped to the iPad-safe band
             Hotspot(id: "workbench", 0.44, 0.41, 0.30, 0.12),
         ])
     }
@@ -194,16 +198,18 @@ final class RoomSceneCoordinator: ObservableObject {
     }
 
     // MARK: - v-cabinet (z2)
-    // Slot rects derived from ov-slots-seated; potion-shelf / astrolabe / window are in
-    // the BUG-004 re-frame region — final alignment deferred with that batch.
+    // Rects aligned against the re-framed z2-cabinet-base (BUG-004 integration
+    // 2026-07-06): sun/moon recesses on the cabinet doors, potion shelf now wall-
+    // center (1066-1382 @3x), astrolabe pedestal center-right, Orion window moved
+    // dx -200 (star pixels 1936-2111 @3x).
 
     private func configureCabinet() {
         scene.configureHotspots([
-            Hotspot(id: "sun-slot", 0.15, 0.20, 0.10, 0.15),
-            Hotspot(id: "moon-slot", 0.28, 0.20, 0.10, 0.15),
-            Hotspot(id: "potion-shelf", 0.50, 0.15, 0.25, 0.30), // deferred: BUG-004 re-frame
-            Hotspot(id: "astrolabe", 0.72, 0.55, 0.24, 0.35),    // deferred: BUG-004 re-frame
-            Hotspot(id: "window", 0.80, 0.10, 0.18, 0.30),       // deferred: BUG-004 re-frame
+            Hotspot(id: "sun-slot", 0.170, 0.28, 0.07, 0.13),
+            Hotspot(id: "moon-slot", 0.285, 0.29, 0.065, 0.13),
+            Hotspot(id: "potion-shelf", 0.415, 0.17, 0.125, 0.155),
+            Hotspot(id: "astrolabe", 0.53, 0.27, 0.14, 0.60),
+            Hotspot(id: "window", 0.66, 0.05, 0.17, 0.50),
         ])
         scene.setBaseTexture("z2-cabinet-base")
     }
@@ -219,30 +225,34 @@ final class RoomSceneCoordinator: ObservableObject {
         // recess) until the pair completes; no dedicated single-seat plate exists.
         let solved = state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon)
         scene.setOverlay("seat-sun", imageNamed: (!solved && pendingSunItem != nil) ? "icon-gold-ring" : nil,
-                          rectNormalized: CGRect(x: 0.17, y: 0.23, width: 0.06, height: 0.09))
+                          rectNormalized: CGRect(x: 0.183, y: 0.30, width: 0.045, height: 0.08))
         scene.setOverlay("seat-moon", imageNamed: (!solved && pendingMoonItem != nil) ? "icon-silver-coin" : nil,
-                          rectNormalized: CGRect(x: 0.30, y: 0.23, width: 0.06, height: 0.09))
+                          rectNormalized: CGRect(x: 0.295, y: 0.31, width: 0.045, height: 0.08))
     }
 
     // MARK: - v-cellar (z3)
-    // DEFERRED (QA-BUG-004 carve-out): plate being re-framed (barrel mostly outside the
-    // iPad band). Hotspots keep their old values until the re-framed plate lands.
-    // ("shelf" was removed: it was an inert region that only swallowed drops meant for
-    // the hook — QA-BUG-014 observation.)
+    // Rects aligned against the re-framed z3-cellar-base (BUG-004 integration
+    // 2026-07-06): whole scene shifted dx +132 @3x; barrel re-staged at 0.545 scale to
+    // (1758,690)-(2120,1015). ("shelf" stays removed: it was an inert region that only
+    // swallowed drops meant for the hook — QA-BUG-014 observation.)
 
     private func configureCellar() {
         scene.setBaseTexture("z3-cellar-base")
         scene.configureHotspots([
-            Hotspot(id: "barrel", 0.75, 0.48, 0.24, 0.50),
-            Hotspot(id: "drawer", 0.28, 0.52, 0.16, 0.22),
-            Hotspot(id: "hook", 0.20, 0.25, 0.10, 0.15),
-            Hotspot(id: "winch", 0.10, 0.12, 0.18, 0.32),
-            Hotspot(id: "mirror", 0.48, 0.55, 0.20, 0.42),
+            Hotspot(id: "barrel", 0.687, 0.54, 0.14, 0.25),
+            Hotspot(id: "drawer", 0.37, 0.60, 0.09, 0.09),
+            Hotspot(id: "hook", 0.265, 0.28, 0.05, 0.11),
+            Hotspot(id: "winch", 0.19, 0.22, 0.09, 0.16),
+            Hotspot(id: "mirror", 0.585, 0.63, 0.10, 0.30),
         ])
     }
 
     private func refreshCellar() {
-        scene.setOverlay("barrel", imageNamed: RoomVisuals.barrelState(state), rectNormalized: overlayRect("z3/v-cellar", RoomVisuals.barrelState(state)))
+        // Barrel: nailed (base plate, no overlay) -> pried with the weight visible
+        // (the two graph-specified states).
+        let barrelOverlay = RoomVisuals.barrelOverlay(state)
+        scene.setOverlay("barrel", imageNamed: barrelOverlay,
+                          rectNormalized: barrelOverlay.map { overlayRect("z3/v-cellar", $0) } ?? .zero)
         scene.setOverlay("drawer", imageNamed: RoomVisuals.drawerState(state), rectNormalized: overlayRect("z3/v-cellar", RoomVisuals.drawerState(state)))
         if RoomVisuals.crankFitted(state) {
             scene.setOverlay("crank", imageNamed: "ov-crank-fitted", rectNormalized: overlayRect("z3/v-cellar", "ov-crank-fitted"))

@@ -126,9 +126,8 @@ jobs:
             | xcpretty
 
       # UI tests (QA test-infrastructure request 1): scripted full playthrough with
-      # per-view screenshots as xcresult attachments. Full playthrough runs on
-      # iPhone-class devices; it self-skips on iPad until the QA-BUG-004 re-framed
-      # plates land (menu/navigation smoke still runs there).
+      # per-view screenshots as xcresult attachments, on both primary devices
+      # (BUG-004 re-framed plates put all puzzle-critical elements in the shared crop).
       - name: UI tests - smallest supported iPhone (full playthrough + screenshots)
         run: |
           set -o pipefail
@@ -140,7 +139,7 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
 
-      - name: UI tests - iPad (smoke; playthrough auto-skips pending BUG-004 art)
+      - name: UI tests - iPad (full playthrough + smoke)
         run: |
           set -o pipefail
           xcodebuild test \

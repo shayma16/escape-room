@@ -111,8 +111,13 @@ enum RoomVisuals {
 
     // MARK: z3 v-cellar
 
-    static func barrelState(_ s: GameState) -> String {
-        s.hasSolved(PuzzleGraph.PuzzleID.barrelPry) ? "ov-barrel-pried" : "ov-barrel-empty"
+    /// Barrel overlay (BUG-004 integration fix): the base plate carries the NAILED
+    /// barrel, so pre-solve needs no overlay; after p06 the graph-specified pried
+    /// state shows ("barrel (nailed / pried, weight visible inside)" —
+    /// visually_necessary_elements). The previous mapping overlaid pried art
+    /// pre-solve — a latent visual bug masked by QA-BUG-022's black scenes.
+    static func barrelOverlay(_ s: GameState) -> String? {
+        s.hasSolved(PuzzleGraph.PuzzleID.barrelPry) ? "ov-barrel-pried" : nil
     }
 
     static func drawerState(_ s: GameState) -> String {
