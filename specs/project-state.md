@@ -29,7 +29,19 @@ If the session is cut off, resume by taking stock — don't restart:
 
 ## Pipeline position
 
-**LEVEL 1 COMPLETE (2026-07-06) — pending one user click: merge of PR #2
+**RELEASE STAGE (TestFlight-only scope) — phase 1 PREP COMPLETE 2026-07-07.**
+App identity: **Within / com.shayma.within** (locks at first ASC upload). PR #3
+(https://github.com/shayma16/escape-room/pull/3): bundle-id/display-name rename,
+ITSAppUsesNonExemptEncryption=false, real release.yml (cloud-managed signing via ASC
+API key, native xcodebuild export/upload, blocking .ipa security gate). Full record +
+user to-do in `specs/release-notes.md`. Awaiting user: merge PR #3 + Apple account
+steps 1–4 (register bundle ID, create ASC API key, create app record, gh secret set
+ASC_KEY_ID/ASC_ISSUER_ID/ASC_KEY_P8/APPLE_TEAM_ID). Then phase 2: dispatch
+release.yml, monitor, verify security gate + upload, hand off for device install
+(step-16 user spot-check).
+
+_Prior:_ **LEVEL 1 COMPLETE (2026-07-06) — PR #2 merged 2026-07-07 (commit 0462cb1).
+Was: pending one user click: merge of PR #2
 (https://github.com/shayma16/escape-room/pull/2, polish carry-forwards incl. crow
 lintel perch, CI green run 28817697097).** Step 14 done: walkthrough reconciled FINAL
 (14 divergences fixed, commit 1aa76d3); polish batch complete on branch
