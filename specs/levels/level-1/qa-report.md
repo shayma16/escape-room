@@ -186,3 +186,86 @@ No code presents any `cu-*` close-up (all shipped: grimoire pages A/B/recipe/dec
 6. Moderates/minors with the polish pass.
 
 Engine-level logic needs **no** changes — all 17 nodes, all three orderings, D1–D5, and every anti-softlock invariant verified green on both devices. Re-QA after fixes will rerun the same suite plus the new XCUITest flow.
+
+---
+
+# Re-QA verification pass (pipeline step 12, second iteration — 2026-07-06)
+
+**Scope:** verification of the Developer's fix pass for all 22 bugs above plus the BUG-004 art re-frame integration. No new test authoring, no new CI runs commissioned by QA — all evidence from existing runs/artifacts.
+**Evidence base:**
+
+| Run | Content | Result |
+|---|---|---|
+| [28803067899](https://github.com/shayma16/escape-room/actions/runs/28803067899) (branch `qa-fix-pass-level-1`, content-identical to merged main) | Canonical re-QA run: build + 70 unit tests × 3 devices + XCUITest full playthrough w/ screenshots (iPhone SE + iPad) + smoke (all 3 devices incl. Dynamic Island) | **GREEN** — 0 failures anywhere |
+| [28803258067](https://github.com/shayma16/escape-room/actions/runs/28803258067) (main, same content) | Push-triggered duplicate | Attempt 1: single failure in `testFullPlaythroughWithScreenshots`; **attempt 2 (rerun): GREEN, all steps** |
+
+Result bundles from 28803067899 (`test-results` artifact, 6 xcresult bundles) were downloaded and parsed; playthrough/smoke screenshots were extracted from the xcresult CAS stores and visually reviewed.
+
+## Test-count verification
+
+- Unit suites: **70 tests × 3 devices (iPad 13", iPhone SE, iPhone 16 Pro), 0 failures** = 41 `PuzzleEngineTests` + 29 `QALevelFlowTests`.
+- All 10 former `XCTExpectFailure` bug records (`testQA_BUG_001/002/003/004/005/006/007/008/009/022`) confirmed present as **unwrapped permanent assertions, passing on all 3 devices** (30/30 pass lines in the run log). Zero expected-failure records remain.
+- UI tests: playthrough + smoke green on iPhone SE **and iPad** (iPad `XCTSkip` removed per BUG-004 integration — 19 playthrough screenshots exist in the iPad bundle, proving it ran, not skipped); smoke green on Dynamic Island device.
+
+## Per-bug verification status (22/22)
+
+| Bug | Sev | Verification evidence | Status |
+|---|---|---|---|
+| 001 start zone | Crit | `testQA_BUG_001` ×3 devices; `testStartZoneUnlockedOnFreshSaveAndAfterRestart`; smoke chevron walk covers all 3 z1 views | **VERIFIED FIXED** |
+| 002 fill phial | Crit | `testQA_BUG_002` ×3; playthrough bottles the draught (`assertHolding itm-phial-draught`) on both devices | **VERIFIED FIXED** |
+| 003 escape p17 | Crit | `testQA_BUG_003` ×3; playthrough reaches completion card + Level Select badge | **VERIFIED FIXED** |
+| 004 safe zone | Crit | `testQA_BUG_004` unwrapped, green ×3 (asserts every puzzle-critical hotspot inside manifest band x∈[0.1668,0.8332]); re-framed art measurements in `asset-progress.md` post-pass log; screenshots corroborate: cage/keyhole/feed cup (entry), bellows (hearth), potion shelf/astrolabe/Orion window (cabinet), winch+barrel (cellar) all on-screen | **VERIFIED FIXED** (geometry assertion is the authority; see harness caveat below) |
+| 005 astrolabe auto-solve | Maj | `testQA_BUG_005` ×3 + `testWrongAstrolabePlateYieldsNothing`; six-plate close-up rendered (screenshot: 6 distinct constellation plates, Orion = plate 2); playthrough drives the mini-game | **VERIFIED FIXED** |
+| 006 brew re-resolve | Maj | `testQA_BUG_006` ×3 + `testIngredientDropAfterSuccessIsRefused_QA_BUG_006_companion` + refill invariant test | **VERIFIED FIXED** |
+| 007 blossom re-grant | Min | `testQA_BUG_007` ×3 | **VERIFIED FIXED** |
+| 008 mirror solved-set | Min | `testQA_BUG_008` ×3 | **VERIFIED FIXED** |
+| 009 44 pt floor | Maj | `testQA_BUG_009` ×3 (168-scene-px floor; offender list computes empty) | **VERIFIED FIXED** |
+| 010 rug discovery | Maj | `testRugDiscoveryGatesDialCloseUp_QA_BUG_010` ×3; playthrough performs rug → trapdoor → dial close-up | **VERIFIED FIXED** |
+| 011 dial legibility | Maj | Screenshot: dial close-up shows 3 dials each ≈30% of window width with fixed top markers; 8 crisp waxing/waning silhouettes (inherently grayscale-safe) | **VERIFIED FIXED** |
+| 012 combine/shavings | Crit | `testWorkbenchDropCombinesFileAndSpoon_QA_BUG_012`, `testItemCombinationFileAndSpoonYieldsShavings`, `testUnrelatedCombinationDoesNothing`, `testWorkbenchDropWithoutBothItemsDoesNothing` ×3; playthrough combines file+spoon via inventory gesture | **VERIFIED FIXED** |
+| 013 close-up layer | Crit | Playthrough drives rune-tile, astrolabe, dial-panel, and brew close-ups (screenshots confirm rendering + §7 down-chevron); `testCloseUpLayoutMatchesBundledRuneTileJSON`, `testRuneTilePressesFromCloseUpFollowTileMapping`, `testClockCloseUpAdvanceTriggersOneShotAtTwelve_D5` ×3 | **VERIFIED FIXED** (residual: recipe/triptych/refusal close-ups not in screenshot set — see gaps) |
+| 014 drag-drop conversion | Maj | Exact `convertPoint(fromView:)` chain; every playthrough drag (mortar, 3 cauldron adds, phial, pour, 2 cabinet recesses) landed on BOTH device geometries | **VERIFIED FIXED** |
+| 015 hotspot alignment | Maj | All scripted scene taps at art-derived coordinates landed on both devices (each mis-tap would fail its `assertHolding` milestone) | **VERIFIED FIXED** (functional; pixel-perfect polish remains a non-blocking note) |
+| 016 state visuals | Maj | Screenshots: pearlescent-spiral success cue + stage-III lit ember bars (brew), ash sifted-glint w/ ring, weight-hung beat (play-06), vines-gone + drained basin (play-17), falling-feather beat (play-13) | **VERIFIED FIXED** (refusal pose implemented but not screenshot-captured — see gaps) |
+| 017 cabinet feedback | Mod | `testCabinetWrongSlotDropRejectedWithoutStalePending_QA_BUG_017` + `testSwappedCabinetPlacementRejectedWithoutLoss` ×3 | **VERIFIED FIXED** |
+| 018 key drop on cage | Mod | `testCageKeyDroppedOnCageUnlocks_QA_BUG_018` ×3 | **VERIFIED FIXED** |
+| 019 menu root stacking | Mod | Smoke asserts return to the SAME root; corroborated by CAS dedupe: `smoke-01-main-menu` and `smoke-07-back-at-menu` are byte-identical PNGs | **VERIFIED FIXED** |
+| 020 refusal after freed | Mod | `testCageTapAfterCrowFreedShowsOpenCageNotRefusal_QA_BUG_020` ×3 | **VERIFIED FIXED** |
+| 021 chrome nits | Min | Dip-through-black transitions + bundle-name title implemented; remaining items were accepted as-is in the original report | **VERIFIED (partial by design)** |
+| 022 assets in bundle | Crit | `testQA_BUG_022` ×3 (art + audio reachable through `GameAssetLoader` in the real app bundle); every screenshot shows real art — no black scenes | **VERIFIED FIXED** |
+
+## Flake ruling — `testFullPlaythroughWithScreenshots` (run 28803258067, attempt 1)
+
+**Ruling: environmental CI flake, not an app bug.**
+
+- Failure point: `XCTAssertTrue failed - level-card-1 must exist` — the very first navigation (Main Menu → Level Select) after cold app launch; `tapID` waits only 6 s.
+- The identical commit content passed this exact step 3× on separate runners (runs 28770154060, 28803067899, and 28803258067 attempt 2 — the failed-jobs rerun completed GREEN on all steps, verified 2026-07-06).
+- Attempt 1 ran concurrently with run 28803067899 (overlapping timestamps) — runner resource contention slowing first-frame/navigation past the 6 s window is the plausible mechanism. No app-state or nondeterministic-logic signature: the failure is before any game state exists.
+- **Recommendation for Developer (via Producer), not fixed by QA:** raise the first-interaction waits in `EscapeRoomUITests` (e.g. launch/first-navigation `waitForExistence` timeouts from 6 s to 20-30 s) — cheap robustness against runner cold-start; no product change.
+
+## New observations from artifact review (not previously filed)
+
+1. **QA-OBS-023 (medium, test-infrastructure + residual device risk): CI screenshots show the app not composed full-screen.** On all three simulators the UI-test screenshots render the app in a sub-region/rotated composition (iPad: ~1032×733 pt bottom-left block with black bands, effective ~3:2 scene crop; iPhone SE/16 Pro: scene rotated 90° with pillarboxing). `Info.plist` is verified correct (landscape-only for both idioms + `UIRequiresFullScreen`), and the UI tests pass because taps derive from the app's own reported window frame. Most likely the CI simulators boot portrait and the harness never rotates them (`XCUIDevice.shared.orientation` is never set), yielding a composition artifact rather than a real-device defect — but it means **screenshot-based visual verification (incl. Dynamic Island safe-area sign-off) is currently degraded**, and the true iPad 4:3 crop is NOT what the iPad screenshots show (they show a wider ~3:2 crop). BUG-004 verification therefore rests on the passing geometry assertion, which is crop-exact by construction. **Request to Developer:** set explicit landscape orientation in UI-test `setUp` + add a one-line assertion that the app window frame equals the screen bounds; then safe-area screenshots become trustworthy. The user's physical-device TestFlight spot-check (step 16) will conclusively confirm real-device presentation.
+2. **Cosmetic:** cabinet view shows a visible straight-edge seam on the moonbeam/light-shaft overlay boundary near the window (polish note for a later art/comp pass; does not affect play).
+3. **Cosmetic/documentation:** `play-08-study` and `play-09-runedoor-solved` are byte-identical — the wide study shot has no visible change after p01 is solved (pressed tiles live in the close-up; the graph's `visually_necessary_elements` requires no wide-shot open-door state, so this is spec-compliant; noting for the Documentation Agent).
+4. **Screenshot-coverage gaps (non-blocking):** the scripted canonical path never captures the crow terminal-refusal pose (D3/D4), the grimoire recipe close-up, or the triptych close-ups. Their logic is unit-verified and the close-up rendering pipeline is proven by four other close-ups, but visual legibility of those specific plates in-app is unverified this pass. Suggest adding 3 optional screenshot detours to the UI test in a later pass.
+
+## Device-matrix results (run 28803067899)
+
+| Device | Unit (70) | Playthrough | Smoke | Notes |
+|---|---|---|---|---|
+| iPad Pro 13" (M4), iOS 18.x | PASS | PASS (284 s, 19 screenshots) | PASS | BUG-004 re-frame active; iPad skip removed |
+| iPhone SE (3rd gen) | PASS | PASS (221 s, 19 screenshots) | PASS | smallest-device floor |
+| iPhone 16 Pro (Dynamic Island) | PASS | n/a (by design) | PASS (safe-area screenshots) | visual safe-area sign-off deferred per QA-OBS-023 |
+
+Performance: no crashes/hangs in any suite; playthrough wall-clock 221-284 s incl. deliberate settles; earlier watch items (synchronous save writes, per-refresh texture decode) unchanged — still watch items, no observed hitching at unit level.
+
+## Go/no-go recommendation
+
+**GO** for the step-13 checkpoint (decision is the user's).
+
+- All 22 bugs verified fixed (2 partial-by-design with accepted scope; BUG-004 verified via the re-framed art + crop-exact geometry assertion).
+- Full level completable end-to-end by the scripted playthrough on both primary devices; engine invariants, save/resume, D1-D5, and the anti-softlock net all green ×3 devices.
+- The one CI failure is ruled an environmental flake (rerun + 2 prior greens on identical content).
+- Open, non-blocking items to carry forward: QA-OBS-023 (UI-test orientation + fullscreen assert), UI-test first-wait robustness, screenshot-coverage gaps (refusal/recipe/triptych), moonbeam seam polish, BUG-015 pixel-perfect polish pass.
+- Standing scope disclaimer: CI-simulator evidence only — real-touch feel, thermals, haptics, and true-device presentation (incl. QA-OBS-023 confirmation) remain the user's manual TestFlight spot-check at step 16.
