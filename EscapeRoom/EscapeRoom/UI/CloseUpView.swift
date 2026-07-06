@@ -175,13 +175,15 @@ private struct ClockCloseUp: View {
                 .position(center)
                 .allowsHitTesting(false)
             // Tap surface over the whole face advances the hands one numeral.
+            // (Interactive modifiers before .position — see RuneDoorCloseUp note.)
             Circle()
                 .fill(Color.white.opacity(0.001))
                 .frame(width: radius * 2.2, height: radius * 2.2)
-                .position(center)
+                .contentShape(Circle())
                 .onTapGesture { coordinator.advanceClockHour() }
                 .accessibilityLabel("Clock hands")
                 .accessibilityIdentifier("clock-face")
+                .position(center)
         }
         .padding(24)
     }
@@ -263,6 +265,11 @@ private struct RuneDoorCloseUp: View {
         FittedPlateLayout(imageName: "cu-runedoor-tiles") { fitted in
             ForEach(1...4, id: \.self) { tile in
                 let rect = fitted.subRect(CloseUpLayout.runeTileRects[tile] ?? .zero)
+                // NOTE: interactive/accessibility modifiers must come BEFORE
+                // .position() — .position wraps the view in a full-container frame,
+                // so anything applied after it covers the entire close-up. The old
+                // order made the topmost tile swallow every tap and reported a huge
+                // un-hittable frame to XCUITest (CI run 28768853014).
                 ZStack {
                     if coordinator.pressedRuneTiles.contains(tile) {
                         GameImage(name: "runedoor-tile\(tile)-pressed")
@@ -272,11 +279,11 @@ private struct RuneDoorCloseUp: View {
                     }
                 }
                 .frame(width: rect.width, height: rect.height)
-                .position(x: rect.midX, y: rect.midY)
                 .contentShape(Rectangle())
                 .onTapGesture { coordinator.pressRuneTile(tile) }
                 .accessibilityLabel("Rune tile \(tile)")
                 .accessibilityIdentifier("rune-tile-\(tile)")
+                .position(x: rect.midX, y: rect.midY)
             }
         }
         .padding(24)
