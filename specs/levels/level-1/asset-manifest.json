@@ -1594,7 +1594,7 @@
   "flags_for_user": [
    "F5: hanging oil lamp above z2 workbench (ambient dressing, matches approved F2 family) - confirm",
    "F6: v-bench right edge shows the workshop window obliquely (frosted glare, no stars) - continuity-safe, confirm",
-   "F7: wide v-cabinet Orion window sits in right overscan of a centered iPad 4:3 crop; Developer should bias viewport or pan (same geometry approved in z1 entry batch)",
+   "F7 RESOLVED by BUG-004 re-frame (2026-07-06): wide v-cabinet Orion window moved dx -200 into the iPad 4:3 safe crop (star pixels now x 1936-2111 vs limit 2133); no viewport bias needed",
    "F8: astrolabe scene plates are perspective-foreshortened; face-on plate sprites provided as the authoritative interactive zoom (dial-face precedent)",
    "F9: window close-up crops the moon on iPhone 19.5:9 band (Orion, the p03 clue, is fully inside); moon fully visible on iPad",
    "F10: plate-3 (Big Dipper decoy) catches cooler window light than its gold neighbours - lighting-plausible, biases AWAY from the answer plate; confirm acceptable"
@@ -1687,6 +1687,212 @@
    "api_est_total_usd": 0.4089,
    "cap_usd": 2.0,
    "running_total_note": "level-1 $8.11 + global $0.41 = $8.52 cumulative project spend"
+  }
+ },
+ "bug004_reframe": {
+  "scope": "QA BUG-004 fix (user-approved 2026-07-05): re-frame 4 wide views so every puzzle-critical element sits wholly inside the style-guide s8 dual-safe zone; 25 plates re-issued at @3x/@2x/@1x; superseded originals archived in specs/assets/level-1/_rejects/bug004-pre-reframe/",
+  "generated": "2026-07-06",
+  "method": "PIL rigid moves (variants transformed identically = pixel-aligned by construction) + Flux 2 Pro crop-scoped fills/blends; z3 beam plates rebuilt in changed regions via beam-engine math screen_atm(0.74x)",
+  "safe_zone_3x": {
+   "plate": "2560x1280 @3x",
+   "ipad_4to3_crop_x": [
+    427,
+    2133
+   ],
+   "iphone_band_y": [
+    49,
+    1231
+   ]
+  },
+  "transforms_3x": {
+   "z1/v-hearth": "hand bellows moved: rect (44,104,212,548) -> (1552,294,1720,738), i.e. dx +1508 / dy +190; old spot wall-patched (post-pass: orphaned grip handle + rope stub at (38,540)-(185,655) removed with PIL diffusion fill, byte-identical on base + 3 variants); everything else unchanged",
+   "z1/v-entry": "cage+stand assembly rect (1820,0,2312,1280) -> dx -150 -> (1670,0,2162,1280); exposed right strip x>2160 Flux-filled (wall band + table rim + floor); everything else unchanged",
+   "z2/v-cabinet": "Orion-window rect (1876,0,2404,760) and apron/drawer rect (1820,760,2444,1120) -> dx -200; astrolabe pointer arm redrawn as one continuous rod inside a 30px corridor (sky/moon/star pixels untouched); potion shelf rect (8,316,324,512) -> (1066,218,1382,414), i.e. dx +1058 / dy -98; left corner wall + oil lamp reconstructed; wide-plate star/pane coords updated in masters/z2-window-crop.json (note3); everything else unchanged",
+   "z3/v-cellar": "ENTIRE scene shifted dx +132 (exposed left strip x<400 Flux-filled with organic root wall); barrel re-staged at 0.545 scale: content of pre-shift rect (1896,684,2560,1280) -> dest (1758,690,2120,1015); old barrel area Flux-filled (root wall + dirt floor, ladder kept); 4 beam plates rebuilt in changed regions via engine math"
+  },
+  "hotspot_rect_updates_3x": {
+   "rule": "Developer: transform every existing @3x hotspot/element rect by the delta of its group below; rects not listed are unchanged. Measured bounds in element_bounds_3x are the authoritative cross-check.",
+   "z1/v-hearth bellows": {
+    "dx": 1508,
+    "dy": 190
+   },
+   "z1/v-entry cage group (cage, door, star keyhole, feed cup, crow perch)": {
+    "dx": -150,
+    "dy": 0
+   },
+   "z2/v-cabinet window group (Orion clue, pointer-arm tip, pane)": {
+    "dx": -200,
+    "dy": 0
+   },
+   "z2/v-cabinet apron group (astrolabe base drawer, coin, crank)": {
+    "dx": -200,
+    "dy": 0
+   },
+   "z2/v-cabinet potion shelf": {
+    "dx": 1058,
+    "dy": -98
+   },
+   "z3/v-cellar ALL hotspots except barrel": {
+    "dx": 132,
+    "dy": 0
+   },
+   "z3/v-cellar barrel": {
+    "map": "x' = 1758 + 0.545*(x - 1896); y' = 690 + 0.545*(y - 684) applied to pre-reframe rect corners"
+   }
+  },
+  "element_bounds_3x": {
+   "note": "x-ranges on the final @3x plates vs iPad safe crop x[427,2133]; y all within iPhone band [49,1231]. 'before' = QA BUG-004 measurements on pre-reframe plates.",
+   "z1-entry star keyhole/lock hardware": {
+    "before_x": [
+     2150,
+     2215
+    ],
+    "after_x": [
+     2000,
+     2065
+    ],
+    "basis": "rigid dx -150 verified pixel-exact (MAE sweep floor at exactly -150)",
+    "safe": "PASS"
+   },
+   "z1-entry feed cup": {
+    "before_x": [
+     2155,
+     2265
+    ],
+    "after_x": [
+     2005,
+     2115
+    ],
+    "measured_cup_body": [
+     1995,
+     2075,
+     510,
+     560
+    ],
+    "safe": "PASS"
+   },
+   "z1-entry cage ironwork": {
+    "before_x": [
+     1875,
+     2295
+    ],
+    "after_x_measured": [
+     1725,
+     2085
+    ],
+    "note": "QA 'before' right edge 2295 included the table; iron cage itself now ends ~2085; table top (non-critical) runs to ~2270",
+    "safe": "PASS"
+   },
+   "z1-hearth hand bellows": {
+    "before_x": [
+     55,
+     205
+    ],
+    "after_bbox_measured": [
+     1577,
+     1716,
+     300,
+     727
+    ],
+    "safe": "PASS"
+   },
+   "z2-cabinet potion shelf": {
+    "before_x": [
+     8,
+     320
+    ],
+    "after_rect": [
+     1066,
+     218,
+     1382,
+     414
+    ],
+    "added_content_incl_shadow": [
+     1037,
+     1397,
+     201,
+     466
+    ],
+    "safe": "PASS"
+   },
+   "z2-cabinet Orion clue stars": {
+    "before_x": [
+     2140,
+     2330
+    ],
+    "after_star_pixels_x": [
+     1936,
+     2111
+    ],
+    "dots": "all 7 at canonical geometry (masters/orion-canonical.json), belt-2 at (2024.2,446.4) within 0.7px of masters/z2-window-crop.json, mean point error 1.5px, belt tilt 36.3 deg measured (35 canonical, discretization)",
+    "safe": "PASS"
+   },
+   "z2-cabinet drawer + crank": {
+    "before_x": [
+     1830,
+     2330
+    ],
+    "after_x": [
+     1630,
+     2130
+    ],
+    "crank_in_drawer_open_x": [
+     1867,
+     2052
+    ],
+    "note": "drawer slide-rail right edge measured ~2130 = 3px inside the iPad crop; coin+crank reads well inside",
+    "safe": "PASS"
+   },
+   "z3-cellar winch wheel + socket": {
+    "after_wheel_measured": [
+     525,
+     665,
+     320,
+     450
+    ],
+    "after_socket_measured": [
+     585,
+     635,
+     360,
+     410
+    ],
+    "note": "whole-scene dx +132 verified pixel-exact (MAE 0.0); crank-shaped-absence macro cue carried by cu-winch-socket (F13, unchanged)",
+    "safe": "PASS"
+   },
+   "z3-cellar barrel": {
+    "before_x": [
+     1900,
+     2550
+    ],
+    "after_rect": [
+     1758,
+     2120,
+     690,
+     1015
+    ],
+    "pried_state_diff_bbox": [
+     1799,
+     2120,
+     769,
+     1122
+    ],
+    "safe": "PASS"
+   }
+  },
+  "verification": {
+   "rigid_alignment": "entry dx-150 / cabinet dx-200 (window MAE 0.0 outside arm corridor, apron 0.013) / cellar dx+132 (MAE 0.0) all pixel-exact; bellows and potion shelf NCC-located at exact destinations",
+   "grayscale_gates": "Orion 7-dot pattern + belt clearly legible in grayscale; pried barrel reads by lid-teeth + weight silhouette; winch socket reads as dark square absence (macro cue = cu close-up); star-keyhole macro cue = cu-star-keyhole (unchanged); moved shelf keeps 5 distinct silhouettes + pictogram labels",
+   "seam_ghost_audit": "all 11 Flux/PIL edit regions inspected at 100-200%: no seams, no style/lighting drift, no duplicated elements; ONE defect found and fixed at $0 - orphaned bellows grip handle + rope stub at the old hearth position (outside the y548 move cut), removed via PIL diffusion fill on base + 3 variants (byte-identical region across all 4)",
+   "variant_alignment": "all 17 state variants diff vs base confined to intended state regions (poker/rug/trapdoor, cage door/crow/vines, cabinet doors/drawer/slots, barrel rect, cellar drawer/weight/shelf/crank/mirror rects); no diffs in any fill/move region; beam plates match screen_atm(0.74x) engine prediction outside beam corridor (MAE 0.61-1.69)",
+   "scale_exports": "all 25 re-issued plates: @2x/@1x present, size-correct, Lanczos-exact vs @3x",
+   "rejects_archive": "all 25 pre-reframe plates x3 scales in _rejects/bug004-pre-reframe/"
+  },
+  "spend": {
+   "api_est_total_usd": 0.11,
+   "post_pass_usd": 0.0,
+   "cap_usd": 4.0,
+   "basis": "11 crop-edit generations + rejected takes at $0.03/MP (bug004-results.jsonl); all verification + fixes PIL-only",
+   "running_total_note": "level-1 $8.11 + global $0.41 + BUG-004 re-frame $0.11 = $8.63 cumulative project spend"
   }
  }
 }

@@ -59,7 +59,8 @@ level's, to prevent cross-level style drift._
 | 1 — batch 1 of 4 (sky + z1) | ~$4.70 nominal / ~$6 w/ retries | $4.11 (80 generations incl. all retries/rejects + $0.04 Producer verification probe) | $4.11 |
 | 1 — batch 2 of 4 (z2 workshop) | <$5 cap | $2.01 (57 attempts, 54 billable; crop-scoped edits kept variants cheap) | $6.12 |
 | 1 — batch 3 of 3 (z3 cellar + z4 alcove + icon cleanup) | ~$2.50 proj / $4 cap | $1.99 (62 calls, 61 ok) | $8.11 |
-| global (one-time): app icon + launch screens | $2 cap | $0.41 (4/4 ok, zero retries; launch screens $0 PIL) | **$8.52** |
+| global (one-time): app icon + launch screens | $2 cap | $0.41 (4/4 ok, zero retries; launch screens $0 PIL) | $8.52 |
+| 1 — BUG-004 re-frame batch (QA fix: dual-safe-zone violations; 4 views re-framed) | ~$0.35 proj / $4 cap | $0.11 (11 crop-edits; all moves/verification $0 PIL; safe-zone + grayscale + orion-canonical checks PASS) | **$8.63** |
 
 _Report the running total to the user after each level completes._
 
