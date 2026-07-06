@@ -1,18 +1,32 @@
-# Sign, archive, and upload the escape room app to App Store Connect / TestFlight.
-# Triggered by the Release Manager Agent (gh workflow run release.yml).
+# Sign, archive, and upload "Within" (com.shayma.within) to App Store Connect / TestFlight.
+# Triggered by the iOS Release Manager (gh workflow run release.yml). macOS runners bill
+# at 10x minutes — do not trigger until all four secrets below exist and the App Store
+# Connect app record for com.shayma.within has been created, or the run fails on arrival.
 #
-# PLACEHOLDER: all signing/archiving/upload steps are stubs. Fill in once there is an
-# Xcode project and the user has stored signing material as encrypted GitHub Secrets.
+# Signing approach: cloud-managed automatic signing. xcodebuild authenticates to App
+# Store Connect with an API key (-allowProvisioningUpdates + -authenticationKey* flags)
+# and creates/downloads the Apple Distribution certificate and App Store provisioning
+# profile itself. No .p12 certificate or .mobileprovision secret is needed.
 #
-# Required secrets (create via `gh secret set NAME` or Settings > Secrets > Actions —
-# never commit any of these to the repo):
-#   BUILD_CERTIFICATE_BASE64    # Apple Distribution .p12, base64-encoded
-#   P12_PASSWORD                # password for the .p12
-#   PROVISIONING_PROFILE_BASE64 # App Store provisioning profile, base64-encoded
-#   KEYCHAIN_PASSWORD           # throwaway password for the temp CI keychain
-#   ASC_API_KEY_ID              # App Store Connect API key ID
-#   ASC_API_ISSUER_ID           # App Store Connect API issuer ID
-#   ASC_API_KEY_P8_BASE64       # App Store Connect API .p8 key, base64-encoded
+# Upload approach: native `xcodebuild -exportArchive` with `destination: upload` in
+# ExportOptions.plist (the same path Xcode Organizer uses). Chosen over fastlane pilot
+# (Ruby gem drift, extra setup) and `xcrun altool` (deprecated for App Store uploads).
+# The archive is exported twice from the same .xcarchive: first to disk (destination:
+# export) so the .ipa can be security-scanned and saved as an artifact, then uploaded
+# (destination: upload) only after the security gate passes.
+#
+# Required secrets (create via `gh secret set NAME` or Settings > Secrets and variables >
+# Actions — never commit any of these to the repo, never paste them into chat):
+#   ASC_KEY_ID      # App Store Connect API key ID (10 chars, shown when key is created)
+#   ASC_ISSUER_ID   # App Store Connect issuer ID (UUID, top of the API keys page)
+#   ASC_KEY_P8      # full contents of the downloaded AuthKey_<KEYID>.p8 (raw or base64)
+#   APPLE_TEAM_ID   # 10-char Apple Developer Team ID (developer.apple.com > Membership)
+#
+# Exact commands (run from the repo root, with the .p8 saved locally OUTSIDE the repo):
+#   gh secret set ASC_KEY_ID    --body "XXXXXXXXXX"
+#   gh secret set ASC_ISSUER_ID --body "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+#   gh secret set ASC_KEY_P8    < /path/to/AuthKey_XXXXXXXXXX.p8
+#   gh secret set APPLE_TEAM_ID --body "XXXXXXXXXX"
 
 name: Release
 
@@ -20,69 +34,219 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Marketing version (e.g. 1.0.0)"
-        required: true
+        description: "Marketing version (CFBundleShortVersionString)"
+        required: false
+        default: "1.0"
       build_number:
-        description: "Build number (e.g. 42)"
-        required: true
+        description: "Build number override (default: this workflow's run number)"
+        required: false
+        default: ""
 
 jobs:
   archive-and-upload:
     runs-on: macos-15
     timeout-minutes: 60
 
+    env:
+      PROJECT: EscapeRoom/EscapeRoom.xcodeproj
+      SCHEME: EscapeRoom
+      ARCHIVE_PATH: build/Within.xcarchive
+      EXPORT_PATH: build/export
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install signing certificate and provisioning profile
+      - name: Preflight - fail fast if secrets are missing
         env:
-          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
-          PROVISIONING_PROFILE_BASE64: ${{ secrets.PROVISIONING_PROFILE_BASE64 }}
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          # TODO: standard temp-keychain dance — decode .p12 + profile from secrets,
-          # create a throwaway keychain, import the cert, install the profile under
-          # ~/Library/MobileDevice/Provisioning Profiles/.
-          echo "PLACEHOLDER: signing setup — fill in once secrets are configured"
+          set -euo pipefail
+          MISSING=""
+          [ -n "$ASC_KEY_ID" ]    || MISSING="$MISSING ASC_KEY_ID"
+          [ -n "$ASC_ISSUER_ID" ] || MISSING="$MISSING ASC_ISSUER_ID"
+          [ -n "$ASC_KEY_P8" ]    || MISSING="$MISSING ASC_KEY_P8"
+          [ -n "$APPLE_TEAM_ID" ] || MISSING="$MISSING APPLE_TEAM_ID"
+          if [ -n "$MISSING" ]; then
+            echo "::error::Missing GitHub Secrets:$MISSING — see the header of release.yml for gh secret set commands."
+            exit 1
+          fi
+          xcodebuild -version
 
-      - name: Archive
+      - name: Install App Store Connect API key
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_KEY_P8: ${{ secrets.ASC_KEY_P8 }}
         run: |
-          # TODO: replace with the real archive invocation, e.g.:
-          # xcodebuild archive \
-          #   -project EscapeRoom/EscapeRoom.xcodeproj \
-          #   -scheme EscapeRoom \
-          #   -destination 'generic/platform=iOS' \
-          #   -archivePath build/EscapeRoom.xcarchive \
-          #   MARKETING_VERSION=${{ github.event.inputs.version }} \
-          #   CURRENT_PROJECT_VERSION=${{ github.event.inputs.build_number }}
-          echo "PLACEHOLDER: no Xcode project in repo yet — nothing to archive"
+          set -euo pipefail
+          mkdir -p "$HOME/private_keys"
+          KEY_PATH="$HOME/private_keys/AuthKey_${ASC_KEY_ID}.p8"
+          # Accept the secret as raw .p8 text or base64-encoded.
+          if printf '%s' "$ASC_KEY_P8" | grep -q "BEGIN PRIVATE KEY"; then
+            printf '%s\n' "$ASC_KEY_P8" > "$KEY_PATH"
+          else
+            printf '%s' "$ASC_KEY_P8" | base64 -d > "$KEY_PATH"
+          fi
+          chmod 600 "$KEY_PATH"
+          echo "ASC_KEY_PATH=$KEY_PATH" >> "$GITHUB_ENV"
+
+      - name: Resolve version and build number
+        run: |
+          set -euo pipefail
+          VERSION="${{ github.event.inputs.version }}"
+          BUILD="${{ github.event.inputs.build_number }}"
+          [ -n "$BUILD" ] || BUILD="${{ github.run_number }}"
+          echo "MARKETING_VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "BUILD_NUMBER=$BUILD" >> "$GITHUB_ENV"
+          echo "Releasing version $VERSION ($BUILD)"
+
+      - name: Archive (device, cloud-managed signing)
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        run: |
+          set -euo pipefail
+          xcodebuild archive \
+            -project "$PROJECT" \
+            -scheme "$SCHEME" \
+            -destination 'generic/platform=iOS' \
+            -archivePath "$ARCHIVE_PATH" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID" \
+            CODE_SIGN_STYLE=Automatic \
+            DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+            MARKETING_VERSION="$MARKETING_VERSION" \
+            CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
 
       - name: Export .ipa
+        env:
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          # TODO: xcodebuild -exportArchive with an ExportOptions.plist (app-store method)
-          echo "PLACEHOLDER: export step"
+          set -euo pipefail
+          cat > build/ExportOptions-export.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>export</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>teamID</key><string>${APPLE_TEAM_ID}</string>
+            <key>uploadSymbols</key><true/>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportOptionsPlist build/ExportOptions-export.plist \
+            -exportPath "$EXPORT_PATH" \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          ls -la "$EXPORT_PATH"
+
+      # Release Manager security re-check (final gate before upload; blocking).
+      # 1. No development-time secrets anywhere in the signed payload.
+      # 2. Entitlements are minimal — this game uses none of camera/mic/location/contacts.
+      - name: Security re-check (secrets scan + entitlements audit)
+        run: |
+          set -euo pipefail
+          IPA=$(ls "$EXPORT_PATH"/*.ipa | head -n1)
+          echo "Scanning $IPA"
+          mkdir -p build/scan
+          unzip -q "$IPA" -d build/scan
+          APP=$(ls -d build/scan/Payload/*.app | head -n1)
+          FAIL=0
+
+          # --- 1a. Key-bearing / config files that must never ship ---
+          BADFILES=$(find build/scan -name "*.p8" -o -name "*.p12" -o -name "*.pem" \
+                       -o -name "*.env" -o -name ".env*" -o -name "*.netrc" || true)
+          if [ -n "$BADFILES" ]; then
+            echo "::error::Key-bearing/config files found in .ipa payload:"; echo "$BADFILES"; FAIL=1
+          fi
+
+          # --- 1b. Secret-looking strings in every file of the payload (binaries included) ---
+          PATTERNS='FAL_KEY|fal\.ai|fal-[A-Za-z0-9]{16,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|github_pat_|BEGIN [A-Z ]*PRIVATE KEY|api[_-]?key[\"'"'"': ]+[A-Za-z0-9_\-]{16,}'
+          HITS=$(grep -REno --binary-files=text "$PATTERNS" build/scan/Payload || true)
+          if [ -n "$HITS" ]; then
+            echo "::error::Potential development-time secrets found in .ipa payload:"
+            echo "$HITS" | head -n 40
+            FAIL=1
+          fi
+
+          # --- 2a. Entitlements must stay within the automatic-signing baseline ---
+          codesign -d --entitlements - "$APP" > build/scan/entitlements.txt 2>/dev/null || \
+            codesign -d --entitlements :- "$APP" > build/scan/entitlements.txt
+          echo "--- signed entitlements ---"; cat build/scan/entitlements.txt
+          UNEXPECTED=$(grep -Eo '(com\.apple\.[A-Za-z0-9._-]+|application-identifier|get-task-allow|beta-reports-active|keychain-access-groups|aps-environment)' build/scan/entitlements.txt \
+            | sort -u \
+            | grep -Ev '^(application-identifier|com\.apple\.developer\.team-identifier|get-task-allow|beta-reports-active|keychain-access-groups)$' || true)
+          if [ -n "$UNEXPECTED" ]; then
+            echo "::error::Unexpected entitlements in signed app (baseline allows only app/team identifier, get-task-allow, beta-reports-active, keychain-access-groups):"
+            echo "$UNEXPECTED"; FAIL=1
+          fi
+
+          # --- 2b. No permission usage-description keys (camera/mic/location/contacts etc.) ---
+          USAGE=$(plutil -p "$APP/Info.plist" | grep -E 'NS[A-Za-z]+UsageDescription' || true)
+          if [ -n "$USAGE" ]; then
+            echo "::error::Permission usage-description keys found — this game requests no device permissions:"
+            echo "$USAGE"; FAIL=1
+          fi
+
+          if [ "$FAIL" -ne 0 ]; then
+            echo "::error::SECURITY GATE FAILED — upload blocked. Route back to the Producer."
+            exit 1
+          fi
+          echo "Security re-check passed: no secrets in payload, entitlements minimal, no permission requests."
 
       - name: Upload to App Store Connect (TestFlight)
         env:
-          ASC_API_KEY_ID: ${{ secrets.ASC_API_KEY_ID }}
-          ASC_API_ISSUER_ID: ${{ secrets.ASC_API_ISSUER_ID }}
-          ASC_API_KEY_P8_BASE64: ${{ secrets.ASC_API_KEY_P8_BASE64 }}
+          ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
+          ASC_ISSUER_ID: ${{ secrets.ASC_ISSUER_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          # TODO: xcrun altool is deprecated — use:
-          # xcrun notarytool / "xcrun altool --upload-app" replacement:
-          # xcrun iTMSTransporter or `xcodebuild -exportArchive` + App Store Connect API,
-          # or simplest: xcrun altool successor `xcrun asc` equivalent via fastlane pilot.
-          # Decide tooling when implementing; keep the API key in secrets only.
-          echo "PLACEHOLDER: TestFlight upload step"
+          set -euo pipefail
+          cat > build/ExportOptions-upload.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+            <key>method</key><string>app-store-connect</string>
+            <key>destination</key><string>upload</string>
+            <key>signingStyle</key><string>automatic</string>
+            <key>teamID</key><string>${APPLE_TEAM_ID}</string>
+            <key>uploadSymbols</key><true/>
+            <key>manageAppVersionAndBuildNumber</key><false/>
+          </dict>
+          </plist>
+          EOF
+          xcodebuild -exportArchive \
+            -archivePath "$ARCHIVE_PATH" \
+            -exportOptionsPlist build/ExportOptions-upload.plist \
+            -exportPath build/upload \
+            -allowProvisioningUpdates \
+            -authenticationKeyPath "$ASC_KEY_PATH" \
+            -authenticationKeyID "$ASC_KEY_ID" \
+            -authenticationKeyIssuerID "$ASC_ISSUER_ID"
+          echo "Uploaded build $MARKETING_VERSION ($BUILD_NUMBER) — it will appear in TestFlight after Apple's processing pass (typically 5-30 minutes)."
 
-      - name: Upload .ipa and logs as workflow artifact
+      - name: Upload .ipa, entitlements dump, and logs as workflow artifact
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: release-artifacts
           path: |
-            build/*.ipa
+            build/export/*.ipa
+            build/scan/entitlements.txt
             build/*.xcarchive/Info.plist
           if-no-files-found: warn
