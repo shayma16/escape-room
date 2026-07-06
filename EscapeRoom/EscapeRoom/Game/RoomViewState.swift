@@ -73,8 +73,14 @@ enum RoomVisuals {
     }
 
     static func crowLocation(_ s: GameState) -> String {
-        guard s.hasFlag(PuzzleGraph.StateFlag.crowFreed) else { return "caged" }
-        return s.hasFlag(PuzzleGraph.StateFlag.doorUnsealed) ? "on-lintel" : "on-rafters"
+        // Graph z1 visually_necessary_elements / p16 clue: "if crow is freed, it
+        // perches on the door lintel above the basin (silent nudge)". The perch is
+        // keyed on crow-freed ALONE — the previous doorUnsealed gate meant the nudge
+        // only rendered AFTER the puzzle it exists to hint at was already solved
+        // (found by the Documentation Agent's walkthrough reconciliation, 2026-07-06).
+        // cu-crow-rafters remains the transient freed-beat close-up; the persistent
+        // wide-shot state is the lintel perch.
+        s.hasFlag(PuzzleGraph.StateFlag.crowFreed) ? "on-lintel" : "caged"
     }
 
     // MARK: z2 v-bench

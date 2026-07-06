@@ -16,16 +16,48 @@ final class EscapeRoomUITests: XCTestCase {
 
     private let sceneSize = CGSize(width: 2732, height: 1366)
 
+    /// Cold-launch first interactions can exceed 6 s on contended CI runners (the
+    /// main-branch flake in run 28803258067 attempt 1 was a 6 s wait on level-card-1
+    /// while a concurrent job slowed first-frame). QA re-QA recommendation: 20-30 s
+    /// for everything up to and including level entry; steady-state waits stay short.
+    private let coldLaunchTimeout: TimeInterval = 30
+
     override func setUp() {
         super.setUp()
         continueAfterFailure = false
+        // QA-OBS-023: CI simulators boot portrait; this app is landscape-locked, so an
+        // un-rotated device composes the app in a rotated sub-window and every
+        // screenshot misrepresents the true presentation (iPad shots showed a ~3:2
+        // crop instead of the real 4:3). Rotate before launching.
+        XCUIDevice.shared.orientation = .landscapeLeft
     }
 
     private func launchFreshApp() -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-resetSave"]
         app.launch()
+        assertFullScreenLandscapeComposition(app)
         return app
+    }
+
+    /// QA-OBS-023 loud-failure guard: the app's window must fill the entire screen in
+    /// landscape. If a presentation regression (or a portrait-composed simulator)
+    /// sneaks back in, this fails at launch instead of silently degrading every
+    /// screenshot-based verification downstream.
+    private func assertFullScreenLandscapeComposition(_ app: XCUIApplication) {
+        let window = app.windows.firstMatch
+        XCTAssertTrue(window.waitForExistence(timeout: coldLaunchTimeout),
+                      "app window must exist after cold launch")
+        let fixed = UIScreen.main.fixedCoordinateSpace.bounds // portrait-fixed device bounds, pt
+        let expected = CGSize(width: max(fixed.width, fixed.height),
+                              height: min(fixed.width, fixed.height))
+        let frame = window.frame
+        XCTAssertEqual(frame.minX, 0, accuracy: 0.5, "window must start at the screen origin (x)")
+        XCTAssertEqual(frame.minY, 0, accuracy: 0.5, "window must start at the screen origin (y)")
+        XCTAssertEqual(frame.width, expected.width, accuracy: 1.0,
+                       "window width must equal the landscape screen width (QA-OBS-023)")
+        XCTAssertEqual(frame.height, expected.height, accuracy: 1.0,
+                       "window height must equal the landscape screen height (QA-OBS-023)")
     }
 
     // MARK: - Coordinate plumbing
@@ -86,10 +118,10 @@ final class EscapeRoomUITests: XCTestCase {
     func testMenuAndNavigationSmoke() {
         let app = launchFreshApp()
         shoot(app, "smoke-01-main-menu")
-        tapID(app, "menu-play")
+        tapID(app, "menu-play", timeout: coldLaunchTimeout)
         shoot(app, "smoke-02-level-select")
-        tapID(app, "level-card-1")
-        XCTAssertTrue(app.descendants(matching: .any)["pause-button"].waitForExistence(timeout: 10))
+        tapID(app, "level-card-1", timeout: coldLaunchTimeout)
+        XCTAssertTrue(app.descendants(matching: .any)["pause-button"].waitForExistence(timeout: coldLaunchTimeout))
         Thread.sleep(forTimeInterval: 1.5) // scene fade-up
         shoot(app, "smoke-03-hearth")
         // Chevron navigation covers all three z1 views from a fresh save (QA-BUG-001).
@@ -116,9 +148,9 @@ final class EscapeRoomUITests: XCTestCase {
 
     func testFullPlaythroughWithScreenshots() throws {
         let app = launchFreshApp()
-        tapID(app, "menu-play")
-        tapID(app, "level-card-1")
-        XCTAssertTrue(app.descendants(matching: .any)["pause-button"].waitForExistence(timeout: 10))
+        tapID(app, "menu-play", timeout: coldLaunchTimeout)
+        tapID(app, "level-card-1", timeout: coldLaunchTimeout)
+        XCTAssertTrue(app.descendants(matching: .any)["pause-button"].waitForExistence(timeout: coldLaunchTimeout))
         Thread.sleep(forTimeInterval: 1.5)
         shoot(app, "play-01-hearth")
 
@@ -147,7 +179,9 @@ final class EscapeRoomUITests: XCTestCase {
         // (Re-framed geometry: scene dx +132, barrel re-staged at 0.545 scale.)
         tapScene(app, 0.757, 0.665)                 // pry barrel (poker held) -> weight
         assertHolding(app, "itm-weight")
-        dragItem(app, item: "itm-weight", toScene: 0.29, 0.335) // hang weight -> z4
+        // BUG-015 polish: the hook hotspot now sits ON the pulley-rope hook art
+        // (x~0.335-0.385), so the weight is released on the hook itself.
+        dragItem(app, item: "itm-weight", toScene: 0.36, 0.335) // hang weight -> z4
         Thread.sleep(forTimeInterval: 1.2)          // weight-hung beat + shelf slide
         shoot(app, "play-06-shelf-slid")
         tapScene(app, 0.415, 0.645)                 // take spoon
@@ -165,6 +199,18 @@ final class EscapeRoomUITests: XCTestCase {
         tapID(app, "nav-next")                      // hearth -> study
         Thread.sleep(forTimeInterval: 0.8)
         shoot(app, "play-08-study")
+        // Screenshot-coverage detours (QA re-QA gap list): the grimoire opens at the
+        // feather-bookmarked recipe spread; the triptych is the three night paintings.
+        tapScene(app, 0.485, 0.55)                  // grimoire close-up
+        XCTAssertTrue(app.descendants(matching: .any)["closeup-dismiss"].waitForExistence(timeout: 5),
+                      "grimoire close-up must present")
+        shoot(app, "play-08b-grimoire-recipe")
+        dismissCloseUp(app)
+        tapScene(app, 0.475, 0.17)                  // triptych close-up
+        XCTAssertTrue(app.descendants(matching: .any)["closeup-dismiss"].waitForExistence(timeout: 5),
+                      "triptych close-up must present")
+        shoot(app, "play-08c-triptych")
+        dismissCloseUp(app)
         tapScene(app, 0.785, 0.46)                  // rune door close-up
         for tile in [3, 1, 4, 2] {                  // AIR, FIRE, EARTH, WATER
             tapID(app, "rune-tile-\(tile)")
@@ -193,10 +239,21 @@ final class EscapeRoomUITests: XCTestCase {
         tapID(app, "nav-previous")                  // cabinet -> bench
         tapID(app, "nav-previous")                  // bench -> entry
         Thread.sleep(forTimeInterval: 0.8)
+        // Screenshot-coverage detour (QA re-QA gap list): a cage reach triggers the
+        // D3 terminal-refusal pose (identical every repeat, zero state churn).
+        tapScene(app, 0.70, 0.35)                   // reach into the cage
+        XCTAssertTrue(app.descendants(matching: .any)["refusal-pose"].waitForExistence(timeout: 5),
+                      "cage reach must present the terminal-refusal pose (D3)")
+        shoot(app, "play-12b-crow-refusal")
+        Thread.sleep(forTimeInterval: 1.8)          // refusal beat auto-dismisses (1.4 s)
         tapScene(app, 0.794, 0.24)                  // star keyhole with key -> crow freed
         assertHolding(app, "itm-feather")
         shoot(app, "play-13-crow-freed")
         dismissCloseUp(app)
+        // Graph-specified silent endgame nudge: once freed, the crow perches on the
+        // door lintel above the basin (wide-shot state, p16 clue).
+        Thread.sleep(forTimeInterval: 0.5)
+        shoot(app, "play-13b-crow-lintel")
 
         // File + spoon -> shavings (inventory combine).
         tapID(app, "inventory-itm-file")

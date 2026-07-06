@@ -415,6 +415,20 @@ final class PuzzleEngineTests: XCTestCase {
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.feather))
     }
 
+    /// Graph z1 p16 clue: "if crow is freed, it perches on the door lintel above the
+    /// basin (silent nudge)". The perch keys on crow-freed ALONE — it must be visible
+    /// BEFORE door-unsealed (that is the phase the nudge exists to hint at) and stay
+    /// put afterwards. (Polish batch 2026-07-06; found by walkthrough reconciliation.)
+    func testCrowPerchesOnLintelOnceFreed_endgameNudge() {
+        let state = makeState(tempDir())
+        XCTAssertEqual(RoomVisuals.crowLocation(state), "caged")
+        state.setFlag(PuzzleGraph.StateFlag.crowFreed)
+        XCTAssertEqual(RoomVisuals.crowLocation(state), "on-lintel",
+                       "freed crow must perch on the lintel while the door is still sealed")
+        state.setFlag(PuzzleGraph.StateFlag.doorUnsealed)
+        XCTAssertEqual(RoomVisuals.crowLocation(state), "on-lintel")
+    }
+
     func testPhialDropBeforeDraughtReadyIsRefusedSafely() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)

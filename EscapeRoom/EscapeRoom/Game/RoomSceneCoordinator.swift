@@ -98,13 +98,17 @@ final class RoomSceneCoordinator: ObservableObject {
 
     private func configureHearth() {
         scene.setBaseTexture("z1-hearth-base")
+        // BUG-015 pixel-perfect polish (2026-07-06): poker trimmed to the actual
+        // standing-poker art (the old 0.40-0.97 column reached the floor and, being
+        // the smaller node, stole rug taps in the overlap band); rug's left edge
+        // trimmed to the woven-oval art.
         scene.configureHotspots([
-            Hotspot(id: "poker", 0.19, 0.40, 0.09, 0.57),        // = ov-poker-taken rect
+            Hotspot(id: "poker", 0.18, 0.40, 0.07, 0.33),
             Hotspot(id: "ash", 0.25, 0.57, 0.15, 0.16),
             Hotspot(id: "clock", 0.26, 0.02, 0.13, 0.24),
             Hotspot(id: "bellows", 0.615, 0.235, 0.056, 0.335),  // re-framed position
             Hotspot(id: "lintel", 0.17, 0.24, 0.30, 0.09),   // clamped to the iPad-safe band
-            Hotspot(id: "rug", 0.10, 0.72, 0.60, 0.28),          // = ov-rug-moved rect
+            Hotspot(id: "rug", 0.14, 0.72, 0.56, 0.28),          // ~= ov-rug-moved rect, left edge on art
             Hotspot(id: "trapdoor-dial", 0.23, 0.72, 0.39, 0.25) // = ov-trapdoor-open rect
         ])
     }
@@ -129,7 +133,7 @@ final class RoomSceneCoordinator: ObservableObject {
         scene.configureHotspots([
             Hotspot(id: "grimoire", 0.36, 0.46, 0.25, 0.18),
             Hotspot(id: "triptych", 0.29, 0.07, 0.37, 0.20),
-            Hotspot(id: "flowerpot", 0.59, 0.44, 0.09, 0.14),
+            Hotspot(id: "flowerpot", 0.59, 0.46, 0.09, 0.14), // BUG-015 polish: dropped to cover the pot base
             Hotspot(id: "rune-door", 0.75, 0.33, 0.07, 0.26),
         ])
     }
@@ -151,7 +155,7 @@ final class RoomSceneCoordinator: ObservableObject {
         scene.configureHotspots([
             Hotspot(id: "door-lock", 0.37, 0.20, 0.24, 0.45),
             Hotspot(id: "rusted-key", 0.615, 0.21, 0.05, 0.13),
-            Hotspot(id: "windowsill", 0.167, 0.53, 0.073, 0.09),
+            Hotspot(id: "windowsill", 0.167, 0.52, 0.12, 0.10), // BUG-015 polish: widened along the sill art
             Hotspot(id: "cage", 0.675, 0.09, 0.14, 0.55),
             Hotspot(id: "feed-cup", 0.777, 0.395, 0.034, 0.05),
             Hotspot(id: "star-keyhole", 0.777, 0.20, 0.035, 0.08),
@@ -177,12 +181,17 @@ final class RoomSceneCoordinator: ObservableObject {
         // Left-edge rects are clamped to the iPad-safe band (x >= 0.167): the cauldron
         // belly / ladle handle / bellows nose continue into iPhone-only overscan, but
         // every hotspot must be wholly reachable on the primary device (Section 8).
+        // BUG-015 pixel-perfect polish (2026-07-06): the ladle rests across the
+        // cauldron's rim (x 0.24-0.28), not left of it — rect moved onto the art
+        // (it nests inside the cauldron rect; smallest-area wins and both open the
+        // same brew close-up). Workbench extended right to the iPad-band edge so the
+        // whole visible benchtop accepts the p12 drop.
         scene.configureHotspots([
             Hotspot(id: "cauldron", 0.167, 0.32, 0.193, 0.32),
-            Hotspot(id: "ladle", 0.167, 0.25, 0.05, 0.15),
+            Hotspot(id: "ladle", 0.235, 0.315, 0.055, 0.10),
             Hotspot(id: "floor-bellows", 0.167, 0.77, 0.133, 0.22),
             Hotspot(id: "mortar", 0.69, 0.30, 0.14, 0.14),   // right edge clamped to the iPad-safe band
-            Hotspot(id: "workbench", 0.44, 0.41, 0.30, 0.12),
+            Hotspot(id: "workbench", 0.44, 0.41, 0.39, 0.12),
         ])
     }
 
@@ -238,10 +247,16 @@ final class RoomSceneCoordinator: ObservableObject {
 
     private func configureCellar() {
         scene.setBaseTexture("z3-cellar-base")
+        // BUG-015 pixel-perfect polish (2026-07-06): the counterweight hook is the
+        // iron hook on the pulley rope (x~0.335-0.385), not the winch-shelf corner
+        // the old rect sat on — the exact residual QA-BUG-014 flagged ("release on
+        // the hook art itself" must register). Barrel snapped to the authoritative
+        // ov-barrel-pried rect from overlays.json (old rect was high/left, cutting
+        // the barrel's lower third).
         scene.configureHotspots([
-            Hotspot(id: "barrel", 0.687, 0.54, 0.14, 0.25),
+            Hotspot(id: "barrel", 0.70, 0.59, 0.13, 0.28),
             Hotspot(id: "drawer", 0.37, 0.60, 0.09, 0.09),
-            Hotspot(id: "hook", 0.265, 0.28, 0.05, 0.11),
+            Hotspot(id: "hook", 0.335, 0.28, 0.05, 0.11),
             Hotspot(id: "winch", 0.19, 0.22, 0.09, 0.16),
             Hotspot(id: "mirror", 0.585, 0.63, 0.10, 0.30),
         ])

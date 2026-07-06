@@ -489,3 +489,75 @@ UI test, and re-run CI.
   accessibility labels are still good practice — flagging as a follow-up, not a blocker).
 - Reduce Motion is honored for the Level Select transition (`LevelLoadingView`) but not
   yet audited across every SpriteKit animation (tap pulse, refusal pose, etc.).
+
+## Polish batch (2026-07-06, post step-13 GO; carry-forwards from qa-report.md "Re-QA verification pass")
+
+Scope-locked to the re-QA report's non-blocking carry-forwards plus one Documentation-
+Agent finding routed in by the Producer. No puzzle/art/spec changes. Branch
+`polish-carry-forwards`, single CI run.
+
+1. **QA-OBS-023 (fixed).** `EscapeRoomUITests.setUp` now sets
+   `XCUIDevice.shared.orientation = .landscapeLeft` before launch (CI simulators boot
+   portrait; the landscape-locked app was being composed in a rotated sub-window, so
+   iPad screenshots showed a ~3:2 crop instead of the true 4:3).
+   `launchFreshApp` additionally asserts the app window frame == full landscape screen
+   bounds (via `UIScreen.main.fixedCoordinateSpace`, ±1 pt) so any presentation
+   regression fails loudly at launch instead of silently degrading every
+   screenshot-based verification. Safe-area/Dynamic-Island screenshots are now
+   trustworthy evidence.
+2. **UI-test cold-launch wait robustness (fixed).** New `coldLaunchTimeout = 30` s used
+   for everything up to and including level entry (`menu-play`, `level-card-1`,
+   first `pause-button` wait) in both UI tests — per QA's flake ruling on run
+   28803258067 attempt 1 (6 s wait lost to runner contention). Steady-state waits stay
+   short so real hangs still fail fast.
+3. **Screenshot-coverage gaps (fixed).** Playthrough detours added: grimoire recipe
+   close-up (`play-08b-grimoire-recipe`), triptych close-up (`play-08c-triptych`), and
+   the D3 terminal-refusal pose via a cage reach (`play-12b-crow-refusal`, asserted on
+   `refusal-pose` before shooting; the beat auto-dismisses). All are state-neutral
+   (refusal is a no-op by design; close-ups are inspection-only).
+4. **Moonbeam overlay seam (mitigated code-side; residual flagged for Asset Gen).**
+   Verified by direct composite inspection: the seam is the left edge of
+   `ov-adrawer-open` (plate x = 0.6305) crossing the cabinet light shaft. Fix shipped:
+   `RoomScene` overlay textures are now alpha-feathered 12 px on interior crop edges
+   (`overlayTexture(named:rectNormalized:)`), turning the 1-px hard step into a soft
+   ramp for every overlay in the game; edges lying on the plate boundary are never
+   feathered (rug/vines/cab-open reach y = 1.0 and must stay opaque). Safe by
+   construction: the overlay cutter pads crops 12 px beyond changed pixels. **Residual,
+   art-bound:** the adrawer variant plate's haze differs regionally from the base
+   (measured: edge-band least-squares gain 1.0035 — i.e. NOT a uniform brightness
+   delta, so no code-side gain/feather can fully remove it); a softened tonal patch
+   remains. Full removal needs the overlay re-cut from a lighting-consistent variant —
+   flagged to the Producer for a future Asset Gen pass, per the "no art changes in this
+   batch" rule.
+5. **BUG-015 pixel-perfect pass (done).** All 7 plates re-verified by rendering the
+   live hotspot rects onto the shipped art (annotated-overlay inspection). Refined:
+   cellar `hook` moved onto the actual pulley-rope hook art (0.335-0.385; the old rect
+   sat on the winch-shelf corner — the exact residual QA-BUG-014 warned about) and
+   cellar `barrel` snapped to the authoritative `ov-barrel-pried` rect; hearth `poker`
+   trimmed to the standing-poker art (old rect reached the floor and stole rug taps in
+   the overlap band, being the smaller node); hearth `rug` left edge onto the art;
+   study `flowerpot` dropped to cover the pot base; bench `ladle` moved onto the
+   rim-ladle art (nests inside `cauldron`; same brew close-up either way); bench
+   `workbench` widened to the iPad band edge; entry `windowsill` widened along the
+   sill. All other rects verified on-art and left unchanged. UI-test weight-drop
+   coordinate updated to the new hook (0.36, 0.335). All changed rects remain inside
+   the iPad-safe band; `testQA_BUG_004`/`_009` geometry assertions still pass by
+   construction.
+6. **Crow lintel perch (fixed; Producer-routed Documentation finding).** Graph p16
+   clue: "if crow is freed, it perches on the door lintel above the basin (silent
+   nudge)". `RoomVisuals.crowLocation` gated the perch on `doorUnsealed` — the nudge
+   only appeared AFTER the puzzle it hints at was solved, so it never rendered during
+   its intended phase. Now keyed on `crow-freed` alone (`ov-crow-lintel` renders in
+   v-entry immediately after p11); `cu-crow-rafters` remains the transient freed-beat
+   close-up. New unit test `testCrowPerchesOnLintelOnceFreed_endgameNudge`; new
+   playthrough capture `play-13b-crow-lintel`.
+
+**Security checklist (re-run 2026-07-06 for this batch): PASS.** Secret-pattern grep
+over `EscapeRoom/` (`fal.ai`, `FAL_KEY`, `api_key`, `secret`, `credential`, `Bearer`):
+zero matches after excluding the game's literal key-item names; `.env` still gitignored
+and untracked; no `.entitlements` file / no `CODE_SIGN_ENTITLEMENTS`; zero
+`*UsageDescription` strings in Info.plist. No resource-set changes in this batch (no
+new bundled files; all edits are Swift/test code).
+
+**CI:** single run on branch `polish-carry-forwards` — link recorded below after the
+run completes.
