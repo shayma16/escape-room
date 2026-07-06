@@ -11,19 +11,19 @@
  ],
  "wide_pane_quad": [
   [
-   1985,
+   1785,
    99
   ],
   [
-   2322,
+   2122,
    59
   ],
   [
-   2322,
+   2122,
    730
   ],
   [
-   1987,
+   1787,
    739
   ]
  ],
@@ -44,7 +44,7 @@
   ]
  },
  "belt2_wide_xy": [
-  2224.2,
+  2024.2,
   446.4
  ],
  "belt2_cu_xy": [
@@ -89,5 +89,6 @@
    929
   ]
  },
- "note2": "cu uses its own slightly wider crop of the same master (parallax between wide and close-up cameras); all 7 Orion dots verified clear of mullion"
+ "note2": "cu uses its own slightly wider crop of the same master (parallax between wide and close-up cameras); all 7 Orion dots verified clear of mullion",
+ "note3": "BUG-004 re-frame 2026-07-06: z2-cabinet wide plate window+apron+drawer assembly rigidly moved dx=-200 so Orion clue sits inside the iPad 4:3 dual-safe zone; all wide-plate star/pane coords shifted -200 accordingly (sky content itself unchanged, canonical geometry preserved by rigid translation). Close-up (cu) coords unchanged."
 }

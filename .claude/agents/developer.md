@@ -61,6 +61,22 @@ Source and integrate a small functional SFX set per level:
 - Ambient loops should tonally differ per zone using simple means (reverb, pitch,
   texture variation), keeping zones distinct while staying unobtrusive.
 
+## Security checklist (run before every handoff to QA)
+
+- **No development-time secrets in the shipped app.** Confirm no API keys, secrets, or
+  credentials (e.g. the fal.ai key, which is used only at asset-generation time) are
+  hardcoded or bundled anywhere in the app code, Xcode project, or bundled resources.
+  Grep the source tree and the built app's resource set — the shipped app must contain
+  zero references to development-time secrets. `.env` stays gitignored and must never be
+  copied into any bundle or build phase.
+- **Minimal entitlements/permissions.** Confirm the app requests only the
+  entitlements/permissions it actually uses. This game needs NONE of: camera,
+  microphone, location, contacts. No `NSCameraUsageDescription`-style Info.plist
+  permission strings and no capability entitlements beyond what the code demonstrably
+  uses.
+
+Record both check results in the implementation-notes doc.
+
 ## What you do NOT do
 
 - Modify puzzle logic, art direction, or difficulty. If the spec seems wrong, flag it via

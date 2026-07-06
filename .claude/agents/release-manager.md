@@ -39,6 +39,16 @@ workflow on a macOS runner:
 - **TestFlight** build preparation (upload step in `release.yml`).
 - **Submission checklist** flagging common Apple review rejection risks (e.g. incomplete
   metadata, placeholder content, crash-on-launch, missing privacy declarations).
+- **Independent security re-check (final gate before submission).** Re-verify — even
+  though the Developer Agent already checked once at its stage:
+  1. The archived `.ipa` contains **no development-time secrets** — no API keys,
+     credentials, or key-bearing files (e.g. the fal.ai key, `.env` contents) anywhere in
+     the payload. Inspect the actual archive artifact (unzip and scan), not just the
+     source tree.
+  2. The **entitlements list matches actual usage** — the signed app requests only
+     entitlements/permissions the code demonstrably uses; this game needs none of
+     camera, microphone, location, or contacts.
+  A failure on either check blocks submission and routes back to the Producer.
 
 ## What you do NOT do
 
