@@ -9,7 +9,7 @@ _(from each level's validation-report.md; per-zone and overall)_
 
 | Level | Theme | Overall difficulty | Per-zone scores | Status |
 |-------|-------|--------------------|-----------------|--------|
-| 1 | The Wizard's Cabin (abandoned wizard's cabin in the woods; caged crow, potions) | 6.0/10 (Validator official; Designer est. 6.5) | z1 Main Room 5.0 · z2 Potion Workshop 6.0 · z3 Hidden Cellar 4.0 · z4 Walled Alcove 5.0 | QA COMPLETE 2026-07-05 — NO-GO recommended (engine faithful, 22 bugs: 7 critical in UI/presentation layer); at step-13 user checkpoint |
+| 1 | The Wizard's Cabin (abandoned wizard's cabin in the woods; caged crow, potions) | 6.0/10 (Validator official; Designer est. 6.5) | z1 Main Room 5.0 · z2 Potion Workshop 6.0 · z3 Hidden Cellar 4.0 · z4 Walled Alcove 5.0 | RE-QA COMPLETE 2026-07-06 — 22/22 fixes verified, GO recommended; at step-13 user checkpoint |
 
 ## Puzzle mechanics used
 

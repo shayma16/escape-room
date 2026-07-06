@@ -29,7 +29,23 @@ If the session is cut off, resume by taking stock — don't restart:
 
 ## Pipeline position
 
-**Step 11/12 loop — Developer QA-fix pass COMPLETE incl. BUG-004 art integration
+**Step 13 — USER CHECKPOINT: re-QA go/no-go PENDING. QA recommends GO.**
+Re-QA verification pass complete 2026-07-06 (qa-report.md "Re-QA verification pass"
+section, commit 798867d): 22/22 bug fixes verified (70 unit tests × 3 devices, 0
+failures; all 10 former expected-failure records now permanent passing assertions);
+BUG-004 elements visually confirmed on-screen on iPad via playthrough screenshots;
+main-branch playthrough-test failure ruled ENVIRONMENTAL (rerun green — 3 passes of
+identical content; recommend raising first-interaction UI-test timeouts). New
+non-blocking finding QA-OBS-023 (medium): CI simulators compose the app
+non-full-screen/portrait in UI tests — screenshot presentation artifact, not an app
+bug; Developer should set landscape in UI-test setUp + assert window bounds; real
+presentation confirmed at step-16 device check. Other carry-forwards (non-blocking):
+UI-test wait robustness, 3 screenshot-coverage gaps (refusal pose, recipe, triptych —
+logic unit-verified), moonbeam overlay seam (cosmetic), BUG-015 pixel-perfect polish.
+**On user GO: Documentation second pass (step 14) + optionally a small Developer
+polish batch for the carry-forwards.**
+
+_Prior position:_ **Step 11/12 loop — Developer QA-fix pass COMPLETE incl. BUG-004 art integration
 (2026-07-06); awaiting CI re-verification + user merge of PR #1.** All 22 QA bugs are
 now addressed: the 21 Developer-scoped fixes (close-up/inspection layer, astrolabe
 mini-game, rug-discovery beat, item-combination UI, exact drag-drop conversion,
