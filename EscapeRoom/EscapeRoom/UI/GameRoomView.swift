@@ -160,6 +160,7 @@ private struct LevelCompleteOverlay: View {
                 Image(systemName: "checkmark.circle")
                     .font(.system(size: 40, weight: .light))
                     .foregroundColor(Chrome.textPrimary)
+                    .accessibilityIdentifier("level-complete")
                 Button(action: onMainMenu) {
                     Label("Main Menu", systemImage: "house")
                 }
@@ -172,7 +173,10 @@ private struct LevelCompleteOverlay: View {
                 .accessibilityIdentifier("complete-replay")
             }
         }
-        .accessibilityIdentifier("level-complete")
+        // NOTE: no accessibilityIdentifier on this container — an identifier on the
+        // ZStack masked its child buttons from the accessibility tree (XCUITest saw
+        // "level-complete" but not "complete-main-menu", CI run 28769311462). The
+        // identifier lives on the checkmark leaf instead.
     }
 }
 

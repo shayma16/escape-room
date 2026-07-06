@@ -249,7 +249,8 @@ final class EscapeRoomUITests: XCTestCase {
         shoot(app, "play-17-unsealed")
         dismissCloseUp(app)
         tapScene(app, 0.50, 0.55)                   // slide the bolt and leave (p17)
-        XCTAssertTrue(app.descendants(matching: .any)["level-complete"].waitForExistence(timeout: 6),
+        // The Main Menu button doubles as the completion-card existence assert.
+        XCTAssertTrue(app.descendants(matching: .any)["complete-main-menu"].waitForExistence(timeout: 6),
                       "completing p17 must present the completion card")
         shoot(app, "play-18-complete")
         tapID(app, "complete-main-menu")
