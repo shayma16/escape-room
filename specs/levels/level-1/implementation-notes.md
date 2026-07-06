@@ -397,14 +397,37 @@ art integration step.
   future miss fails at the exact step instead of three steps later. Test-script
   coordinate bug, not an app bug — the rug/trapdoor art extends well above the bar
   for real players.
-- Later runs recorded below as they complete.
+- Run 2 — https://github.com/shayma16/escape-room/actions/runs/28768853014: unit tests
+  all green again; playthrough advanced past dials/cellar/alcove and failed at the
+  rune-door tiles with `kAXErrorCannotComplete` scroll-to-visible on `rune-tile-3`.
+  This exposed a REAL app bug, not just a test issue: in `RuneDoorCloseUp` (and
+  `ClockCloseUp`) the gesture/accessibility modifiers were applied AFTER `.position()`,
+  which wraps its child in a full-container frame — every tile's tap surface covered
+  the entire close-up (topmost tile swallowed all taps; a real player could never
+  press tiles 1–3), and XCUITest saw a giant un-hittable frame. Fixed by ordering all
+  interactive modifiers before `.position()`.
+- Run 3 — https://github.com/shayma16/escape-room/actions/runs/28769311462: the
+  playthrough completed the ENTIRE level (dials → cellar → alcove → rune door →
+  astrolabe → cabinet → crow → combine → winch → bloom → brew → bottle → pour → p17;
+  the completion card appeared) and failed only tapping its Main Menu button: an
+  `accessibilityIdentifier` on the overlay's container ZStack masked the child buttons
+  from the accessibility tree. Identifier moved to a leaf.
+- **Run 4 — GREEN: https://github.com/shayma16/escape-room/actions/runs/28770154060**
+  (27m37s, commit ef340d1). Build + unit tests green on all three matrix devices, full
+  scripted playthrough green on iPhone SE with 19 screenshots attached to the xcresult
+  artifact, smoke suites green on iPad (playthrough self-skips per BUG-004 carve-out)
+  and the Dynamic Island iPhone. Handed to main via PR #1
+  (https://github.com/shayma16/escape-room/pull/1) — direct pushes to origin/main are
+  blocked in this agent session's permission mode, so the merge click is the user's.
 
 ### BUG-004 status at handoff
 
 The Asset Generation agent's "BUG-004 re-frame batch" (`asset-progress.md`) defines the
 11 re-frame edits (entry cage Δx −150, hearth bellows → right of fireplace, cabinet
-window/drawer Δx −200 + potion shelf → center, z3 global Δx +132 + barrel rescale) but
-was **0/11 complete** when this pass finished. Remaining integration work (owned by the
+window/drawer Δx −200 + potion shelf → center, z3 global Δx +132 + barrel rescale).
+At Developer handoff the tracker read **"11/11 generating-done … HOLD: verification +
+asset-manifest geometry post-passes running — do NOT integrate yet"** — generation
+finished, but the batch is explicitly not integration-ready. Remaining integration work (owned by the
 Developer, one step, when the batch completes): stage the new plates into
 `EscapeRoom/Resources/GameAssets/level-1/`, re-read the updated `asset-manifest.json`
 geometry, set the final hotspot rects for v-entry, v-cellar, hearth-bellows and the

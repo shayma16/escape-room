@@ -13,18 +13,30 @@ caged crow, potions/potion-making (user-specified elements).
 
 ## Pipeline position
 
-**Step 11/12 loop — Developer QA-fix pass IN PROGRESS (2026-07-06).** User approved a
-full fix pass on the 22 QA bugs. Developer has implemented fixes for all
-Developer-scoped bugs (21 of 22 fully; QA-BUG-004 hotspot alignment deferred by design
-pending the Asset Generation agent's concurrent art re-frame batch — 0/11 done at
-Developer handoff; Developer owns the final integration step when it lands). Includes
-the new close-up/inspection layer, astrolabe mini-game, rug-discovery beat,
-item-combination UI, exact drag-drop conversion, bundle-resource fix (folder refs),
-a new XCUITest full-playthrough target with screenshot artifacts, and a Dynamic Island
-device added to the CI matrix. 9 of QA's 10 expected-failure bug records unwrapped into
-permanent assertions (BUG-004's stays wrapped). Per-bug detail + new judgment calls
-10–18 in `specs/levels/level-1/implementation-notes.md` ("QA fix pass" section).
-Next: CI green → re-QA (step 12) → step-13 user go/no-go.
+**Step 11/12 loop — Developer QA-fix pass CODE-COMPLETE and GREEN on CI (2026-07-06);
+awaiting (a) user merge of PR #1 to main, (b) BUG-004 art integration.** User approved a
+full fix pass on the 22 QA bugs; all Developer-scoped bugs are fixed (21 of 22 fully;
+QA-BUG-004 hotspot alignment deferred by design pending the Asset Generation agent's
+concurrent art re-frame batch — tracker reads 11/11 generated but HOLD/do-not-integrate;
+Developer owns the final integration step when the hold clears). Includes the new
+close-up/inspection layer, astrolabe mini-game, rug-discovery beat, item-combination
+UI, exact drag-drop conversion, bundle-resource fix (folder refs), a new XCUITest
+full-playthrough target with screenshot artifacts, and a Dynamic Island device added to
+the CI matrix. 9 of QA's 10 expected-failure bug records unwrapped into permanent
+assertions (BUG-004's stays wrapped). Developer security checklist (no bundled secrets;
+zero permission strings/entitlements) recorded in implementation-notes.
+
+**Green CI:** https://github.com/shayma16/escape-room/actions/runs/28770154060
+(branch `qa-fix-pass-level-1`, commit ef340d1 — build + unit tests on iPad 13" /
+iPhone SE / Dynamic Island iPhone; full scripted playthrough with screenshots on
+iPhone SE; smoke UI tests on iPad + DI). **Merge to main is the user's click:** PR #1
+https://github.com/shayma16/escape-room/pull/1 (the Developer session's permission
+mode blocks direct pushes to origin/main).
+
+Per-bug detail + new judgment calls 10–18 in
+`specs/levels/level-1/implementation-notes.md` ("QA fix pass" section).
+Next: user merges PR #1 → BUG-004 art integration (Developer, when the Asset Gen HOLD
+clears) → re-QA (step 12) → step-13 user go/no-go.
 
 _Prior position:_ **Step 13 — USER CHECKPOINT: QA go/no-go review — resolved 2026-07-06
 as "full fix pass approved" (with BUG-004 = art re-frame, run concurrently).** QA stage (step 12) completed
