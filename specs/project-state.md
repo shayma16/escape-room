@@ -29,16 +29,29 @@ If the session is cut off, resume by taking stock — don't restart:
 
 ## Pipeline position
 
-**RELEASE STAGE (TestFlight-only scope) — phase 1 PREP COMPLETE 2026-07-07.**
-App identity: **Within / com.shayma.within** (locks at first ASC upload). PR #3
-(https://github.com/shayma16/escape-room/pull/3): bundle-id/display-name rename,
-ITSAppUsesNonExemptEncryption=false, real release.yml (cloud-managed signing via ASC
-API key, native xcodebuild export/upload, blocking .ipa security gate). Full record +
-user to-do in `specs/release-notes.md`. Awaiting user: merge PR #3 + Apple account
-steps 1–4 (register bundle ID, create ASC API key, create app record, gh secret set
-ASC_KEY_ID/ASC_ISSUER_ID/ASC_KEY_P8/APPLE_TEAM_ID). Then phase 2: dispatch
-release.yml, monitor, verify security gate + upload, hand off for device install
-(step-16 user spot-check).
+**RELEASE STAGE (TestFlight-only) — BUILD UPLOADED TO TESTFLIGHT 2026-07-07.** Within
+1.0 (build from release run 28822356309) archived, cloud-signed, security-scanned
+(clean), and uploaded to App Store Connect successfully. Repo is now PUBLIC (user
+choice — free Actions minutes, removed the GitHub-billing spend block that stopped the
+first dispatch; history pre-scanned, no secrets ever committed).
+
+Two CI fixes were needed during the release run and are captured for reuse:
+(1) ASC API key must be **Admin** role, not App Manager — App Manager can't create the
+distribution cert via cloud signing (export failed "Cloud signing permission error");
+user regenerated the key as Admin. (2) Release must build on **macos-26 / Xcode 26** —
+Apple rejects uploads built with <iOS 26 SDK; macos-15/Xcode 16 failed at upload
+validation. Fix in PR #4 (https://github.com/shayma16/escape-room/pull/4), verified
+green end-to-end on branch `fix-xcode26-release`. build-and-test.yml stays on macos-15
+(simulator only, no upload SDK gate).
+
+**Awaiting user:** (a) merge PR #4 so main carries the working release workflow; (b) in
+App Store Connect: wait for the build to finish "Processing," create a TestFlight
+internal testing group, add self as tester, install via the TestFlight app. That device
+install IS the step-16 physical-device spot-check + final release approval (user's
+checkpoint). Full record in `specs/release-notes.md`.
+
+_Phase-1 prep record:_ App identity **Within / com.shayma.within**; PR #3 (merged,
+be77e99) did the rename + ITSAppUsesNonExemptEncryption=false + real release.yml.
 
 _Prior:_ **LEVEL 1 COMPLETE (2026-07-06) — PR #2 merged 2026-07-07 (commit 0462cb1).
 Was: pending one user click: merge of PR #2
