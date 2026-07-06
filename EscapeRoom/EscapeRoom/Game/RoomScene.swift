@@ -88,11 +88,78 @@ final class RoomScene: SKScene {
                 overlayNodes[key] = n
                 return n
             }()
-            node.texture = Self.texture(named: imageNamed)
+            node.texture = Self.overlayTexture(named: imageNamed, rectNormalized: rectNormalized)
             positionOverlay(node, rectNormalized: rectNormalized)
         } else {
             overlayNodes[key]?.removeFromParent()
             overlayNodes[key] = nil
+        }
+    }
+
+    /// Overlay-specific texture path: same cache/loader as `texture(named:)`, plus an
+    /// edge feather. Overlays are rectangular crops re-encoded from state-variant
+    /// plates; lighting can differ slightly between a variant plate and the base
+    /// (e.g. the cabinet moonbeam haze around ov-adrawer-open), so a hard crop edge
+    /// renders as a visible straight-edge seam (QA re-QA observation 2, 2026-07-06).
+    /// Feathering the outer 12 px of alpha turns that 1-px step into a soft ramp.
+    ///
+    /// - Only INTERIOR crop edges are feathered: an edge that lies on the plate
+    ///   boundary (e.g. the rug/vines/cab-open overlays reach y = 1.0) must stay fully
+    ///   opaque, or the base plate would ghost through at the screen edge.
+    /// - Safe by construction: the asset pipeline pads every overlay crop by 12 px
+    ///   beyond its changed-pixel region (diff -> threshold -> open -> pad(12)), so no
+    ///   actual state content lives in the feathered band.
+    /// - Base plates are NEVER feathered; only this overlay path applies it.
+    /// - Known residual (flagged, not fixable here): ov-adrawer-open's variant plate
+    ///   has a regionally different haze rendering, so a softened tonal patch remains
+    ///   after feathering; full removal needs an overlay re-cut (Asset Gen).
+    static func overlayTexture(named: String, rectNormalized: CGRect) -> SKTexture? {
+        let eps: CGFloat = 0.002
+        let feather = FeatherEdges(left: rectNormalized.minX > eps,
+                                   right: rectNormalized.maxX < 1 - eps,
+                                   top: rectNormalized.minY > eps,
+                                   bottom: rectNormalized.maxY < 1 - eps)
+        let cacheKey = "feathered:\(named):\(feather.cacheSuffix)" as NSString
+        if let cached = textureCache.object(forKey: cacheKey) { return cached }
+        guard let image = GameAssetLoader.shared.image(named: named) else { return nil }
+        let texture = SKTexture(image: featheredImage(image, edges: feather))
+        textureCache.setObject(texture, forKey: cacheKey)
+        return texture
+    }
+
+    struct FeatherEdges {
+        let left: Bool, right: Bool, top: Bool, bottom: Bool
+        var any: Bool { left || right || top || bottom }
+        var cacheSuffix: String { "\(left ? 1 : 0)\(right ? 1 : 0)\(top ? 1 : 0)\(bottom ? 1 : 0)" }
+    }
+
+    // (UIKit is unconditionally available on this iOS-only target — GameAssetLoader
+    // already imports it at the top level; no platform conditional needed here.)
+    private static func featheredImage(_ image: UIImage, edges: FeatherEdges,
+                                       feather: CGFloat = 12) -> UIImage {
+        let size = image.size
+        guard edges.any, size.width > feather * 4, size.height > feather * 4 else { return image }
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = image.scale
+        format.opaque = false
+        return UIGraphicsImageRenderer(size: size, format: format).image { ctx in
+            image.draw(in: CGRect(origin: .zero, size: size))
+            let cg = ctx.cgContext
+            cg.setBlendMode(.destinationIn) // resulting alpha = existing alpha * drawn alpha
+            let colors = [UIColor(white: 1, alpha: 0).cgColor,
+                          UIColor(white: 1, alpha: 1).cgColor] as CFArray
+            guard let gradient = CGGradient(colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                                            colors: colors, locations: [0, 1]) else { return }
+            // options == [] -> only the start...end band is composited; everything
+            // outside it is untouched (stays fully opaque). Corners multiply out to
+            // alphaX * alphaY across the two passes per axis.
+            func ramp(from start: CGPoint, to end: CGPoint) {
+                cg.drawLinearGradient(gradient, start: start, end: end, options: [])
+            }
+            if edges.left { ramp(from: CGPoint(x: 0, y: 0), to: CGPoint(x: feather, y: 0)) }
+            if edges.right { ramp(from: CGPoint(x: size.width, y: 0), to: CGPoint(x: size.width - feather, y: 0)) }
+            if edges.top { ramp(from: CGPoint(x: 0, y: 0), to: CGPoint(x: 0, y: feather)) }
+            if edges.bottom { ramp(from: CGPoint(x: 0, y: size.height), to: CGPoint(x: 0, y: size.height - feather)) }
         }
     }
 
