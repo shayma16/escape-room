@@ -44,7 +44,10 @@ on:
 
 jobs:
   archive-and-upload:
-    runs-on: macos-15
+    # macos-26 ships Xcode 26 (iOS 26 SDK). Apple requires the iOS 26 SDK for all
+    # App Store Connect / TestFlight uploads as of 2025-04; macos-15's Xcode 16 (iOS 18
+    # SDK) is rejected at upload validation.
+    runs-on: macos-26
     timeout-minutes: 60
 
     env:
@@ -56,6 +59,17 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Select Xcode 26 (iOS 26 SDK required for App Store upload)
+        run: |
+          set -euo pipefail
+          XC="$(ls -d /Applications/Xcode_26*.app 2>/dev/null | sort -V | tail -1 || true)"
+          if [ -z "$XC" ]; then
+            echo "::error::No Xcode 26 found on the runner. Available: $(ls -d /Applications/Xcode_*.app 2>/dev/null | tr '\n' ' ')"
+            exit 1
+          fi
+          sudo xcode-select -s "$XC/Contents/Developer"
+          xcodebuild -version
 
       - name: Preflight - fail fast if secrets are missing
         env:
