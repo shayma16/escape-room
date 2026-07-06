@@ -1,4 +1,5 @@
 import XCTest
+import UIKit
 @testable import EscapeRoom
 
 /// Unit tests for the requirement-based puzzle state machines, inventory, zone-unlock
@@ -319,5 +320,183 @@ final class PuzzleEngineTests: XCTestCase {
     func testLevelEntitlementAlwaysTrueToday() {
         XCTAssertTrue(Entitlements.isLevelUnlocked(1))
         XCTAssertTrue(Entitlements.isLevelUnlocked(999))
+    }
+
+    // MARK: - QA fix pass regression net (Developer's own tests for the new surfaces)
+
+    private let sceneSize = CGSize(width: 2732, height: 1366)
+
+    func testStartZoneUnlockedOnFreshSaveAndAfterRestart() {
+        let state = makeState(tempDir())
+        XCTAssertTrue(state.isZoneUnlocked(PuzzleGraph.startZoneID))
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        state.restartLevel()
+        XCTAssertTrue(state.isZoneUnlocked(PuzzleGraph.startZoneID), "restart must keep the start zone navigable")
+        XCTAssertFalse(state.isZoneUnlocked(PuzzleGraph.ZoneID.z2Workshop))
+    }
+
+    func testRugDiscoveryGatesDialCloseUp_QA_BUG_010() {
+        let state = makeState(tempDir())
+        let coordinator = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize)
+        coordinator.scene.onHotspotTap?("trapdoor-dial")
+        XCTAssertNil(coordinator.activeCloseUp, "the dial panel must not exist before the rug is moved")
+        coordinator.scene.onHotspotTap?("rug")
+        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.rugMoved), "rug tap is the free-action discovery")
+        coordinator.scene.onHotspotTap?("trapdoor-dial")
+        XCTAssertEqual(coordinator.activeCloseUp, .dialPanel)
+        // Rug discovery survives relaunch (satisfied-requirement flag).
+        XCTAssertTrue(RoomVisuals.rugMoved(state))
+    }
+
+    func testWorkbenchDropCombinesFileAndSpoon_QA_BUG_012() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        state.addItem(PuzzleGraph.ItemID.file)
+        state.addItem(PuzzleGraph.ItemID.spoon)
+        let coordinator = RoomSceneCoordinator(viewID: .bench, state: state, size: sceneSize)
+        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.file, hotspotID: "workbench")
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.shavings), "workbench accepts the p12 combination")
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.spoon), "spoon is not consumed")
+    }
+
+    func testWorkbenchDropWithoutBothItemsDoesNothing() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        state.addItem(PuzzleGraph.ItemID.file)
+        let coordinator = RoomSceneCoordinator(viewID: .bench, state: state, size: sceneSize)
+        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.file, hotspotID: "workbench")
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.shavings))
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.file))
+    }
+
+    func testCabinetWrongSlotDropRejectedWithoutStalePending_QA_BUG_017() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        state.addItem(PuzzleGraph.ItemID.goldRing)
+        state.addItem(PuzzleGraph.ItemID.silverCoin)
+        let coordinator = RoomSceneCoordinator(viewID: .cabinet, state: state, size: sceneSize)
+        // Wrong item on the sun slot: pops back, never seats.
+        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.silverCoin, hotspotID: "sun-slot")
+        XCTAssertNil(coordinator.pendingSunItem, "a rejected item must not become a stale pending placement")
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.silverCoin))
+        XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon))
+        // Correct two-step placement completes.
+        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.goldRing, hotspotID: "sun-slot")
+        XCTAssertEqual(coordinator.pendingSunItem, PuzzleGraph.ItemID.goldRing, "correct item seats visibly")
+        XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon))
+        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.silverCoin, hotspotID: "moon-slot")
+        XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon))
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.file))
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.phial))
+        // Both placed items were consumed by the engine.
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.goldRing))
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.silverCoin))
+    }
+
+    func testCageTapAfterCrowFreedShowsOpenCageNotRefusal_QA_BUG_020() {
+        let state = makeState(tempDir())
+        state.addItem(PuzzleGraph.ItemID.cageKey)
+        let coordinator = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize)
+        coordinator.scene.onHotspotTap?("star-keyhole")
+        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.crowFreed))
+        coordinator.showTerminalRefusal = false
+        coordinator.activeCloseUp = nil
+        coordinator.scene.onHotspotTap?("cage")
+        XCTAssertFalse(coordinator.showTerminalRefusal, "no refusal after the crow is freed")
+        XCTAssertEqual(coordinator.activeCloseUp, .plain(image: "cu-cage-open-empty"))
+    }
+
+    func testCageKeyDroppedOnCageUnlocks_QA_BUG_018() {
+        let state = makeState(tempDir())
+        state.addItem(PuzzleGraph.ItemID.cageKey)
+        let coordinator = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize)
+        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.cageKey, hotspotID: "cage")
+        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.crowFreed), "dragging the star key onto the cage must work")
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.feather))
+    }
+
+    func testPhialDropBeforeDraughtReadyIsRefusedSafely() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        state.addItem(PuzzleGraph.ItemID.phial)
+        let coordinator = RoomSceneCoordinator(viewID: .bench, state: state, size: sceneSize)
+        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.phial, hotspotID: "cauldron")
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.phial), "the phial must never vanish into a non-ready cauldron")
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.phialDraught))
+        XCTAssertFalse(state.data.cauldronIngredients.contains(PuzzleGraph.ItemID.phial), "the phial is not an ingredient")
+    }
+
+    func testIngredientDropAfterSuccessIsRefused_QA_BUG_006_companion() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        state.setCauldronIngredients(BrewSolution.requiredIngredients)
+        _ = PuzzleEngine.resolveBrew(flameStage: BrewSolution.flameStage,
+                                     stirDirection: BrewSolution.stirDirection,
+                                     stirCount: BrewSolution.stirCount, state: state)
+        // A stray feather (e.g. from a hypothetical future level) dropped after
+        // success must not be consumed into the finished draught.
+        state.addItem(PuzzleGraph.ItemID.feather)
+        let coordinator = RoomSceneCoordinator(viewID: .bench, state: state, size: sceneSize)
+        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.feather, hotspotID: "cauldron")
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.feather))
+        XCTAssertTrue(state.data.cauldronIngredients.isEmpty)
+    }
+
+    func testRuneTilePressesFromCloseUpFollowTileMapping() {
+        let state = makeState(tempDir())
+        let coordinator = RoomSceneCoordinator(viewID: .study, state: state, size: sceneSize)
+        // Solution AIR, FIRE, EARTH, WATER = tiles 3, 1, 4, 2 (manifest mapping).
+        coordinator.pressRuneTile(3)
+        XCTAssertEqual(coordinator.pressedRuneTiles, [3])
+        coordinator.pressRuneTile(1)
+        coordinator.pressRuneTile(4)
+        coordinator.pressRuneTile(2)
+        XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.runeDoor))
+        XCTAssertTrue(state.isZoneUnlocked(PuzzleGraph.ZoneID.z2Workshop))
+        XCTAssertTrue(coordinator.pressedRuneTiles.isEmpty, "tiles reset flush after the sequence resolves")
+    }
+
+    func testRuneTileWrongSequenceResetsPressedTiles() {
+        let state = makeState(tempDir())
+        let coordinator = RoomSceneCoordinator(viewID: .study, state: state, size: sceneSize)
+        for tile in [1, 2, 3, 4] { coordinator.pressRuneTile(tile) } // FIRE,WATER,AIR,EARTH = wrong
+        XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.runeDoor))
+        XCTAssertTrue(coordinator.pressedRuneTiles.isEmpty, "dull knock resets tiles flush; no lockout")
+    }
+
+    func testClockCloseUpAdvanceTriggersOneShotAtTwelve_D5() {
+        let state = makeState(tempDir())
+        let coordinator = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize)
+        XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent))
+        // Advance from the initial position until the hands reach XII exactly once.
+        for _ in 0..<12 where coordinator.clockHour != 12 {
+            coordinator.advanceClockHour()
+        }
+        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent), "first XII must spend the one-shot pop")
+        // Going around again must not un-spend or re-trigger anything.
+        for _ in 0..<12 { coordinator.advanceClockHour() }
+        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent))
+    }
+
+    func testCloseUpLayoutMatchesBundledRuneTileJSON() throws {
+        // Guards against drift between the transcribed CloseUpLayout constants and the
+        // asset pipeline's authoritative sprite metadata (requires the QA-BUG-022 fix:
+        // the folder hierarchy must exist in the bundle).
+        guard let url = Bundle.main.resourceURL?
+            .appendingPathComponent("GameAssets/level-1/z1/v-study/sprites/runedoor-tiles.json"),
+            let data = try? Data(contentsOf: url) else {
+            XCTFail("runedoor-tiles.json must ship in the bundle (QA-BUG-022)")
+            return
+        }
+        struct TileEntry: Decodable { let rect_in_plate_3x: [Double]; let rune: String }
+        let decoded = try JSONDecoder().decode([String: TileEntry].self, from: data)
+        for (key, entry) in decoded {
+            let tile = Int(key.dropFirst("tile".count))!
+            let expected = CloseUpLayout.runeTileRects[tile]!
+            XCTAssertEqual(expected.minX, entry.rect_in_plate_3x[0] / 2048, accuracy: 0.001)
+            XCTAssertEqual(expected.minY, entry.rect_in_plate_3x[1] / 1536, accuracy: 0.001)
+            XCTAssertEqual(RuneDoorSolution.tileRune[tile]?.rawValue, entry.rune,
+                           "tile-to-rune mapping must match the manifest")
+        }
     }
 }

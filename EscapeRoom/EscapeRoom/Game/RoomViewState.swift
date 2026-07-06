@@ -19,6 +19,14 @@ enum RoomVisuals {
         return "cu-ash-undisturbed"
     }
 
+    /// QA-BUG-016: the sifted-with-glint state (p05's secondary discoverability cue) is
+    /// shown as the sift-success close-up moment; afterwards the ash close-up shows the
+    /// ring-taken state (the engine grants the ring at the sift itself).
+    static func ashCloseUp(_ s: GameState, justSifted: Bool) -> String {
+        if justSifted { return "cu-ash-sifted" }
+        return ashState(s)
+    }
+
     /// D5: one-shot cuckoo pop, then permanently spent. Never gates progression.
     static func clockState(_ s: GameState, justPopped: Bool) -> String {
         if justPopped { return "cu-clock-pop" }
@@ -26,7 +34,11 @@ enum RoomVisuals {
     }
 
     static func rugMoved(_ s: GameState) -> Bool {
-        s.hasSolved(PuzzleGraph.PuzzleID.moonTrapdoor) || s.isZoneUnlocked(PuzzleGraph.ZoneID.z3Cellar)
+        // QA-BUG-010: the rug is a discoverable free action with its own latched flag;
+        // solved/unlocked states still imply it for saves from earlier builds.
+        s.hasFlag(PuzzleGraph.StateFlag.rugMoved)
+            || s.hasSolved(PuzzleGraph.PuzzleID.moonTrapdoor)
+            || s.isZoneUnlocked(PuzzleGraph.ZoneID.z3Cellar)
     }
 
     static func trapdoorOpen(_ s: GameState) -> Bool {
@@ -99,8 +111,13 @@ enum RoomVisuals {
 
     // MARK: z3 v-cellar
 
-    static func barrelState(_ s: GameState) -> String {
-        s.hasSolved(PuzzleGraph.PuzzleID.barrelPry) ? "ov-barrel-pried" : "ov-barrel-empty"
+    /// Barrel overlay (BUG-004 integration fix): the base plate carries the NAILED
+    /// barrel, so pre-solve needs no overlay; after p06 the graph-specified pried
+    /// state shows ("barrel (nailed / pried, weight visible inside)" —
+    /// visually_necessary_elements). The previous mapping overlaid pried art
+    /// pre-solve — a latent visual bug masked by QA-BUG-022's black scenes.
+    static func barrelOverlay(_ s: GameState) -> String? {
+        s.hasSolved(PuzzleGraph.PuzzleID.barrelPry) ? "ov-barrel-pried" : nil
     }
 
     static func drawerState(_ s: GameState) -> String {

@@ -3,10 +3,10 @@
   "ov-cage-open": {
    "file": "z1/v-entry/overlays/ov-cage-open.jpg",
    "rect": [
-    0.7328125,
+    0.67421875,
     0.20390625,
-    0.24921875,
-    0.47578125
+    0.1359375,
+    0.475
    ]
   },
   "ov-crow-lintel": {
@@ -99,19 +99,19 @@
   "ov-adrawer-open": {
    "file": "z2/v-cabinet/overlays/ov-adrawer-open.jpg",
    "rect": [
-    0.711328125,
-    0.66484375,
-    0.19921875,
-    0.1921875
+    0.63046875,
+    0.1328125,
+    0.249609375,
+    0.72421875
    ]
   },
   "ov-cab-open": {
    "file": "z2/v-cabinet/overlays/ov-cab-open.jpg",
    "rect": [
-    0.104296875,
-    0.09453125,
-    0.308984375,
-    0.90546875
+    0.073046875,
+    0.0953125,
+    0.345703125,
+    0.9046875
    ]
   },
   "ov-cab-open-empty": {
@@ -134,41 +134,30 @@
   }
  },
  "z3/v-cellar": {
-  "ov-barrel-empty": {
-   "dimFile": "z3/v-cellar/overlays/ov-barrel-empty-dim.jpg",
-   "dimGain": 1.035,
-   "file": "z3/v-cellar/overlays/ov-barrel-empty.jpg",
-   "rect": [
-    0.758984375,
-    0.48359375,
-    0.241015625,
-    0.515625
-   ]
-  },
   "ov-barrel-pried": {
    "dimFile": "z3/v-cellar/overlays/ov-barrel-pried-dim.jpg",
-   "dimGain": 1.04,
+   "dimGain": 1.014,
    "file": "z3/v-cellar/overlays/ov-barrel-pried.jpg",
    "rect": [
-    0.758984375,
-    0.51953125,
-    0.241015625,
-    0.4796875
+    0.705859375,
+    0.5921875,
+    0.12734375,
+    0.29453125
    ]
   },
   "ov-crank-fitted": {
    "file": "z3/v-cellar/overlays/ov-crank-fitted.jpg",
    "rect": [
-    0.1171875,
+    0.169140625,
     0.15,
-    0.15,
+    0.149609375,
     0.3109375
    ]
   },
   "ov-drawer-empty": {
    "file": "z3/v-cellar/overlays/ov-drawer-empty.jpg",
    "rect": [
-    0.281640625,
+    0.333203125,
     0.528125,
     0.16484375,
     0.2171875
@@ -177,7 +166,7 @@
   "ov-drawer-open": {
    "file": "z3/v-cellar/overlays/ov-drawer-open.jpg",
    "rect": [
-    0.281640625,
+    0.333203125,
     0.528125,
     0.16484375,
     0.2171875
@@ -186,18 +175,18 @@
   "ov-mirror-d2": {
    "file": "z3/v-cellar/overlays/ov-mirror-d2.jpg",
    "rect": [
-    0.480859375,
+    0.5328125,
     0.56796875,
-    0.190234375,
+    0.1890625,
     0.40859375
    ]
   },
   "ov-mirror-d3": {
    "file": "z3/v-cellar/overlays/ov-mirror-d3.jpg",
    "rect": [
-    0.480859375,
+    0.5328125,
     0.56328125,
-    0.18984375,
+    0.18828125,
     0.4140625
    ]
   }

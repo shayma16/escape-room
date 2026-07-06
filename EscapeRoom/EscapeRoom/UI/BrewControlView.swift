@@ -9,6 +9,9 @@ import SwiftUI
 struct BrewControlView: View {
     @ObservedObject var state: GameState
     var onOutcome: (PuzzleEngine.BrewOutcome) -> Void
+    /// Reports each stir so the brew close-up can draw the directional ripple trail
+    /// (Playtest R3: CW vs CCW must be unmistakable).
+    var onStir: (BrewSolution.StirDirection) -> Void = { _ in }
 
     @State private var pendingStirDirection: BrewSolution.StirDirection?
     @State private var pendingStirCount: Int = 0
@@ -20,6 +23,7 @@ struct BrewControlView: View {
                     Label("Pump Bellows", systemImage: "flame")
                 }
                 .buttonStyle(.chromePrimary)
+                .accessibilityIdentifier("brew-pump")
 
                 Text("Flame stage \(state.data.cauldronFlameStage)")
                     .foregroundColor(Chrome.textPrimary)
@@ -31,11 +35,13 @@ struct BrewControlView: View {
                     Label("Stir CCW", systemImage: "arrow.counterclockwise")
                 }
                 .buttonStyle(.chromePrimary)
+                .accessibilityIdentifier("brew-stir-ccw")
 
                 Button(action: { stir(.clockwise) }) {
                     Label("Stir CW", systemImage: "arrow.clockwise")
                 }
                 .buttonStyle(.chromePrimary)
+                .accessibilityIdentifier("brew-stir-cw")
 
                 Text("\(pendingStirCount) turns")
                     .foregroundColor(Chrome.textPrimary)
@@ -46,6 +52,7 @@ struct BrewControlView: View {
                 Label("Release Ladle", systemImage: "checkmark")
             }
             .buttonStyle(.chromePrimary)
+            .accessibilityIdentifier("brew-release")
         }
         .padding(20)
     }
@@ -63,6 +70,7 @@ struct BrewControlView: View {
         }
         pendingStirCount += 1
         SoundManager.shared.play(.click)
+        onStir(direction)
     }
 
     private func resolve() {

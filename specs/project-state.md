@@ -11,9 +11,77 @@ Level 1 in design. Theme received from user on 2026-07-04.
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
 caged crow, potions/potion-making (user-specified elements).
 
+## RESUME NOTE (2026-07-06, written pre-session-limit by the Producer)
+
+If the session is cut off, resume by taking stock — don't restart:
+1. `git log`/`git status` + `gh run list` (gh.exe at "C:\Program Files\GitHub CLI\gh.exe";
+   check the latest run on branch `qa-fix-pass-level-1`) + the section below.
+2. Background-agent transcripts do NOT survive session-limit cutoffs — relaunch agents
+   fresh with take-stock instructions rather than assuming SendMessage resume works.
+3. Position: Developer QA-fix pass + BUG-004 integration complete (see below); if the
+   post-integration CI run isn't green yet, relaunch a developer agent to diagnose and
+   finish. Once green: re-QA (step 12, fresh qa-tester agent; prior report + suite
+   exist) → step-13 user go/no-go → Documentation second pass (step 14).
+4. Waiting on the user: merge of PR #1 (https://github.com/shayma16/escape-room/pull/1).
+   The Producer session can push to `qa-fix-pass-level-1` (not needed for main).
+5. Flux spend to date: $8.63 (progression-ledger.md). BUG-004 re-frame batch: 11/11
+   done, verified, HOLD cleared.
+
 ## Pipeline position
 
-**Step 11 — Developer stage COMPLETE, green CI.** All approvals landed 2026-07-05: z3+z4
+**Step 11/12 loop — Developer QA-fix pass COMPLETE incl. BUG-004 art integration
+(2026-07-06); awaiting CI re-verification + user merge of PR #1.** All 22 QA bugs are
+now addressed: the 21 Developer-scoped fixes (close-up/inspection layer, astrolabe
+mini-game, rug-discovery beat, item-combination UI, exact drag-drop conversion,
+bundle-resource folder-ref fix, engine guards, navigation/root fix, state visuals)
+went green on CI first (run 28770154060), and after the Asset Generation agent's
+BUG-004 re-frame batch completed (11/11 + verification, $0.11), the Developer staged
+the 25 re-framed plates into the bundle (validated .NET port of the PIL staging
+pipeline), re-aligned all affected hotspots to the manifest's `bug004_reframe`
+geometry, unwrapped the last QA expected-failure record (`testQA_BUG_004`), and
+enabled the full playthrough UI test on iPad. All 10 QA bug records are now permanent
+assertions. Developer security checklist (no bundled secrets; zero permission
+strings/entitlements) recorded in implementation-notes.
+
+**CI:** pre-integration green run
+https://github.com/shayma16/escape-room/actions/runs/28770154060; the post-integration
+run link is recorded in `specs/levels/level-1/implementation-notes.md` ("CI (this
+pass)"). **Merge to main is the user's click:** PR #1
+https://github.com/shayma16/escape-room/pull/1 (the Developer session's permission
+mode blocks direct pushes to origin/main).
+
+Per-bug detail + judgment calls 10–18 + the BUG-004 integration record in
+`specs/levels/level-1/implementation-notes.md`.
+Next: user merges PR #1 → re-QA (step 12) → step-13 user go/no-go.
+
+_Prior position:_ **Step 13 — USER CHECKPOINT: QA go/no-go review — resolved 2026-07-06
+as "full fix pass approved" (with BUG-004 = art re-frame, run concurrently).** QA stage (step 12) completed
+2026-07-05: `specs/levels/level-1/qa-report.md` delivered (commit 7fd5372) with QA test
+suite `EscapeRoom/EscapeRoomTests/QALevelFlowTests.swift` (57 tests × 2 simulators,
+green run https://github.com/shayma16/escape-room/actions/runs/28745951536, incl. 10
+strict expected-failure `testQA_BUG_*` records that flip loudly when each bug is fixed).
+
+**QA recommendation: NO-GO.** Engine layer is a faithful graph implementation (all 3
+example orderings incl. mirror-first C, all failure behaviors, D1–D5, all anti-softlock
+invariants pass), but the interaction/presentation layer is unfinished: level currently
+uncompletable in-app by any path (22 bugs: 7 critical / 8 major / 4 moderate / 3 minor).
+Headline criticals: game art unreachable in app bundle (BUG-022, black scenes); z1 never
+unlocked from fresh save (001); no UI path for p12/p15/p17 (012/002/003); close-up/clue
+layer entirely missing (013); iPad 4:3 crop pushes p11 keyhole + feed cup off-screen
+(004 — needs a CROSS-AGENT decision: approved art plates place critical elements outside
+the style-guide §8 dual-safe zone; fix = art re-framing vs hotspot relayout vs display
+policy; may loop in Art Director/Asset Gen, not just Developer).
+
+Judgment-call verification: hotspot rects FAIL (004/009/015); tap-placeholder controls —
+semantics PASS, interaction shape defective (006/010/011); vine mid-state unwired PASS;
+drag-drop conversion FAIL systematic (014); J5 no-confirm exit premise HOLDS.
+
+Awaiting user: (a) go/no-go on routing the 21 Developer-scoped bugs back to the
+Developer (QA's suggested fix order in report: bundle assets first), and (b) the
+BUG-004 cross-agent decision. After fixes → re-QA → step 13 again → Documentation
+second pass (step 14).
+
+_Prior stage summary:_ **Step 11 — Developer stage COMPLETE, green CI.** All approvals landed 2026-07-05: z3+z4
 batch (F11 diagonal beam, F12 fogged moon, F15 flower shift, F17 icon cleanup — all
 accepted) → LEVEL 1 ART COMPLETE ($8.11). global-ui-style.md approved as recommended
 (J1 serif accent, J2 dark-only, J3 thumbnail cards, J4 keyhole motif, J5 no-confirm
@@ -46,6 +114,16 @@ vine mid-wither state, drag/drop coordinate conversion, etc.) is in
 
 **Next:** step-12 QA (simulator via CI artifacts) → step-13 user go/no-go →
 Documentation second pass.
+
+## Security posture note (user directive 2026-07-06)
+
+No dedicated Security Review agent for now: the app has no backend, no user accounts,
+and no web views, so the attack surface is limited to the two checks folded into the
+existing agents (Developer: no dev-time secrets bundled + minimal entitlements;
+Release Manager: independent re-check of both on the archived .ipa as a final
+pre-submission gate — see the two agent definition files). **Revisit and add a
+dedicated Security Review agent if any of these are ever introduced: cloud saves,
+user accounts, IAP, or embedded web content.**
 
 ## Blockers / open questions
 

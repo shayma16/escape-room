@@ -10,7 +10,7 @@ struct PauseMenuView: View {
     @ObservedObject var session: LevelSession
     @Binding var isPresented: Bool
     @State private var showRestartConfirm = false
-    @State private var goToMainMenu = false
+    @EnvironmentObject private var navigator: AppNavigator
 
     var body: some View {
         ZStack {
@@ -33,10 +33,11 @@ struct PauseMenuView: View {
                 }
                 .buttonStyle(.chromePrimary)
 
-                Button(action: { goToMainMenu = true }) {
+                Button(action: exitToMainMenu) {
                     Label("Main Menu", systemImage: "house")
                 }
                 .buttonStyle(.chromePrimary)
+                .accessibilityIdentifier("pause-main-menu")
             }
         }
         .alert("Restart level?", isPresented: $showRestartConfirm) {
@@ -53,9 +54,16 @@ struct PauseMenuView: View {
                 SettingsView()
             }
         }
-        .fullScreenCover(isPresented: $goToMainMenu) {
-            RootAppView()
-        }
+    }
+
+    /// QA-BUG-019 fix: pop the shared NavigationStack back to the existing Main Menu
+    /// root (tearing down the level screen and its LevelSession) instead of covering
+    /// the live game with a brand-new root; the level's ambient loop stops too. No
+    /// confirmation, per J5 — every GameState mutation is already persisted.
+    private func exitToMainMenu() {
+        SoundManager.shared.stopAmbient()
+        isPresented = false
+        navigator.popToRoot()
     }
 
     @State private var presentSettings = false

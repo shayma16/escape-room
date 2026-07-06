@@ -2,8 +2,9 @@ import SwiftUI
 import SpriteKit
 
 /// Thin SwiftUI wrapper presenting a RoomScene for the coordinator's current view.
-/// Rebuilds the coordinator (and thus the SpriteKit scene) whenever `viewID` changes,
-/// since each of the 11 views is its own SKScene per the architecture.
+/// Also hands the coordinator a weak reference to the SKView so inventory-drop
+/// coordinates can be converted EXACTLY via UIKit + SKScene.convertPoint(fromView:)
+/// instead of a hand-rolled linear approximation (QA-BUG-014).
 struct SpriteKitContainerView: UIViewRepresentable {
     @ObservedObject var coordinator: RoomSceneCoordinator
 
@@ -11,6 +12,7 @@ struct SpriteKitContainerView: UIViewRepresentable {
         let view = SKView()
         view.ignoresSiblingOrder = true
         view.presentScene(coordinator.scene)
+        coordinator.skView = view
         return view
     }
 
@@ -18,5 +20,6 @@ struct SpriteKitContainerView: UIViewRepresentable {
         if uiView.scene !== coordinator.scene {
             uiView.presentScene(coordinator.scene)
         }
+        coordinator.skView = uiView
     }
 }

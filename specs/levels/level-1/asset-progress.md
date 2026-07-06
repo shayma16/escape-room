@@ -66,3 +66,47 @@ _Output root: specs/assets/global/. Gate: icon must read as keyhole in grayscale
 | 2 | launch/emblem-keyhole (white on transparent) | edit from icon -> PIL alpha-ramp cleanup | done | $0.0315 | 1024 RGBA, mark 55% height, centered; matches icon aperture |
 | 3 | launch/launch-ipad 2732x2048 | PIL composition, $0 | done | $0.0000 | exact #101010, emblem 40% height @ 11% white |
 | 4 | launch/launch-iphone 2796x1290 | PIL composition, $0 | done | $0.0000 | same recipe; landscape-locked (J6) |
+
+---
+
+# BUG-004 re-frame batch (QA fix — dual-safe-zone violations; crop-scoped edits only)
+
+PROGRESS: 11/11 done | 0 retrying | 0 failed | 0 remaining | $0.11 spent
+
+_Fix ruling (user): re-frame offending plates so every puzzle-critical element sits wholly inside the §8 dual-safe zone (iPad 4:3 centered crop x∈[427,2133] on the 2560×1280 @3x plates; iPhone 19.5:9 band y∈[49,1231]). Display policy + style guide unchanged._
+_Verified violations: z1-entry star keyhole (2150–2215) + feed cup (2155–2265) + cage (1875–2295) right-cropped; z1-hearth hand bellows (55–205) left-cropped; z2-cabinet potion shelf (8–320) left-cropped, Orion clue stars (2140–2330) + drawer/crank (1830–2330 incl. crank to ~2250) right-cropped; z3-cellar winch wheel+socket (300–450, socket 355–395) left-cropped, barrel (1900–2550) right-cropped._
+_Verified NON-violations (no edit): z2 sun recess (ray tip 424 vs 427 = 3px decorative tip; recess body ≥450), z2 astrolabe wheel/arm (≤1960), z1-entry windowsill (no rune mark baked in wide), z3 shutter (state visual; beam may enter from overscan per §8; winch is the interactive element), z1-hearth clock/poker, z2 crescent recess, z4 + v-bench (nothing flagged, nothing found)._
+_Techniques: PIL rigid moves/shifts at $0 first (state variants transformed identically = pixel-aligned by construction); Flux 2 Pro crop-edits only for exposed background fills, occlusion blends, and the re-staged pried-lid state. z3 beam plates rebuilt in changed regions via validated engine math screen_atm(0.74·x) (MAE 0.32 vs shipped plates)._
+_Pre-generation estimate: $0.10 base, ~$0.35 projected with retries (cap $4.00)._
+
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 1 | z1/v-hearth bellows-remove (crop 0,60–290,700) | Flux edit | done | $0.0136 | existing PIL wall patch verified natural at 100% zoom; both Flux takes rejected for tone/texture drift (kept $0 PIL result) |
+| 2 | z1/v-hearth bellows-blend (crop ~1500,260–1780,880) | Flux edit | done | $0.0077 | hybrid: PIL wall-restore + synth soft shadow + Flux wire-zone patch (1 take); applied identically to base + 3 variants, pixel-aligned |
+| 3 | z1/v-entry cage-strip fill (crop 2162,0–2560,1280) | Flux edit | done | $0.0154 | take1 accepted (tone-matched, feathered); wall band + table rim + floor repaired; applied identically to base + 4 variants |
+| 4 | z2/v-cabinet right-vacancy fill (crop 2200,0–2560,1230) | Flux edit | done | $0.0130 | PIL log-clone + graded shadow continuation (Flux take rejected: kept ledge, flattened corner column); delta-propagated to 3 variants |
+| 5 | z2/v-cabinet arm-redraw (crop ~1600,180–2090,560) | Flux edit | done | $0.0057 | take1 accepted; rod-corridor-only composite (moon/stars/pane pixels untouched outside 30px corridor); continuous brass rod restored; propagated to 3 variants |
+| 6 | z2/v-cabinet potion-shelf-remove (crop 0,140–350,690) | Flux edit | done | $0.0000 | verified already complete in prior PIL pass (shelf+bottles+bracket removed, oil lamp fully reconstructed, wall natural at 100% zoom vs reject); no Flux edit needed |
+| 7 | z2/v-cabinet potion-shelf-blend (crop ~1020,180–1400,450) | Flux edit | done | $0.0038 | take1 + two-layer composite: reject-wall restore under tight bottles/board/shadow mask; labels+pictograms preserved; delta-propagated to 3 variants |
+| 8 | z3/v-cellar left-strip fill (crop 0,0–400,1280) | Flux edit | done | $0.0154 | take1 accepted (tone-matched, composited x<300); organic roots replace mirror placeholder; variants get strip via combined propagation |
+| 9 | z3/v-cellar barrel-vacancy fill (crop 1850,560–2560,1280) | Flux edit | done | $0.0152 | take1 accepted; barrel removed, root wall + dirt floor continued, ladder kept; composited x>=2085 |
+| 10 | z3/v-cellar barrel-blend (crop ~1690,600–2200,1120) | Flux edit | done | $0.0076 | PIL blend kept (silhouette composite + luminance adapt 0.84 + contact shadow; Flux take rejected: enlarged barrel, invented lantern); recipe propagated to all 11 variants incl. 4 beam plates via screen_atm+residual engine math |
+| 11 | z3/v-cellar barrel-pried re-stage (new barrel rect) | Flux edit | done | $0.0100 | PIL re-stage kept (0.56-scale original pried content, union-mask erase of closed silhouette, same fade+shadow recipe; Flux take rejected: enlarged barrel); weight+pry-lid readable |
+
+_PIL-only work (no API cost): per-variant identical transforms (hearth ×3, entry ×4, cabinet ×3, cellar ×11 incl. 4 beam plates via engine math), feathered masks, luminance adapts, star re-stamps, contact shadows, @2x/@1x exports, safe-zone + grayscale verification, rejects archive._
+
+## Post-pass verification log (2026-07-06, completed after interruption)
+
+**VERIFICATION COMPLETE — HOLD CLEARED. All 8 element groups inside the dual-safe zone; manifest geometry updated (`asset-manifest.json` → `bug004_reframe`)._**
+
+- **Safe-zone bounds (final @3x plates vs x∈[427,2133], y∈[49,1231]) — all PASS:**
+  - z1-entry star keyhole 2150–2215 → 2000–2065; feed cup 2155–2265 → 2005–2115 (cup body measured 1995–2075, y510–560); cage ironwork 1875–2295 → measured 1725–2085 (QA's 2295 included the non-critical table, which runs to ~2270). Rigid dx −150 verified pixel-exact (MAE sweep floor at exactly −150).
+  - z1-hearth bellows 55–205 → measured content bbox (1577,300)–(1716,727).
+  - z2-cabinet potion shelf 8–320 → rect (1066,218)–(1382,414), added content incl. shadow 1037–1397; Orion stars 2140–2330 → star pixels 1936–2111, all 7 dots at canonical geometry (belt-2 (2024.2,446.4) within 0.7px, mean pt err 1.5px, tilt 36.3° vs 35° canonical = discretization); drawer/crank 1830–2330 → drawer 1630–2130 (rail edge measured ~2130 = 3px inside), crank 1867–2052. Window move MAE 0.0 outside arm corridor; apron 0.013.
+  - z3-cellar scene dx +132 pixel-exact (MAE 0.0); winch wheel measured (525,320)–(665,450), socket (585,360)–(635,410); barrel 1900–2550 → (1758,690)–(2120,1015); pried-state diff bbox (1799,769)–(2120,1122).
+- **Grayscale gates — PASS:** Orion 7-dot + belt legible; pried barrel reads by lid-teeth + weight silhouette; winch socket reads as dark square absence (macro cue = cu-winch-socket, F13, unchanged); star-keyhole macro cue = cu-star-keyhole (unchanged); shelf keeps 5 silhouettes + pictogram labels.
+- **Seam/ghost audit (all 11 edit regions at 100–200%):** no seams, no lighting/style drift, no duplicates — EXCEPT one defect found & fixed at $0: **orphaned bellows grip handle + rope stub** at the old hearth spot (below the y548 move cut, region ~(38,540)–(185,655)); removed via PIL diffusion fill (lighting-field inpaint + same-log grain), applied byte-identically to base + 3 variants, @2x/@1x re-exported (first clone attempt too bright — restored from work intermediates and redone).
+- **Variant alignment:** all 17 variants diff-confined to intended state regions; no diffs in any fill/move region; beam plates match screen_atm(0.74·x) prediction outside beam corridor (MAE 0.61–1.69).
+- **Scale exports:** all 25 plates @2x/@1x present, size-correct, Lanczos-exact. Rejects archive complete (25 × 3 scales in `_rejects/bug004-pre-reframe/`).
+- **Manifest:** `bug004_reframe` section added — safe-zone def, per-view transforms, hotspot-rect deltas (incl. barrel scale map x′=1758+0.545·(x−1896), y′=690+0.545·(y−684)), measured element bounds, verification record; batch-2 flag F7 marked RESOLVED.
+- **Spend:** API $0.11 (vs $0.10 est, $4.00 cap); post-passes $0. Running project total $8.63 (level-1 $8.11 + global $0.41 + re-frame $0.11).

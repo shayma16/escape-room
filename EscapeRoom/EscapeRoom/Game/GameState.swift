@@ -44,6 +44,13 @@ final class GameState: ObservableObject {
         } else {
             self.data = LevelSaveData(levelID: levelID)
         }
+        // QA-BUG-001 fix: the graph's start zone is unlocked from the first frame of a
+        // fresh save (zones[0].start_zone == true). Applied on every init so saves
+        // written by earlier builds (which never contained the start zone) migrate too.
+        if !data.unlockedZones.contains(PuzzleGraph.startZoneID) {
+            data.unlockedZones.insert(PuzzleGraph.startZoneID)
+            persist()
+        }
     }
 
     // MARK: - Read helpers
@@ -142,9 +149,11 @@ final class GameState: ObservableObject {
     }
 
     /// Restart just this level's progress (Pause -> Restart Level), leaving other
-    /// levels' saves and global settings untouched.
+    /// levels' saves and global settings untouched. The start zone stays unlocked
+    /// (QA-BUG-001) — a restarted level must be navigable exactly like a fresh save.
     func restartLevel() {
         data = LevelSaveData(levelID: data.levelID)
+        data.unlockedZones.insert(PuzzleGraph.startZoneID)
         persist()
     }
 

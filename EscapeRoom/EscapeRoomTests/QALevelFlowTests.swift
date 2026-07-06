@@ -380,17 +380,14 @@ final class QALevelFlowTests: XCTestCase {
 
     // MARK: - 6. QA-BUG records (strict expected failures; see qa-report.md)
 
-    /// QA-BUG-001 (critical): the start zone z1-cabin is never unlocked, so
-    /// LevelSession.availableViews() excludes all three z1 views and chevron
-    /// navigation is inert from a fresh save (player is stuck on v-hearth).
+    /// QA-BUG-001 (critical) — FIXED: the start zone is unlocked on every GameState
+    /// init (fresh save, migration of older saves, and after Restart Level).
     func testQA_BUG_001_freshSessionExposesStartZoneViews() {
         let session = LevelSession(levelID: 1, store: SaveGameStore(directory: tempDir()))
-        XCTExpectFailure("QA-BUG-001: z1-cabin never enters unlockedZones; start-zone navigation is dead") {
-            let views = session.availableViews()
-            XCTAssertTrue(views.contains(.hearth), "v-hearth must be reachable from a fresh save")
-            XCTAssertTrue(views.contains(.study), "v-study must be reachable from a fresh save")
-            XCTAssertTrue(views.contains(.entry), "v-entry must be reachable from a fresh save")
-        }
+        let views = session.availableViews()
+        XCTAssertTrue(views.contains(.hearth), "v-hearth must be reachable from a fresh save")
+        XCTAssertTrue(views.contains(.study), "v-study must be reachable from a fresh save")
+        XCTAssertTrue(views.contains(.entry), "v-entry must be reachable from a fresh save")
     }
 
     /// QA-BUG-002 (critical): p15 (bottle the draught) has no interaction path.
@@ -405,10 +402,9 @@ final class QALevelFlowTests: XCTestCase {
         coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.phial, hotspotID: "cauldron")
         // Anti-softlock: whatever happens, the phial must not vanish.
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.phial) || state.hasItem(PuzzleGraph.ItemID.phialDraught))
-        XCTExpectFailure("QA-BUG-002: no UI path invokes PuzzleEngine.fillPhial; p15 unreachable, level unwinnable") {
-            XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.phialDraught),
-                          "using the empty phial on the ready cauldron must yield itm-phial-draught (p15)")
-        }
+        // FIXED: the cauldron drop handler routes the empty phial to PuzzleEngine.fillPhial.
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.phialDraught),
+                      "using the empty phial on the ready cauldron must yield itm-phial-draught (p15)")
     }
 
     /// QA-BUG-003 (critical): p17 (slide bolt and leave) has no interaction path.
@@ -419,9 +415,8 @@ final class QALevelFlowTests: XCTestCase {
         state.setFlag(PuzzleGraph.StateFlag.doorUnsealed)
         let coordinator = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize)
         coordinator.scene.onHotspotTap?("door-lock")
-        XCTExpectFailure("QA-BUG-003: no UI path invokes PuzzleEngine.slideBoltAndLeave; p17 unreachable") {
-            XCTAssertTrue(state.isComplete, "tapping the unsealed door/bolt must complete the level (p17)")
-        }
+        // FIXED: once door-unsealed holds, the door tap slides the bolt (p17) and wins.
+        XCTAssertTrue(state.isComplete, "tapping the unsealed door/bolt must complete the level (p17)")
     }
 
     /// QA-BUG-005 (major): tapping the astrolabe hotspot auto-solves p03 — the
@@ -433,10 +428,18 @@ final class QALevelFlowTests: XCTestCase {
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
         let coordinator = RoomSceneCoordinator(viewID: .cabinet, state: state, size: sceneSize)
         coordinator.scene.onHotspotTap?("astrolabe")
-        XCTExpectFailure("QA-BUG-005: astrolabe tap hardcodes the solution plate; p03 is bypassed") {
-            XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion),
-                           "a bare tap (no plate chosen) must not solve p03")
-        }
+        // FIXED: a bare tap opens the six-plate close-up; only the player's plate
+        // choice reaches the engine.
+        XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion),
+                       "a bare tap (no plate chosen) must not solve p03")
+        XCTAssertEqual(coordinator.activeCloseUp, .astrolabe, "the tap must open the plate-selection mini-game")
+        // The mini-game path: wrong plates reject, the Orion plate solves.
+        coordinator.selectAstrolabePlate(4)
+        XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion))
+        coordinator.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex)
+        XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion))
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.crank))
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.silverCoin))
     }
 
     /// QA-BUG-006 (major): resolveBrew never clears cauldronIngredients on success and
@@ -453,12 +456,13 @@ final class QALevelFlowTests: XCTestCase {
                                                 stirCount: BrewSolution.stirCount, state: state), .success)
         // Player stirs again with wrong parameters after success (reachable via BrewControlView).
         _ = PuzzleEngine.resolveBrew(flameStage: 1, stirDirection: .clockwise, stirCount: 1, state: state)
-        XCTExpectFailure("QA-BUG-006: post-success re-resolve duplicates spent ingredients") {
-            XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.feather),
-                           "spent feather must not be re-granted by a post-success fizzle")
-            XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.paste))
-            XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.shavings))
-        }
+        // FIXED: success consumes the ingredients into the draught and later resolves
+        // are no-ops; draught-ready stays latched.
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.feather),
+                       "spent feather must not be re-granted by a post-success fizzle")
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.paste))
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.shavings))
+        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.draughtReady))
     }
 
     /// QA-BUG-007 (minor): pickBlossom has no already-solved guard, so after grinding
@@ -473,10 +477,9 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertTrue(PuzzleEngine.grindPaste(state: state))
         XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.blossom))
         _ = PuzzleEngine.pickBlossom(state: state)
-        XCTExpectFailure("QA-BUG-007: planter re-grants the blossom after it was ground into paste") {
-            XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.blossom),
-                           "the single blossom was already picked and consumed (visual state: 'one blossom picked')")
-        }
+        // FIXED: the already-solved guard prevents re-granting the single blossom.
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.blossom),
+                       "the single blossom was already picked and consumed (visual state: 'one blossom picked')")
     }
 
     /// QA-BUG-008 (minor): rotateMirror marks p09-mirror-aim as SOLVED at any detent,
@@ -484,10 +487,11 @@ final class QALevelFlowTests: XCTestCase {
     func testQA_BUG_008_mirrorAimSolvedOnlyAtDetent3() {
         let state = makeState(tempDir())
         PuzzleEngine.rotateMirror(toDetent: 1, state: state)
-        XCTExpectFailure("QA-BUG-008: p09 marked solved at wrong detent") {
-            XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.mirrorAim),
-                           "p09 solution_fixed is detent-3; detent-1 must not mark it solved")
-        }
+        // FIXED: only detent-3 marks p09 solved.
+        XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.mirrorAim),
+                       "p09 solution_fixed is detent-3; detent-1 must not mark it solved")
+        PuzzleEngine.rotateMirror(toDetent: MirrorSolution.solutionDetent, state: state)
+        XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.mirrorAim))
     }
 
     /// QA-BUG-009 (major): Hotspot.minHitSize (44) is applied in SCENE PIXELS, not
@@ -512,9 +516,9 @@ final class QALevelFlowTests: XCTestCase {
                 }
             }
         }
-        XCTExpectFailure("QA-BUG-009: minHitSize enforced in scene px, not screen pt; sub-44pt targets on iPhone") {
-            XCTAssertTrue(offenders.isEmpty, "hotspots below the 44pt floor on iPhone SE: \(offenders.joined(separator: "; "))")
-        }
+        // FIXED: Hotspot.minHitSceneSize is 44 pt converted at the smallest supported
+        // device's .aspectFill scale, so every hotspot clears the floor in points.
+        XCTAssertTrue(offenders.isEmpty, "hotspots below the 44pt floor on iPhone SE: \(offenders.joined(separator: "; "))")
     }
 
     /// QA-BUG-022 (critical): no game art is reachable through GameAssetLoader in the
@@ -526,13 +530,17 @@ final class QALevelFlowTests: XCTestCase {
     /// RoomScene base texture is nil (black scenes) AND configureHotspots() returns
     /// early without creating hotspot nodes, so scene tap targets are dead too.
     func testQA_BUG_022_gameArtReachableThroughAssetLoaderInAppBundle() {
-        XCTExpectFailure("QA-BUG-022: GameAssets folder tree not reachable in app bundle; scenes render black, taps dead") {
-            for plate in ["z1-hearth-base", "z1-study-base", "z1-entry-base", "z2-bench-base",
-                          "z2-cabinet-base", "z3-cellar-base", "z4-alcove-base", "dial-face"] {
-                XCTAssertNotNil(GameAssetLoader.shared.image(named: plate),
-                                "\(plate) must be loadable from the app bundle at runtime")
-            }
+        // FIXED: Resources/GameAssets and Resources/Audio ship as folder REFERENCES
+        // (hierarchy-preserving) instead of a file-system-synchronized group.
+        for plate in ["z1-hearth-base", "z1-study-base", "z1-entry-base", "z2-bench-base",
+                      "z2-cabinet-base", "z3-cellar-base", "z4-alcove-base", "dial-face"] {
+            XCTAssertNotNil(GameAssetLoader.shared.image(named: plate),
+                            "\(plate) must be loadable from the app bundle at runtime")
         }
+        // Audio must ship the same way (SoundManager subdirectory lookup).
+        XCTAssertNotNil(Bundle.main.url(forResource: "sfx-click", withExtension: "wav", subdirectory: "Audio")
+            ?? Bundle.main.url(forResource: "sfx-click", withExtension: "wav"),
+                        "sfx-click.wav must be loadable from the app bundle at runtime")
     }
 
     /// QA-BUG-004 (critical, iPad): several puzzle-critical hotspots sit outside the
@@ -542,19 +550,23 @@ final class QALevelFlowTests: XCTestCase {
     /// OFF-SCREEN on the primary device.
     func testQA_BUG_004_criticalHotspotsInsideDualSafeZone() {
         // iPad Pro 13" landscape: 1376 x 1032 pt. .aspectFill scale is height-bound
-        // (1032/1366); visible scene width = 1376 / scale ~= 1821 of 2732. The base
-        // plates are 2560 px wide, centered in the 2732-wide scene.
+        // (1032/1366); visible scene width = 1376 / scale ~= 1821 of 2732. Since the
+        // fix pass, the 2:1 base plate fills the scene exactly, so plate-normalized ==
+        // scene-normalized and the visible band is computed over the scene width
+        // (this matches the asset manifest's bug004_reframe safe zone of
+        // x in [427, 2133] on the 2560-wide @3x plates, i.e. [0.1668, 0.8332]).
         let iPadScale = max(1376.0 / sceneSize.width, 1032.0 / sceneSize.height)
         let halfVisibleScene = (1376.0 / iPadScale) / 2.0
-        let plateWidth: CGFloat = 2560
-        let minVisibleX = (plateWidth / 2 - halfVisibleScene) / plateWidth   // ~0.144
-        let maxVisibleX = 1 - minVisibleX                                    // ~0.856
+        let minVisibleX = (sceneSize.width / 2 - halfVisibleScene) / sceneSize.width // ~0.1666
+        let maxVisibleX = 1 - minVisibleX                                            // ~0.8334
 
+        // (Hotspot inventory updated in the fix pass: per-tile rune hotspots became the
+        // single "rune-door" close-up trigger; the bench gained "workbench" for p12.)
         let critical: [ViewID: [String]] = [
             .hearth: ["poker", "ash", "clock", "bellows", "lintel", "trapdoor-dial"],
-            .study: ["grimoire", "triptych", "flowerpot", "rune-tile-1", "rune-tile-2", "rune-tile-3", "rune-tile-4"],
+            .study: ["grimoire", "triptych", "flowerpot", "rune-door"],
             .entry: ["door-lock", "rusted-key", "windowsill", "cage", "feed-cup", "star-keyhole"],
-            .bench: ["cauldron", "floor-bellows", "ladle", "mortar"],
+            .bench: ["cauldron", "floor-bellows", "ladle", "mortar", "workbench"],
             .cabinet: ["sun-slot", "moon-slot", "astrolabe", "window", "potion-shelf"],
             .cellar: ["barrel", "drawer", "hook", "winch", "mirror"],
             .alcove: ["planter", "statue-key"],
@@ -569,8 +581,12 @@ final class QALevelFlowTests: XCTestCase {
                 }
             }
         }
-        XCTExpectFailure("QA-BUG-004: puzzle-critical hotspots outside the iPad-visible band [~0.14, ~0.86]") {
-            XCTAssertTrue(offenders.isEmpty, "outside dual-safe zone: \(offenders.joined(separator: "; "))")
-        }
+        // FIXED (BUG-004 art integration, 2026-07-06): the Asset Generation agent
+        // re-framed the four offending plates (entry cage group dx -150, hearth
+        // bellows to the fireplace's right, cabinet window/drawer dx -200 + potion
+        // shelf to wall center, cellar dx +132 + barrel re-staged at 0.545 scale);
+        // hotspots re-aligned to the manifest's bug004_reframe geometry. Every
+        // puzzle-critical hotspot now sits wholly inside the dual-safe zone.
+        XCTAssertTrue(offenders.isEmpty, "outside dual-safe zone: \(offenders.joined(separator: "; "))")
     }
 }
