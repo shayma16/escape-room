@@ -29,7 +29,11 @@ If the session is cut off, resume by taking stock — don't restart:
 
 ## Pipeline position
 
-**Step 13 — USER CHECKPOINT: re-QA go/no-go PENDING. QA recommends GO.**
+**Step 14 — GO given by user 2026-07-06. Documentation second pass + Developer polish
+batch (carry-forwards) RUNNING.** After both: Level 1 complete; next is either Level 2
+theme (step 1) or Release stage when the user decides enough levels exist.
+
+_Step-13 record:_ **USER CHECKPOINT: re-QA go/no-go — GO (user, 2026-07-06). QA had recommended GO.**
 Re-QA verification pass complete 2026-07-06 (qa-report.md "Re-QA verification pass"
 section, commit 798867d): 22/22 bug fixes verified (70 unit tests × 3 devices, 0
 failures; all 10 former expected-failure records now permanent passing assertions);
