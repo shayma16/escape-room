@@ -75,6 +75,14 @@ final class EscapeRoomUITests: XCTestCase {
         add(attachment)
     }
 
+    /// Milestone assert: a pickup/yield reached the inventory bar. Doubles as a
+    /// diagnostic that the preceding scene tap actually landed on its hotspot.
+    private func assertHolding(_ app: XCUIApplication, _ item: String,
+                               file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertTrue(app.descendants(matching: .any)["inventory-\(item)"].waitForExistence(timeout: 5),
+                      "\(item) must be in the inventory bar", file: file, line: line)
+    }
+
     // MARK: - All-device smoke: menus, level entry, z1 navigation, pause, settings
 
     func testMenuAndNavigationSmoke() {
@@ -120,33 +128,41 @@ final class EscapeRoomUITests: XCTestCase {
         shoot(app, "play-01-hearth")
 
         // z1 hearth: poker, ash sift (glint close-up), rug discovery, dial panel.
+        // NOTE: taps on low-in-frame hotspots must stay above screen-y ~0.80 — the
+        // 72-pt inventory bar covers the bottom band on iPhone and swallows touches
+        // (root cause of CI run 28753975221's failure at the dial step).
         tapScene(app, 0.235, 0.685)                 // take poker
+        assertHolding(app, "itm-poker")
         tapScene(app, 0.325, 0.650)                 // sift ash -> glint close-up
+        assertHolding(app, "itm-gold-ring")
         shoot(app, "play-02-ash-glint")
         dismissCloseUp(app)
-        tapScene(app, 0.15, 0.90)                   // move rug (discovery)
-        tapScene(app, 0.42, 0.84)                   // trapdoor -> dial close-up
+        tapScene(app, 0.15, 0.76)                   // move rug (upper rug edge, clear of the bar)
+        tapScene(app, 0.42, 0.76)                   // trapdoor -> dial close-up
         shoot(app, "play-03-dial-panel")
         for _ in 0..<1 { tapID(app, "moon-dial-1") } // waxing crescent
         for _ in 0..<4 { tapID(app, "moon-dial-2") } // full
         for _ in 0..<5 { tapID(app, "moon-dial-3") } // waning gibbous -> unlock
         shoot(app, "play-04-dials-solved")
         dismissCloseUp(app)
-        tapScene(app, 0.42, 0.84, settle: 1.2)      // descend through the trapdoor
+        tapScene(app, 0.42, 0.76, settle: 1.2)      // descend through the trapdoor
         shoot(app, "play-05-cellar")
 
         // z3 cellar: barrel pry, counterweight, spoon, mirror to detent-3.
         tapScene(app, 0.87, 0.73)                   // pry barrel (poker held) -> weight
+        assertHolding(app, "itm-weight")
         dragItem(app, item: "itm-weight", toScene: 0.25, 0.32) // hang weight -> z4
         Thread.sleep(forTimeInterval: 1.2)          // weight-hung beat + shelf slide
         shoot(app, "play-06-shelf-slid")
         tapScene(app, 0.36, 0.63)                   // take spoon
+        assertHolding(app, "itm-spoon")
         tapScene(app, 0.58, 0.76)                   // mirror detent 2
         tapScene(app, 0.58, 0.76)                   // mirror detent 3
         tapID(app, "nav-next")                      // cellar -> alcove
         Thread.sleep(forTimeInterval: 0.8)
         shoot(app, "play-07-alcove")
         tapScene(app, 0.595, 0.265)                 // take star-bit cage key
+        assertHolding(app, "itm-cage-key")
 
         // Back around to the study for the rune door.
         tapID(app, "nav-next")                      // alcove -> hearth
@@ -168,9 +184,13 @@ final class EscapeRoomUITests: XCTestCase {
         tapScene(app, 0.84, 0.72)                   // astrolabe close-up
         shoot(app, "play-11-astrolabe")
         tapID(app, "astrolabe-plate-2")             // Orion -> drawer springs open
+        assertHolding(app, "itm-crank")
+        assertHolding(app, "itm-silver-coin")
         dismissCloseUp(app)
         dragItem(app, item: "itm-gold-ring", toScene: 0.20, 0.275)   // sun slot
         dragItem(app, item: "itm-silver-coin", toScene: 0.33, 0.275) // moon slot -> file + phial
+        assertHolding(app, "itm-file")
+        assertHolding(app, "itm-phial")
         shoot(app, "play-12-cabinet-open")
 
         // Free the crow.
@@ -178,12 +198,14 @@ final class EscapeRoomUITests: XCTestCase {
         tapID(app, "nav-previous")                  // bench -> entry
         Thread.sleep(forTimeInterval: 0.8)
         tapScene(app, 0.83, 0.33)                   // star keyhole with key -> crow freed
+        assertHolding(app, "itm-feather")
         shoot(app, "play-13-crow-freed")
         dismissCloseUp(app)
 
         // File + spoon -> shavings (inventory combine).
         tapID(app, "inventory-itm-file")
         tapID(app, "inventory-itm-spoon")
+        assertHolding(app, "itm-shavings")
 
         // Light the alcove: winch, then pick the blossom.
         tapID(app, "nav-next")                      // entry -> bench
@@ -196,6 +218,7 @@ final class EscapeRoomUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 0.8)
         shoot(app, "play-15-blooming")
         tapScene(app, 0.465, 0.73)                  // pick blossom
+        assertHolding(app, "itm-blossom")
 
         // Brew.
         tapID(app, "nav-next")                      // alcove -> hearth
@@ -204,6 +227,7 @@ final class EscapeRoomUITests: XCTestCase {
         tapID(app, "nav-next")                      // entry -> bench
         Thread.sleep(forTimeInterval: 0.8)
         dragItem(app, item: "itm-blossom", toScene: 0.765, 0.37) // mortar -> paste
+        assertHolding(app, "itm-paste")
         dismissCloseUp(app)
         dragItem(app, item: "itm-paste", toScene: 0.255, 0.48)
         dragItem(app, item: "itm-shavings", toScene: 0.255, 0.48)
@@ -215,6 +239,7 @@ final class EscapeRoomUITests: XCTestCase {
         shoot(app, "play-16-draught")
         dismissCloseUp(app)
         dragItem(app, item: "itm-phial", toScene: 0.255, 0.48) // bottle the draught
+        assertHolding(app, "itm-phial-draught")
         dismissCloseUp(app)
 
         // Endgame at the door.

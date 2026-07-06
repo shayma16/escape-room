@@ -357,10 +357,47 @@ art integration step.
 18. **`shelf` hotspot removed** from v-cellar: it was inert and only swallowed drops
     meant for the hook (QA-BUG-014's observed failure mode).
 
+### Security checklist (run 2026-07-06, per the Developer agent brief; results for QA)
+
+1. **No development-time secrets in the shipped app: PASS.**
+   - `.env` (the fal.ai key, 77 bytes) lives at the repo root only; it is gitignored
+     (`.env` + `.env.*`), untracked by git, not present anywhere under `EscapeRoom/`,
+     and referenced by zero pbxproj entries. The project has NO shell-script build
+     phases at all, so nothing can copy it into a bundle.
+   - Pattern grep (`fal.ai`, `FAL_KEY`, `api[_-]key`, `secret`, `credential`,
+     `Bearer`, `sk-…`) over every `.swift`, `.plist`, `.pbxproj`, `.json`, `.xcscheme`
+     under `EscapeRoom/`: zero matches (after excluding the game's literal
+     key-item names like `cage-key`).
+   - Built app's resource set: the app's Resources build phase ships exactly three
+     entries — `Assets.xcassets` (chrome art), `Audio/` and `GameAssets/` folder
+     references. Those trees contain only `.png/.jpg/.wav/.json`; the JSONs carry only
+     sprite/overlay geometry (grepped for key/token/password-like strings: clean).
+     Nothing else can enter the bundle (no other resource entries, no script phases).
+2. **Minimal entitlements/permissions: PASS.**
+   - No `.entitlements` file exists and no `CODE_SIGN_ENTITLEMENTS` build setting is
+     set on any target — zero capability entitlements.
+   - `Info.plist` contains zero `*UsageDescription` permission strings (no camera,
+     microphone, location, contacts, photos, Bluetooth — verified by grep). The only
+     device-facing declarations are orientation lock, full-screen, status-bar hiding,
+     and the launch screen.
+
 ### CI (this pass)
 
-- Runs recorded below at push time; see the "CI resolution log — QA fix pass" addendum
-  at the end of this section for anything that needed fixing to get green.
+- Run 1 — https://github.com/shayma16/escape-room/actions/runs/28753975221 (branch
+  `qa-fix-pass-level-1`): build GREEN, **all unit-test steps GREEN on all three matrix
+  devices** (iPad 13", iPhone SE, Dynamic Island iPhone) — every unwrapped QA bug
+  record and the new regression net passed on-device, including the BUG-022
+  folder-reference bundle fix and the still-wrapped BUG-004 expected failure. FAILED
+  only in the new UI-test full playthrough, at the moon-dial step ("moon-dial-1 must
+  exist"). Root cause (log + geometry): the scripted rug (scene-y 0.90) and trapdoor
+  (0.84) taps convert to screen-y > 0.81 on iPhone SE — under the 72-pt inventory
+  bar, which swallowed the touches, so the rug never moved and the dial close-up
+  never opened. Fix: tap the upper band of those hotspots (scene-y 0.76) and add
+  per-milestone inventory assertions (`assertHolding`) after every pickup/yield so a
+  future miss fails at the exact step instead of three steps later. Test-script
+  coordinate bug, not an app bug — the rug/trapdoor art extends well above the bar
+  for real players.
+- Later runs recorded below as they complete.
 
 ### BUG-004 status at handoff
 
