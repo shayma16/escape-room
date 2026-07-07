@@ -29,7 +29,38 @@ If the session is cut off, resume by taking stock — don't restart:
 
 ## Pipeline position
 
-**RELEASE STAGE (TestFlight-only) — BUILD UPLOADED TO TESTFLIGHT 2026-07-07.** Within
+**POST-RELEASE FEEDBACK ROUND 1 → BUILD 2 IN PROGRESS (2026-07-07).** User tested build 1
+on TestFlight (iPad Pro) and reported 25 items (`specs/feedback-backlog.md`); intake
+processed, clustered, routed; both user checkpoints observed (checkpoint 1 = routed batch
+review PASSED with design decisions; checkpoint 2 = QA regression review, still upcoming).
+
+User-approved design decisions this round:
+- **Clue-gating** (F-012): puzzle inputs inert until their clues are viewed in-game.
+  Puzzle-graph **rev 1.3** (Designer) — VALIDATED PASS (difficulty holds 6.0, no
+  soft-locks). **p01 gates on grimoire page A = REQUIRED, FINAL user ruling** (overrode
+  a Designer+Validator advisory to demote it; do not revert). This is now a **standing
+  design rule for all future levels** — Level 2's Designer must apply clue-gating from
+  the start (amends CLAUDE.md principle #4 at the puzzle-input level; branches/order-free
+  state model otherwise unchanged). TODO: formalize in CLAUDE.md when convenient.
+- **Select-then-tap interaction** (drag + passive auto-apply removed) — neutralxe model.
+- **Sound overhaul** game-wide (generic "psh" gone; per-object or silence; pickup sound
+  kept), quieter ambience, and audio-lifecycle fix.
+- Inventory reachable in every close-up + item-inspect; nav model = chevrons cycle VIEWS
+  within a zone (zone changes only via diegetic passages); chrome restyle per style-guide
+  §7 Rev-2 addendum (Art Director). Manual pickup from solved containers.
+
+RUNNING: Developer fix batch (branch `feedback-round-1`) + Asset Generation art fixes
+(AF-1..AF-4). DONE: Designer rev 1.3, Validator PASS, Art Director §7-R addendum.
+NEXT: Developer integrates gating (polling for rev-1.3 PASS — now satisfied) → green CI →
+full QA regression (interaction + nav models touch everything) → **checkpoint 2 user
+review** → release build 2 to TestFlight.
+
+_Two items NOT changed (working as designed):_ F-008 clock cuckoo (one-shot flavor, D5),
+and rune-door-before-flowerpot was a valid alt path (now moot under gating).
+
+---
+
+_Prior:_ **RELEASE STAGE (TestFlight-only) — BUILD UPLOADED TO TESTFLIGHT 2026-07-07.** Within
 1.0 (build from release run 28822356309) archived, cloud-signed, security-scanned
 (clean), and uploaded to App Store Connect successfully. Repo is now PUBLIC (user
 choice — free Actions minutes, removed the GitHub-billing spend block that stopped the

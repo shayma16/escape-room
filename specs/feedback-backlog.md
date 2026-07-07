@@ -42,6 +42,16 @@ kept verbatim as logged (Phase 1); this table is the Phase 2 output.
 - F-012 scope = **CLUE-GATING**: a puzzle won't accept its solution until its clues have
   been viewed in-game. Parallel branches stay. (Amends CLAUDE.md principle #4's
   order-freedom at the puzzle-input level only; requirement-based state model unchanged.)
+  - Implemented as puzzle-graph **rev 1.3** (Designer), **VALIDATED PASS** (Validator,
+    difficulty holds 6.0, no soft-locks). Gates: p01 (rune marks + grimoire page A),
+    p02 (triptych), p03 (Orion window), p04 (slot/page-B), p14 (recipe, resolve-only);
+    all physical-act puzzles (p05–p13, p15–p17) ungated. Clue-viewed flags persist in
+    save (D7).
+  - **p01 page-A ruling (user, 2026-07-07): REQUIRED — decision is FINAL, do not revert.**
+    Both Designer and Validator advised demoting page A to *optional* (a rune-mark
+    glyph-matcher can solve p01 without it, so requiring it can knock back an earned
+    answer). User was shown that exact tradeoff and chose the strict "must view all
+    clues" reading. Keep page A in p01's gate; no config-flag demotion.
 - Interaction model = **SELECT-THEN-TAP ONLY**: drag-to-use REMOVED, passive auto-apply
   REMOVED. Player must arm an inventory item, then tap the target.
 - Sound: generic "psh" removed EVERYWHERE; per-object sounds or none. Ambience: quieter

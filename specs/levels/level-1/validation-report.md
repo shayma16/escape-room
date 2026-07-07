@@ -256,3 +256,301 @@ light routing, counterweight unlocks, and procedural brewing are now "used once.
 The level design is logically sound and cleared for the user checkpoint (pipeline
 step 4). The two required fixes are spec-text corrections for the Designer, not design
 changes, and should be applied before the Blind Playtester stage consumes the graph.
+
+---
+---
+
+# Rev 1.3 validation — Clue-gating re-validation
+
+**Validator:** Puzzle Logic Validator
+**Input:** `puzzle-graph.json` spec_revision 1.3 (clue-gating policy block, per-node
+`clue_gate` fields, `viewed_when` clue fields, `clue_gate` edges, developer_notes D6/D7,
+new anti-softlock invariant, revision_notes). Re-validation of previously-approved rev
+1.2 (official 6.0). Scope: what rev 1.3 changed. All rev-1.2 findings above still hold.
+**Date:** 2026-07-07
+
+## VERDICT: PASS — CRITICAL FINDINGS: 0. Cleared for Developer implementation of gating.
+
+**Developer: this is a rev-1.3 PASS. You may implement clue-gating.** No required fixes
+block implementation. One binding implementation constraint (IC-1, below, restating D6
+rule (b)) and one binding constraint (IC-2, restating D7 persistence) MUST be honored or
+they become soft-lock/lost-progress vectors — but they are already specified in D6/D7;
+IC-1/IC-2 are confirmations, not new work. No hard-blocks. Two rev-1.2 required fixes
+(Fix 1 example-ordering A text; Fix 2 beam-at-alcove-as-condition) remain open from the
+prior report and are UNAFFECTED by rev 1.3 — still Advisory, still Designer/Developer
+spec-text items, do not block gating implementation.
+
+### Binding implementation constraints (both already in D6/D7 — confirmed, not new)
+
+- **IC-1 (D6 rule b — stale-correct-input re-evaluation):** every gated puzzle MUST
+  re-evaluate (gate AND solution) on entry into its close-up view, not only on an
+  input-change/attempt event. Without rule (b), the two stale cases (p02 dials left on
+  the correct phases, p03 pointer left on plate-2) would require a pointless input wiggle
+  to resolve after the clue is finally viewed — not a soft-lock (the wiggle always exists)
+  but a confusing near-miss. p01 and p14 have no stale case (see D6 analysis below), so
+  IC-1 is load-bearing specifically for p02 and p03. Confirmed sound; implement as D6
+  states.
+- **IC-2 (D7 — persistence across save/restore):** the nine clue-viewed booleans MUST be
+  saved and never cleared on restore. A restore that re-locked a gate whose clue was
+  already viewed would be a lost-progress case (the player would face a gate that reads as
+  a wrong-answer bug on a value they legitimately earned). Confirmed sound; implement as
+  D7 states.
+
+---
+
+## R1.3-1. No soft-lock introduced by gating — PASS
+
+I verified the Designer's central claim ("every gating clue sits in z1 or the gated
+puzzle's own zone, and zones never re-lock") node-by-node:
+
+| Gated puzzle | Puzzle zone | Required clue-views | Clue location(s) | All clues reachable at/before puzzle? |
+|---|---|---|---|---|
+| p01-rune-door | z1 (start) | clu-mark-air/fire/earth/water + clu-grimoire-elements | all z1 (bellows, lintel, flowerpot, windowsill, grimoire) | **Yes** — all in the always-open start zone |
+| p02-moon-trapdoor | z1 (start) | clu-triptych | z1 study wall | **Yes** — same zone as puzzle |
+| p03-astrolabe-orion | z2 | clu-window-orion | z2 v-cabinet window (same view as astrolabe) | **Yes** — own zone, literally same view |
+| p04-cabinet-sun-moon | z2 | clu-slot-shapes | z2 cabinet close-up OR z1 grimoire page B | **Yes** — self-satisfying via the cabinet close-up the placement itself requires |
+| p14-brew | z2 | clu-recipe-page | z1 grimoire (bookmarked page) | **Yes** — start zone, always reachable |
+
+Every gating clue is located either in **z1 (start zone, `unlock: null`, never gated,
+never re-locks)** or in the **gated puzzle's own zone** (which the player is by definition
+standing in to attempt the puzzle). No gate references a clue in a *sibling* branch zone
+or a *downstream* zone, so no gate can be blocked by not-yet-unlocked geography. Clue
+viewing is a free, repeatable, cost-free action, and no zone in this level ever re-locks
+(verified: every zone `unlock` is a monotonic one-way condition; no node clears a
+zone-unlocked flag). Therefore a gated puzzle's gate is satisfiable in every state in
+which the puzzle is itself reachable.
+
+**Because clue-viewed flags are modeled as ordinary satisfiable requirements (not
+step-order tracking), gating cannot reorder the branch structure.** Rev 1.2's branch
+order-freedom is preserved: the two mid-game branches remain interleavable, and the
+`cond-beam-at-alcove` order-free contract is untouched (no gate was added to p08/p09/p10).
+
+**Example orderings A, B, C-mirror-first — all three re-verified PASS.** I traced each of
+the three orderings in `solve_path_notes` with the inserted `view ...` steps:
+
+- **Ordering A** opens the *cellar* branch first (view triptych → p02 → cellar work →
+  p11), then does p01 after viewing the four marks + page A, then the workshop branch
+  (view Orion → p03 → p05 → p04-self-satisfying), then the light/bloom chain, then views
+  the recipe page before p14. Every gate's clue precedes its puzzle. **PASS.** (Note: the
+  rev-1.3 annotated ordering A also silently corrects the rev-1.2 Fix-1 defect — it now
+  places p05 before p04 and includes the poker/spoon pickups. Good; the annotated A is
+  now internally valid, which partially resolves prior Fix 1 for ordering A. Ordering B's
+  and C's pickups are likewise present.)
+- **Ordering B** opens the *workshop* branch first. p01 is gated behind the four marks +
+  page A (all viewed in the "view clu-mark-... + grimoire page A" step immediately
+  before p01). p03 behind Orion view. p04 self-satisfied. p02 behind triptych view. p14
+  behind recipe view. **PASS.**
+- **Ordering C (mirror-first)** exercises the order-free beam condition: p09 is set to
+  detent-3 *before* p08 opens the shutter. p09 is **ungated** (correctly — see R1.3-5),
+  so the mirror-first move is unobstructed. All gated puzzles (p01, p02, p03, p04, p14)
+  have their clue-view steps inserted ahead of them, and the note "z1 remains freely
+  reachable — zones never re-lock" is correct: the player returns to z1 to view the four
+  marks + page A after having entered the cellar, and z1 is still open. **PASS.**
+
+**No new soft-lock, dead-end, or unreachable state is introduced by gating.** A gated
+attempt consumes nothing (p14's gated resolve returns all three ingredients intact per
+the existing p14 invariant; p01/p02/p03/p04 gated attempts reset/pop-back exactly as a
+wrong attempt does), so no gated attempt can destroy a resource. The clue always remains
+viewable. Confirmed against the mistake-path table in section 2 above — gating adds no new
+mistake that strands the player.
+
+## R1.3-2. Gate satisfiability (new anti-softlock invariant) — PASS
+
+The new invariant (anti_softlock_invariants[7]) states: *"Every clue_gate references only
+clues located in the start zone (z1) or in the gated puzzle's own zone; zones never
+re-lock and clue viewing is a free, repeatable, cost-free action — so whenever a gated
+puzzle is reachable, its gate is satisfiable."*
+
+I independently confirm this invariant is **true as stated** and is **sufficient** to
+guarantee no permanent block:
+
+1. **Location claim verified** — the R1.3-1 table above confirms all nine gating clues
+   are in z1 or the puzzle's own zone. No counterexample.
+2. **Never-re-lock claim verified** — no node in the graph clears any zone-unlocked or
+   clue-viewed flag (D7 explicitly: "never cleared"). Monotonic state.
+3. **Free/repeatable claim verified** — every `viewed_when` is "close-up displayed";
+   `viewed_definition` requires no dwell, tap, comprehension, or timer. Displaying a
+   close-up is always available for an in-scene element in an open zone.
+
+No gated puzzle is permanently blockable. **Gate satisfiability: PASS.**
+
+## R1.3-3. D6 (stale-correct-input) & D7 (persistence) — SOUND, PASS
+
+**D6 — no stuck state, no lost-progress case.** I evaluated each gated puzzle for a
+"correct-but-gated value left in place" scenario:
+
+| Puzzle | Can a correct value persist while gated? | Resolves how? | Stuck / lost progress? |
+|---|---|---|---|
+| p01 | **No** — tiles self-reset on every completed 4-press (D6, gate_behavior). There is no persistent "correct sequence left standing" state. | Player simply re-enters AIR-FIRE-EARTH-WATER after viewing clues. | No |
+| p02 | **Yes** — dials retain position; player may set waxing-crescent/full/waning-gibbous while gated. | D6 rule (b): on close-up entry after triptych is viewed, gate+solution re-evaluate and the trapdoor opens with no wiggle. | No (IC-1 makes this clean) |
+| p03 | **Yes** — pointer may sit on plate-2 while gated. | D6 rule (b): drawer springs open on close-up entry after the window is viewed. | No (IC-1) |
+| p04 | **No practical case** — seating the item *requires* the cabinet close-up, which self-satisfies the gate at the same moment; the gate is effectively never unsatisfied at the point of a correct placement. | Item seats normally. | No |
+| p14 | **No** — resolve (ladle release) is an explicit act and a failed/gated resolve fully resets the pot and returns all ingredients. No persistent "correct brew left standing" state. | Player re-resolves after viewing the recipe; nothing consumed. | No |
+
+The single accepted cost (documented in D6 and the 2026-07-07 decision) is that in the
+p02/p03 stale cases a value that previously read as "wrong" silently works on return. I
+concur this is acceptable and, critically, is **not a lost-progress or stuck case**: the
+player loses nothing and the puzzle completes on the next natural interaction (view the
+clue, return to the puzzle). It cannot strand anyone. **D6: sound.**
+
+**D7 — persistence sound.** Nine clue-viewed booleans, set on first view, never cleared,
+saved alongside requirement flags. A save/restore mid-level cannot re-lock a gate whose
+clue was viewed (IC-2). The multi-instance clu-slot-shapes correctly uses a single shared
+flag (either instance sets it), which matches the p04 self-satisfying logic and cannot
+desync. Because the flags are ordinary satisfiable requirements, they introduce no
+step-order tracking (verified against the state_model note). **D7: sound.**
+
+One confirmation for the Developer, not a fix: **IC-2 is load-bearing.** If restore
+re-locked a viewed gate, a player who legitimately solved (e.g.) p03 pre-save, saved
+mid-solve with the pointer on plate-2 and the window already viewed, then restored, would
+hit a gate on an earned value that reads as a bug. D7 already forbids this; just implement
+it exactly.
+
+## R1.3-4. Rulings on the three flagged judgment calls
+
+### Flag 1 — Page A (clu-grimoire-elements) in p01's required gate: **ADVISORY. I side with the Designer's recommendation: DEMOTE page A to optional. Surface to the user for the decision; either choice is solvable and soft-lock-free.**
+
+This is the one genuine false-block vector in rev 1.3, and my independent analysis
+confirms the Designer's read:
+
+- **The false-block is real.** Each of the four rune marks pairs its element glyph *with*
+  its press-order Roman numeral in close-up. The door tiles display those *same* glyphs.
+  A player who finds all four marks and reads the numerals (I–IV, "clearly fair," with the
+  clock ring as backup) can derive the full ordered sequence AIR-FIRE-EARTH-WATER by pure
+  glyph-matching + numeral ordering — **with zero reference to page A.** Page A only maps
+  runes to *pictograms* (flame/wave/cloud/mountain), which this player never needed.
+  Requiring page A therefore blocks a fully-earned correct answer with a "wrong" knock,
+  and — because of the (correct) no_tell_rule — the player has no way to distinguish
+  "gated" from "wrong" and will read it as a bug. This directly reintroduces an F-012-class
+  frustration (a correct deduction refused), the exact failure the revision exists to cure,
+  just relocated from "solved too early" to "solved correctly but refused."
+- **The information-carriage test — which is the whole justification for gating (see the
+  no_tell_rule's own stated mitigation: "gating ONLY on clues that carry the code's actual
+  information") — page A FAILS.** The four marks carry the entire code. Page A is
+  corroborative, not necessary. Gating on it violates the revision's own stated design
+  principle.
+- **Counter-consideration (why it's Advisory, not a required fix):** page A is on the
+  *natural* solve path — most players open the grimoire — so in practice the gate is
+  usually pre-satisfied, and F-012's own player did have the grimoire available. Keeping
+  page A in is not *unsolvable* (the clue is always reachable in z1). So this is a
+  fairness/false-block judgment, not a solvability defect → **Advisory severity, user
+  decides.** But my recommendation is unambiguous: **gate p01 on the four marks only;
+  page A optional.** It is a one-line change (`required_viewed` drops
+  clu-grimoire-elements; move it to `optional_not_required`), removes the only false-block
+  in the revision, and costs the intended player nothing.
+- **Developer note:** this ruling does NOT block implementation. Implement p01's gate as
+  the four marks required and page A required *pending the user's checkpoint ruling* (the
+  current spec state), OR, if the user rules before you reach p01, as four-marks-only. The
+  edge `clu-grimoire-elements → p01 (clue_gate)` is already tagged FLAGGED. Wire it so the
+  required/optional status of page A is a single config flag, per the Designer's "one-line
+  change either way."
+
+### Flag 2 — clu-clock-numerals excluded from p01's gate: **CONCUR. Keep it excluded (optional/backup reference only). No change needed.**
+
+Correct call. Requiring the clock close-up would (a) add a false-block vector for the
+majority who read I–IV directly off the marks without needing the ring, and (b) gate on a
+clue that is a *redundant backup decoder*, not a carrier of unique code information — the
+numerals are already present on each mark. Roman numerals I–IV sit at the "clearly fair"
+end of the knowledge register (section 5), so no player is entitled to the ring as a
+prerequisite. Excluding it is consistent with the same information-carriage principle that
+argues *against* page A in Flag 1. Note the internal consistency: if you keep page A in
+(Flag 1) but exclude the numeral ring, you are gating on a pictogram decoder the player
+may not need while *not* gating on a numeral decoder the player may not need — an asymmetry
+that further supports demoting page A. **PASS, no action.**
+
+### Flag 3 — p12 (file + spoon) left ungated: **CONCUR. Keep it ungated. No change needed.**
+
+Correct call, on two independent grounds:
+
+1. **It's experimentation, not code entry.** Combining two held tools (file on soft metal)
+   is exactly the tactile poking-around the genre rewards, and the spoon's crescent
+   hallmark independently identifies it as silver — the recipe page is motivating flavor,
+   not the sole information carrier. Gating it would punish a player who reasons "file +
+   soft metal = shavings" unaided, with no anti-spoiler payoff.
+2. **Containment closes the spoiler loophole.** Even a player who files shavings with no
+   idea why gains nothing exploitable: `itm-shavings` is inert until **p14, which IS gated
+   on the recipe page.** So the recipe knowledge is still enforced at the true code-entry
+   chokepoint; nothing leaks past the system. The same containment argument correctly
+   covers ungated p13 (paste inert until p14). **PASS, no action.**
+
+**Consistency check across the three flags:** the Designer's line is coherent — gate only
+where a puzzle *accepts a code-like value* AND the gated clue *carries unique code
+information*. p12/p13 fail the first test (physical acts, contained downstream); the clock
+ring and page A fail the second test (redundant decoders). The only place the current spec
+deviates from its own stated principle is keeping page A in p01's gate (Flag 1), which is
+exactly why I flag that one for change and concur on the other two.
+
+## R1.3-5. Color-blind safety, fixed solution values, D1–D5, prior anti-softlock invariants — INTACT, PASS
+
+Verified rev 1.3 touched none of these:
+
+- **Color-blind safety:** the `colorblind_safety` block and all `visually_necessary_elements`
+  are byte-for-byte the rev-1.2 content; `rev_1_3_note` explicitly confirms "Clue-gating
+  adds NO new visual states." The no_tell_rule *reinforces* CB-safety by reusing existing
+  failure presentations (no new color-coded "gated" indicator was introduced — which is
+  also why a color-only "not yet" tell was correctly rejected). **Hard gate: PASS.**
+- **Fixed solution values:** unchanged. p01 AIR-FIRE-EARTH-WATER; p02
+  waxing-crescent/full/waning-gibbous; p03 plate-2; p04 ring→sun/coin→moon; p14 flame-3 +
+  {paste,shavings,feather} + CCW×5. No per-playthrough randomization introduced (gating is
+  a static requirement, principle 3 intact). **PASS.**
+- **D1–D5:** all present verbatim, semantics unchanged (D1 feed-cup draught BLOCK; D2
+  beam-condition; D3 cage-reach refusal tone; D4 feed-cup universal refusal; D5 clock
+  one-shot). D6/D7 are strictly additive. **PASS.**
+- **Prior anti-softlock invariants:** the first seven invariants are unchanged; the eighth
+  (gating) is additive and verified in R1.3-2. **PASS.**
+- **Rev-1.2 required fixes 1 & 2:** unchanged by rev 1.3; still open as Advisory spec-text
+  items (ordering-A now annotated-correct in the 1.3 orderings, which resolves Fix 1 for
+  ordering A specifically; Fix 2 beam-as-condition is codified in derived_conditions +ID2
+  and remains a Developer implementation invariant). Do not re-open at this stage.
+
+## R1.3-6. Difficulty re-score — 6.0 / 10 HOLDS (per-zone unchanged)
+
+Official ledger score for rev 1.3: **6.0 / 10** — unchanged from rev 1.2. Per-zone:
+**z1 5.0, z2 6.0, z3 4.0, z4 5.0** — unchanged.
+
+Rationale for holding at 6.0 rather than +0.25:
+
+- Gating changes **nothing on the intended deduction path**. Every gating clue lies on the
+  natural solve route and (per the playtest traces) was viewed before its puzzle. For a
+  player solving as designed, the game is behaviorally identical to rev 1.2 — no added
+  reasoning, no added steps, no added friction.
+- What gating *removes* is difficulty-**reducing** shortcuts: the six-tap brute force on
+  p03 and the 1-in-512 lucky spin on p02. Closing an unintended trivial shortcut nudges
+  *effective* difficulty marginally **up** for a shortcut-seeker, but does not raise the
+  intended-path difficulty that the ledger score measures.
+- The only added cost is at most one extra failure cycle in the rare p02/p03 stale-input
+  edge case (D6), which is negligible and offset by the anti-frustration invariants
+  (nothing consumed, no lockout).
+
+The Designer's +0.0..+0.25 band is defensible, but the increment lands below the 0.5
+rounding granularity of the ledger and does not shift any per-zone score. **Official
+rev-1.3 score: 6.0 / 10, holding.** Blind-solve estimate unchanged (60–100 min); note the
+gating does not require a *re-run* of the Blind Playtester for score purposes, though the
+Producer may still route rev 1.3 through a blind pass to confirm the no_tell refusal does
+not read as a bug in practice (esp. under Flag 1 if page A is kept).
+
+**Ledger note:** no new mechanic added; `mechanics_used_for_ledger` is unchanged.
+Clue-gating is a *meta-rule on existing mechanics*, not a new puzzle mechanic, so it does
+not affect Level 2 mechanic-repetition planning.
+
+## R1.3 verdict table
+
+| Gate (rev 1.3 scope) | Result |
+|---|---|
+| No soft-lock introduced by gating (all gates satisfiable pre-puzzle; orderings A/B/C hold) | **PASS** |
+| Gate satisfiability invariant | **PASS** |
+| D6 stale-correct-input (no stuck / lost-progress state) | **PASS** (sound; IC-1 binding) |
+| D7 clue-viewed persistence across save/restore | **PASS** (sound; IC-2 binding) |
+| Flag 1 — page A in p01 gate | **ADVISORY — recommend DEMOTE to optional; user decides** |
+| Flag 2 — numeral ring excluded | **CONCUR — keep excluded** |
+| Flag 3 — p12 ungated | **CONCUR — keep ungated** |
+| Color-blind safety intact | **PASS** (mandatory gate) |
+| Fixed solution values / D1–D5 / prior invariants intact | **PASS** |
+| **Critical findings (rev 1.3)** | **0** |
+| **Required fixes blocking Developer** | **0** |
+| **Official difficulty (rev 1.3)** | **6.0 / 10** (z1 5.0, z2 6.0, z3 4.0, z4 5.0) — holds |
+
+**Rev 1.3 is cleared for Developer implementation of clue-gating.** The single Advisory
+(Flag 1, page A) is a user-checkpoint decision, not an implementation blocker: implement
+page A's required/optional status as a single config flag so the ruling can be applied
+without rework.

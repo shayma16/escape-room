@@ -1,8 +1,9 @@
 {
   "level": 1,
   "title": "The Wizard's Cabin",
-  "spec_revision": "1.2",
+  "spec_revision": "1.3",
   "revision_notes": [
+    "Rev 1.3 (post-release; TestFlight feedback F-012; user decision 2026-07-07) adds CLUE-GATING: code-entry puzzles no longer accept their solution -- even the correct one -- until their gating clue set has been VIEWED in-game. Gated: p01 (four rune marks + grimoire page A; numeral ring optional), p02 (triptych), p03 (Orion window), p04 (slot-shapes clue, self-satisfying/defensive), p14 (recipe page). NOT gated: free pickups, tool-on-hotspot (p05, p06), mechanism completions (p07, p08, p09), automatic bloom (p10), key-on-lock (p11), item combination/apparatus (p12, p13), item-on-state and endgame (p15, p16, p17) -- physical acts, not code entries. Gated attempts replay each puzzle's EXISTING failure grammar with NO tell distinguishing 'gated' from 'wrong' (see clue_gating.no_tell_rule). New: per-node clue_gate fields with rationale, clue_gate edges, top-level clue_gating policy, developer_notes D6 (gate evaluation & stale-correct-input) and D7 (clue-viewed flags persist in save state), one new anti-softlock invariant, example orderings updated with explicit clue-view steps. Branch order-freedom between the workshop and cellar branches and the requirement-based state model are UNCHANGED; clue-viewed flags are ordinary satisfiable requirements. NO solution value, zone, item, D1-D5 behavior, or color-blind rule changed; no new art states required. FLAGGED for user checkpoint: (1) Designer recommends demoting grimoire page A from p01's required gate set to optional (see p01 clue_gate flags); (2) numeral ring excluded from p01's gate (Designer call); (3) p12 left ungated despite recipe support (Designer call, rationale on node).",
     "Rev 1.2 applies user-approved Blind Playtester recommendations R1 (feed-cup theory-magnet defused: ANY inventory item offered at the brass feed cup gets the same categorical terminal-refusal grammar as the cage reach -- new developer_notes D4; D1's block-or-allow decision for the DRAUGHT specifically is unchanged) and R2 (clock de-escalated: cuckoo-crow pops ONCE on first XII only, thereafter visibly inert with a limp broken spring; toy is clearly carved/paint-chipped, not an echo of the live crow -- new developer_notes D5; numeral ring untouched as p01 reference). Also records the playtest-calibrated blind-solve estimate (60-100 min). No puzzle, solution value, zone, or item changed.",
     "Rev 1.1 applied Validator required fixes 1 & 2 (corrected example orderings; beam-at-alcove respecified as a latched derived CONDITION over moonbeam-on AND mirror-at-detent-3, not an event order) plus advisories A3 (brass feed cup as recognized mis-pour target), A6 (edge-list harmonization), and the p11 terminal-refusal annotation. No puzzle, solution value, zone, or item changed."
   ],
@@ -12,6 +13,17 @@
   "win_condition": {
     "description": "Brew the Unbinding Draught, pour it into the front door's rune basin to wither the thorn-vine seal, then slide the bolt and exit.",
     "node": "p17-escape"
+  },
+
+  "clue_gating": {
+    "policy_revision": "1.3",
+    "purpose": "TestFlight F-012: a player solved p01-rune-door before ever seeing the flowerpot's EARTH/III clue and hated it. User decision 2026-07-07: puzzles stay order-free BETWEEN branches, but each code-entry puzzle's input is inert until its clue set has been seen in-game.",
+    "viewed_definition": "A clue counts as VIEWED the moment its designated close-up view (each gating clue node's viewed_when) has been displayed at least once. No dwell time, no comprehension check, no timers. Multi-instance clues (clu-slot-shapes) count as viewed when ANY one instance is displayed.",
+    "persistence": "Clue-viewed flags are persistent booleans in the save file (developer_notes D7). They are ordinary satisfiable REQUIREMENTS in the state model, never step-order tracking; branch order-freedom is unchanged.",
+    "no_tell_rule": "An attempt on a gated puzzle whose gate is unsatisfied produces that puzzle's EXISTING failure grammar, presentation-identical to a wrong-answer attempt. No special sound, animation variant, text, or timing difference may distinguish 'gated' from 'wrong'. Designer AGREES with this recommendation (a distinct 'not yet' tell would leak that the entered value may be correct and would add a second failure vocabulary to a near-wordless game). Residual risk -- a player who legitimately deduced a code without viewing a required clue reads the refusal as a bug -- is mitigated by gating ONLY on clues that carry the code's actual information; the single exception is grimoire page A in p01's gate, which is flagged for the user on that node.",
+    "gated_puzzles": ["p01-rune-door", "p02-moon-trapdoor", "p03-astrolabe-orion", "p04-cabinet-sun-moon", "p14-brew"],
+    "ungated_rationale_class": "Free pickups, tool-on-hotspot uses, mechanism completions, key-on-lock, fixed-apparatus uses, item-on-state pours, and the automatic bloom are physical acts, not code entries; gating them would punish legitimate experimentation while preventing no spoiler shortcut.",
+    "art_impact": "None. The no_tell_rule means gated failures reuse existing failure states; no new visual states are required."
   },
 
   "zones": [
@@ -107,16 +119,16 @@
     { "id": "itm-feather", "type": "item", "name": "Black crow feather (freely given)", "obtained_by": "p11-cage-unlock", "uses": ["p14-brew"] },
     { "id": "itm-phial-draught", "type": "item", "name": "Phial of Unbinding Draught", "obtained_by": "p15-fill-phial", "uses": ["p16-door-unseal"], "notes": "The brass feed cup (z1 cage) is a plausible mis-pour target -- see developer_notes D1. Cauldron remains draught-ready after filling, so a refill always exists." },
 
-    { "id": "clu-grimoire-elements", "type": "clue", "location": "z1 grimoire (open page A)", "content": "Four element runes drawn beside pictograms: upward triangle + flame; downward triangle + wave; upward triangle with bar + cloud; downward triangle with bar + mountain. Maps pictogram to rune.", "supports": ["p01-rune-door"] },
-    { "id": "clu-mark-air", "type": "clue", "location": "z1 v-hearth, hand bellows handle", "content": "AIR rune scratched beside Roman numeral I.", "supports": ["p01-rune-door"] },
-    { "id": "clu-mark-fire", "type": "clue", "location": "z1 v-hearth, hearth lintel", "content": "FIRE rune scorched beside Roman numeral II.", "supports": ["p01-rune-door"] },
-    { "id": "clu-mark-earth", "type": "clue", "location": "z1 v-study, flowerpot", "content": "EARTH rune beside Roman numeral III.", "supports": ["p01-rune-door"] },
-    { "id": "clu-mark-water", "type": "clue", "location": "z1 v-entry, windowsill", "content": "WATER rune beside Roman numeral IV.", "supports": ["p01-rune-door"] },
-    { "id": "clu-clock-numerals", "type": "clue", "location": "z1 v-hearth, mantel clock face", "content": "Full Roman numeral ring I-XII; in-room reference for reading the numerals on the element marks. (Ring remains fully readable in all clock states, including the post-pop spent state -- R2.)", "supports": ["p01-rune-door"] },
-    { "id": "clu-triptych", "type": "clue", "location": "z1 v-study wall", "content": "Three night paintings of the same tree. Painting with ONE crow: waxing crescent moon. TWO crows: full moon. THREE crows: waning gibbous moon. Crow count gives dial order; moon shape gives dial value.", "supports": ["p02-moon-trapdoor"] },
-    { "id": "clu-window-orion", "type": "clue", "location": "z2 v-cabinet window", "content": "Night sky with three bright stars in a short straight diagonal row (Orion's Belt) plus fainter surrounding stars matching the Orion plate's dot pattern.", "supports": ["p03-astrolabe-orion"] },
-    { "id": "clu-slot-shapes", "type": "clue", "location": "z2 ingredient cabinet", "content": "Sun slot is a circular recess ringed with rays (fits the round gold ring); moon slot is a crescent recess (fits the crescent-stamped coin). Grimoire margin (page B) shows sun symbol beside a ring pictogram and crescent symbol beside a coin pictogram.", "supports": ["p04-cabinet-sun-moon"] },
-    { "id": "clu-recipe-page", "type": "clue", "location": "z1 grimoire, black-feather-bookmarked page", "content": "Pictographic recipe: moonflower blossom crushed in mortar; crescent-stamped metal filed into shavings; a black feather drawn floating INTO an open hand (freely given); flame pictogram with numeral III; spiral with arrowhead pointing counterclockwise and five dots along the spiral.", "supports": ["p13-grind-paste", "p12-file-shavings", "p11-cage-unlock", "p14-brew"] },
+    { "id": "clu-grimoire-elements", "type": "clue", "location": "z1 grimoire (open page A)", "content": "Four element runes drawn beside pictograms: upward triangle + flame; downward triangle + wave; upward triangle with bar + cloud; downward triangle with bar + mountain. Maps pictogram to rune.", "supports": ["p01-rune-door"], "viewed_when": "grimoire displayed open to page A (rev 1.3 gate input; inclusion in the required gate set is FLAGGED -- see p01 clue_gate)" },
+    { "id": "clu-mark-air", "type": "clue", "location": "z1 v-hearth, hand bellows handle", "content": "AIR rune scratched beside Roman numeral I.", "supports": ["p01-rune-door"], "viewed_when": "hand-bellows close-up displayed (the mark is legible only in close-up per art spec)" },
+    { "id": "clu-mark-fire", "type": "clue", "location": "z1 v-hearth, hearth lintel", "content": "FIRE rune scorched beside Roman numeral II.", "supports": ["p01-rune-door"], "viewed_when": "hearth-lintel close-up displayed" },
+    { "id": "clu-mark-earth", "type": "clue", "location": "z1 v-study, flowerpot", "content": "EARTH rune beside Roman numeral III.", "supports": ["p01-rune-door"], "viewed_when": "flowerpot close-up displayed (this is the F-012 clue the player never saw)" },
+    { "id": "clu-mark-water", "type": "clue", "location": "z1 v-entry, windowsill", "content": "WATER rune beside Roman numeral IV.", "supports": ["p01-rune-door"], "viewed_when": "windowsill close-up displayed" },
+    { "id": "clu-clock-numerals", "type": "clue", "location": "z1 v-hearth, mantel clock face", "content": "Full Roman numeral ring I-XII; in-room reference for reading the numerals on the element marks. (Ring remains fully readable in all clock states, including the post-pop spent state -- R2.)", "supports": ["p01-rune-door"], "viewed_when": "clock close-up displayed (NOT part of p01's required gate set -- Designer call, flagged; optional backup reference only)" },
+    { "id": "clu-triptych", "type": "clue", "location": "z1 v-study wall", "content": "Three night paintings of the same tree. Painting with ONE crow: waxing crescent moon. TWO crows: full moon. THREE crows: waning gibbous moon. Crow count gives dial order; moon shape gives dial value.", "supports": ["p02-moon-trapdoor"], "viewed_when": "triptych close-up displayed (crow counts and moon silhouettes legible)" },
+    { "id": "clu-window-orion", "type": "clue", "location": "z2 v-cabinet window", "content": "Night sky with three bright stars in a short straight diagonal row (Orion's Belt) plus fainter surrounding stars matching the Orion plate's dot pattern.", "supports": ["p03-astrolabe-orion"], "viewed_when": "workshop-window sky close-up displayed" },
+    { "id": "clu-slot-shapes", "type": "clue", "location": "z2 ingredient cabinet", "content": "Sun slot is a circular recess ringed with rays (fits the round gold ring); moon slot is a crescent recess (fits the crescent-stamped coin). Grimoire margin (page B) shows sun symbol beside a ring pictogram and crescent symbol beside a coin pictogram.", "supports": ["p04-cabinet-sun-moon"], "view_instances": ["cabinet slot close-up (z2 v-cabinet)", "grimoire page B margin (z1 v-study)"], "viewed_when": "EITHER instance displayed (single shared viewed-flag; see developer_notes D7)" },
+    { "id": "clu-recipe-page", "type": "clue", "location": "z1 grimoire, black-feather-bookmarked page", "content": "Pictographic recipe: moonflower blossom crushed in mortar; crescent-stamped metal filed into shavings; a black feather drawn floating INTO an open hand (freely given); flame pictogram with numeral III; spiral with arrowhead pointing counterclockwise and five dots along the spiral.", "supports": ["p13-grind-paste", "p12-file-shavings", "p11-cage-unlock", "p14-brew"], "viewed_when": "grimoire displayed open to the bookmarked recipe page (the black-feather bookmark makes this the grimoire's most likely landing spread)" },
     { "id": "clu-detent-scratches", "type": "clue", "location": "z3 floor by mirror stand", "content": "Scratch marks worn into the floor at the mirror's third detent position.", "supports": ["p09-mirror-aim"] },
     { "id": "clu-crow-refusal", "type": "clue", "location": "z1 crow cage", "content": "Reaching into the cage (for a feather or anything else) OR offering any inventory item at the brass feed cup triggers the SAME terminal refusal: the crow snaps once, then turns its back and guards its wing; any offered item returns to inventory unspent. Tone is categorical rejection ('this will never work'), NOT a near-miss 'try again' cue. Repeats replay the identical closed-off pose with no escalation or variation, signaling a dead interaction -- reaching in and feeding are BOTH non-paths (R1). Echoes the recipe's 'freely given' pictogram.", "supports": ["p11-cage-unlock"] },
 
@@ -131,8 +143,20 @@
       "derivation": "Four element runes hidden around z1, each paired with a Roman numeral I-IV giving press order. Grimoire page A maps runes to element pictograms; mantel clock provides Roman-numeral reference.",
       "requires": [],
       "clues": ["clu-grimoire-elements", "clu-mark-air", "clu-mark-fire", "clu-mark-earth", "clu-mark-water", "clu-clock-numerals"],
+      "clue_gate": {
+        "gated": true,
+        "required_viewed": ["clu-mark-air", "clu-mark-fire", "clu-mark-earth", "clu-mark-water", "clu-grimoire-elements"],
+        "logic": "all_of",
+        "optional_not_required": ["clu-clock-numerals"],
+        "gate_behavior": "Any four-press sequence completed while the gate is unsatisfied -- including the correct one -- resets the tiles with the same dull knock as a wrong sequence. No tell. Tiles self-reset, so no stale-input case exists (D6).",
+        "rationale": "F-012 root case: the player solved p01 before ever seeing the flowerpot's EARTH/III clue. The four marks carry the entire code (each pairs its rune glyph with its press-order numeral in close-up). Page A included per user decision 2026-07-07.",
+        "flags": [
+          "FLAG (Designer recommends change at checkpoint): clu-grimoire-elements (page A) maps runes to element PICTOGRAMS but is not informationally necessary -- each mark already pairs its glyph with its numeral, and the door tiles show those same glyphs, so pure glyph-matching + numeral ordering solves p01 without page A. Requiring page A creates the ONLY false-block risk in this revision: a player who found all four marks but never opened page A enters a fully-earned correct answer and gets a 'wrong' knock. Designer recommends gate = four marks only, page A optional. Implemented as user-specified pending the checkpoint ruling (one-line change either way).",
+          "FLAG (Designer call, per Producer instruction): clu-clock-numerals EXCLUDED from the gate. Roman numerals I-IV sit at the 'clearly fair' end of the knowledge register; the ring is a backup reference for players who need it, and requiring the clock close-up would add friction and a second false-block vector for the majority who do not."
+        ]
+      },
       "yields": { "zone_unlock": "z2-workshop" },
-      "failure_behavior": "Wrong sequence: tiles reset with a dull knock. No lockout."
+      "failure_behavior": "Wrong sequence OR gated attempt: tiles reset with a dull knock, presentation-identical. No lockout."
     },
     {
       "id": "p02-moon-trapdoor",
@@ -145,8 +169,15 @@
       "derivation": "Triptych paintings: crow count (1/2/3) = dial index; moon shape in that painting = dial value. Waxing vs waning crescents/gibbous are mirrored shapes; exact orientation matters.",
       "requires": ["free-action: move rug"],
       "clues": ["clu-triptych"],
+      "clue_gate": {
+        "gated": true,
+        "required_viewed": ["clu-triptych"],
+        "logic": "all_of",
+        "gate_behavior": "Dials rotate freely at all times; while gated the trapdoor stays shut on ANY setting, including the correct one, and dials retain position -- presentation-identical to the existing wrong-code behavior. No tell. Stale-correct-dials case (correct combo set while gated, triptych viewed later) resolves via D6 re-evaluation on close-up entry.",
+        "rationale": "The dial code exists ONLY in the triptych -- there is no legitimate no-clue derivation -- so this gate can never block an earned solve. It removes the 1-in-512 lucky spin and spoiler entry."
+      },
       "yields": { "zone_unlock": "z3-cellar" },
-      "failure_behavior": "Trapdoor stays shut. Dials keep position; no lockout."
+      "failure_behavior": "Wrong code OR gated attempt: trapdoor stays shut, presentation-identical. Dials keep position; no lockout."
     },
     {
       "id": "p03-astrolabe-orion",
@@ -160,8 +191,15 @@
       "derivation": "Workshop window sky shows Orion (belt prominent). Match the visible star pattern to plate-2. Recognizing Orion's Belt shortcuts it; pure dot-pattern matching also suffices.",
       "requires": ["zone: z2-workshop"],
       "clues": ["clu-window-orion"],
+      "clue_gate": {
+        "gated": true,
+        "required_viewed": ["clu-window-orion"],
+        "logic": "all_of",
+        "gate_behavior": "Pointer rotates freely at all times; while gated the drawer stays shut on ANY plate, including plate-2 -- presentation-identical to a wrong plate. No tell. Stale pointer-already-on-plate-2 case resolves via D6 re-evaluation on close-up entry.",
+        "rationale": "Six plates invite pure brute force (worst case six taps) -- the strongest shortcut this revision closes. The window close-up is the puzzle's entire evidence base AND sits in the same view as the astrolabe, so the gate costs an intended player nothing. Cannot false-block: even a player who knows Orion cold needs the window to learn Orion is the TARGET."
+      },
       "yields": { "items": ["itm-silver-coin", "itm-crank"], "via": "base drawer springs open" },
-      "failure_behavior": "Wrong plate: drawer stays shut. No lockout."
+      "failure_behavior": "Wrong plate OR gated attempt: drawer stays shut, presentation-identical. No lockout."
     },
     {
       "id": "p04-cabinet-sun-moon",
@@ -174,8 +212,15 @@
       "derivation": "Alchemy: sun=gold, moon=silver. Redundant non-knowledge path: round ring physically fits round sun recess, crescent-stamped coin fits crescent recess; grimoire page B margin confirms.",
       "requires": ["itm-gold-ring", "itm-silver-coin", "zone: z2-workshop"],
       "clues": ["clu-slot-shapes"],
+      "clue_gate": {
+        "gated": true,
+        "required_viewed": ["clu-slot-shapes"],
+        "logic": "all_of (the single clue is satisfied by ANY of its two view instances -- cabinet slot close-up or grimoire page B)",
+        "gate_behavior": "Placement attempted while gated: item pops back to inventory, presentation-identical to a wrong/swapped placement. In practice the gate is SELF-SATISFYING: seating an item requires the cabinet slot close-up, which IS one of the clue's view instances and marks it viewed on entry.",
+        "rationale": "Defensive-only gate (documented as borderline, not user-blocking): it exists solely to close any UI path that could seat an item without the close-up (e.g., an inventory drag onto the wide shot). Costs the player literally nothing; per Producer guidance ('slot inspection OR grimoire page B')."
+      },
       "yields": { "items": ["itm-file", "itm-phial"] },
-      "failure_behavior": "Wrong/swapped placement: item pops back out and returns to inventory. No loss, no lockout."
+      "failure_behavior": "Wrong/swapped placement OR gated attempt: item pops back out and returns to inventory, presentation-identical. No loss, no lockout."
     },
     {
       "id": "p05-ash-sift",
@@ -187,6 +232,7 @@
       "solution_fixed": "poker + ash",
       "requires": ["itm-poker"],
       "clues": ["faint glint visible in ash on close-up (secondary discoverability cue)"],
+      "clue_gate": { "gated": false, "rationale": "Tool-on-hotspot physical act (poker in ash pile). The glint is a discoverability nudge, not a code; gating would punish exactly the poking-around the genre rewards." },
       "yields": { "items": ["itm-gold-ring"] }
     },
     {
@@ -199,6 +245,7 @@
       "solution_fixed": "poker + barrel",
       "requires": ["itm-poker", "zone: z3-cellar"],
       "clues": ["lid visibly nailed; pry gap rendered at rim"],
+      "clue_gate": { "gated": false, "rationale": "Tool-on-hotspot physical act; the nailed lid and pry gap are self-evident in-scene. Nothing code-like to protect." },
       "yields": { "items": ["itm-weight"] }
     },
     {
@@ -211,6 +258,7 @@
       "solution_fixed": "itm-weight on hook",
       "requires": ["itm-weight", "zone: z3-cellar"],
       "clues": ["empty hook and taut pulley rope visibly connected to shelf runners"],
+      "clue_gate": { "gated": false, "rationale": "Mechanism completion; the hook-rope-runner causal chain is visible in the scene itself. A physical act, not a code entry." },
       "yields": { "zone_unlock": "z4-alcove" }
     },
     {
@@ -223,6 +271,7 @@
       "solution_fixed": "itm-crank on winch",
       "requires": ["itm-crank", "zone: z3-cellar"],
       "clues": ["winch has an empty square socket matching crank bit"],
+      "clue_gate": { "gated": false, "rationale": "Mechanism completion; the square socket visibly matches the crank bit. A physical act, not a code entry." },
       "yields": { "state": "moonbeam-on", "state_semantics": "Persistent latched flag; vertical beam onto cellar floor near mirror stand. Feeds derived condition cond-beam-at-alcove." }
     },
     {
@@ -235,6 +284,7 @@
       "solution_fixed": "detent-3",
       "requires": ["zone: z3-cellar"],
       "clues": ["clu-detent-scratches", "if moonbeam-on already holds, the reflected beam visibly sweeps as the mirror rotates and enters the alcove doorway at detent-3 (live feedback); if the shutter is still closed, the floor scratch marks alone justify detent-3"],
+      "clue_gate": { "gated": false, "rationale": "Apparatus adjustment with only three detents and live/positional feedback; the mirror physically rotates -- there is no code input to make inert, and refusing rotation until a clue is seen would read as a broken prop. The scratch marks are a nudge, not the code's sole carrier. Gating this would also complicate the order-free cond-beam-at-alcove contract (ordering C sets the mirror before anything else) for zero anti-spoiler gain." },
       "yields": { "state": "mirror-at-detent-3", "state_semantics": "Persistent latched flag; may be achieved BEFORE the shutter is ever opened -- order is irrelevant. Feeds derived condition cond-beam-at-alcove." },
       "notes": "VALIDATOR REQUIRED FIX 2 APPLIED: p09 no longer requires moonbeam-on. beam-at-alcove is the derived condition cond-beam-at-alcove (moonbeam-on AND mirror-at-detent-3), evaluated continuously and latching whenever both inputs hold, regardless of order. Developer: implement as a condition check, never an ordered event pair (see developer_notes D2). Playtest R4 (art): when the beam reaches detent-3 while the sliding shelf is still closed, render a bright blocked-light spot ON the shelf face so the beat reads as 'blocked, look here', not 'bugged'."
     },
@@ -248,6 +298,7 @@
       "solution_fixed": "cond-beam-at-alcove AND z4 open",
       "requires": ["condition: cond-beam-at-alcove", "zone: z4-alcove"],
       "clues": ["buds visibly stir/tremble when the beam lands anywhere in the cellar (progress feedback)", "recipe page shows moonflower under a moon ray"],
+      "clue_gate": { "gated": false, "rationale": "Automatic environmental convergence -- nothing accepts player input to gate. The trembling buds are progress feedback, and withholding an earned bloom would violate the condition-latch contract (D2)." },
       "yields": { "items": ["itm-blossom"] },
       "notes": "Blossom stays available while the condition holds; both condition inputs are persistent latched states (no timer)."
     },
@@ -261,6 +312,7 @@
       "solution_fixed": "itm-cage-key on cage",
       "requires": ["itm-cage-key"],
       "clues": ["clu-crow-refusal", "clu-recipe-page (feather-into-open-hand pictogram)", "star keyhole visibly matches star key bit (and visibly rejects itm-rusted-key's plain bit)"],
+      "clue_gate": { "gated": false, "rationale": "Key-on-lock physical act; the star bit visibly matches the star keyhole. Obtaining the key already requires traversing z3/z4, so no shortcut exists to close. The 'freely given' theme is delivered by the refusal grammar (D3/D4), not by a gate; making the correct key inert would directly contradict the terminal-refusal messaging ('this will never work' must stay true only for non-paths)." },
       "yields": { "items": ["itm-feather"], "via": "crow flies to rafters, preens, one feather drifts down; crow remains perched for the rest of the level", "state": "crow-freed" },
       "notes": "VALIDATOR ADVISORY + PLAYTEST R1 APPLIED: the terminal-refusal grammar (crow snaps once, turns its back, guards its wing; identical pose on every repeat, no escalation) covers BOTH reaching into the cage AND offering any inventory item at the brass feed cup -- the 'feed the crow' theory must die fast, not read as 'wrong food, keep trying'. See clu-crow-refusal and developer_notes D3/D4. The draught mis-pour case specifically remains governed by D1."
     },
@@ -274,6 +326,7 @@
       "solution_fixed": "itm-file + itm-spoon",
       "requires": ["itm-file", "itm-spoon"],
       "clues": ["clu-recipe-page (crescent-metal filed pictogram); spoon bowl is stamped with the same crescent hallmark as the coin, identifying it as silver"],
+      "clue_gate": { "gated": false, "rationale": "BORDERLINE -- Designer call, flagged for checkpoint: the recipe page motivates this act, and a strict reading of the gating decision could gate it on clu-recipe-page. Kept UNGATED because combining two held tools is experimentation, not code entry (the spoon's crescent hallmark independently identifies it as silver), and its output is harmless in isolation: itm-shavings is useless until p14, which IS gated on the recipe page -- so no spoiler shortcut escapes the system. Gating here would punish a player who reasons 'file + soft metal = shavings' unaided." },
       "yields": { "items": ["itm-shavings"] },
       "notes": "Spoon is not consumed until a successful brew completes; re-filing is impossible only after the draught exists (no longer needed)."
     },
@@ -287,6 +340,7 @@
       "solution_fixed": "itm-blossom in mortar",
       "requires": ["itm-blossom", "zone: z2-workshop"],
       "clues": ["clu-recipe-page (blossom + pestle pictogram)"],
+      "clue_gate": { "gated": false, "rationale": "Fixed-apparatus physical act (mortar grinds what is put in it -- that is what mortars do). Same containment argument as p12: itm-paste is inert until the recipe-gated p14." },
       "yields": { "items": ["itm-paste"] }
     },
     {
@@ -305,8 +359,15 @@
       "derivation": "clu-recipe-page: flame pictogram + III; spiral with CCW arrowhead and five dots; three ingredient pictograms.",
       "requires": ["itm-paste", "itm-shavings", "itm-feather", "zone: z2-workshop"],
       "clues": ["clu-recipe-page"],
+      "clue_gate": {
+        "gated": true,
+        "required_viewed": ["clu-recipe-page"],
+        "logic": "all_of",
+        "gate_behavior": "Flame pumping, ingredient adding, and stirring all remain freely manipulable while gated; only the RESOLVE (ladle release) is inert: any resolve -- including a fully correct one -- produces the standard gray fizzle with all three ingredients floating up and auto-returning to inventory, presentation-identical to a wrong-parameter failure. No tell. Nothing is consumed (existing p14 invariant), so a gated attempt costs one retry at most; no stale-state case exists because resolve is an explicit act and failure fully resets the pot (D6).",
+        "rationale": "The brew parameters (flame III, CCW x5 stir) are the level's most code-like values and exist ONLY on the recipe page, so the gate cannot false-block an earned solve. In natural play the gate is almost always pre-satisfied -- the black-feather bookmark makes the recipe the grimoire's landing spread -- but it closes the walkthrough/spoiler path that skips the grimoire entirely."
+      },
       "yields": { "state": "draught-ready (cauldron liquid takes a pearlescent sheen with a slow spiral surface pattern -- pattern, not color, is the success cue)" },
-      "failure_behavior": "Wrong stir direction/count or wrong flame at resolve: gray fizzle puff, all three ingredients float to the surface intact and auto-return to inventory, cauldron reverts to water. Infinitely retryable; nothing is consumed on failure.",
+      "failure_behavior": "Wrong stir direction/count, wrong flame at resolve, OR gated resolve: gray fizzle puff, all three ingredients float to the surface intact and auto-return to inventory, cauldron reverts to water -- presentation-identical in all three cases. Infinitely retryable; nothing is consumed on failure.",
       "notes": "Playtest R3 (art/dev requirement): the recipe page's CCW spiral and the in-scene cauldron view must be orientation-consistent (both read top-down, same handedness), and the ladle's stir-direction affordance must make CW vs CCW unmistakable from the actual camera angle."
     },
     {
@@ -318,6 +379,7 @@
       "input": "Use empty phial on ready cauldron.",
       "solution_fixed": "itm-phial + draught-ready",
       "requires": ["itm-phial", "state: draught-ready"],
+      "clue_gate": { "gated": false, "rationale": "Item-on-state physical act; the pearlescent ready-cauldron and the empty phial are self-evident. The knowledge gate already happened upstream at p14." },
       "yields": { "items": ["itm-phial-draught"] },
       "notes": "Cauldron remains draught-ready after filling; refills possible. This refill invariant is load-bearing for the feed-cup mis-pour case (developer_notes D1)."
     },
@@ -331,6 +393,7 @@
       "solution_fixed": "itm-phial-draught on basin",
       "requires": ["itm-phial-draught"],
       "clues": ["basin sits directly over the vine-wrapped bolt; if crow is freed, it perches on the door lintel above the basin (silent nudge)"],
+      "clue_gate": { "gated": false, "rationale": "Endgame pour onto the level's central, self-evident affordance (beak-shaped basin over the vine-wrapped bolt, present since minute one). Gating the finale on a re-view would be pure friction." },
       "yields": { "state": "door-unsealed (thorn-vines wither and crumble off the bolt)" },
       "notes": "The rune basin is the ONLY pour target that advances state. See developer_notes D1 for the brass feed cup mis-pour case."
     },
@@ -343,6 +406,7 @@
       "input": "Slide bolt, open door.",
       "solution_fixed": "requires door-unsealed",
       "requires": ["state: door-unsealed"],
+      "clue_gate": { "gated": false, "rationale": "Free action once unsealed; nothing to gate." },
       "yields": { "win": true, "beat": "the crow flies out over the player's shoulder into the moonlit woods" }
     }
   ],
@@ -396,15 +460,26 @@
     { "from": "itm-phial", "to": "p15-fill-phial", "type": "requires" },
     { "from": "p15-fill-phial", "to": "itm-phial-draught", "type": "yields" },
     { "from": "itm-phial-draught", "to": "p16-door-unseal", "type": "requires" },
-    { "from": "p16-door-unseal", "to": "p17-escape", "type": "requires_state" }
+    { "from": "p16-door-unseal", "to": "p17-escape", "type": "requires_state" },
+
+    { "from": "clu-mark-air", "to": "p01-rune-door", "type": "clue_gate" },
+    { "from": "clu-mark-fire", "to": "p01-rune-door", "type": "clue_gate" },
+    { "from": "clu-mark-earth", "to": "p01-rune-door", "type": "clue_gate" },
+    { "from": "clu-mark-water", "to": "p01-rune-door", "type": "clue_gate" },
+    { "from": "clu-grimoire-elements", "to": "p01-rune-door", "type": "clue_gate", "note": "FLAGGED: Designer recommends demoting to optional -- see p01 clue_gate flags" },
+    { "from": "clu-triptych", "to": "p02-moon-trapdoor", "type": "clue_gate" },
+    { "from": "clu-window-orion", "to": "p03-astrolabe-orion", "type": "clue_gate" },
+    { "from": "clu-slot-shapes", "to": "p04-cabinet-sun-moon", "type": "clue_gate", "note": "self-satisfying via cabinet close-up; either view instance sets the flag" },
+    { "from": "clu-recipe-page", "to": "p14-brew", "type": "clue_gate" }
   ],
 
   "solve_path_notes": {
     "structure": "Two parallel mid-game branches after z1: WORKSHOP branch (p01 -> p03 -> p04) and CELLAR branch (p02 -> p06 -> p07; spoon; cage key). They cross-link twice: crank (workshop) is needed for the cellar light shaft; file (workshop) is needed with the cellar spoon. Any interleaving that satisfies the requirement edges is valid.",
-    "example_ordering_A": ["move rug", "p02", "take poker", "p06", "p07", "take cage key", "p11", "p01", "p03", "p05", "p04", "p08", "p09", "p10", "take spoon", "p12", "p13", "p14", "p15", "p16", "p17"],
-    "example_ordering_B": ["take poker", "p01", "p03", "p05", "p04", "move rug", "p02", "take spoon", "p06", "p07", "take cage key", "p08", "p09", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17"],
-    "example_ordering_C_mirror_first": ["take poker", "move rug", "p02", "p09 (mirror set to detent-3 BEFORE the shutter ever opens)", "p06", "p07", "take cage key", "take spoon", "p01", "p03", "p05", "p04", "p08 (cond-beam-at-alcove latches here; mirror was already set)", "p10", "p11", "p12", "p13", "p14", "p15", "p16", "p17"],
-    "state_model": "All progression stored as satisfied-requirement flags (zone unlocked, item held, state on) plus derived boolean conditions (see derived_conditions); never as step sequences. cond-beam-at-alcove is the canonical example: an AND over two latched states, order-free by construction (ordering C exercises the mirror-first path). Ingredient-add order in p14 is explicitly order-free; only stir direction/count and flame stage are parameterized.",
+    "gating_note": "Rev 1.3: 'view ...' steps below are the clue-views required by clue_gates -- ordinary satisfiable requirements, inserted where a natural player would take them. Every gating clue sits in the start zone (z1) or in the gated puzzle's own zone, zones never re-lock, and clue viewing is a free repeatable action, so every interleaving that satisfied rev 1.2's edges remains valid once the views are inserted; no rev-1.2 ordering had to be RE-ordered, only annotated. p04's gate is satisfied by the placement interaction itself (cabinet close-up) and needs no separate step.",
+    "example_ordering_A": ["view clu-triptych (z1 study close-up)", "move rug", "p02", "take poker", "p06", "p07", "take cage key", "p11", "view clu-mark-air/fire/earth/water + grimoire page A (all z1)", "p01", "view clu-window-orion (z2 window close-up)", "p03", "p05", "p04 (gate self-satisfied at cabinet close-up)", "p08", "p09", "p10", "take spoon", "p12", "p13", "view clu-recipe-page (z1 grimoire)", "p14", "p15", "p16", "p17"],
+    "example_ordering_B": ["take poker", "view clu-mark-air/fire/earth/water + grimoire page A (all z1)", "p01", "view clu-window-orion", "p03", "p05", "p04 (gate self-satisfied at cabinet close-up)", "view clu-triptych", "move rug", "p02", "take spoon", "p06", "p07", "take cage key", "p08", "p09", "p10", "p11", "p12", "p13", "view clu-recipe-page (z1 grimoire)", "p14", "p15", "p16", "p17"],
+    "example_ordering_C_mirror_first": ["take poker", "view clu-triptych", "move rug", "p02", "p09 (mirror set to detent-3 BEFORE the shutter ever opens)", "p06", "p07", "take cage key", "take spoon", "view clu-mark-air/fire/earth/water + grimoire page A (z1 remains freely reachable -- zones never re-lock)", "p01", "view clu-window-orion", "p03", "p05", "p04 (gate self-satisfied at cabinet close-up)", "p08 (cond-beam-at-alcove latches here; mirror was already set)", "p10", "p11", "p12", "p13", "view clu-recipe-page (z1 grimoire)", "p14", "p15", "p16", "p17"],
+    "state_model": "All progression stored as satisfied-requirement flags (zone unlocked, item held, state on, clue viewed -- rev 1.3) plus derived boolean conditions (see derived_conditions); never as step sequences. cond-beam-at-alcove is the canonical example: an AND over two latched states, order-free by construction (ordering C exercises the mirror-first path). Ingredient-add order in p14 is explicitly order-free; only stir direction/count and flame stage are parameterized.",
     "revision_note": "Validator required fix 1 applied: ordering A previously listed p04 before its prerequisite p05 and omitted the poker/spoon pickups; both orderings now include all free pickups (Validator's proposed correction of A confirmed by Designer)."
   },
 
@@ -433,6 +508,16 @@
       "id": "D5",
       "topic": "Clock cuckoo-crow one-shot (Playtest R2, user-approved)",
       "note": "The XII cuckoo-crow pop fires ONCE per save file: first time the hands are set to XII, the carved toy crow pops briefly with a dry wooden clack, then retreats. Every subsequent XII setting produces the SPENT state: the little door hangs ajar, the toy lies tipped over on a visibly limp/broken spring, no motion, no sound beyond a faint creak. The one-shot flag is a persistent cosmetic latch (saved; never gates progression). The toy must read as a crude carved, paint-chipped TOY -- round body, painted dot eyes -- clearly distinct from the live crow's silhouette so it does not teach 'the clock matters to the crow'. The Roman-numeral ring remains fully readable in all clock states (it is the in-room numeral reference for p01)."
+    },
+    {
+      "id": "D6",
+      "topic": "Clue-gate evaluation & stale-correct-input (rev 1.3)",
+      "note": "Gated puzzles re-evaluate (gate AND solution) on (a) every input-change / explicit-attempt event, exactly as today, AND (b) entry into the puzzle's close-up view. Rule (b) exists for the stale case: a player sets the correct value while gated (trapdoor dials on the right phases, astrolabe pointer already on plate-2), later views the gating clue, then returns -- the puzzle must succeed on arrival without demanding an input wiggle. p01 has no stale case (tiles self-reset on every failure); p14 has none either (resolve is an explicit ladle-release and failure fully resets the pot, returning ingredients). Do NOT add any distinct gated-failure presentation (clue_gating.no_tell_rule); the one accepted cost is that in the rare stale case a previously 'wrong' value silently works on return (accepted with the 2026-07-07 decision)."
+    },
+    {
+      "id": "D7",
+      "topic": "Clue-viewed flags persist in save state (rev 1.3)",
+      "note": "One persistent boolean per gating clue node (clu-mark-air, clu-mark-fire, clu-mark-earth, clu-mark-water, clu-grimoire-elements, clu-triptych, clu-window-orion, clu-slot-shapes, clu-recipe-page). SET the first time the clue's viewed_when view is displayed; never cleared; SAVED in the save file alongside requirement flags -- a mid-level save/restore must never re-lock a gate. Multi-instance clue clu-slot-shapes uses a single shared flag set by whichever instance (cabinet slot close-up OR grimoire page B) is displayed first. No dwell-time, tap, or comprehension requirement beyond the view being shown. These flags are ordinary satisfiable requirements; they must not introduce step-order tracking anywhere."
     }
   ],
 
@@ -451,7 +536,8 @@
     "Locks (p01, p02, p03) have unlimited attempts, no lockout, dials retain position.",
     "The crow cannot be interacted with harmfully; feather is granted exactly once and cannot be lost (it CAN be added to the cauldron anytime; failed brews return it).",
     "itm-phial-draught can be refilled from the still-ready cauldron (p15 note); this covers the feed-cup mis-pour case if Developer chooses allow-behavior (developer_notes D1).",
-    "The clock's one-shot cuckoo pop (D5) is purely cosmetic and never gates progression; spending it changes nothing solvable."
+    "The clock's one-shot cuckoo pop (D5) is purely cosmetic and never gates progression; spending it changes nothing solvable.",
+    "Every clue_gate references only clues located in the start zone (z1) or in the gated puzzle's own zone; zones never re-lock and clue viewing is a free, repeatable, cost-free action -- so whenever a gated puzzle is reachable, its gate is satisfiable. Gated attempts consume nothing (p14's gated fizzle returns all ingredients) and clue-viewed flags persist in the save file (D7). (Rev 1.3.)"
   ],
 
   "visually_necessary_elements": {
@@ -491,7 +577,8 @@
       "stone niche behind shelf",
       "moonflower planter (buds closed / trembling when beam is anywhere in cellar / blooming in beam / one blossom picked)",
       "carved crow statue with star-bit key in beak (key present / taken)"
-    ]
+    ],
+    "rev_1_3_note": "Clue-gating adds NO new visual states (no_tell_rule: gated failures reuse existing failure presentations exactly). This list is unchanged from rev 1.2."
   },
 
   "colorblind_safety": [
@@ -507,8 +594,10 @@
     "scale": "1-10 (Validator assigns official ledger score)",
     "estimate": 6.5,
     "validator_official_score": 6.0,
+    "validator_score_status": "6.0 is the rev-1.2 official score; Validator to re-score for rev 1.3 (Designer expects it to hold -- see rev_1_3_gating_impact)",
     "validator_per_zone": { "z1-cabin": 5.0, "z2-workshop": 6.0, "z3-cellar": 4.0, "z4-alcove": 5.0 },
     "blind_solve_estimate": "60-100 min for a first-time player (playtest-calibrated, R6; designer's original 45-75 min superseded)",
+    "rev_1_3_gating_impact": "Designer estimate: negligible-to-slightly-up (+0.0 to +0.25 on the 10-point scale). Gating changes nothing for a player following intended deduction -- every gating clue lies on the natural solve path and was viewed before its puzzle in the playtest traces. It only removes lucky-guess / brute-force / spoiler shortcuts (chiefly the six-tap brute force on p03 and the 1-in-512 spin on p02) and can add at most one extra failure cycle in the rare stale-input edge cases (D6). Blind-solve time estimate unchanged (60-100 min). Recommend the Validator re-score; Designer expects official 6.0 to hold.",
     "rationale": "17 puzzle nodes, 4 zones (2 nested hidden), two cross-linked parallel branches, one mirrored-shape precision code (p02), one multi-parameter procedure (p14), 4 red herrings + 1 defused theory magnet. No timers, no lockouts."
   },
 
