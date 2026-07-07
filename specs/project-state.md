@@ -77,16 +77,18 @@ NO CI run yet. To resume:
 ## QUEUED: Level 1 art rebuild → build 3 (user directive 2026-07-08)
 
 After build 2 ships to TestFlight, redo ALL Level 1 art in the new Nano Banana Pro
-engine-render style (build-1/2 art was painterly Flux, user rejected). **Hard cap: $10
-total fal.ai spend** — brute-force full regen (~$18.90 for 126 assets) does NOT fit and
-is forbidden. Full costed strategy in `specs/levels/level-1/rebuild-plan.md` (fresh:
-7 bases + 15 icons + ~12–18 non-glyph scene close-ups + app icon; CARRY OVER all
-geometry/glyph assets — dials, star plates, rune tiles, hallmarks, numerals — they're
-style-neutral; derive variants/crops/downscales free via PIL). Nano Banana Pro pricing:
-$0.15/img std, $0.30 4K. Puzzle graph / solution values / Designer+Validator UNCHANGED
-— render-style swap only. Blocked on build 2 shipping (needs user checkpoint-2 GO).
-Still per-zone user art review before integration. AF-1 door fix + JC-fb1-4 workshop
-return-door art fold into this rebuild rather than being done in the old style.
+engine-render style (build-1/2 art was painterly Flux, user rejected). **FULL rebuild —
+NO painterly carryover** (user 2026-07-08: carrying over any old asset would look
+inconsistent; the earlier "carry over glyph geometry to save money" plan is SUPERSEDED).
+**Hard cap: $18.90, and not more** (raised from $10). Every visible asset is freshly
+generated OR derived from a FRESH new-style base (never a painterly original). Budget
+stretches via free PIL downscales + free crops/overlays *off the fresh bases* (keeps
+retries affordable inside the cap). Nano Banana Pro pricing: $0.15/img std, $0.30 4K.
+Full costed strategy in `specs/levels/level-1/rebuild-plan.md`. Puzzle graph / solution
+values / Designer+Validator UNCHANGED — render-style swap only. Blocked on build 2
+shipping (needs user checkpoint-2 GO). Still per-zone user art review before integration.
+AF-1 door fix + JC-fb1-4 workshop return-door art fold into this rebuild (done in the new
+style, not the old).
 
 ## Pipeline position
 
