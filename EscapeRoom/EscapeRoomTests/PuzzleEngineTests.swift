@@ -390,6 +390,7 @@ final class PuzzleEngineTests: XCTestCase {
     func testCabinetWrongSlotUseRejectedWithoutStalePending_QA_BUG_017() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        satisfyAllGates(state) // rev 1.3: p04 gates on clu-slot-shapes (self-satisfying in-app)
         state.addItem(PuzzleGraph.ItemID.goldRing)
         state.addItem(PuzzleGraph.ItemID.silverCoin)
         let coordinator = RoomSceneCoordinator(viewID: .cabinet, state: state, size: sceneSize)
@@ -839,22 +840,21 @@ final class PuzzleEngineTests: XCTestCase {
     /// decode instead of resetting the player's progress. Simulated by encoding a
     /// current save and stripping the new key — byte-identical to what build 1 wrote.
     func testBuildOneSaveWithoutViewedCluesStillDecodes() throws {
+        // Encode a single LevelSaveData (not the SaveGame wrapper — its [Int: ...] level
+        // map has a Foundation-version-dependent JSON shape) and strip the new key from
+        // its object dict directly, so this stays encoding-agnostic while still exercising
+        // LevelSaveData.decodeIfPresent migration.
         var level = LevelSaveData(levelID: 1)
         level.inventory = ["itm-poker"]
         level.viewedClues = ["plain-cu-flowerpot"]
-        let encoded = try JSONEncoder().encode(SaveGame(levels: [1: level], soundOn: true))
+        let encoded = try JSONEncoder().encode(level)
         var object = try XCTUnwrap(try JSONSerialization.jsonObject(with: encoded) as? [String: Any])
-        // levels is encoded as an alternating [key, value, ...] array by Codable.
-        var levelsArray = try XCTUnwrap(object["levels"] as? [Any])
-        var levelDict = try XCTUnwrap(levelsArray[1] as? [String: Any])
-        levelDict.removeValue(forKey: "viewedClues")
-        levelsArray[1] = levelDict
-        object["levels"] = levelsArray
+        XCTAssertNotNil(object["viewedClues"], "sanity: the current build writes viewedClues")
+        object.removeValue(forKey: "viewedClues") // simulate a build-1 save (key absent)
         let stripped = try JSONSerialization.data(withJSONObject: object)
-        let decoded = try JSONDecoder().decode(SaveGame.self, from: stripped)
-        let resumedLevel = try XCTUnwrap(decoded.levels[1])
-        XCTAssertTrue(resumedLevel.inventory.contains("itm-poker"))
-        XCTAssertTrue(resumedLevel.viewedClues.isEmpty)
+        let resumedLevel = try JSONDecoder().decode(LevelSaveData.self, from: stripped)
+        XCTAssertTrue(resumedLevel.inventory.contains("itm-poker"), "old-save inventory must survive")
+        XCTAssertTrue(resumedLevel.viewedClues.isEmpty, "absent viewedClues decodes to empty, not a reset")
     }
 
     // MARK: F-012 clue-gating enforcement (puzzle-graph rev 1.3)
