@@ -39,6 +39,7 @@
 		AB12CD34EF56AB78CD90EF12 /* QALevelFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB12CD34EF56AB78CD90EF11 /* QALevelFlowTests.swift */; };
 		AA20000000000000000000B1 /* CloseUps.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000000000000000000A1 /* CloseUps.swift */; };
 		AA20000000000000000000B2 /* CloseUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000000000000000000A2 /* CloseUpView.swift */; };
+		AA40000000000000000000B1 /* NavChevron.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA40000000000000000000A1 /* NavChevron.swift */; };
 		AA10000000000000000000B1 /* GameAssets in Resources */ = {isa = PBXBuildFile; fileRef = AA10000000000000000000A1 /* GameAssets */; };
 		AA10000000000000000000B2 /* Audio in Resources */ = {isa = PBXBuildFile; fileRef = AA10000000000000000000A2 /* Audio */; };
 		AA10000000000000000000B3 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = AA10000000000000000000A3 /* Assets.xcassets */; };
@@ -81,6 +82,7 @@
 		AB12CD34EF56AB78CD90EF11 /* QALevelFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QALevelFlowTests.swift; sourceTree = "<group>"; };
 		AA20000000000000000000A1 /* CloseUps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloseUps.swift; sourceTree = "<group>"; };
 		AA20000000000000000000A2 /* CloseUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloseUpView.swift; sourceTree = "<group>"; };
+		AA40000000000000000000A1 /* NavChevron.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavChevron.swift; sourceTree = "<group>"; };
 		AA10000000000000000000A1 /* GameAssets */ = {isa = PBXFileReference; lastKnownFileType = folder; path = GameAssets; sourceTree = "<group>"; };
 		AA10000000000000000000A2 /* Audio */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Audio; sourceTree = "<group>"; };
 		AA10000000000000000000A3 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -196,6 +198,7 @@
 				980568EC4B336C8BDCF4413A /* LevelSelectView.swift */,
 				C9D0C9B8FC5DD9A97F571886 /* MainMenuView.swift */,
 				E7D45780DA6F8010EE755461 /* MoonDialControlView.swift */,
+				AA40000000000000000000A1 /* NavChevron.swift */,
 				1F9D270ACBD145BD34366535 /* PauseMenuView.swift */,
 				C2D8084D6DF6EF903022A869 /* RootAppView.swift */,
 				4215641A14AACA1E96BF336E /* SettingsView.swift */,
@@ -364,6 +367,7 @@
 				EF70C145A99971D6450A5CFE /* LevelSelectView.swift in Sources */,
 				C478D031DA78CE8964C97D0D /* MainMenuView.swift in Sources */,
 				3E9E6D79E5C0F44BD9AC99E9 /* MoonDialControlView.swift in Sources */,
+				AA40000000000000000000B1 /* NavChevron.swift in Sources */,
 				836EFD2B0E83CB78CC346DF7 /* PauseMenuView.swift in Sources */,
 				5B71EE058892C8403E6B60BB /* RootAppView.swift in Sources */,
 				6AA808213C444636B11DC8C1 /* SettingsView.swift in Sources */,

@@ -60,6 +60,13 @@ final class LevelSession: ObservableObject {
         Self.zoneViews[currentView.zoneID] ?? [currentView]
     }
 
+    /// Every view the player can currently reach: the views of all UNLOCKED zones.
+    /// Used by Level Select / QA to assert that a fresh save exposes the start zone's
+    /// three views (QA-BUG-001) and that hidden zones only appear once unlocked.
+    func availableViews() -> [ViewID] {
+        ViewID.allCases.filter { state.isZoneUnlocked($0.zoneID) }
+    }
+
     /// Whether left/right chevrons should be shown at all (multi-view zones only).
     var hasViewNavigation: Bool {
         viewsInCurrentZone.count > 1

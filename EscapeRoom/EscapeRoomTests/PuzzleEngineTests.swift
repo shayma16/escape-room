@@ -18,6 +18,19 @@ final class PuzzleEngineTests: XCTestCase {
         return dir
     }
 
+    /// Feedback round 1 (clue-gating rev 1.3): direct engine-level solve tests bypass the
+    /// close-up UI that records clue views, so a gated puzzle's solution would (correctly)
+    /// be refused. This helper marks every gating clue viewed — the engine-level analogue
+    /// of a player having opened all the clue close-ups — so that solve-behavior tests
+    /// keep asserting the SOLVE grammar. Dedicated gating tests do NOT call this.
+    private func satisfyAllGates(_ state: GameState) {
+        for clueID in [ClueID.markAir, ClueID.markFire, ClueID.markEarth, ClueID.markWater,
+                       ClueID.grimoireElements, ClueID.triptych, ClueID.windowOrion,
+                       ClueID.slotShapes, ClueID.recipePage] {
+            state.markClueViewed(clueID)
+        }
+    }
+
     // MARK: - Inventory
 
     func testAddAndRemoveItem() {
@@ -51,6 +64,7 @@ final class PuzzleEngineTests: XCTestCase {
 
     func testRuneDoorCorrectSequenceSolves() {
         let state = makeState(tempDir())
+        satisfyAllGates(state) // rev 1.3: p01 gates on the four marks + page A
         XCTAssertEqual(PuzzleEngine.pressRuneTile(.air, state: state), .inProgress)
         XCTAssertEqual(PuzzleEngine.pressRuneTile(.fire, state: state), .inProgress)
         XCTAssertEqual(PuzzleEngine.pressRuneTile(.earth, state: state), .inProgress)
@@ -61,6 +75,7 @@ final class PuzzleEngineTests: XCTestCase {
 
     func testRuneDoorWrongSequenceResetsWithNoLockout() {
         let state = makeState(tempDir())
+        satisfyAllGates(state) // isolate the wrong-vs-correct behavior from the gate
         XCTAssertEqual(PuzzleEngine.pressRuneTile(.fire, state: state), .inProgress)
         XCTAssertEqual(PuzzleEngine.pressRuneTile(.air, state: state), .inProgress)
         XCTAssertEqual(PuzzleEngine.pressRuneTile(.earth, state: state), .inProgress)
@@ -78,6 +93,7 @@ final class PuzzleEngineTests: XCTestCase {
 
     func testMoonDialsSolveUnlocksCellar() {
         let state = makeState(tempDir())
+        satisfyAllGates(state) // rev 1.3: p02 gates on the triptych clue
         state.setMoonDialPosition(dial: 0, phase: MoonDialSolution.clockwiseOrder.firstIndex(of: .waxingCrescent)!)
         state.setMoonDialPosition(dial: 1, phase: MoonDialSolution.clockwiseOrder.firstIndex(of: .full)!)
         state.setMoonDialPosition(dial: 2, phase: MoonDialSolution.clockwiseOrder.firstIndex(of: .waningGibbous)!)
@@ -163,6 +179,7 @@ final class PuzzleEngineTests: XCTestCase {
     func testBrewSucceedsWithCorrectParameters() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        satisfyAllGates(state) // rev 1.3: p14 resolve gates on the recipe page
         state.setCauldronIngredients(BrewSolution.requiredIngredients)
         let outcome = PuzzleEngine.resolveBrew(flameStage: BrewSolution.flameStage,
                                                 stirDirection: BrewSolution.stirDirection,
@@ -175,6 +192,7 @@ final class PuzzleEngineTests: XCTestCase {
     func testBrewFizzleReturnsAllIngredientsIntact() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        satisfyAllGates(state) // isolate the fizzle to the wrong flame stage, not the gate
         state.setCauldronIngredients(BrewSolution.requiredIngredients)
         let outcome = PuzzleEngine.resolveBrew(flameStage: 1, // wrong stage
                                                 stirDirection: BrewSolution.stirDirection,
@@ -450,6 +468,7 @@ final class PuzzleEngineTests: XCTestCase {
     func testIngredientUseAfterSuccessIsRefused_QA_BUG_006_companion() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        satisfyAllGates(state) // the brew must actually succeed to set draught-ready
         state.setCauldronIngredients(BrewSolution.requiredIngredients)
         _ = PuzzleEngine.resolveBrew(flameStage: BrewSolution.flameStage,
                                      stirDirection: BrewSolution.stirDirection,
@@ -465,6 +484,7 @@ final class PuzzleEngineTests: XCTestCase {
 
     func testRuneTilePressesFromCloseUpFollowTileMapping() {
         let state = makeState(tempDir())
+        satisfyAllGates(state) // rev 1.3: p01 must be ungated for the sequence to solve
         let coordinator = RoomSceneCoordinator(viewID: .study, state: state, size: sceneSize)
         // Solution AIR, FIRE, EARTH, WATER = tiles 3, 1, 4, 2 (manifest mapping).
         coordinator.pressRuneTile(3)
@@ -589,6 +609,7 @@ final class PuzzleEngineTests: XCTestCase {
     func testAstrolabeSolveShowsContentsInsteadOfAutoGranting() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        satisfyAllGates(state) // rev 1.3: p03 gates on the Orion window clue
         let coordinator = RoomSceneCoordinator(viewID: .cabinet, state: state, size: sceneSize)
         coordinator.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex)
         XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion))
@@ -613,6 +634,7 @@ final class PuzzleEngineTests: XCTestCase {
         let dir = tempDir()
         let state = GameState(levelID: 1, store: SaveGameStore(directory: dir))
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        satisfyAllGates(state)
         XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state))
         XCTAssertTrue(PuzzleEngine.collectItem(PuzzleGraph.ItemID.silverCoin, from: .astrolabeDrawer, state: state))
         // Relaunch mid-collection: the crank must still be waiting in the drawer.
@@ -642,6 +664,7 @@ final class PuzzleEngineTests: XCTestCase {
     func testCollectItemRefusesUnsolvedOrAlreadyCollected() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        satisfyAllGates(state)
         XCTAssertFalse(PuzzleEngine.collectItem(PuzzleGraph.ItemID.crank, from: .astrolabeDrawer, state: state),
                        "nothing collectable before the container is solved")
         XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state))
@@ -832,6 +855,122 @@ final class PuzzleEngineTests: XCTestCase {
         let resumedLevel = try XCTUnwrap(decoded.levels[1])
         XCTAssertTrue(resumedLevel.inventory.contains("itm-poker"))
         XCTAssertTrue(resumedLevel.viewedClues.isEmpty)
+    }
+
+    // MARK: F-012 clue-gating enforcement (puzzle-graph rev 1.3)
+
+    /// p01: the CORRECT rune sequence is refused (dull-knock reset, no tell) until all
+    /// four rune marks AND grimoire page A have been viewed. Page A is REQUIRED per the
+    /// user's FINAL 2026-07-07 ruling; this test locks that ruling in.
+    func testRuneDoorGatedUntilFourMarksAndPageAViewed_p01() {
+        let state = makeState(tempDir())
+        // With NO clues viewed, the correct AIR-FIRE-EARTH-WATER resets instead of solving.
+        for rune in RuneDoorSolution.solutionOrder.dropLast() {
+            XCTAssertEqual(PuzzleEngine.pressRuneTile(rune, state: state), .inProgress)
+        }
+        XCTAssertEqual(PuzzleEngine.pressRuneTile(RuneDoorSolution.solutionOrder.last!, state: state), .reset,
+                       "gated: even the correct sequence resets with the same dull knock (no tell)")
+        XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.runeDoor))
+        // View the four marks only — page A is REQUIRED, so still gated (final ruling).
+        for clue in [ClueID.markAir, ClueID.markFire, ClueID.markEarth, ClueID.markWater] {
+            state.markClueViewed(clue)
+        }
+        for rune in RuneDoorSolution.solutionOrder.dropLast() { _ = PuzzleEngine.pressRuneTile(rune, state: state) }
+        XCTAssertEqual(PuzzleEngine.pressRuneTile(RuneDoorSolution.solutionOrder.last!, state: state), .reset,
+                       "page A is REQUIRED (user final ruling): four marks alone do not open the gate")
+        // View page A: now the gate opens and the correct sequence solves.
+        state.markClueViewed(ClueID.grimoireElements)
+        for rune in RuneDoorSolution.solutionOrder.dropLast() { _ = PuzzleEngine.pressRuneTile(rune, state: state) }
+        XCTAssertEqual(PuzzleEngine.pressRuneTile(RuneDoorSolution.solutionOrder.last!, state: state), .solved)
+        XCTAssertTrue(state.isZoneUnlocked(PuzzleGraph.ZoneID.z2Workshop))
+    }
+
+    /// p02: correct dials refused while gated; IC-1 re-evaluation opens the trapdoor on
+    /// close-up entry once the triptych is viewed, with NO input wiggle (stale-correct case).
+    func testMoonDialsGatedThenIC1ReevaluatesOnCloseUpEntry_p02() {
+        let state = makeState(tempDir())
+        state.setMoonDialPosition(dial: 0, phase: MoonDialSolution.clockwiseOrder.firstIndex(of: .waxingCrescent)!)
+        state.setMoonDialPosition(dial: 1, phase: MoonDialSolution.clockwiseOrder.firstIndex(of: .full)!)
+        state.setMoonDialPosition(dial: 2, phase: MoonDialSolution.clockwiseOrder.firstIndex(of: .waningGibbous)!)
+        XCTAssertFalse(PuzzleEngine.evaluateMoonDials(state: state), "gated: correct dials do not open the trapdoor")
+        XCTAssertFalse(state.isZoneUnlocked(PuzzleGraph.ZoneID.z3Cellar))
+        // View the triptych, then WITHOUT touching the dials, IC-1 fires on close-up entry.
+        state.markClueViewed(ClueID.triptych)
+        PuzzleEngine.reevaluateMoonDialsOnCloseUpEntry(state: state)
+        XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.moonTrapdoor),
+                      "IC-1: stale-correct dials resolve on re-entry after the clue is viewed (no wiggle)")
+        XCTAssertTrue(state.isZoneUnlocked(PuzzleGraph.ZoneID.z3Cellar))
+    }
+
+    /// p03: correct plate refused while gated; solves once the Orion window is viewed.
+    func testAstrolabeGatedUntilOrionWindowViewed_p03() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        XCTAssertFalse(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state),
+                       "gated: the Orion plate does not open the drawer until the window is viewed")
+        XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion))
+        state.markClueViewed(ClueID.windowOrion)
+        XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state))
+    }
+
+    /// p14: correct brew params fizzle (ingredients returned intact) until the recipe
+    /// page is viewed. Nothing is consumed by the gated attempt (one retry at most).
+    func testBrewGatedUntilRecipeViewed_p14() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        for id in BrewSolution.requiredIngredients { state.addItem(id) }
+        state.setCauldronIngredients(BrewSolution.requiredIngredients)
+        for id in BrewSolution.requiredIngredients { state.removeItem(id) }
+        let gated = PuzzleEngine.resolveBrew(flameStage: BrewSolution.flameStage,
+                                             stirDirection: BrewSolution.stirDirection,
+                                             stirCount: BrewSolution.stirCount, state: state)
+        XCTAssertEqual(gated, .fizzle, "gated: even the correct brew fizzles until the recipe is viewed (no tell)")
+        for id in BrewSolution.requiredIngredients {
+            XCTAssertTrue(state.hasItem(id), "\(id) must return intact from a gated resolve (nothing consumed)")
+        }
+        XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.draughtReady))
+        // View the recipe, retry: now it succeeds.
+        state.markClueViewed(ClueID.recipePage)
+        state.setCauldronIngredients(BrewSolution.requiredIngredients)
+        for id in BrewSolution.requiredIngredients { state.removeItem(id) }
+        XCTAssertEqual(PuzzleEngine.resolveBrew(flameStage: BrewSolution.flameStage,
+                                                stirDirection: BrewSolution.stirDirection,
+                                                stirCount: BrewSolution.stirCount, state: state), .success)
+    }
+
+    /// D7/IC-2: clue-viewed flags persist across a save/restore and never re-lock a gate.
+    func testClueViewedFlagsPersistAndNeverReLock_D7() {
+        let dir = tempDir()
+        let state = GameState(levelID: 1, store: SaveGameStore(directory: dir))
+        state.markClueViewed(ClueID.windowOrion)
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        let resumed = GameState(levelID: 1, store: SaveGameStore(directory: dir))
+        XCTAssertTrue(resumed.hasViewedClue(ClueID.windowOrion), "clue-viewed flags survive restore (IC-2)")
+        XCTAssertTrue(ClueGate.isSatisfied(PuzzleGraph.PuzzleID.astrolabeOrion, state: resumed),
+                      "a restore must never re-lock a gate whose clue was already viewed")
+    }
+
+    /// The gating close-ups actually RECORD their clu-* gate ids when opened through the
+    /// coordinator (drives the gate purely from views the player opened).
+    func testGatingCloseUpsRecordClueNodeIDs() {
+        let state = makeState(tempDir())
+        let hearth = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize)
+        hearth.scene.onHotspotTap?("bellows")
+        XCTAssertTrue(state.hasViewedClue(ClueID.markAir), "the bellows close-up reveals the AIR mark")
+        hearth.scene.onHotspotTap?("lintel")
+        XCTAssertTrue(state.hasViewedClue(ClueID.markFire))
+        let study = RoomSceneCoordinator(viewID: .study, state: state, size: sceneSize)
+        study.scene.onHotspotTap?("flowerpot")
+        XCTAssertTrue(state.hasViewedClue(ClueID.markEarth), "the flowerpot is F-012's missed EARTH clue")
+        study.scene.onHotspotTap?("triptych")
+        XCTAssertTrue(state.hasViewedClue(ClueID.triptych))
+        let entry = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize)
+        entry.scene.onHotspotTap?("windowsill")
+        XCTAssertTrue(state.hasViewedClue(ClueID.markWater))
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        let cabinet = RoomSceneCoordinator(viewID: .cabinet, state: state, size: sceneSize)
+        cabinet.scene.onHotspotTap?("window")
+        XCTAssertTrue(state.hasViewedClue(ClueID.windowOrion))
     }
 
     func testCloseUpLayoutMatchesBundledRuneTileJSON() throws {

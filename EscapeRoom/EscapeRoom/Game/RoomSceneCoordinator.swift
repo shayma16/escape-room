@@ -104,6 +104,31 @@ final class RoomSceneCoordinator: ObservableObject {
     /// and recording the view as a seen clue (F-012 substrate — recorded universally
     /// by close-up id; the rev-1.3 clue_gate table keys into these ids).
     private func present(_ request: CloseUpRequest, from origin: String?) {
+        // IC-1 (D6 rule b): a stale-but-now-ungated puzzle resolves on close-up (re-)entry,
+        // with no pointless input wiggle. Must run BEFORE we commit to presenting the raw
+        // puzzle close-up, so an already-solved p02/p03 shows its opened state instead.
+        switch request {
+        case .dialPanel:
+            PuzzleEngine.reevaluateMoonDialsOnCloseUpEntry(state: state)
+            if state.hasSolved(PuzzleGraph.PuzzleID.moonTrapdoor) {
+                // Trapdoor sprang open: the diegetic passage is now the affordance.
+                activeCloseUp = nil
+                closeUpOrigin = nil
+                onNavigate?(.cellar)
+                return
+            }
+        case .astrolabe:
+            // No stale-input surface exists for p03 in this implementation: the astrolabe
+            // is a discrete plate-tap mini-game with NO persisted pointer position (unlike
+            // the rev-1.3 spec's rotatable-pointer model). A player who tapped plate-2 while
+            // gated simply re-taps it once the window is viewed — `selectAstrolabePlate`
+            // re-evaluates the now-open gate on that tap. IC-1's "no wiggle" guarantee is
+            // therefore vacuously met here; nothing to re-evaluate on entry. (Flagged in
+            // implementation notes.)
+            break
+        default:
+            break
+        }
         activeCloseUp = request
         closeUpOrigin = origin
         recordClueViewed(request.id)
@@ -116,8 +141,40 @@ final class RoomSceneCoordinator: ObservableObject {
 
     /// Also called by PagerCloseUp per page so multi-spread clues (grimoire recipe
     /// page, individual triptych paintings) record at page granularity.
-    func recordClueViewed(_ clueID: String) {
-        state.markClueViewed(clueID)
+    ///
+    /// Records BOTH the raw plate/spread id (the F-012 substrate, keyed for tests) AND —
+    /// via `gatingClues(for:)` — any rev-1.3 `clu-*` gate id that this view satisfies, so
+    /// the clue-gating table (which keys on clu-node ids) is driven purely from views the
+    /// player actually opened.
+    func recordClueViewed(_ viewID: String) {
+        state.markClueViewed(viewID)
+        for clueID in Self.gatingClues(for: viewID) {
+            state.markClueViewed(clueID)
+        }
+    }
+
+    /// Maps a viewed close-up/spread id to the rev-1.3 gating clue ids it reveals. The
+    /// four rune marks are legible only in their close-ups (per art spec / viewed_when);
+    /// grimoire page A carries clu-grimoire-elements; page B and the cabinet slot close-up
+    /// each satisfy clu-slot-shapes (shared flag); the recipe spread carries the recipe
+    /// clue; the workshop window carries Orion; any triptych spread (or the whole triptych)
+    /// carries clu-triptych.
+    static func gatingClues(for viewID: String) -> [String] {
+        switch viewID {
+        case "plain-cu-bellows":            return [ClueID.markAir]
+        case "plain-cu-lintel":             return [ClueID.markFire]
+        case "plain-cu-flowerpot":          return [ClueID.markEarth]
+        case "plain-cu-windowsill":         return [ClueID.markWater]
+        case "plain-cu-grimoire-pageA":     return [ClueID.grimoireElements]
+        case "plain-cu-grimoire-pageB":     return [ClueID.slotShapes]
+        case "plain-cu-grimoire-recipe":    return [ClueID.recipePage]
+        case "plain-cu-slots-empty":        return [ClueID.slotShapes]
+        case "plain-cu-window-orion":       return [ClueID.windowOrion]
+        case "triptych",
+             "plain-cu-triptych-1", "plain-cu-triptych-2", "plain-cu-triptych-3":
+            return [ClueID.triptych]
+        default:                            return []
+        }
     }
 
     // MARK: - v-hearth (z1)

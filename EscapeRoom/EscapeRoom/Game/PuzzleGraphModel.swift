@@ -175,3 +175,64 @@ enum MirrorSolution {
     static let solutionDetent = 3
     static let detentCount = 3
 }
+
+// MARK: - Clue-gating (puzzle-graph.json rev 1.3, F-012 user decision 2026-07-07)
+//
+// Code-entry puzzles do NOT accept their solution — even the correct one — until their
+// gating clue set has been VIEWED in-game (per-node `clue_gate.required_viewed`). A gated
+// attempt replays the puzzle's EXISTING failure grammar with NO tell (clue_gating.
+// no_tell_rule). Clue-viewed flags are ordinary satisfiable requirements persisted in the
+// save (D7); they never re-lock and are never cleared. Branch order-freedom is unchanged.
+//
+// Validator rev-1.3 PASS confirmed: every gating clue sits in z1 (always-open start zone)
+// or the gated puzzle's own zone, so a gate is always satisfiable when its puzzle is
+// reachable (no soft-lock). IC-2 (persistence) is honored by GameState.viewedClues.
+enum ClueID {
+    static let markAir = "clu-mark-air"
+    static let markFire = "clu-mark-fire"
+    static let markEarth = "clu-mark-earth"
+    static let markWater = "clu-mark-water"
+    static let grimoireElements = "clu-grimoire-elements"   // page A
+    static let triptych = "clu-triptych"
+    static let windowOrion = "clu-window-orion"
+    static let slotShapes = "clu-slot-shapes"               // cabinet slots OR grimoire page B
+    static let recipePage = "clu-recipe-page"
+}
+
+/// The rev-1.3 `clue_gate` table as static Swift data. Maps each GATED puzzle to the set
+/// of clue ids that must all have been viewed before its solution is accepted. Ungated
+/// puzzles are simply absent (all physical-act puzzles: p05–p13, p15–p17).
+enum ClueGate {
+    /// puzzle id -> required-viewed clue ids (AND semantics).
+    ///
+    /// p01 page-A ruling (user, 2026-07-07, FINAL — do NOT demote): grimoire page A stays
+    /// REQUIRED alongside the four rune marks. Both Designer and Validator advised demoting
+    /// it to optional; the user chose the strict "must view all clues" reading. Kept as a
+    /// single config constant so the ruling could be flipped without touching call sites,
+    /// but it is intentionally left as REQUIRED per the final ruling.
+    static let p01PageARequired = true
+
+    static let requiredClues: [String: [String]] = {
+        var table: [String: [String]] = [
+            PuzzleGraph.PuzzleID.moonTrapdoor: [ClueID.triptych],
+            PuzzleGraph.PuzzleID.astrolabeOrion: [ClueID.windowOrion],
+            PuzzleGraph.PuzzleID.cabinetSunMoon: [ClueID.slotShapes],
+            PuzzleGraph.PuzzleID.brew: [ClueID.recipePage],
+        ]
+        var p01 = [ClueID.markAir, ClueID.markFire, ClueID.markEarth, ClueID.markWater]
+        if p01PageARequired { p01.append(ClueID.grimoireElements) }
+        table[PuzzleGraph.PuzzleID.runeDoor] = p01
+        return table
+    }()
+
+    /// Whether a puzzle's gate is currently satisfied (all required clues viewed). Ungated
+    /// puzzles return true unconditionally.
+    static func isSatisfied(_ puzzleID: String, state: GameState) -> Bool {
+        guard let required = requiredClues[puzzleID] else { return true }
+        return required.allSatisfy { state.hasViewedClue($0) }
+    }
+
+    static func isGated(_ puzzleID: String) -> Bool {
+        requiredClues[puzzleID] != nil
+    }
+}

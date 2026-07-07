@@ -33,7 +33,10 @@ struct GameRoomView: View {
         _coordinatorBox = StateObject(wrappedValue: CoordinatorBox(session: session))
     }
 
-    private var barHeight: CGFloat { hSizeClass == .regular ? 96 : 72 }
+    /// Reserved height under close-up content so nothing puzzle-critical sits behind the
+    /// inventory pill (§7-R1.5 bottom-band rule: 72 pt iPad / 62 pt iPhone). This is the
+    /// pill height (§7-R1.1: 64/56) plus its bottom inset, matching the §7-R1.5 band.
+    private var barHeight: CGFloat { hSizeClass == .regular ? 72 : 62 }
 
     var body: some View {
         ZStack {
@@ -49,7 +52,7 @@ struct GameRoomView: View {
             // (F-020) and keeps its content clear of it via bottomInset.
             CloseUpHost(coordinator: coordinatorBox.coordinator, bottomInset: barHeight)
 
-            // Chrome above the close-up layer: pause + inventory bar.
+            // Chrome above the close-up layer: pause glyph (top-left).
             VStack {
                 HStack {
                     pauseButton
@@ -57,9 +60,12 @@ struct GameRoomView: View {
                 }
                 .padding(24)
                 Spacer()
-                InventoryBarView(state: session.state, interaction: interaction,
-                                  horizontalSizeClass_isPad: hSizeClass == .regular)
             }
+
+            // Inventory pill (§7-R1): full-screen overlay, self-anchored bottom-center,
+            // drawn above the close-up layer so it is live in EVERY close-up (§7-R1.5).
+            InventoryBarView(state: session.state, interaction: interaction,
+                             horizontalSizeClass_isPad: hSizeClass == .regular)
 
             // Interim diegetic-gap patch: z2 has no painted return door, so an exit
             // affordance stands in for "back through the rune door" until the Art
@@ -124,30 +130,21 @@ struct GameRoomView: View {
     }
 
     /// F-024: chevrons rotate within the zone only; single-view zones show none.
-    /// F-025 interim: idle visibility raised from 40% bare glyphs to 65% on a soft
-    /// scrim disc (final treatment pending the Section 7 Rev-2 addendum).
+    /// §7-R2 (Rev 2): bone-white breathing chevrons on a soft radial backing.
     @ViewBuilder
     private var navigationChevrons: some View {
         if session.hasViewNavigation {
             HStack {
-                chevronButton(systemName: "chevron.left") { session.previousView() }
+                NavChevron.sideButton(systemName: "chevron.left", isPad: hSizeClass == .regular) {
+                    session.previousView()
+                }
                 Spacer()
-                chevronButton(systemName: "chevron.right") { session.nextView() }
+                NavChevron.sideButton(systemName: "chevron.right", isPad: hSizeClass == .regular) {
+                    session.nextView()
+                }
             }
-            .padding(.horizontal, 10)
+            .padding(.horizontal, 8)
         }
-    }
-
-    private func chevronButton(systemName: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: systemName)
-                .font(.system(size: 28, weight: .medium))
-                .foregroundColor(Color(white: 0.95).opacity(0.65))
-                .frame(width: 44, height: 44)
-                .background(Circle().fill(Color.black.opacity(0.35)))
-        }
-        .accessibilityLabel(systemName == "chevron.left" ? "Previous view" : "Next view")
-        .accessibilityIdentifier(systemName == "chevron.left" ? "nav-previous" : "nav-next")
     }
 
 }
@@ -160,21 +157,22 @@ private struct ZoneExitHost: View {
     let barHeight: CGFloat
     let onExit: () -> Void
 
+    @Environment(\.horizontalSizeClass) private var hSizeClass
+
     var body: some View {
         if coordinator.activeCloseUp == nil {
             VStack {
                 Spacer()
                 HStack {
                     Button(action: onExit) {
-                        Image(systemName: "chevron.down")
-                            .font(.system(size: 26, weight: .medium))
-                            .foregroundColor(Color(white: 0.95).opacity(0.65))
-                            .frame(width: 44, height: 44)
-                            .background(Circle().fill(Color.black.opacity(0.35)))
+                        BreathingChevron(systemName: "chevron.down",
+                                         size: NavChevron.glyphSize(isPad: hSizeClass == .regular))
+                            .frame(width: 88, height: 56)
+                            .contentShape(Rectangle())
                     }
                     .accessibilityLabel("Leave the workshop")
                     .accessibilityIdentifier("zone-exit")
-                    .padding(.leading, 10)
+                    .padding(.leading, 8)
                     .padding(.bottom, barHeight + 12)
                     Spacer()
                 }

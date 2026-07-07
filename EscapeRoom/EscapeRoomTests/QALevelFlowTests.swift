@@ -28,6 +28,19 @@ final class QALevelFlowTests: XCTestCase {
         GameState(levelID: 1, store: SaveGameStore(directory: dir))
     }
 
+    /// Feedback round 1 (clue-gating rev 1.3): engine-level solve paths bypass the
+    /// close-up UI that records clue views, so a gated puzzle would (correctly) refuse
+    /// its solution. This marks every gating clue viewed — the player-opened-all-clues
+    /// analogue — so solve-path assertions still exercise the SOLVE grammar. Dedicated
+    /// gating tests (in PuzzleEngineTests) do NOT call this.
+    private func satisfyAllGates(_ state: GameState) {
+        for clueID in [ClueID.markAir, ClueID.markFire, ClueID.markEarth, ClueID.markWater,
+                       ClueID.grimoireElements, ClueID.triptych, ClueID.windowOrion,
+                       ClueID.slotShapes, ClueID.recipePage] {
+            state.markClueViewed(clueID)
+        }
+    }
+
     private let sceneSize = CGSize(width: 2732, height: 1366)
 
     /// Moves the three brew ingredients from inventory into the cauldron the same way
@@ -87,6 +100,7 @@ final class QALevelFlowTests: XCTestCase {
 
     func testSolvePathOrderingA_engineLevel() {
         let state = makeState(tempDir())
+        satisfyAllGates(state) // rev 1.3 clue-gating: all gate clues "viewed" for the engine path
         // move rug (free action; no engine flag exists — see QA-BUG-010 report entry)
         setMoonDialsToSolution(state)
         XCTAssertTrue(PuzzleEngine.evaluateMoonDials(state: state))                  // p02
@@ -116,6 +130,7 @@ final class QALevelFlowTests: XCTestCase {
 
     func testSolvePathOrderingB_engineLevel() {
         let state = makeState(tempDir())
+        satisfyAllGates(state) // rev 1.3 clue-gating
         state.addItem(PuzzleGraph.ItemID.poker)
         pressRunes(state)                                                            // p01
         XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state)) // p03
@@ -143,6 +158,7 @@ final class QALevelFlowTests: XCTestCase {
     /// Exercises D2 / Validator required fix 2 end-to-end.
     func testSolvePathOrderingC_mirrorFirst_engineLevel() {
         let state = makeState(tempDir())
+        satisfyAllGates(state) // rev 1.3 clue-gating
         state.addItem(PuzzleGraph.ItemID.poker)
         setMoonDialsToSolution(state)
         XCTAssertTrue(PuzzleEngine.evaluateMoonDials(state: state))                  // p02
@@ -173,6 +189,7 @@ final class QALevelFlowTests: XCTestCase {
     func testWrongAstrolabePlateYieldsNothing() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        satisfyAllGates(state) // isolate wrong-vs-correct plate from the clue gate
         for plate in [1, 3, 4, 5, 6] {
             XCTAssertFalse(PuzzleEngine.selectAstrolabePlate(plate, state: state), "plate \(plate) must not open the drawer")
         }
@@ -185,6 +202,7 @@ final class QALevelFlowTests: XCTestCase {
     func testSwappedCabinetPlacementRejectedWithoutLoss() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        satisfyAllGates(state) // isolate swapped-vs-correct from the clue gate
         state.addItem(PuzzleGraph.ItemID.goldRing)
         state.addItem(PuzzleGraph.ItemID.silverCoin)
         XCTAssertFalse(PuzzleEngine.placeCabinetItems(sun: PuzzleGraph.ItemID.silverCoin,
@@ -208,6 +226,7 @@ final class QALevelFlowTests: XCTestCase {
     func testFailedBrewReturnsFeatherPasteShavingsAndIsInfinitelyRetryable() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        satisfyAllGates(state) // isolate wrong-vs-correct params from the recipe gate
         for id in BrewSolution.requiredIngredients { state.addItem(id) }
         // Wrong stir direction.
         loadCauldron(state)
@@ -337,6 +356,7 @@ final class QALevelFlowTests: XCTestCase {
     func testRelaunchMidRuneSequenceContinuesToSolve_J5() {
         let dir = tempDir()
         let state = GameState(levelID: 1, store: SaveGameStore(directory: dir))
+        satisfyAllGates(state) // clue-viewed flags must persist across relaunch (D7/IC-2)
         PuzzleEngine.pressRuneTile(.air, state: state)
         PuzzleEngine.pressRuneTile(.fire, state: state)
         // Simulate exit-to-menu + full app relaunch mid-puzzle.
@@ -350,6 +370,7 @@ final class QALevelFlowTests: XCTestCase {
     func testRelaunchInsideNestedHiddenZoneMidPuzzleLosesNothing() {
         let dir = tempDir()
         let state = GameState(levelID: 1, store: SaveGameStore(directory: dir))
+        satisfyAllGates(state) // clue gates satisfied + persisted through the relaunch
         // Ordering-C midpoint: inside z3/z4 with mirror pre-set, dials solved, brew pending.
         state.addItem(PuzzleGraph.ItemID.poker)
         setMoonDialsToSolution(state)
@@ -458,6 +479,7 @@ final class QALevelFlowTests: XCTestCase {
     func testQA_BUG_005_astrolabeTapMustNotAutoSolve() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        satisfyAllGates(state) // rev 1.3: the Orion plate must solve once ungated
         let coordinator = RoomSceneCoordinator(viewID: .cabinet, state: state, size: sceneSize)
         coordinator.scene.onHotspotTap?("astrolabe")
         // FIXED: a bare tap opens the six-plate close-up; only the player's plate
@@ -486,6 +508,7 @@ final class QALevelFlowTests: XCTestCase {
     func testQA_BUG_006_reResolvingAfterSuccessMustNotReturnSpentIngredients() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        satisfyAllGates(state) // the brew must succeed to reach the re-resolve guard
         for id in BrewSolution.requiredIngredients { state.addItem(id) }
         loadCauldron(state)
         XCTAssertEqual(PuzzleEngine.resolveBrew(flameStage: BrewSolution.flameStage,

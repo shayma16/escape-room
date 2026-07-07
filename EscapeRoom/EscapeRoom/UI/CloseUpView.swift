@@ -18,6 +18,7 @@ struct CloseUpView: View {
     @ObservedObject var coordinator: RoomSceneCoordinator
     let request: CloseUpRequest
     var bottomInset: CGFloat = 0
+    @Environment(\.horizontalSizeClass) private var hSizeClass
 
     var body: some View {
         ZStack {
@@ -76,19 +77,11 @@ struct CloseUpView: View {
         coordinator.useArmedItemInCloseUp()
     }
 
-    /// F-025 interim visibility bump: bigger glyph, brighter, on a soft dark backing
-    /// (was a bare 30 pt glyph at 55% white). Final treatment comes from the Section 7
-    /// Rev-2 addendum.
+    /// §7-R2.4 close-up back affordance: bone-white down-chevron on a soft radial backing
+    /// that plays one entrance accent on appear (the "you can leave this way" beat F-025
+    /// missed), then joins the breathing pulse.
     private var dismissChevron: some View {
-        Button(action: dismiss) {
-            Image(systemName: "chevron.down")
-                .font(.system(size: 30, weight: .medium))
-                .foregroundColor(Color(white: 0.92).opacity(0.85))
-                .frame(width: 64, height: 44)
-                .background(Capsule().fill(Color.black.opacity(0.45)))
-        }
-        .accessibilityLabel("Back")
-        .accessibilityIdentifier("closeup-dismiss")
+        NavChevron.dismissButton(action: dismiss, isPad: hSizeClass == .regular)
     }
 
     private func dismiss() {

@@ -21,7 +21,11 @@ enum PuzzleEngine {
             return .inProgress
         }
 
-        if progress == RuneDoorSolution.solutionOrder {
+        // Clue-gating (rev 1.3): even the CORRECT sequence resets with the same dull
+        // knock until the gate is satisfied — no tell (gate_behavior). Tiles self-reset
+        // so no stale-correct-input case exists here (D6).
+        if progress == RuneDoorSolution.solutionOrder
+            && ClueGate.isSatisfied(PuzzleGraph.PuzzleID.runeDoor, state: state) {
             state.setRuneDoorProgress([])
             state.markSolved(PuzzleGraph.PuzzleID.runeDoor)
             state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
@@ -58,12 +62,27 @@ enum PuzzleEngine {
         let positions = state.data.moonDialPositions
         guard positions.count == 3 else { return false }
         let phases = positions.map { MoonDialSolution.clockwiseOrder[$0 % MoonDialSolution.clockwiseOrder.count] }
+        // Clue-gating (rev 1.3): while gated the trapdoor stays shut on ANY setting,
+        // including the correct one — presentation-identical to a wrong code (no tell).
+        // The stale-correct-dials case (correct combo left set while gated, triptych
+        // viewed later) resolves via IC-1 re-evaluation on close-up entry (see
+        // reevaluateOnCloseUpEntry).
         let solved = phases == MoonDialSolution.solution
+            && ClueGate.isSatisfied(PuzzleGraph.PuzzleID.moonTrapdoor, state: state)
         if solved {
             state.markSolved(PuzzleGraph.PuzzleID.moonTrapdoor)
             state.unlockZone(PuzzleGraph.ZoneID.z3Cellar)
         }
         return solved
+    }
+
+    /// IC-1 (D6 rule b): re-evaluate p02's gate+solution when its close-up is (re-)entered.
+    /// Handles the stale-correct-dials case — correct combo left set while gated, then the
+    /// triptych viewed later: on re-entry the trapdoor opens with no pointless input wiggle.
+    /// No-op unless the dials already sit on the solution AND the gate is now satisfied.
+    static func reevaluateMoonDialsOnCloseUpEntry(state: GameState) {
+        guard !state.hasSolved(PuzzleGraph.PuzzleID.moonTrapdoor) else { return }
+        _ = evaluateMoonDials(state: state)
     }
 
     // MARK: - p03 astrolabe
@@ -73,10 +92,26 @@ enum PuzzleEngine {
     /// the yield into inventory. See `uncollectedItems(in:state:)` / `collectItem`.
     static func selectAstrolabePlate(_ plateIndex: Int, state: GameState) -> Bool {
         guard state.isZoneUnlocked(PuzzleGraph.ZoneID.z2Workshop) else { return false }
-        guard plateIndex == AstrolabeSolution.solutionPlateIndex else { return false }
         guard !state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion) else { return true }
+        guard plateIndex == AstrolabeSolution.solutionPlateIndex else { return false }
+        // Clue-gating (rev 1.3): the drawer stays shut on ANY plate — including plate-2 —
+        // until the Orion window has been viewed (no tell). The stale pointer-on-plate-2
+        // case resolves via IC-1 re-evaluation on close-up entry.
+        guard ClueGate.isSatisfied(PuzzleGraph.PuzzleID.astrolabeOrion, state: state) else { return false }
         state.markSolved(PuzzleGraph.PuzzleID.astrolabeOrion)
         return true
+    }
+
+    /// IC-1 (D6 rule b): re-evaluate p03's gate+solution when its close-up is (re-)entered.
+    /// Handles the stale pointer-already-on-plate-2 case — pointer left on the Orion plate
+    /// while gated, then the window viewed later: on re-entry the drawer springs open with
+    /// no pointless re-selection. Returns true if the puzzle newly solved on this entry, so
+    /// the UI can present the sprung-open container immediately.
+    @discardableResult
+    static func reevaluateAstrolabeOnCloseUpEntry(pointerAtPlate: Int?, state: GameState) -> Bool {
+        guard !state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion) else { return false }
+        guard let plate = pointerAtPlate else { return false }
+        return selectAstrolabePlate(plate, state: state)
     }
 
     // MARK: - p04 sun/moon cabinet
@@ -93,6 +128,11 @@ enum PuzzleEngine {
             return false
         }
         guard !state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon) else { return true }
+        // Clue-gating (rev 1.3, self-satisfying/defensive): seating the items requires the
+        // cabinet slot close-up, which itself marks clu-slot-shapes viewed — so in practice
+        // the gate is satisfied at the moment of a correct placement. Enforced anyway; a
+        // gated placement pops both items back exactly like a swapped placement (no tell).
+        guard ClueGate.isSatisfied(PuzzleGraph.PuzzleID.cabinetSunMoon, state: state) else { return false }
         state.removeItem(CabinetSolution.sunSlotItem)
         state.removeItem(CabinetSolution.moonSlotItem)
         state.markSolved(PuzzleGraph.PuzzleID.cabinetSunMoon)
@@ -296,7 +336,13 @@ enum PuzzleEngine {
         let ingredients = state.data.cauldronIngredients
         guard ingredients == BrewSolution.requiredIngredients else { return .notReady }
 
-        let success = flameStage == BrewSolution.flameStage
+        // Clue-gating (rev 1.3): while gated, the RESOLVE is inert — any resolve, including
+        // a fully correct one, produces the standard gray fizzle with all three ingredients
+        // returned intact (no tell, nothing consumed — one retry at most). Resolve is an
+        // explicit act and failure fully resets the pot, so no stale-state case exists (D6).
+        let gateOpen = ClueGate.isSatisfied(PuzzleGraph.PuzzleID.brew, state: state)
+        let success = gateOpen
+            && flameStage == BrewSolution.flameStage
             && stirDirection == BrewSolution.stirDirection
             && stirCount == BrewSolution.stirCount
 
