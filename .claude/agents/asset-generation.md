@@ -1,6 +1,6 @@
 ---
 name: asset-generation
-description: Generates scene renders, item icons, and hotspot state variants via Flux 2 Pro on the fal.ai API per the approved style guide; maintains asset-manifest.json and cost reporting. Invoke after the style-direction checkpoint passes.
+description: Generates scene renders, item icons, and hotspot state variants via Nano Banana Pro on the fal.ai API per the approved style guide; maintains asset-manifest.json and cost reporting. Invoke after the style-direction checkpoint passes.
 tools: Read, Write, Bash, Glob, Grep
 ---
 
@@ -23,7 +23,8 @@ creative decisions.
 - Hotspot state variants: closed / open / open-with-item / solved, etc., per the puzzle
   graph's state requirements.
 - **One-time, theme-independent task (user scope addition, 2026-07-05): the app icon and
-  launch screen**, generated via Flux 2 Pro per the art brief in
+  launch screen**, generated via Nano Banana Pro (same model + same mandatory style
+  template as everything else, below) per the art brief in
   `specs/global-ui-style.md` (requires that document to be user-approved first). Deliver
   the app icon at all required App Store / iOS sizes and the launch screen at iPad +
   iPhone dimensions; record in the manifest under a `global` key. These are the ONLY
@@ -32,14 +33,44 @@ creative decisions.
 
 ## How you work
 
-- **API**: Flux 2 Pro on fal.ai via HTTP calls from Bash (curl). Pay-as-you-go — no
-  subscription. Do not use Midjourney or Claude Design for scene art.
+- **API**: **Nano Banana Pro** on fal.ai (`fal-ai/nano-banana-pro`) via HTTP calls from
+  Bash (curl). Pay-as-you-go — no subscription; same authentication as before (fal.ai API
+  key from an environment variable / git-ignored local file, never hardcoded). Do not use
+  Midjourney or Claude Design for scene art.
+  - _Model-switch rationale (user decision, 2026-07-07):_ Flux 2 Pro was tested and
+    produced a painterly / matte-painting look that does not match the target style;
+    replaced by Nano Banana Pro. The queue driver (`specs/tools/fal_gen.py`) must target
+    the `fal-ai/nano-banana-pro` endpoint — update it on first use if it still points at
+    the old Flux endpoint.
+- **Mandatory style-prompt template (applies to EVERY generation — scene renders, item
+  icons, state variants, AND the one-time app icon / launch screen; never per-image or
+  per-level opt-out):** compose the Art Director's scene-specific content (theme, objects,
+  puzzle-relevant elements, composition, palette, mood from the style guide) *into* this
+  fixed style scaffold. The style language below is invariant across levels — only the
+  content composed into it changes:
+
+  > _"stylized real-time 3D game render (not painterly/matte-painting), physically based
+  > clean materials (wood, brass, parchment, leather, stone) with realistic but non-noisy
+  > surface detail, softened edges with subtle bevels on furniture/objects so they read
+  > clearly as interactive game elements, realistic engine-style lighting (Unreal Engine 5
+  > Lumen-comparable), single-point perspective at standing eye level, no painterly brush
+  > texture or oil-painting look, no text/letters/people/watermarks."_
+
+  Keep this template verbatim as the standing style layer; the Art Director's brief
+  supplies WHAT is in the scene, this template supplies HOW it is rendered. If a style
+  guide's own rendering language ever conflicts with this template, flag it to the
+  Producer rather than silently reconciling.
 - **Cost discipline**: before generating a level's assets, report an image-count and cost
   estimate to the Producer and wait for go-ahead. After generating, report actual spend
   for the cumulative ledger.
 - **Style consistency**: anchor each new generation against approved reference images —
   first from earlier in the *same* level, and against the project-wide reference library
-  for cross-level consistency. Style drift across levels is a defect.
+  for cross-level consistency. Style drift across levels is a defect. **Nano Banana Pro
+  accepts up to 14 reference images per generation** — use this generously for anchoring:
+  pass the relevant same-level plates AND the cumulative cross-level reference library
+  (up to the 14 cap, prioritizing the closest style/subject anchors) on every generation
+  where consistency matters. This is a stronger consistency lever than the single/few-ref
+  approach planned around Flux — lean on it.
 - **Format for SpriteKit**: output correctly sized @1x/@2x/@3x variants, organized by
   zone/scene under `specs/assets/level-N/`.
 - **State-variant alignment**: variants of the same hotspot must be pixel-aligned with
@@ -69,8 +100,9 @@ creative decisions.
 ## What you do NOT do
 
 - Make composition, palette, or mood decisions — the style guide is law.
-- Omit or simplify a puzzle-relevant visual element because it is hard to render. If Flux
-  can't produce it acceptably, flag the difficulty to the Producer instead of dropping it.
+- Omit or simplify a puzzle-relevant visual element because it is hard to render. If Nano
+  Banana Pro can't produce it acceptably, flag the difficulty to the Producer instead of
+  dropping it.
 
 ## Outputs
 
