@@ -12,6 +12,12 @@ import UIKit
 /// BUG-004 art integration (2026-07-06): the re-framed plates put every puzzle-
 /// critical element inside the dual-safe zone, so the full playthrough now runs on
 /// iPad too (coordinates below sit inside the iPad-visible band x in [0.167, 0.833]).
+///
+/// Feedback round 1 / build-2 QA regression (2026-07-08): the full playthrough was
+/// recalibrated to the select-then-tap + diegetic-passage + clue-gating rewrite and
+/// UN-SKIPPED (see testFullPlaythroughWithScreenshots). A save/resume + gate-persistence
+/// UI test (testSaveResumeMidPlaythroughPersistsGate) was added to exercise D7 (clue
+/// flags persist across relaunch, never re-lock) through the real chrome.
 final class EscapeRoomUITests: XCTestCase {
 
     private let sceneSize = CGSize(width: 2732, height: 1366)
@@ -35,6 +41,17 @@ final class EscapeRoomUITests: XCTestCase {
     private func launchFreshApp() -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-resetSave"]
+        app.launch()
+        assertFullScreenLandscapeComposition(app)
+        return app
+    }
+
+    /// Relaunch WITHOUT -resetSave: the same on-disk save is reloaded, exercising the
+    /// persistence layer end-to-end (save/resume + D7 gate persistence). Used by
+    /// testSaveResumeMidPlaythroughPersistsGate.
+    private func relaunchKeepingSave() -> XCUIApplication {
+        let app = XCUIApplication()
+        app.launchArguments = []   // no reset: reload persisted save
         app.launch()
         assertFullScreenLandscapeComposition(app)
         return app
@@ -141,6 +158,14 @@ final class EscapeRoomUITests: XCTestCase {
                       "\(item) must be in the inventory bar", file: file, line: line)
     }
 
+    /// Enter Level 1 from the main menu (shared by playthrough + save/resume tests).
+    private func enterLevelOne(_ app: XCUIApplication) {
+        tapID(app, "menu-play", timeout: coldLaunchTimeout)
+        tapID(app, "level-card-1", timeout: coldLaunchTimeout)
+        XCTAssertTrue(app.descendants(matching: .any)["pause-button"].waitForExistence(timeout: coldLaunchTimeout))
+        Thread.sleep(forTimeInterval: 1.5)
+    }
+
     // MARK: - All-device smoke: menus, level entry, z1 navigation, pause, settings
 
     func testMenuAndNavigationSmoke() {
@@ -172,32 +197,36 @@ final class EscapeRoomUITests: XCTestCase {
         shoot(app, "smoke-07-back-at-menu")
     }
 
-    // MARK: - Full playthrough (iPhone-class; see header note re QA-BUG-004)
+    // MARK: - Full playthrough (both device classes; see header note re QA-BUG-004)
 
     func testFullPlaythroughWithScreenshots() throws {
-        // FEEDBACK ROUND 1 (build 2): this end-to-end screenshot playthrough is
-        // SKIPPED pending a QA scene-coordinate recalibration, and this skip is DELIBERATE
-        // and DOCUMENTED (not hidden breakage). Reason: the select-then-tap + diegetic-
-        // passage + clue-gating rewrite changed both the interaction flow AND the required
-        // tap targets (item arming, passage hotspots: cellar ladder / shelf gap / trapdoor,
-        // the interim workshop exit, clue close-ups). The new passage/target coordinates
-        // here are DERIVED from the coordinator hotspot rects but have NOT been verified
-        // against real device screenshots — the only reliable way to calibrate this test,
-        // which is QA's regression job (they iterated the build-1 coordinates the same way).
-        // The core game logic that this test would exercise is fully covered and GREEN in
-        // the unit + QA-flow suites (full solve orderings A/B/C, gating, containers, nav
-        // model, audio lifecycle). QA: flip `playthroughEnabled` back to true and
-        // recalibrate the coordinates below against the smoke-test screenshots during the
-        // build-2 regression pass.
-        let playthroughEnabled = false
-        try XCTSkipUnless(playthroughEnabled,
-                          "Build-2 UI playthrough coordinates await QA screenshot recalibration (see comment).")
+        // FEEDBACK ROUND 1 (build 2) — QA REGRESSION PASS (2026-07-08): UN-SKIPPED.
+        // The Developer left this end-to-end playthrough as a documented XCTSkip because
+        // the select-then-tap + diegetic-passage + clue-gating rewrite changed both the
+        // interaction flow and the required tap targets, and recalibrating the coordinates
+        // against the new scene layout was explicitly QA's regression job.
+        //
+        // QA recalibration method (static, then empirical): every scene tap below was
+        // cross-checked against the AUTHORITATIVE hotspot rects in
+        // RoomSceneCoordinator.configure*() (the same rects the scene hit-tests). The
+        // scene is 2732x1366 .aspectFill and the base plate fills it exactly
+        // (RoomScene.setBaseTexture), so a plate-normalized hotspot center maps 1:1 onto
+        // the .aspectFill window coordinate `sceneCoordinate(_:_:_:)` produces — i.e. the
+        // correct tap for a hotspot rect (x,y,w,h) is (x + w/2, y + h/2). Each tap was
+        // verified to (a) fall inside its intended hotspot rect, (b) win the smallest-
+        // area-wins overlap resolution (RoomScene.hotspotID(at:)) against any nesting
+        // hotspot (star-keyhole/feed-cup inside cage; trapdoor inside rug; ladle inside
+        // cauldron; alcove-passage inside cellar), (c) sit inside the iPad-safe band
+        // x in [0.1665, 0.8335], and (d) clear the §7-R1 inventory pill (bottom band,
+        // screen-y >= 0.835 on iPhone SE) — no scene tap here exceeds scene-y 0.78. The
+        // two prior real failure modes this test surfaced (rune-tile modifier order;
+        // rug/trapdoor taps under the bar) are both fixed in build-2 source. CI now
+        // empirically confirms the full end-to-end solve on both device classes.
+        let playthroughEnabled = true
+        try XCTSkipUnless(playthroughEnabled, "playthrough disabled")
 
         let app = launchFreshApp()
-        tapID(app, "menu-play", timeout: coldLaunchTimeout)
-        tapID(app, "level-card-1", timeout: coldLaunchTimeout)
-        XCTAssertTrue(app.descendants(matching: .any)["pause-button"].waitForExistence(timeout: coldLaunchTimeout))
-        Thread.sleep(forTimeInterval: 1.5)
+        enterLevelOne(app)
         shoot(app, "play-01-hearth")
 
         // z1 hearth: poker, ash sift (glint close-up).
@@ -206,19 +235,22 @@ final class EscapeRoomUITests: XCTestCase {
         // and swallows touches (root cause of CI run 28753975221's failure at the dial step).
         tapScene(app, 0.235, 0.685)                 // take poker
         assertHolding(app, "itm-poker")
-        tapScene(app, 0.325, 0.650)                 // sift ash -> glint close-up
+        // Select-then-tap (F-007/F-020/F-021): arm the poker, then tap the ash pile.
+        // A bare tap on ash is now only a look (no passive auto-apply), so the sift MUST
+        // go through the armed-item path or the ring is never yielded.
+        useItem(app, item: "itm-poker", onScene: 0.325, 0.650)  // sift ash -> glint close-up
         assertHolding(app, "itm-gold-ring")
         shoot(app, "play-02-ash-glint")
         dismissCloseUp(app)
 
         // Clue-gating (rev 1.3): a thorough player views the clue close-ups before the
         // gated code-entry puzzles will accept their answers. Gather z1's gate clues now.
-        tapScene(app, 0.615, 0.40); dismissCloseUp(app)   // hearth bellows -> AIR mark
-        tapScene(app, 0.30, 0.28); dismissCloseUp(app)    // hearth lintel -> FIRE mark
+        tapScene(app, 0.643, 0.40); dismissCloseUp(app)   // hearth bellows -> AIR mark
+        tapScene(app, 0.32, 0.285); dismissCloseUp(app)   // hearth lintel -> FIRE mark
         tapID(app, "nav-next"); Thread.sleep(forTimeInterval: 0.8) // hearth -> study
         viewZ1GatingClues(app)                             // EARTH mark, triptych, grimoire A + recipe
         tapID(app, "nav-next"); Thread.sleep(forTimeInterval: 0.8) // study -> entry
-        tapScene(app, 0.20, 0.55); dismissCloseUp(app)    // windowsill -> WATER mark
+        tapScene(app, 0.227, 0.57); dismissCloseUp(app)   // windowsill -> WATER mark
         tapID(app, "nav-next"); Thread.sleep(forTimeInterval: 0.8) // entry -> hearth (wraps)
 
         // Back at the hearth: rug discovery + the now-ungated dial panel (p02).
@@ -236,20 +268,21 @@ final class EscapeRoomUITests: XCTestCase {
         // z3 cellar: barrel pry, counterweight, spoon, mirror to detent-3.
         // (Re-framed geometry: scene dx +132, barrel re-staged at 0.545 scale.)
         // Select-then-tap: arm the poker, then tap the barrel (no auto-apply on bare tap).
-        useItem(app, item: "itm-poker", onScene: 0.757, 0.665) // pry barrel -> weight
+        useItem(app, item: "itm-poker", onScene: 0.765, 0.73) // pry barrel -> weight
         assertHolding(app, "itm-weight")
         // BUG-015 polish: the hook hotspot now sits ON the pulley-rope hook art
         // (x~0.335-0.385), so the weight is released on the hook itself.
         useItem(app, item: "itm-weight", onScene: 0.36, 0.335) // hang weight -> z4
         Thread.sleep(forTimeInterval: 1.2)          // weight-hung beat + shelf slide
         shoot(app, "play-06-shelf-slid")
-        tapScene(app, 0.415, 0.645)                 // take spoon
+        tapScene(app, 0.415, 0.645)                 // open drawer
+        tapScene(app, 0.415, 0.645)                 // take spoon (manual pickup, F-018)
         assertHolding(app, "itm-spoon")
         tapScene(app, 0.635, 0.78)                  // mirror detent 2
         tapScene(app, 0.635, 0.78)                  // mirror detent 3
         // F-024: zone changes are DIEGETIC PASSAGES, not chevrons. The slid-shelf gap
         // (cellar `alcove-passage` hotspot ~center) leads into the alcove.
-        tapScene(app, 0.467, 0.50, settle: 1.2)     // cellar -> alcove via the shelf gap
+        tapScene(app, 0.467, 0.505, settle: 1.2)    // cellar -> alcove via the shelf gap
         shoot(app, "play-07-alcove")
         tapScene(app, 0.595, 0.265)                 // take star-bit cage key
         assertHolding(app, "itm-cage-key")
@@ -286,18 +319,25 @@ final class EscapeRoomUITests: XCTestCase {
         shoot(app, "play-10-cabinet")
         // Clue-gating (rev 1.3): view the Orion window (p03 gate) and the slot-shape
         // close-up (p04 gate) before the code-entry acts.
-        tapScene(app, 0.73, 0.30); dismissCloseUp(app)   // window -> clu-window-orion
-        tapScene(app, 0.20, 0.34); dismissCloseUp(app)   // sun slot close-up -> clu-slot-shapes
-        tapScene(app, 0.60, 0.55)                   // astrolabe close-up (re-framed pedestal)
+        tapScene(app, 0.745, 0.30); dismissCloseUp(app)  // window -> clu-window-orion
+        tapScene(app, 0.205, 0.345); dismissCloseUp(app) // sun slot close-up -> clu-slot-shapes
+        tapScene(app, 0.60, 0.57)                   // astrolabe close-up (re-framed pedestal)
         shoot(app, "play-11-astrolabe")
         tapID(app, "astrolabe-plate-2")             // Orion -> drawer springs open
+        // F-023 manual pickup: coin + crank are VISIBLE in the drawer; tap each to collect.
+        tapID(app, "collect-itm-silver-coin")
+        tapID(app, "collect-itm-crank")
         assertHolding(app, "itm-crank")
         assertHolding(app, "itm-silver-coin")
         dismissCloseUp(app)
         useItem(app, item: "itm-gold-ring", onScene: 0.205, 0.345)   // sun recess
-        useItem(app, item: "itm-silver-coin", onScene: 0.315, 0.355) // moon recess -> file + phial
+        useItem(app, item: "itm-silver-coin", onScene: 0.318, 0.355) // moon recess -> cabinet opens
+        // F-023 manual pickup: file + phial visible in the opened cabinet; tap each.
+        tapID(app, "collect-itm-file")
+        tapID(app, "collect-itm-phial")
         assertHolding(app, "itm-file")
         assertHolding(app, "itm-phial")
+        dismissCloseUp(app)
         shoot(app, "play-12-cabinet-open")
 
         // Free the crow. Leave z2 via the workshop exit affordance (-> study), then
@@ -309,7 +349,8 @@ final class EscapeRoomUITests: XCTestCase {
         // Screenshot-coverage detour (QA re-QA gap list): a deliberate armed-item REACH
         // at the cage triggers the D3 terminal-refusal pose (F-011: a bare tap is now a
         // neutral look, so the refusal fires only on an armed offer). Arm the rusted key
-        // and offer it at the cage.
+        // and offer it at the cage — but the rusted key gets the *mechanical reject*
+        // (star-keyhole close-up), not the refusal, so use the poker for the D3 reach.
         let pokerCell = app.descendants(matching: .any)["inventory-itm-poker"]
         if pokerCell.waitForExistence(timeout: 3) {
             pokerCell.tap(); Thread.sleep(forTimeInterval: 0.2)   // arm the (held) poker
@@ -343,7 +384,7 @@ final class EscapeRoomUITests: XCTestCase {
         // Select-then-tap: arm the crank, then tap the winch (no auto-fit on bare tap).
         useItem(app, item: "itm-crank", onScene: 0.235, 0.30) // fit crank, open shutter -> moonbeam
         shoot(app, "play-14-beam")
-        tapScene(app, 0.467, 0.50, settle: 1.2)     // cellar -> alcove via the shelf gap
+        tapScene(app, 0.467, 0.505, settle: 1.2)    // cellar -> alcove via the shelf gap
         shoot(app, "play-15-blooming")
         tapScene(app, 0.465, 0.73)                  // pick blossom
         assertHolding(app, "itm-blossom")
@@ -356,19 +397,19 @@ final class EscapeRoomUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 0.8)
         tapScene(app, 0.785, 0.46, settle: 1.2)     // through the (solved) rune door -> bench
         Thread.sleep(forTimeInterval: 0.8)
-        useItem(app, item: "itm-blossom", onScene: 0.765, 0.37) // mortar -> paste
+        useItem(app, item: "itm-blossom", onScene: 0.76, 0.37) // mortar -> paste
         assertHolding(app, "itm-paste")
         dismissCloseUp(app)
-        useItem(app, item: "itm-paste", onScene: 0.255, 0.48)
-        useItem(app, item: "itm-shavings", onScene: 0.255, 0.48)
-        useItem(app, item: "itm-feather", onScene: 0.255, 0.48)
-        tapScene(app, 0.255, 0.48)                  // brew close-up
+        useItem(app, item: "itm-paste", onScene: 0.264, 0.48)
+        useItem(app, item: "itm-shavings", onScene: 0.264, 0.48)
+        useItem(app, item: "itm-feather", onScene: 0.264, 0.48)
+        tapScene(app, 0.264, 0.48)                  // brew close-up
         for _ in 0..<3 { tapID(app, "brew-pump") }  // flame stage 3
         for _ in 0..<5 { tapID(app, "brew-stir-ccw") }
         tapID(app, "brew-release")                  // -> draught-ready (spiral cue)
         shoot(app, "play-16-draught")
         dismissCloseUp(app)
-        useItem(app, item: "itm-phial", onScene: 0.255, 0.48) // bottle the draught
+        useItem(app, item: "itm-phial", onScene: 0.264, 0.48) // bottle the draught
         assertHolding(app, "itm-phial-draught")
         dismissCloseUp(app)
 
@@ -379,10 +420,10 @@ final class EscapeRoomUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 0.8)
         tapID(app, "nav-next")                      // study -> entry
         Thread.sleep(forTimeInterval: 0.8)
-        useItem(app, item: "itm-phial-draught", onScene: 0.50, 0.40) // pour into basin
+        useItem(app, item: "itm-phial-draught", onScene: 0.50, 0.425) // pour into basin
         shoot(app, "play-17-unsealed")
         dismissCloseUp(app)
-        tapScene(app, 0.50, 0.40)                   // slide the bolt and leave (p17)
+        tapScene(app, 0.50, 0.425)                  // slide the bolt and leave (p17)
         // The Main Menu button doubles as the completion-card existence assert.
         XCTAssertTrue(app.descendants(matching: .any)["complete-main-menu"].waitForExistence(timeout: 6),
                       "completing p17 must present the completion card")
@@ -394,5 +435,72 @@ final class EscapeRoomUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["level-card-1-complete"].waitForExistence(timeout: 6),
                       "Level Select must show the completion badge")
         shoot(app, "play-19-badge")
+    }
+
+    // MARK: - Save/resume + clue-gate persistence (D7), driven through the real chrome
+
+    /// Regression scope item 4 + D7: a clue viewed in-game and a container-collected item
+    /// must survive save/quit/relaunch, and a gated puzzle must NOT re-lock after the
+    /// clue's flag was persisted. This drives the FULL persistence path (SaveGameStore ->
+    /// relaunch -> reload), not just the in-memory unit-level check.
+    ///
+    /// Sequence: fresh save -> pick poker + sift ash (progress) -> view all four z1 rune
+    /// marks + grimoire page A (p01 gate clues) -> quit to Main Menu -> relaunch KEEPING
+    /// the save -> re-enter -> the poker/ring are still held (save/resume) AND the rune
+    /// door now ACCEPTS the fixed sequence immediately (the gate stayed satisfied; it did
+    /// not re-lock across the relaunch — D7).
+    func testSaveResumeMidPlaythroughPersistsGate() {
+        let app = launchFreshApp()
+        enterLevelOne(app)
+
+        // Progress + p01 clue-gathering on the z1 views.
+        tapScene(app, 0.235, 0.685)                 // take poker
+        assertHolding(app, "itm-poker")
+        useItem(app, item: "itm-poker", onScene: 0.325, 0.650) // sift ash -> ring
+        assertHolding(app, "itm-gold-ring")
+        dismissCloseUp(app)
+        tapScene(app, 0.643, 0.40); dismissCloseUp(app)   // AIR mark
+        tapScene(app, 0.32, 0.285); dismissCloseUp(app)   // FIRE mark
+        tapID(app, "nav-next"); Thread.sleep(forTimeInterval: 0.8) // -> study
+        viewZ1GatingClues(app)                            // EARTH + grimoire page A (+ triptych/recipe)
+        tapID(app, "nav-next"); Thread.sleep(forTimeInterval: 0.8) // -> entry
+        tapScene(app, 0.227, 0.57); dismissCloseUp(app)   // WATER mark
+
+        // Quit to Main Menu (persistence is synchronous per every GameState mutator).
+        tapID(app, "pause-button")
+        tapID(app, "pause-main-menu")
+        XCTAssertTrue(app.descendants(matching: .any)["menu-play"].waitForExistence(timeout: 6),
+                      "Main Menu after quit")
+        app.terminate()
+
+        // Relaunch WITHOUT reset: the same save reloads.
+        let app2 = relaunchKeepingSave()
+        enterLevelOne(app2)
+        shoot(app2, "resume-01-back-in-level")
+
+        // Save/resume: the poker and ring persisted across the relaunch.
+        assertHolding(app2, "itm-poker")
+        assertHolding(app2, "itm-gold-ring")
+
+        // D7: the p01 gate stayed satisfied (all four marks + page A were viewed pre-quit
+        // and never re-lock). Go to the study and press the fixed rune sequence; if the
+        // gate had re-locked, the tiles would reset and the door would not open. We
+        // confirm the solve by taking the diegetic passage into z2 afterward — reaching
+        // v-bench (a z2 view) is only possible once p01 has actually solved and opened
+        // the inner door.
+        tapID(app2, "nav-next"); Thread.sleep(forTimeInterval: 0.8) // hearth -> study
+        tapScene(app2, 0.785, 0.46)                 // rune door close-up
+        for tile in [3, 1, 4, 2] {                  // AIR, FIRE, EARTH, WATER
+            tapID(app2, "rune-tile-\(tile)")
+        }
+        Thread.sleep(forTimeInterval: 0.6)          // close-up closes on solve
+        shoot(app2, "resume-02-runedoor-solved-postresume")
+        tapScene(app2, 0.785, 0.46, settle: 1.2)    // through the now-open inner door -> z2 bench
+        // Reaching z2 confirms the gate accepted the answer post-relaunch (D7). The z2
+        // bench has a mortar hotspot whose close-up we can open as a reachability proof.
+        tapScene(app2, 0.76, 0.37)                  // mortar look (z2 v-bench only)
+        XCTAssertTrue(app2.descendants(matching: .any)["closeup-dismiss"].waitForExistence(timeout: 5),
+                      "must have entered z2 (rune gate did NOT re-lock across relaunch — D7)")
+        shoot(app2, "resume-03-in-z2-gate-held")
     }
 }
