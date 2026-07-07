@@ -90,6 +90,27 @@ shipping (needs user checkpoint-2 GO). Still per-zone user art review before int
 AF-1 door fix + JC-fb1-4 workshop return-door art fold into this rebuild (done in the new
 style, not the old).
 
+## CHECKPOINT 2 STATUS (for user's morning, 2026-07-08)
+
+**Build 2 QA regression = GO** (qa-report.md "Build 2 regression": zero bugs, full
+end-to-end playthrough un-skipped + GREEN, clue-gating/D6/D7/select-then-tap/nav/audio all
+verified, no regressions, +new save/resume UI test). Branch `feedback-round-1` is green
+(run 28903408232).
+
+**ACTION NEEDED FROM USER: merge PR #6** (https://github.com/shayma16/escape-room/pull/6).
+PR #5 was merged but only captured build-2 code up to 6c82467; it MISSED 5 later commits —
+critically the **CI 90-min timeout fix** (without it main's merge CI CANCELLED at 65 min,
+so **main is NOT currently green**), plus the QA GO report, the Nano Banana art-model
+switch, and the rebuild plan/budget. PR #6 brings all 5 to main. Sequence: merge PR #6 →
+confirm main CI green → release build 2 to TestFlight (release.yml, macos-26/Xcode 26,
+Admin ASC key already set) → then Level 1 rebuild (build 3, $18.90 cap, see QUEUED
+section above).
+
+Known non-blocking carry-forwards into/after build 2: QA-OBS-023 (CI screenshots render
+rotated/letterboxed — screenshot fidelity only, not a play defect; real-device is the
+user's TestFlight spot-check); F-010/AF-1 door art NOT fixed in build 2 — deliberately
+folded into the build-3 full rebuild instead of patching painterly art.
+
 ## Pipeline position
 
 **POST-RELEASE FEEDBACK ROUND 1 → BUILD 2 IN PROGRESS (2026-07-07).** User tested build 1
