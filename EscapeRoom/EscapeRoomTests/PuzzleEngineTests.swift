@@ -348,44 +348,51 @@ final class PuzzleEngineTests: XCTestCase {
         XCTAssertTrue(RoomVisuals.rugMoved(state))
     }
 
-    func testWorkbenchDropCombinesFileAndSpoon_QA_BUG_012() {
+    func testWorkbenchUseCombinesFileAndSpoon_QA_BUG_012() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
         state.addItem(PuzzleGraph.ItemID.file)
         state.addItem(PuzzleGraph.ItemID.spoon)
         let coordinator = RoomSceneCoordinator(viewID: .bench, state: state, size: sceneSize)
-        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.file, hotspotID: "workbench")
+        coordinator.useItem(PuzzleGraph.ItemID.file, on: "workbench")
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.shavings), "workbench accepts the p12 combination")
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.spoon), "spoon is not consumed")
     }
 
-    func testWorkbenchDropWithoutBothItemsDoesNothing() {
+    func testWorkbenchUseWithoutBothItemsDoesNothing() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
         state.addItem(PuzzleGraph.ItemID.file)
         let coordinator = RoomSceneCoordinator(viewID: .bench, state: state, size: sceneSize)
-        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.file, hotspotID: "workbench")
+        coordinator.useItem(PuzzleGraph.ItemID.file, on: "workbench")
         XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.shavings))
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.file))
     }
 
-    func testCabinetWrongSlotDropRejectedWithoutStalePending_QA_BUG_017() {
+    func testCabinetWrongSlotUseRejectedWithoutStalePending_QA_BUG_017() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
         state.addItem(PuzzleGraph.ItemID.goldRing)
         state.addItem(PuzzleGraph.ItemID.silverCoin)
         let coordinator = RoomSceneCoordinator(viewID: .cabinet, state: state, size: sceneSize)
         // Wrong item on the sun slot: pops back, never seats.
-        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.silverCoin, hotspotID: "sun-slot")
+        coordinator.useItem(PuzzleGraph.ItemID.silverCoin, on: "sun-slot")
         XCTAssertNil(coordinator.pendingSunItem, "a rejected item must not become a stale pending placement")
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.silverCoin))
         XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon))
         // Correct two-step placement completes.
-        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.goldRing, hotspotID: "sun-slot")
+        coordinator.useItem(PuzzleGraph.ItemID.goldRing, on: "sun-slot")
         XCTAssertEqual(coordinator.pendingSunItem, PuzzleGraph.ItemID.goldRing, "correct item seats visibly")
         XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon))
-        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.silverCoin, hotspotID: "moon-slot")
+        coordinator.useItem(PuzzleGraph.ItemID.silverCoin, on: "moon-slot")
         XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon))
+        // Feedback round 1 (F-023): the yield is NOT auto-granted — the opened
+        // cabinet presents the file + phial for manual collection.
+        XCTAssertEqual(coordinator.activeCloseUp, .container(.sunMoonCabinet))
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.file))
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.phial))
+        coordinator.collectContainerItem(PuzzleGraph.ItemID.file, from: .sunMoonCabinet)
+        coordinator.collectContainerItem(PuzzleGraph.ItemID.phial, from: .sunMoonCabinet)
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.file))
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.phial))
         // Both placed items were consumed by the engine.
@@ -397,21 +404,21 @@ final class PuzzleEngineTests: XCTestCase {
         let state = makeState(tempDir())
         state.addItem(PuzzleGraph.ItemID.cageKey)
         let coordinator = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize)
-        coordinator.scene.onHotspotTap?("star-keyhole")
+        coordinator.useItem(PuzzleGraph.ItemID.cageKey, on: "star-keyhole")
         XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.crowFreed))
         coordinator.showTerminalRefusal = false
-        coordinator.activeCloseUp = nil
+        coordinator.dismissCloseUp()
         coordinator.scene.onHotspotTap?("cage")
         XCTAssertFalse(coordinator.showTerminalRefusal, "no refusal after the crow is freed")
         XCTAssertEqual(coordinator.activeCloseUp, .plain(image: "cu-cage-open-empty"))
     }
 
-    func testCageKeyDroppedOnCageUnlocks_QA_BUG_018() {
+    func testCageKeyUsedOnCageUnlocks_QA_BUG_018() {
         let state = makeState(tempDir())
         state.addItem(PuzzleGraph.ItemID.cageKey)
         let coordinator = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize)
-        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.cageKey, hotspotID: "cage")
-        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.crowFreed), "dragging the star key onto the cage must work")
+        coordinator.useItem(PuzzleGraph.ItemID.cageKey, on: "cage")
+        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.crowFreed), "using the star key on the cage must work")
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.feather))
     }
 
@@ -429,29 +436,29 @@ final class PuzzleEngineTests: XCTestCase {
         XCTAssertEqual(RoomVisuals.crowLocation(state), "on-lintel")
     }
 
-    func testPhialDropBeforeDraughtReadyIsRefusedSafely() {
+    func testPhialUseBeforeDraughtReadyIsRefusedSafely() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
         state.addItem(PuzzleGraph.ItemID.phial)
         let coordinator = RoomSceneCoordinator(viewID: .bench, state: state, size: sceneSize)
-        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.phial, hotspotID: "cauldron")
+        coordinator.useItem(PuzzleGraph.ItemID.phial, on: "cauldron")
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.phial), "the phial must never vanish into a non-ready cauldron")
         XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.phialDraught))
         XCTAssertFalse(state.data.cauldronIngredients.contains(PuzzleGraph.ItemID.phial), "the phial is not an ingredient")
     }
 
-    func testIngredientDropAfterSuccessIsRefused_QA_BUG_006_companion() {
+    func testIngredientUseAfterSuccessIsRefused_QA_BUG_006_companion() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
         state.setCauldronIngredients(BrewSolution.requiredIngredients)
         _ = PuzzleEngine.resolveBrew(flameStage: BrewSolution.flameStage,
                                      stirDirection: BrewSolution.stirDirection,
                                      stirCount: BrewSolution.stirCount, state: state)
-        // A stray feather (e.g. from a hypothetical future level) dropped after
+        // A stray feather (e.g. from a hypothetical future level) offered after
         // success must not be consumed into the finished draught.
         state.addItem(PuzzleGraph.ItemID.feather)
         let coordinator = RoomSceneCoordinator(viewID: .bench, state: state, size: sceneSize)
-        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.feather, hotspotID: "cauldron")
+        coordinator.useItem(PuzzleGraph.ItemID.feather, on: "cauldron")
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.feather))
         XCTAssertTrue(state.data.cauldronIngredients.isEmpty)
     }
@@ -490,6 +497,341 @@ final class PuzzleEngineTests: XCTestCase {
         // Going around again must not un-spend or re-trigger anything.
         for _ in 0..<12 { coordinator.advanceClockHour() }
         XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent))
+    }
+
+    // MARK: - Feedback round 1 regression net (select-then-tap, containers, nav, audio)
+
+    /// Core interaction-model change (user decision 2026-07-07): merely HOLDING an
+    /// item never applies it. A bare tap on the ash pile with the poker in inventory
+    /// is a look; only the ARMED poker sifts. (Root cause of F-007/F-020/F-021.)
+    func testBareTapNeverAutoAppliesHeldItem_ashSift() {
+        let state = makeState(tempDir())
+        state.addItem(PuzzleGraph.ItemID.poker)
+        let interaction = InteractionModel()
+        let coordinator = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize,
+                                               interaction: interaction)
+        coordinator.scene.onHotspotTap?("ash")
+        XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.ashSift),
+                       "a bare tap must NOT sift just because the poker is held (passive auto-apply removed)")
+        XCTAssertEqual(coordinator.activeCloseUp, .plain(image: "cu-ash-undisturbed"), "bare tap = look")
+        coordinator.dismissCloseUp()
+        // Arm the poker, then tap the ash: the deliberate select-then-tap use.
+        interaction.armedItem = PuzzleGraph.ItemID.poker
+        coordinator.scene.onHotspotTap?("ash")
+        XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.ashSift))
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing))
+        XCTAssertNil(interaction.armedItem, "every use attempt disarms")
+    }
+
+    func testBareTapNeverAutoApplies_barrelWinchKeyhole() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z3Cellar)
+        state.addItem(PuzzleGraph.ItemID.poker)
+        state.addItem(PuzzleGraph.ItemID.crank)
+        state.addItem(PuzzleGraph.ItemID.cageKey)
+        let interaction = InteractionModel()
+        let cellar = RoomSceneCoordinator(viewID: .cellar, state: state, size: sceneSize,
+                                          interaction: interaction)
+        cellar.scene.onHotspotTap?("barrel")
+        XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.barrelPry), "held poker must not auto-pry")
+        cellar.scene.onHotspotTap?("winch")
+        XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.moonbeamOn), "held crank must not auto-fit")
+        let entry = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize,
+                                         interaction: interaction)
+        entry.scene.onHotspotTap?("star-keyhole")
+        XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.crowFreed), "held key must not auto-unlock")
+        // The armed path still works for each.
+        interaction.armedItem = PuzzleGraph.ItemID.poker
+        cellar.scene.onHotspotTap?("barrel")
+        XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.barrelPry))
+        interaction.armedItem = PuzzleGraph.ItemID.crank
+        cellar.scene.onHotspotTap?("winch")
+        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.moonbeamOn))
+        interaction.armedItem = PuzzleGraph.ItemID.cageKey
+        entry.scene.onHotspotTap?("star-keyhole")
+        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.crowFreed))
+    }
+
+    /// A failed use (wrong item on a target) also disarms and never mutates state.
+    func testFailedUseDisarmsWithoutStateChurn() {
+        let state = makeState(tempDir())
+        state.addItem(PuzzleGraph.ItemID.rustedKey)
+        let interaction = InteractionModel()
+        let coordinator = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize,
+                                               interaction: interaction)
+        let before = state.data
+        interaction.armedItem = PuzzleGraph.ItemID.rustedKey
+        coordinator.scene.onHotspotTap?("ash")
+        XCTAssertNil(interaction.armedItem, "failure disarms")
+        XCTAssertEqual(state.data.inventory, before.inventory)
+        XCTAssertEqual(state.data.solvedPuzzles, before.solvedPuzzles)
+    }
+
+    /// F-020: an item armed while a close-up is open routes to the close-up's origin
+    /// hotspot, so tool-on-hotspot puzzles are solvable without leaving the zoom.
+    func testArmedUseInsideCloseUpRoutesToOriginHotspot() {
+        let state = makeState(tempDir())
+        state.addItem(PuzzleGraph.ItemID.poker)
+        let interaction = InteractionModel()
+        let coordinator = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize,
+                                               interaction: interaction)
+        coordinator.scene.onHotspotTap?("ash") // open the ash close-up (a look)
+        XCTAssertEqual(coordinator.activeCloseUp, .plain(image: "cu-ash-undisturbed"))
+        interaction.armedItem = PuzzleGraph.ItemID.poker
+        coordinator.useArmedItemInCloseUp() // tap the plate with the poker armed
+        XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.ashSift),
+                      "the close-up must not wall the player off from item use (F-020)")
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing))
+    }
+
+    // MARK: F-023/F-018 manual container pickup
+
+    func testAstrolabeSolveShowsContentsInsteadOfAutoGranting() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        let coordinator = RoomSceneCoordinator(viewID: .cabinet, state: state, size: sceneSize)
+        coordinator.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex)
+        XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion))
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.silverCoin), "no teleporting into inventory (F-023)")
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.crank))
+        XCTAssertEqual(coordinator.activeCloseUp, .container(.astrolabeDrawer),
+                       "solving springs the drawer open with the contents visible")
+        XCTAssertEqual(Set(PuzzleEngine.uncollectedItems(in: .astrolabeDrawer, state: state)),
+                       [PuzzleGraph.ItemID.silverCoin, PuzzleGraph.ItemID.crank])
+        coordinator.collectContainerItem(PuzzleGraph.ItemID.silverCoin, from: .astrolabeDrawer)
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.silverCoin))
+        XCTAssertEqual(PuzzleEngine.uncollectedItems(in: .astrolabeDrawer, state: state),
+                       [PuzzleGraph.ItemID.crank])
+        coordinator.collectContainerItem(PuzzleGraph.ItemID.crank, from: .astrolabeDrawer)
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.crank))
+        XCTAssertTrue(PuzzleEngine.uncollectedItems(in: .astrolabeDrawer, state: state).isEmpty)
+    }
+
+    /// Anti-softlock: quitting between solving a container and collecting its items
+    /// must leave them collectable after relaunch (derived, not event-ordered).
+    func testUncollectedContainerItemsSurviveRelaunch() {
+        let dir = tempDir()
+        let state = GameState(levelID: 1, store: SaveGameStore(directory: dir))
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state))
+        XCTAssertTrue(PuzzleEngine.collectItem(PuzzleGraph.ItemID.silverCoin, from: .astrolabeDrawer, state: state))
+        // Relaunch mid-collection: the crank must still be waiting in the drawer.
+        let resumed = GameState(levelID: 1, store: SaveGameStore(directory: dir))
+        XCTAssertEqual(PuzzleEngine.uncollectedItems(in: .astrolabeDrawer, state: resumed),
+                       [PuzzleGraph.ItemID.crank])
+        XCTAssertTrue(PuzzleEngine.collectItem(PuzzleGraph.ItemID.crank, from: .astrolabeDrawer, state: resumed))
+    }
+
+    /// Saves from the auto-grant build (items already granted/spent) must show
+    /// nothing as collectable — no duplicate yields.
+    func testAutoGrantEraSavesShowNoCollectableDuplicates() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        // Simulate the old build: p03/p04 solved with yields auto-granted, coin+ring
+        // then spent into the cabinet, phial spent at p15.
+        state.markSolved(PuzzleGraph.PuzzleID.astrolabeOrion)
+        state.addItem(PuzzleGraph.ItemID.crank)
+        state.markSolved(PuzzleGraph.PuzzleID.cabinetSunMoon) // coin consumed by p04
+        state.addItem(PuzzleGraph.ItemID.file)
+        state.markSolved(PuzzleGraph.PuzzleID.fillPhial)      // phial consumed by p15
+        state.addItem(PuzzleGraph.ItemID.phialDraught)
+        XCTAssertTrue(PuzzleEngine.uncollectedItems(in: .astrolabeDrawer, state: state).isEmpty)
+        XCTAssertTrue(PuzzleEngine.uncollectedItems(in: .sunMoonCabinet, state: state).isEmpty)
+    }
+
+    func testCollectItemRefusesUnsolvedOrAlreadyCollected() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        XCTAssertFalse(PuzzleEngine.collectItem(PuzzleGraph.ItemID.crank, from: .astrolabeDrawer, state: state),
+                       "nothing collectable before the container is solved")
+        XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state))
+        XCTAssertTrue(PuzzleEngine.collectItem(PuzzleGraph.ItemID.crank, from: .astrolabeDrawer, state: state))
+        XCTAssertFalse(PuzzleEngine.collectItem(PuzzleGraph.ItemID.crank, from: .astrolabeDrawer, state: state),
+                       "an item collects exactly once")
+    }
+
+    /// Cellar drawer (feedback round 1): shut -> opened (latched free action) ->
+    /// spoon taken with its own tap. The old build's overlay mapping was inverted.
+    func testCellarDrawerOpensThenSpoonTakenManually() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z3Cellar)
+        let coordinator = RoomSceneCoordinator(viewID: .cellar, state: state, size: sceneSize)
+        XCTAssertNil(RoomVisuals.drawerOverlay(state), "drawer starts shut (base art)")
+        coordinator.scene.onHotspotTap?("drawer")
+        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.cellarDrawerOpened))
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.spoon), "opening does not auto-take the spoon")
+        XCTAssertEqual(RoomVisuals.drawerOverlay(state), "ov-drawer-open", "open drawer shows the spoon")
+        coordinator.scene.onHotspotTap?("drawer")
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.spoon))
+        XCTAssertEqual(RoomVisuals.drawerOverlay(state), "ov-drawer-empty", "taken spoon leaves an empty drawer")
+    }
+
+    // MARK: F-011 crow default pose
+
+    func testBareCageTapShowsNeutralPoseNotRefusal_F011() {
+        let state = makeState(tempDir())
+        let interaction = InteractionModel()
+        let coordinator = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize,
+                                               interaction: interaction)
+        coordinator.scene.onHotspotTap?("cage")
+        XCTAssertFalse(coordinator.showTerminalRefusal,
+                       "a bare look at the cage must show the NEUTRAL caged pose (F-011)")
+        XCTAssertEqual(coordinator.activeCloseUp, .plain(image: "cu-cage-crow"))
+        coordinator.dismissCloseUp()
+        // The turned-back pose remains exclusively the D3 reaction to a deliberate
+        // armed-item reach.
+        state.addItem(PuzzleGraph.ItemID.poker)
+        interaction.armedItem = PuzzleGraph.ItemID.poker
+        coordinator.scene.onHotspotTap?("cage")
+        XCTAssertTrue(coordinator.showTerminalRefusal)
+        XCTAssertEqual(coordinator.activeCloseUp, .refusal)
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.poker), "refusal returns the item unspent (D3)")
+    }
+
+    // MARK: F-006/F-014 dead hotspots are silent (and generic click removed)
+
+    func testDeadHotspotsAreSilent_F006_F014() {
+        let state = makeState(tempDir())
+        let coordinator = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize)
+        SoundManager.shared.resetPlayedLog()
+        coordinator.scene.onHotspotTap?("poker")
+        XCTAssertEqual(SoundManager.shared.playedLog, [.pickup], "first poker tap is the pickup chime")
+        SoundManager.shared.resetPlayedLog()
+        coordinator.scene.onHotspotTap?("poker")
+        XCTAssertTrue(SoundManager.shared.playedLog.isEmpty,
+                      "the emptied poker hook must be silent (F-006)")
+        // Inert scenery (F-014 class): the workbench strip plays nothing on a bare tap.
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        let bench = RoomSceneCoordinator(viewID: .bench, state: state, size: sceneSize)
+        SoundManager.shared.resetPlayedLog()
+        bench.scene.onHotspotTap?("workbench")
+        XCTAssertTrue(SoundManager.shared.playedLog.isEmpty, "inert scenery must be silent (F-014)")
+    }
+
+    func testCloseUpOpensSilently_genericClickRemoved_F005() {
+        let state = makeState(tempDir())
+        let coordinator = RoomSceneCoordinator(viewID: .study, state: state, size: sceneSize)
+        SoundManager.shared.resetPlayedLog()
+        coordinator.scene.onHotspotTap?("flowerpot")
+        XCTAssertEqual(coordinator.activeCloseUp, .plain(image: "cu-flowerpot"))
+        XCTAssertTrue(SoundManager.shared.playedLog.isEmpty,
+                      "zooming into an object is silent — the generic psh is gone (F-005)")
+    }
+
+    // MARK: F-024 navigation model
+
+    func testChevronsCycleWithinZoneOnly_F024() {
+        let dir = tempDir()
+        let session = LevelSession(levelID: 1, store: SaveGameStore(directory: dir))
+        // Unlock everything; chevrons must STILL never leave the current zone.
+        session.state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        session.state.unlockZone(PuzzleGraph.ZoneID.z3Cellar)
+        session.state.unlockZone(PuzzleGraph.ZoneID.z4Alcove)
+        XCTAssertEqual(session.currentView, .hearth)
+        session.nextView()
+        XCTAssertEqual(session.currentView, .study)
+        session.nextView()
+        XCTAssertEqual(session.currentView, .entry)
+        session.nextView()
+        XCTAssertEqual(session.currentView, .hearth, "z1 chevrons wrap within z1's three views")
+        session.previousView()
+        XCTAssertEqual(session.currentView, .entry)
+        // z2 is a two-view ring.
+        session.goTo(.bench)
+        session.nextView()
+        XCTAssertEqual(session.currentView, .cabinet)
+        session.nextView()
+        XCTAssertEqual(session.currentView, .bench)
+        XCTAssertTrue(session.hasViewNavigation)
+    }
+
+    func testSingleViewZonesHaveNoChevronNavigation_F024() {
+        let session = LevelSession(levelID: 1, store: SaveGameStore(directory: tempDir()))
+        session.state.unlockZone(PuzzleGraph.ZoneID.z3Cellar)
+        session.goTo(.cellar)
+        XCTAssertFalse(session.hasViewNavigation, "z3 is a single wide view — chevrons hidden")
+        session.nextView()
+        XCTAssertEqual(session.currentView, .cellar, "chevron actions are no-ops in single-view zones")
+        session.previousView()
+        XCTAssertEqual(session.currentView, .cellar)
+    }
+
+    func testDiegeticPassagesNavigateBetweenZones_F024() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z3Cellar)
+        state.unlockZone(PuzzleGraph.ZoneID.z4Alcove)
+        var navigated: [ViewID] = []
+        let cellar = RoomSceneCoordinator(viewID: .cellar, state: state, size: sceneSize)
+        cellar.onNavigate = { navigated.append($0) }
+        cellar.scene.onHotspotTap?("ladder")
+        XCTAssertEqual(navigated.last, .hearth, "the cellar ladder climbs back to the hearth")
+        cellar.scene.onHotspotTap?("alcove-passage")
+        XCTAssertEqual(navigated.last, .alcove, "the slid shelf's gap leads into the alcove")
+        let alcove = RoomSceneCoordinator(viewID: .alcove, state: state, size: sceneSize)
+        alcove.onNavigate = { navigated.append($0) }
+        alcove.scene.onHotspotTap?("cellar-passage")
+        XCTAssertEqual(navigated.last, .cellar, "the shelf gap leads back out")
+    }
+
+    func testAlcovePassageInertUntilShelfSlid() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z3Cellar) // z4 NOT unlocked: shelf still closed
+        var navigated: [ViewID] = []
+        let cellar = RoomSceneCoordinator(viewID: .cellar, state: state, size: sceneSize)
+        cellar.onNavigate = { navigated.append($0) }
+        cellar.scene.onHotspotTap?("alcove-passage")
+        XCTAssertTrue(navigated.isEmpty, "no passage through a closed shelf")
+    }
+
+    // MARK: F-004 ambient audio lifecycle
+
+    func testAmbientRestartsAfterStop_F004() {
+        let sound = SoundManager.shared
+        sound.setAmbientZone(.z1)
+        XCTAssertEqual(sound.debugCurrentZone, .z1)
+        // Exit to Main Menu.
+        sound.stopAmbient()
+        XCTAssertNil(sound.debugCurrentZone,
+                     "stopAmbient must clear the zone — the stale value was F-004's root cause")
+        // Re-enter the level: the same zone must restart instead of being debounced.
+        sound.setAmbientZone(.z1)
+        XCTAssertEqual(sound.debugCurrentZone, .z1)
+        sound.stopAmbient()
+    }
+
+    // MARK: F-012 clue-view tracking substrate (gating pending puzzle-graph rev 1.3)
+
+    func testClueCloseUpViewsAreRecordedAndPersisted() {
+        let dir = tempDir()
+        let state = GameState(levelID: 1, store: SaveGameStore(directory: dir))
+        let coordinator = RoomSceneCoordinator(viewID: .study, state: state, size: sceneSize)
+        XCTAssertFalse(state.hasViewedClue("plain-cu-flowerpot"))
+        coordinator.scene.onHotspotTap?("flowerpot")
+        XCTAssertTrue(state.hasViewedClue("plain-cu-flowerpot"))
+        let resumed = GameState(levelID: 1, store: SaveGameStore(directory: dir))
+        XCTAssertTrue(resumed.hasViewedClue("plain-cu-flowerpot"), "clue views persist in the save")
+    }
+
+    /// Saves written by builds that predate `viewedClues` (TestFlight build 1) must
+    /// decode instead of resetting the player's progress. Simulated by encoding a
+    /// current save and stripping the new key — byte-identical to what build 1 wrote.
+    func testBuildOneSaveWithoutViewedCluesStillDecodes() throws {
+        var level = LevelSaveData(levelID: 1)
+        level.inventory = ["itm-poker"]
+        level.viewedClues = ["plain-cu-flowerpot"]
+        let encoded = try JSONEncoder().encode(SaveGame(levels: [1: level], soundOn: true))
+        var object = try XCTUnwrap(try JSONSerialization.jsonObject(with: encoded) as? [String: Any])
+        // levels is encoded as an alternating [key, value, ...] array by Codable.
+        var levelsArray = try XCTUnwrap(object["levels"] as? [Any])
+        var levelDict = try XCTUnwrap(levelsArray[1] as? [String: Any])
+        levelDict.removeValue(forKey: "viewedClues")
+        levelsArray[1] = levelDict
+        object["levels"] = levelsArray
+        let stripped = try JSONSerialization.data(withJSONObject: object)
+        let decoded = try JSONDecoder().decode(SaveGame.self, from: stripped)
+        let resumedLevel = try XCTUnwrap(decoded.levels[1])
+        XCTAssertTrue(resumedLevel.inventory.contains("itm-poker"))
+        XCTAssertTrue(resumedLevel.viewedClues.isEmpty)
     }
 
     func testCloseUpLayoutMatchesBundledRuneTileJSON() throws {

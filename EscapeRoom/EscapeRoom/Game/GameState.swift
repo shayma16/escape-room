@@ -16,8 +16,37 @@ struct LevelSaveData: Codable, Equatable {
     var mirrorDetent: Int = 1                    // current mirror detent (1...3)
     var cauldronFlameStage: Int = 0              // 0-3
     var cauldronIngredients: Set<String> = []    // ingredients currently in cauldron
+    /// Clue close-ups the player has actually viewed, keyed by close-up/plate id
+    /// (feedback round 1, F-012 clue-gating substrate). Recorded universally so the
+    /// rev-1.3 `clue_gate` table can be enforced purely from persisted state once the
+    /// Validator passes it. Persisted in the save per the design decision.
+    var viewedClues: Set<String> = []
     var isComplete: Bool = false
     var lastUpdated: Date = Date()
+
+    init(levelID: Int) {
+        self.levelID = levelID
+    }
+
+    /// Custom decoding so saves written by OLDER builds (missing newly-added keys such
+    /// as `viewedClues`) still decode instead of silently resetting the player's
+    /// progress. Every field added after build 1 must use decodeIfPresent here.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        levelID = try c.decode(Int.self, forKey: .levelID)
+        inventory = try c.decodeIfPresent(Set<String>.self, forKey: .inventory) ?? []
+        unlockedZones = try c.decodeIfPresent(Set<String>.self, forKey: .unlockedZones) ?? []
+        flags = try c.decodeIfPresent(Set<String>.self, forKey: .flags) ?? []
+        solvedPuzzles = try c.decodeIfPresent(Set<String>.self, forKey: .solvedPuzzles) ?? []
+        runeDoorProgress = try c.decodeIfPresent([String].self, forKey: .runeDoorProgress) ?? []
+        moonDialPositions = try c.decodeIfPresent([Int].self, forKey: .moonDialPositions) ?? [0, 0, 0]
+        mirrorDetent = try c.decodeIfPresent(Int.self, forKey: .mirrorDetent) ?? 1
+        cauldronFlameStage = try c.decodeIfPresent(Int.self, forKey: .cauldronFlameStage) ?? 0
+        cauldronIngredients = try c.decodeIfPresent(Set<String>.self, forKey: .cauldronIngredients) ?? []
+        viewedClues = try c.decodeIfPresent(Set<String>.self, forKey: .viewedClues) ?? []
+        isComplete = try c.decodeIfPresent(Bool.self, forKey: .isComplete) ?? false
+        lastUpdated = try c.decodeIfPresent(Date.self, forKey: .lastUpdated) ?? Date()
+    }
 }
 
 /// Top-level save file: per-level saves + global completion map (drives Level Select
@@ -141,6 +170,18 @@ final class GameState: ObservableObject {
     func setCauldronIngredients(_ ingredients: Set<String>) {
         data.cauldronIngredients = ingredients
         persist()
+    }
+
+    /// Records that a clue close-up has been viewed (F-012 clue-gating substrate).
+    /// Idempotent latched fact, like any satisfied-requirement flag.
+    func markClueViewed(_ clueID: String) {
+        guard !data.viewedClues.contains(clueID) else { return }
+        data.viewedClues.insert(clueID)
+        persist()
+    }
+
+    func hasViewedClue(_ clueID: String) -> Bool {
+        data.viewedClues.contains(clueID)
     }
 
     func markComplete() {

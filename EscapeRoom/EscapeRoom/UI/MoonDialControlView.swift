@@ -53,7 +53,7 @@ struct MoonDialRowView: View {
         let current = state.data.moonDialPositions[index]
         let next = (current + 1) % MoonDialSolution.clockwiseOrder.count
         state.setMoonDialPosition(dial: index, phase: next)
-        SoundManager.shared.play(.click)
+        SoundManager.shared.play(.tick) // dial ratchet, not the generic click (F-005)
         if PuzzleEngine.evaluateMoonDials(state: state) {
             SoundManager.shared.play(.unlock)
         }

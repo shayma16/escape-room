@@ -53,6 +53,23 @@ final class QALevelFlowTests: XCTestCase {
         }
     }
 
+    /// Feedback round 1 (F-023): container yields are collected manually after the
+    /// solve. Engine-level solve paths therefore collect explicitly, exactly like a
+    /// player tapping each visible item.
+    private func collectAstrolabeYield(_ state: GameState, file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertTrue(PuzzleEngine.collectItem(PuzzleGraph.ItemID.silverCoin, from: .astrolabeDrawer, state: state),
+                      file: file, line: line)
+        XCTAssertTrue(PuzzleEngine.collectItem(PuzzleGraph.ItemID.crank, from: .astrolabeDrawer, state: state),
+                      file: file, line: line)
+    }
+
+    private func collectCabinetYield(_ state: GameState, file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertTrue(PuzzleEngine.collectItem(PuzzleGraph.ItemID.file, from: .sunMoonCabinet, state: state),
+                      file: file, line: line)
+        XCTAssertTrue(PuzzleEngine.collectItem(PuzzleGraph.ItemID.phial, from: .sunMoonCabinet, state: state),
+                      file: file, line: line)
+    }
+
     private func runEndgame(_ state: GameState, file: StaticString = #filePath, line: UInt = #line) {
         loadCauldron(state, file: file, line: line)
         let outcome = PuzzleEngine.resolveBrew(flameStage: BrewSolution.flameStage,
@@ -82,9 +99,11 @@ final class QALevelFlowTests: XCTestCase {
         pressRunes(state)                                                            // p01
         XCTAssertTrue(state.isZoneUnlocked(PuzzleGraph.ZoneID.z2Workshop))
         XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state)) // p03
+        collectAstrolabeYield(state)
         XCTAssertTrue(PuzzleEngine.siftAsh(state: state))                            // p05
         XCTAssertTrue(PuzzleEngine.placeCabinetItems(sun: CabinetSolution.sunSlotItem,
                                                      moon: CabinetSolution.moonSlotItem, state: state)) // p04
+        collectCabinetYield(state)
         XCTAssertTrue(PuzzleEngine.fitCrankAndTurn(state: state))                    // p08
         PuzzleEngine.rotateMirror(toDetent: MirrorSolution.solutionDetent, state: state) // p09
         XCTAssertTrue(state.evaluateCondition("cond-beam-at-alcove"))
@@ -100,9 +119,11 @@ final class QALevelFlowTests: XCTestCase {
         state.addItem(PuzzleGraph.ItemID.poker)
         pressRunes(state)                                                            // p01
         XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state)) // p03
+        collectAstrolabeYield(state)
         XCTAssertTrue(PuzzleEngine.siftAsh(state: state))                            // p05
         XCTAssertTrue(PuzzleEngine.placeCabinetItems(sun: CabinetSolution.sunSlotItem,
                                                      moon: CabinetSolution.moonSlotItem, state: state)) // p04
+        collectCabinetYield(state)
         setMoonDialsToSolution(state)
         XCTAssertTrue(PuzzleEngine.evaluateMoonDials(state: state))                  // p02
         state.addItem(PuzzleGraph.ItemID.spoon)
@@ -133,9 +154,11 @@ final class QALevelFlowTests: XCTestCase {
         state.addItem(PuzzleGraph.ItemID.spoon)
         pressRunes(state)                                                            // p01
         XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state)) // p03
+        collectAstrolabeYield(state)
         XCTAssertTrue(PuzzleEngine.siftAsh(state: state))                            // p05
         XCTAssertTrue(PuzzleEngine.placeCabinetItems(sun: CabinetSolution.sunSlotItem,
                                                      moon: CabinetSolution.moonSlotItem, state: state)) // p04
+        collectCabinetYield(state)
         XCTAssertTrue(PuzzleEngine.fitCrankAndTurn(state: state))                    // p08: condition latches HERE
         XCTAssertTrue(state.evaluateCondition("cond-beam-at-alcove"), "mirror-first path must latch the condition at p08")
         XCTAssertTrue(PuzzleEngine.pickBlossom(state: state))                        // p10
@@ -215,7 +238,7 @@ final class QALevelFlowTests: XCTestCase {
             state.addItem(def.id)
             let before = state.data
             let coordinator = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize)
-            coordinator.handleExternalDrop(itemID: def.id, hotspotID: "feed-cup")
+            coordinator.useItem(def.id, on: "feed-cup")
             XCTAssertEqual(state.data.inventory, before.inventory, "\(def.id) must return to inventory unspent (D4)")
             XCTAssertEqual(state.data.flags, before.flags, "feed-cup offer of \(def.id) must not change flags")
             XCTAssertEqual(state.data.solvedPuzzles, before.solvedPuzzles, "feed-cup offer of \(def.id) must not solve anything")
@@ -226,22 +249,27 @@ final class QALevelFlowTests: XCTestCase {
         let state = makeState(tempDir())
         state.addItem(PuzzleGraph.ItemID.phialDraught)
         let coordinator = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize)
-        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.phialDraught, hotspotID: "feed-cup")
+        coordinator.useItem(PuzzleGraph.ItemID.phialDraught, on: "feed-cup")
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.phialDraught), "D1 BLOCK: draught must never be spent at the feed cup")
         XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.doorUnsealed))
         // The rune basin remains the one valid pour target (p16).
-        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.phialDraught, hotspotID: "door-lock")
+        coordinator.useItem(PuzzleGraph.ItemID.phialDraught, on: "door-lock")
         XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.doorUnsealed))
         XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.phialDraught))
     }
 
+    /// UPDATED for the select-then-tap model (feedback round 1): a BARE cage tap is
+    /// now a neutral look (F-011); the D3 refusal fires on a deliberate armed-item
+    /// reach. Both must leave state untouched.
     func testCageReachRefusalMutatesNothing_D3() {
         let state = makeState(tempDir())
         state.addItem(PuzzleGraph.ItemID.rustedKey)
+        state.addItem(PuzzleGraph.ItemID.poker)
         let before = state.data
         let coordinator = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize)
-        coordinator.scene.onHotspotTap?("cage")
-        coordinator.scene.onHotspotTap?("cage") // repeat: identical, no escalation state
+        coordinator.scene.onHotspotTap?("cage") // bare look: neutral pose, no churn
+        coordinator.useItem(PuzzleGraph.ItemID.poker, on: "cage") // reach: refusal
+        coordinator.useItem(PuzzleGraph.ItemID.poker, on: "cage") // repeat: identical, no escalation state
         XCTAssertEqual(state.data.inventory, before.inventory)
         XCTAssertEqual(state.data.flags, before.flags)
         XCTAssertEqual(state.data.solvedPuzzles, before.solvedPuzzles)
@@ -253,22 +281,25 @@ final class QALevelFlowTests: XCTestCase {
         coordinator.scene.onHotspotTap?("rusted-key")
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.rustedKey))
         // Rusted key on the star keyhole / cage / door must never free the crow or unseal.
-        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.rustedKey, hotspotID: "star-keyhole")
-        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.rustedKey, hotspotID: "door-lock")
+        coordinator.useItem(PuzzleGraph.ItemID.rustedKey, on: "star-keyhole")
+        coordinator.useItem(PuzzleGraph.ItemID.rustedKey, on: "door-lock")
         XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.crowFreed))
         XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.doorUnsealed))
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.rustedKey), "red-herring key must never be consumed")
     }
 
-    // MARK: - 4. Coordinator tap plumbing (what IS wired works)
+    // MARK: - 4. Coordinator plumbing (what IS wired works; select-then-tap model)
 
-    func testHearthTapFlow_pokerPickupAndAshSift() {
+    func testHearthFlow_pokerPickupAndArmedAshSift() {
         let state = makeState(tempDir())
-        let coordinator = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize)
+        let interaction = InteractionModel()
+        let coordinator = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize,
+                                               interaction: interaction)
         coordinator.scene.onHotspotTap?("poker")
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.poker))
+        interaction.armedItem = PuzzleGraph.ItemID.poker // player arms the poker
         coordinator.scene.onHotspotTap?("ash")
-        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing), "p05: poker + ash yields the gold ring")
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing), "p05: armed poker on ash yields the gold ring")
     }
 
     func testCellarFlow_barrelHookWinchMirror() {
@@ -277,11 +308,11 @@ final class QALevelFlowTests: XCTestCase {
         state.addItem(PuzzleGraph.ItemID.poker)
         state.addItem(PuzzleGraph.ItemID.crank)
         let coordinator = RoomSceneCoordinator(viewID: .cellar, state: state, size: sceneSize)
-        coordinator.scene.onHotspotTap?("barrel")                                   // p06 (tap fallback with poker held)
+        coordinator.useItem(PuzzleGraph.ItemID.poker, on: "barrel")                 // p06
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.weight))
-        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.weight, hotspotID: "hook") // p07
+        coordinator.useItem(PuzzleGraph.ItemID.weight, on: "hook")                  // p07
         XCTAssertTrue(state.isZoneUnlocked(PuzzleGraph.ZoneID.z4Alcove))
-        coordinator.scene.onHotspotTap?("winch")                                    // p08
+        coordinator.useItem(PuzzleGraph.ItemID.crank, on: "winch")                  // p08
         XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.moonbeamOn))
         coordinator.scene.onHotspotTap?("mirror")                                   // detent 1 -> 2
         coordinator.scene.onHotspotTap?("mirror")                                   // detent 2 -> 3
@@ -289,15 +320,15 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertTrue(state.evaluateCondition("cond-beam-at-alcove"))
     }
 
-    func testEntryStarKeyholeFreesCrowExactlyOnce() {
+    func testEntryStarKeyUseFreesCrowExactlyOnce() {
         let state = makeState(tempDir())
         state.addItem(PuzzleGraph.ItemID.cageKey)
         let coordinator = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize)
-        coordinator.scene.onHotspotTap?("star-keyhole")
+        coordinator.useItem(PuzzleGraph.ItemID.cageKey, on: "star-keyhole")
         XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.crowFreed))
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.feather))
         state.removeItem(PuzzleGraph.ItemID.feather) // spent into cauldron
-        coordinator.scene.onHotspotTap?("star-keyhole")
+        coordinator.useItem(PuzzleGraph.ItemID.cageKey, on: "star-keyhole")
         XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.feather), "feather is granted exactly once (anti-softlock invariant)")
     }
 
@@ -339,6 +370,7 @@ final class QALevelFlowTests: XCTestCase {
         // And the mirror-first latch still completes correctly after resume.
         pressRunes(resumed)
         XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: resumed))
+        collectAstrolabeYield(resumed)
         XCTAssertTrue(PuzzleEngine.fitCrankAndTurn(state: resumed))
         XCTAssertTrue(resumed.evaluateCondition("cond-beam-at-alcove"))
         XCTAssertTrue(PuzzleEngine.pickBlossom(state: resumed))
@@ -399,7 +431,7 @@ final class QALevelFlowTests: XCTestCase {
         state.addItem(PuzzleGraph.ItemID.phial)
         state.setFlag(PuzzleGraph.StateFlag.draughtReady)
         let coordinator = RoomSceneCoordinator(viewID: .bench, state: state, size: sceneSize)
-        coordinator.handleExternalDrop(itemID: PuzzleGraph.ItemID.phial, hotspotID: "cauldron")
+        coordinator.useItem(PuzzleGraph.ItemID.phial, on: "cauldron")
         // Anti-softlock: whatever happens, the phial must not vanish.
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.phial) || state.hasItem(PuzzleGraph.ItemID.phialDraught))
         // FIXED: the cauldron drop handler routes the empty phial to PuzzleEngine.fillPhial.
@@ -438,6 +470,11 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion))
         coordinator.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex)
         XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion))
+        // Feedback round 1 (F-023/F-018): the drawer springs open with the coin +
+        // crank visible; each is collected with its own tap (no auto-grant).
+        XCTAssertEqual(coordinator.activeCloseUp, .container(.astrolabeDrawer))
+        coordinator.collectContainerItem(PuzzleGraph.ItemID.silverCoin, from: .astrolabeDrawer)
+        coordinator.collectContainerItem(PuzzleGraph.ItemID.crank, from: .astrolabeDrawer)
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.crank))
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.silverCoin))
     }
@@ -537,10 +574,19 @@ final class QALevelFlowTests: XCTestCase {
             XCTAssertNotNil(GameAssetLoader.shared.image(named: plate),
                             "\(plate) must be loadable from the app bundle at runtime")
         }
-        // Audio must ship the same way (SoundManager subdirectory lookup).
-        XCTAssertNotNil(Bundle.main.url(forResource: "sfx-click", withExtension: "wav", subdirectory: "Audio")
-            ?? Bundle.main.url(forResource: "sfx-click", withExtension: "wav"),
-                        "sfx-click.wav must be loadable from the app bundle at runtime")
+        // Audio must ship the same way (SoundManager subdirectory lookup). Every
+        // Effect case must resolve, including the round-1 per-object cues; the
+        // retired generic click must be GONE from the bundle (F-005).
+        for effect in ["sfx-pickup", "sfx-wrong", "sfx-solve", "sfx-unlock", "sfx-refusal",
+                       "sfx-clack", "sfx-fizzle", "sfx-page", "sfx-stone", "sfx-tick",
+                       "sfx-grind", "sfx-bellows", "sfx-stir", "sfx-cloth", "sfx-wood",
+                       "sfx-entry", "amb-z1", "amb-z2", "amb-z3", "amb-z4"] {
+            XCTAssertNotNil(Bundle.main.url(forResource: effect, withExtension: "wav", subdirectory: "Audio")
+                ?? Bundle.main.url(forResource: effect, withExtension: "wav"),
+                            "\(effect).wav must be loadable from the app bundle at runtime")
+        }
+        XCTAssertNil(Bundle.main.url(forResource: "sfx-click", withExtension: "wav", subdirectory: "Audio"),
+                     "the retired generic interaction click must not ship (F-005)")
     }
 
     /// QA-BUG-004 (critical, iPad): several puzzle-critical hotspots sit outside the

@@ -42,6 +42,15 @@ enum PuzzleEngine {
         state.setFlag(PuzzleGraph.StateFlag.rugMoved)
     }
 
+    /// Cellar root-shelf drawer (feedback round 1): the drawer's graph states are
+    /// shut / open-with-spoon / open-empty. Opening is a latched free action; the
+    /// spoon is then taken with its own explicit tap (manual pickup, same F-023
+    /// philosophy as the containers). The previous build overlaid the drawer art
+    /// inverted (open-empty before pickup, spoon-still-there after) — fixed here.
+    static func openCellarDrawer(state: GameState) {
+        state.setFlag(PuzzleGraph.StateFlag.cellarDrawerOpened)
+    }
+
     /// Dials retain position between attempts (no lockout); checked whenever the
     /// player commits (e.g. taps a "try" affordance or on every dial settle — Scene
     /// layer decides the trigger, this just evaluates current dial state).
@@ -59,13 +68,14 @@ enum PuzzleEngine {
 
     // MARK: - p03 astrolabe
 
+    /// Feedback round 1 (F-023 + merged F-018): solving a container puzzle OPENS the
+    /// container and makes its contents visible/collectable — it no longer teleports
+    /// the yield into inventory. See `uncollectedItems(in:state:)` / `collectItem`.
     static func selectAstrolabePlate(_ plateIndex: Int, state: GameState) -> Bool {
         guard state.isZoneUnlocked(PuzzleGraph.ZoneID.z2Workshop) else { return false }
         guard plateIndex == AstrolabeSolution.solutionPlateIndex else { return false }
         guard !state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion) else { return true }
         state.markSolved(PuzzleGraph.PuzzleID.astrolabeOrion)
-        state.addItem(PuzzleGraph.ItemID.silverCoin)
-        state.addItem(PuzzleGraph.ItemID.crank)
         return true
     }
 
@@ -74,6 +84,8 @@ enum PuzzleEngine {
     /// Wrong/swapped placement pops back to inventory (no loss, no lockout) — modeled
     /// by simply not being called for items that don't match; UI is responsible for
     /// bouncing rejected items back to the inventory bar.
+    /// Feedback round 1 (F-023): solving opens the cabinet with the file + phial
+    /// visible on the inner shelf; the player collects each with a tap.
     static func placeCabinetItems(sun: String?, moon: String?, state: GameState) -> Bool {
         guard state.isZoneUnlocked(PuzzleGraph.ZoneID.z2Workshop) else { return false }
         guard sun == CabinetSolution.sunSlotItem, moon == CabinetSolution.moonSlotItem,
@@ -84,8 +96,67 @@ enum PuzzleEngine {
         state.removeItem(CabinetSolution.sunSlotItem)
         state.removeItem(CabinetSolution.moonSlotItem)
         state.markSolved(PuzzleGraph.PuzzleID.cabinetSunMoon)
-        state.addItem(PuzzleGraph.ItemID.file)
-        state.addItem(PuzzleGraph.ItemID.phial)
+        return true
+    }
+
+    // MARK: - Container contents (manual pickup, feedback round 1 F-023/F-018)
+
+    /// The two solved-container surfaces whose yields are collected by explicit taps.
+    enum Container: String {
+        case astrolabeDrawer   // p03 yield: silver coin + crank
+        case sunMoonCabinet    // p04 yield: file + phial
+    }
+
+    /// Whether a given container item is still waiting to be picked up.
+    ///
+    /// DERIVED, not stored: an item is uncollected iff its container puzzle is solved
+    /// and the player has never taken it — and "never taken" is itself derivable from
+    /// requirement state because every possible consumption of these four items is a
+    /// tracked puzzle solve (coin -> p04, phial -> p15/p16; crank and file are never
+    /// consumed). Deriving it keeps the save format unchanged, migrates old
+    /// auto-grant saves for free (they hold or have spent the items, so nothing shows
+    /// as collectable twice), and cannot soft-lock a relaunch mid-collection (an
+    /// untaken item stays visibly uncollected forever until taken).
+    static func isUncollected(_ itemID: String, state: GameState) -> Bool {
+        switch itemID {
+        case PuzzleGraph.ItemID.silverCoin:
+            return state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion)
+                && !state.hasItem(PuzzleGraph.ItemID.silverCoin)
+                && !state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon) // coin's only sink
+        case PuzzleGraph.ItemID.crank:
+            return state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion)
+                && !state.hasItem(PuzzleGraph.ItemID.crank) // crank is never consumed
+        case PuzzleGraph.ItemID.file:
+            return state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon)
+                && !state.hasItem(PuzzleGraph.ItemID.file) // file is never consumed
+        case PuzzleGraph.ItemID.phial:
+            return state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon)
+                && !state.hasItem(PuzzleGraph.ItemID.phial)
+                && !state.hasItem(PuzzleGraph.ItemID.phialDraught)
+                && !state.hasSolved(PuzzleGraph.PuzzleID.fillPhial) // phial's only sink chain
+        default:
+            return false
+        }
+    }
+
+    static func containerContents(_ container: Container) -> [String] {
+        switch container {
+        case .astrolabeDrawer: return [PuzzleGraph.ItemID.silverCoin, PuzzleGraph.ItemID.crank]
+        case .sunMoonCabinet: return [PuzzleGraph.ItemID.file, PuzzleGraph.ItemID.phial]
+        }
+    }
+
+    static func uncollectedItems(in container: Container, state: GameState) -> [String] {
+        containerContents(container).filter { isUncollected($0, state: state) }
+    }
+
+    /// Explicit pickup tap on a visible container item. Returns false (no state churn)
+    /// if the item isn't actually collectable right now.
+    @discardableResult
+    static func collectItem(_ itemID: String, from container: Container, state: GameState) -> Bool {
+        guard containerContents(container).contains(itemID),
+              isUncollected(itemID, state: state) else { return false }
+        state.addItem(itemID)
         return true
     }
 

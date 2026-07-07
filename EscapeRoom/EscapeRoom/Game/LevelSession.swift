@@ -1,12 +1,32 @@
 import Foundation
 import Combine
 
+/// Shared select-then-tap interaction state (feedback round 1, F-020/F-021 cluster +
+/// user design decision 2026-07-07: SELECT-THEN-TAP ONLY — drag-to-use and passive
+/// auto-apply are REMOVED). One instance per LevelSession, shared by the inventory bar,
+/// the room coordinator, and the close-up layer, so an item armed in the wide view can
+/// be used inside a close-up and vice versa.
+///
+/// Not persisted: an armed item is a momentary intention, not progress state.
+final class InteractionModel: ObservableObject {
+    /// The inventory item the player has armed (tap an inventory icon to arm; tap it
+    /// again to disarm). Using it on any target — success or failure — disarms.
+    @Published var armedItem: String?
+    /// Item currently shown in the enlarged inspect view (F-016).
+    @Published var inspectingItem: String?
+
+    func disarm() {
+        armedItem = nil
+    }
+}
+
 /// Owns the long-lived GameState for a single level playthrough plus current-view
 /// navigation. One instance created when entering a level from Level Select, torn down
 /// (not the save data — just the object) when leaving to the menu.
 final class LevelSession: ObservableObject {
     let levelID: Int
     let state: GameState
+    let interaction = InteractionModel()
     @Published var currentView: ViewID
 
     private let store: SaveGameStore
@@ -18,12 +38,31 @@ final class LevelSession: ObservableObject {
         self.currentView = .hearth
     }
 
-    /// Ordered view list for chevron navigation within a zone, and the zone's first
-    /// view when a zone is freshly unlocked.
-    static let viewOrder: [ViewID] = [.hearth, .study, .entry, .bench, .cabinet, .cellar, .alcove]
+    // MARK: - Navigation model (F-024 fix, feedback round 1)
+    //
+    // Chevrons cycle VIEWS WITHIN THE CURRENT ZONE only (z1: hearth/study/entry,
+    // z2: bench/cabinet). Zone transitions happen exclusively through diegetic
+    // passages (rune door, trapdoor, cellar ladder, shelf gap) via `goTo`, per style
+    // guide Section 7 ("Zone passages are diegetic hotspots, not UI"). Single-view
+    // zones (z3, z4) have no chevron navigation at all — the chrome hides the
+    // chevrons there.
 
-    func availableViews() -> [ViewID] {
-        Self.viewOrder.filter { state.isZoneUnlocked($0.zoneID) }
+    /// Views of each zone in presentation order (mirrors puzzle-graph.json zones[].views).
+    static let zoneViews: [String: [ViewID]] = [
+        PuzzleGraph.ZoneID.z1Cabin: [.hearth, .study, .entry],
+        PuzzleGraph.ZoneID.z2Workshop: [.bench, .cabinet],
+        PuzzleGraph.ZoneID.z3Cellar: [.cellar],
+        PuzzleGraph.ZoneID.z4Alcove: [.alcove],
+    ]
+
+    /// The current zone's view ring (always non-empty).
+    var viewsInCurrentZone: [ViewID] {
+        Self.zoneViews[currentView.zoneID] ?? [currentView]
+    }
+
+    /// Whether left/right chevrons should be shown at all (multi-view zones only).
+    var hasViewNavigation: Bool {
+        viewsInCurrentZone.count > 1
     }
 
     func goTo(_ view: ViewID) {
@@ -33,19 +72,21 @@ final class LevelSession: ObservableObject {
     }
 
     func nextView() {
-        let views = availableViews()
-        guard let idx = views.firstIndex(of: currentView) else { return }
+        let views = viewsInCurrentZone
+        guard views.count > 1, let idx = views.firstIndex(of: currentView) else { return }
         goTo(views[(idx + 1) % views.count])
     }
 
     func previousView() {
-        let views = availableViews()
-        guard let idx = views.firstIndex(of: currentView) else { return }
+        let views = viewsInCurrentZone
+        guard views.count > 1, let idx = views.firstIndex(of: currentView) else { return }
         goTo(views[(idx - 1 + views.count) % views.count])
     }
 
     func restartLevel() {
         state.restartLevel()
+        interaction.disarm()
+        interaction.inspectingItem = nil
         currentView = .hearth
     }
 

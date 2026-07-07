@@ -113,6 +113,10 @@ enum PuzzleGraph {
         /// itself stays flag-free because the dials are physically unreachable before
         /// discovery (verified by coordinator tests, not an engine gate).
         static let rugMoved = "rug-moved"
+        /// Cellar root-shelf drawer opened (latched free action; feedback round 1 —
+        /// the spoon is taken with its own tap after opening, per the manual-pickup
+        /// interaction convention).
+        static let cellarDrawerOpened = "cellar-drawer-opened"
     }
 }
 

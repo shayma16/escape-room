@@ -40,10 +40,10 @@ final class RoomScene: SKScene {
     private let baseNode = SKSpriteNode()
     private var overlayNodes: [String: SKSpriteNode] = [:]
 
-    /// Called on tap-up inside a hotspot (not drag/drop — see `handleDrop`).
+    /// Called on tap inside a hotspot. The only scene input gesture: the select-then-
+    /// tap interaction model (feedback round 1) removed drag-to-use entirely, so an
+    /// armed inventory item is applied by tapping its target hotspot like any look.
     var onHotspotTap: ((String) -> Void)?
-    /// Called when a dragged inventory item is released over a hotspot.
-    var onItemDropped: ((String, String) -> Void)?
 
     init(viewID: ViewID, size: CGSize) {
         self.viewID = viewID
@@ -197,7 +197,7 @@ final class RoomScene: SKScene {
         }
     }
 
-    // MARK: - Touch handling (tap-based; drag/drop driven externally from SwiftUI inventory bar)
+    // MARK: - Touch handling (tap-based)
 
     #if canImport(UIKit)
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -241,9 +241,4 @@ final class RoomScene: SKScene {
         pulse.run(.sequence([.group([scaleUp, fade]), .removeFromParent()]))
     }
 
-    /// Returns which hotspot (if any) contains the given point, for external drag/drop
-    /// coordination driven by the SwiftUI inventory bar's drop gesture.
-    func hotspotID(atScenePoint point: CGPoint) -> String? {
-        hotspotID(at: point)
-    }
 }

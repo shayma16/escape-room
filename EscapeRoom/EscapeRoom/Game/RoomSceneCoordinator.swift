@@ -2,27 +2,29 @@ import SpriteKit
 import Combine
 
 /// Wires a `RoomScene` for a given `ViewID` to `GameState` + `PuzzleEngine`: builds the
-/// hotspot list, resolves the current texture set from state, and handles taps/drops by
-/// dispatching to the appropriate PuzzleEngine call. One coordinator instance per active
-/// view; the room navigator (SwiftUI) creates/destroys these as the player moves between
-/// views, but GameState itself is shared/long-lived (owned by LevelSession).
+/// hotspot list, resolves the current texture set from state, and handles taps by
+/// dispatching to the appropriate PuzzleEngine call.
 ///
-/// QA fix pass (2026-07-06):
-/// - Emits `CloseUpRequest`s for the inspection layer (QA-BUG-013) instead of dead taps.
-/// - Hotspot rects re-aligned against the real art on the non-BUG-004 plates
-///   (QA-BUG-015); the BUG-004 plates (v-entry, v-cellar, hearth bellows region,
-///   cabinet potion-shelf/astrolabe/window region) keep their old values pending the
-///   Asset Generation re-frame batch — final alignment happens when those plates land.
-/// - p15/p17/p12 interaction paths wired (QA-BUG-002/-003/-012).
-/// - Cabinet placement validates per-slot and rejects audibly (QA-BUG-017).
-/// - Key drops on the cage/keyhole act (QA-BUG-018); rug discovery beat (QA-BUG-010);
-///   post-freedom cage taps stop replaying the refusal (QA-BUG-020).
+/// Feedback round 1 (2026-07-07) — interaction model is now SELECT-THEN-TAP ONLY:
+/// - A bare tap is always a LOOK or a direct free action (pickup, rug, mirror, dials).
+///   Merely holding an item in inventory never auto-applies it to anything.
+/// - To use an item, the player arms it in the inventory bar, then taps the target
+///   hotspot (or the plate of a close-up opened from that hotspot). `useItem(_:on:)`
+///   is the single entry point; every use attempt — success or failure — disarms.
+/// - Drag-to-use is REMOVED entirely.
+/// Also in this pass: per-object sounds (generic click removed everywhere), dead
+/// hotspots are silent (F-006/F-014), manual container pickup (F-023/F-018), neutral
+/// cage close-up as the default pose (F-011), diegetic zone passages incl. the cellar
+/// ladder and alcove shelf gap (F-024), and universal clue-view recording (F-012
+/// substrate for the rev-1.3 gate).
 final class RoomSceneCoordinator: ObservableObject {
     let viewID: ViewID
     let scene: RoomScene
     let state: GameState
-    /// The presenting SKView, supplied by SpriteKitContainerView. Used for the exact
-    /// UIKit-window-point -> scene-point conversion on inventory drops (QA-BUG-014).
+    /// Shared select-then-tap state (armed item). Optional so engine-level tests can
+    /// construct a coordinator without chrome; when nil, bare taps are always looks.
+    let interaction: InteractionModel?
+    /// The presenting SKView, supplied by SpriteKitContainerView.
     weak var skView: SKView?
     private var cancellable: AnyCancellable?
 
@@ -31,9 +33,14 @@ final class RoomSceneCoordinator: ObservableObject {
     @Published var lastBrewOutcome: PuzzleEngine.BrewOutcome?
     @Published var justPoppedClock: Bool = false
     @Published var showTerminalRefusal: Bool = false
-    /// The close-up currently presented over this scene (QA-BUG-013). Set by tap
-    /// handling below; cleared by the close-up's down-chevron (CloseUpView).
+    /// The close-up currently presented over this scene. Set by tap handling below;
+    /// cleared by the close-up's down-chevron (CloseUpView).
     @Published var activeCloseUp: CloseUpRequest?
+    /// The hotspot the active close-up was opened from. An armed item used while the
+    /// close-up is open routes to this hotspot's use handler, so every puzzle remains
+    /// solvable without leaving the zoomed view (F-020: the close-up no longer walls
+    /// the player off from item use).
+    private(set) var closeUpOrigin: String?
     /// Cosmetic clock-hand position for the clock close-up (D5). Not persisted — only
     /// the one-shot cuckoo latch is, via the engine.
     @Published var clockHour: Int = 6
@@ -48,17 +55,17 @@ final class RoomSceneCoordinator: ObservableObject {
     /// before the shelf slides (QA-BUG-016).
     private var showingWeightHungBeat: Bool = false
 
-    /// Diegetic zone passages (trapdoor -> cellar, solved rune door -> workshop);
-    /// wired to LevelSession.goTo by GameRoomView.
+    /// Diegetic zone passages (trapdoor -> cellar, rune door -> workshop, cellar
+    /// ladder -> hearth, shelf gap <-> alcove); wired to LevelSession.goTo.
     var onNavigate: ((ViewID) -> Void)?
 
-    init(viewID: ViewID, state: GameState, size: CGSize) {
+    init(viewID: ViewID, state: GameState, size: CGSize, interaction: InteractionModel? = nil) {
         self.viewID = viewID
         self.state = state
+        self.interaction = interaction
         self.scene = RoomScene(viewID: viewID, size: size)
         configure()
         scene.onHotspotTap = { [weak self] id in self?.handleTap(id) }
-        scene.onItemDropped = { [weak self] itemID, hotspotID in self?.handleDrop(itemID, on: hotspotID) }
         cancellable = state.objectWillChange.sink { [weak self] _ in
             DispatchQueue.main.async { self?.refresh() }
         }
@@ -91,17 +98,32 @@ final class RoomSceneCoordinator: ObservableObject {
         }
     }
 
+    // MARK: - Close-up presentation + clue recording
+
+    /// Presents a close-up, remembering its originating hotspot for armed-item routing
+    /// and recording the view as a seen clue (F-012 substrate — recorded universally
+    /// by close-up id; the rev-1.3 clue_gate table keys into these ids).
+    private func present(_ request: CloseUpRequest, from origin: String?) {
+        activeCloseUp = request
+        closeUpOrigin = origin
+        recordClueViewed(request.id)
+    }
+
+    func dismissCloseUp() {
+        activeCloseUp = nil
+        closeUpOrigin = nil
+    }
+
+    /// Also called by PagerCloseUp per page so multi-spread clues (grimoire recipe
+    /// page, individual triptych paintings) record at page granularity.
+    func recordClueViewed(_ clueID: String) {
+        state.markClueViewed(clueID)
+    }
+
     // MARK: - v-hearth (z1)
-    // Rects verified against the re-framed z1-hearth-base (QA-BUG-015 + BUG-004
-    // integration 2026-07-06): the hand bellows now hangs right of the fireplace at
-    // x 1577-1716 (@3x), inside the dual-safe zone.
 
     private func configureHearth() {
         scene.setBaseTexture("z1-hearth-base")
-        // BUG-015 pixel-perfect polish (2026-07-06): poker trimmed to the actual
-        // standing-poker art (the old 0.40-0.97 column reached the floor and, being
-        // the smaller node, stole rug taps in the overlap band); rug's left edge
-        // trimmed to the woven-oval art.
         scene.configureHotspots([
             Hotspot(id: "poker", 0.18, 0.40, 0.07, 0.33),
             Hotspot(id: "ash", 0.25, 0.57, 0.15, 0.16),
@@ -123,17 +145,13 @@ final class RoomSceneCoordinator: ObservableObject {
     }
 
     // MARK: - v-study (z1)
-    // Rects verified against z1-study-base (QA-BUG-015). The four per-tile hotspots are
-    // gone: the physical press-plate is ~2% of the frame wide, so tiles are pressed in
-    // the cu-runedoor-tiles close-up (QA-BUG-013/-015); the wide shot carries one
-    // "rune-door" hotspot on the brass plate.
 
     private func configureStudy() {
         scene.setBaseTexture("z1-study-base")
         scene.configureHotspots([
             Hotspot(id: "grimoire", 0.36, 0.46, 0.25, 0.18),
             Hotspot(id: "triptych", 0.29, 0.07, 0.37, 0.20),
-            Hotspot(id: "flowerpot", 0.59, 0.46, 0.09, 0.14), // BUG-015 polish: dropped to cover the pot base
+            Hotspot(id: "flowerpot", 0.59, 0.46, 0.09, 0.14),
             Hotspot(id: "rune-door", 0.75, 0.33, 0.07, 0.26),
         ])
     }
@@ -144,18 +162,13 @@ final class RoomSceneCoordinator: ObservableObject {
     }
 
     // MARK: - v-entry (z1)
-    // Rects aligned against the re-framed z1-entry-base (BUG-004 integration
-    // 2026-07-06, geometry from asset-manifest bug004_reframe + visual verification):
-    // window/sill left, door center (beak basin over the vine-wrapped bolt), rusted
-    // key on its hook right of the door, cage group at x 0.674-0.814 with the star
-    // keyhole (x 2000-2065 @3x) above the brass feed cup (1995-2075, y 510-560).
 
     private func configureEntry() {
         scene.setBaseTexture("z1-entry-base")
         scene.configureHotspots([
             Hotspot(id: "door-lock", 0.37, 0.20, 0.24, 0.45),
             Hotspot(id: "rusted-key", 0.615, 0.21, 0.05, 0.13),
-            Hotspot(id: "windowsill", 0.167, 0.52, 0.12, 0.10), // BUG-015 polish: widened along the sill art
+            Hotspot(id: "windowsill", 0.167, 0.52, 0.12, 0.10),
             Hotspot(id: "cage", 0.675, 0.09, 0.14, 0.55),
             Hotspot(id: "feed-cup", 0.777, 0.395, 0.034, 0.05),
             Hotspot(id: "star-keyhole", 0.777, 0.20, 0.035, 0.08),
@@ -172,25 +185,14 @@ final class RoomSceneCoordinator: ObservableObject {
     }
 
     // MARK: - v-bench (z2)
-    // Rects verified against z2-bench-base (QA-BUG-015): cauldron center-left, ladle
-    // handle at its upper-left, floor bellows lying bottom-left, mortar on the bench
-    // right, plus the workbench top as the p12 combination surface.
 
     private func configureBench() {
         scene.setBaseTexture("z2-bench-base")
-        // Left-edge rects are clamped to the iPad-safe band (x >= 0.167): the cauldron
-        // belly / ladle handle / bellows nose continue into iPhone-only overscan, but
-        // every hotspot must be wholly reachable on the primary device (Section 8).
-        // BUG-015 pixel-perfect polish (2026-07-06): the ladle rests across the
-        // cauldron's rim (x 0.24-0.28), not left of it — rect moved onto the art
-        // (it nests inside the cauldron rect; smallest-area wins and both open the
-        // same brew close-up). Workbench extended right to the iPad-band edge so the
-        // whole visible benchtop accepts the p12 drop.
         scene.configureHotspots([
             Hotspot(id: "cauldron", 0.167, 0.32, 0.193, 0.32),
             Hotspot(id: "ladle", 0.235, 0.315, 0.055, 0.10),
             Hotspot(id: "floor-bellows", 0.167, 0.77, 0.133, 0.22),
-            Hotspot(id: "mortar", 0.69, 0.30, 0.14, 0.14),   // right edge clamped to the iPad-safe band
+            Hotspot(id: "mortar", 0.69, 0.30, 0.14, 0.14),
             Hotspot(id: "workbench", 0.44, 0.41, 0.39, 0.12),
         ])
     }
@@ -207,10 +209,6 @@ final class RoomSceneCoordinator: ObservableObject {
     }
 
     // MARK: - v-cabinet (z2)
-    // Rects aligned against the re-framed z2-cabinet-base (BUG-004 integration
-    // 2026-07-06): sun/moon recesses on the cabinet doors, potion shelf now wall-
-    // center (1066-1382 @3x), astrolabe pedestal center-right, Orion window moved
-    // dx -200 (star pixels 1936-2111 @3x).
 
     private func configureCabinet() {
         scene.configureHotspots([
@@ -226,8 +224,11 @@ final class RoomSceneCoordinator: ObservableObject {
     private func refreshCabinet() {
         scene.setOverlay("slots", imageNamed: RoomVisuals.cabinetDoorState(state) ? "ov-slots-seated" : nil,
                           rectNormalized: overlayRect("z2/v-cabinet", "ov-slots-seated"))
-        scene.setOverlay("cabinet-door", imageNamed: RoomVisuals.cabinetDoorState(state) ? "ov-cab-open" : nil,
-                          rectNormalized: overlayRect("z2/v-cabinet", "ov-cab-open"))
+        // F-023: the open cabinet keeps its contents visible in the wide shot until
+        // both are collected, then swaps to the empty-shelf overlay.
+        let cabOverlay = RoomVisuals.cabinetOpenOverlay(state)
+        scene.setOverlay("cabinet-door", imageNamed: cabOverlay,
+                          rectNormalized: cabOverlay.map { overlayRect("z2/v-cabinet", $0) } ?? .zero)
         scene.setOverlay("adrawer", imageNamed: RoomVisuals.astrolabeDrawerOpen(state) ? "ov-adrawer-open" : nil,
                           rectNormalized: overlayRect("z2/v-cabinet", "ov-adrawer-open"))
         // QA-BUG-017: a single correctly-seated item is rendered (icon art over its
@@ -240,35 +241,32 @@ final class RoomSceneCoordinator: ObservableObject {
     }
 
     // MARK: - v-cellar (z3)
-    // Rects aligned against the re-framed z3-cellar-base (BUG-004 integration
-    // 2026-07-06): whole scene shifted dx +132 @3x; barrel re-staged at 0.545 scale to
-    // (1758,690)-(2120,1015). ("shelf" stays removed: it was an inert region that only
-    // swallowed drops meant for the hook — QA-BUG-014 observation.)
 
     private func configureCellar() {
         scene.setBaseTexture("z3-cellar-base")
-        // BUG-015 pixel-perfect polish (2026-07-06): the counterweight hook is the
-        // iron hook on the pulley rope (x~0.335-0.385), not the winch-shelf corner
-        // the old rect sat on — the exact residual QA-BUG-014 flagged ("release on
-        // the hook art itself" must register). Barrel snapped to the authoritative
-        // ov-barrel-pried rect from overlays.json (old rect was high/left, cutting
-        // the barrel's lower third).
         scene.configureHotspots([
             Hotspot(id: "barrel", 0.70, 0.59, 0.13, 0.28),
             Hotspot(id: "drawer", 0.37, 0.60, 0.09, 0.09),
             Hotspot(id: "hook", 0.335, 0.28, 0.05, 0.11),
             Hotspot(id: "winch", 0.19, 0.22, 0.09, 0.16),
             Hotspot(id: "mirror", 0.585, 0.63, 0.10, 0.30),
+            // F-024 diegetic passages: the ladder up to the hearth trapdoor (art at
+            // x 0.70-0.90, clamped to the iPad-safe band) and — once the shelf has
+            // slid — the revealed alcove mouth (dark stone doorway, center).
+            Hotspot(id: "ladder", 0.70, 0.06, 0.13, 0.55),
+            Hotspot(id: "alcove-passage", 0.425, 0.28, 0.085, 0.45),
         ])
     }
 
     private func refreshCellar() {
-        // Barrel: nailed (base plate, no overlay) -> pried with the weight visible
-        // (the two graph-specified states).
         let barrelOverlay = RoomVisuals.barrelOverlay(state)
         scene.setOverlay("barrel", imageNamed: barrelOverlay,
                           rectNormalized: barrelOverlay.map { overlayRect("z3/v-cellar", $0) } ?? .zero)
-        scene.setOverlay("drawer", imageNamed: RoomVisuals.drawerState(state), rectNormalized: overlayRect("z3/v-cellar", RoomVisuals.drawerState(state)))
+        // Feedback round 1: drawer states are shut (base art) / open-with-spoon /
+        // open-empty — see RoomVisuals.drawerOverlay (the old mapping was inverted).
+        let drawerOverlay = RoomVisuals.drawerOverlay(state)
+        scene.setOverlay("drawer", imageNamed: drawerOverlay,
+                          rectNormalized: drawerOverlay.map { overlayRect("z3/v-cellar", $0) } ?? .zero)
         if RoomVisuals.crankFitted(state) {
             scene.setOverlay("crank", imageNamed: "ov-crank-fitted", rectNormalized: overlayRect("z3/v-cellar", "ov-crank-fitted"))
         } else {
@@ -276,11 +274,7 @@ final class RoomSceneCoordinator: ObservableObject {
         }
         let mirrorOverlay = state.data.mirrorDetent == 3 ? "ov-mirror-d3" : (state.data.mirrorDetent == 2 ? "ov-mirror-d2" : nil)
         scene.setOverlay("mirror", imageNamed: mirrorOverlay, rectNormalized: mirrorOverlay.map { overlayRect("z3/v-cellar", $0) } ?? .zero)
-        // Base plate itself swaps for the beam/shelf composite states (whole-frame
-        // variants, not small overlays) — see z3-cellar-beam-*/shelf-slid plates.
         if showingWeightHungBeat {
-            // QA-BUG-016: the weight-hung plate renders as the p07 success beat before
-            // the shelf slides aside.
             scene.setBaseTexture("z3-cellar-weight-hung")
             return
         }
@@ -297,14 +291,15 @@ final class RoomSceneCoordinator: ObservableObject {
     }
 
     // MARK: - v-alcove (z4)
-    // Rects verified against z4-alcove-base (QA-BUG-015): planter center-low, statue
-    // key at the beak upper-right of the planter.
 
     private func configureAlcove() {
         scene.setBaseTexture("z4-alcove-base")
         scene.configureHotspots([
             Hotspot(id: "planter", 0.36, 0.50, 0.21, 0.46),
             Hotspot(id: "statue-key", 0.52, 0.13, 0.15, 0.27),
+            // F-024: the shelf gap back out to the cellar (the slid shelf's wooden
+            // flank fills the right frame edge; clamped to the iPad-safe band).
+            Hotspot(id: "cellar-passage", 0.70, 0.10, 0.13, 0.80),
         ])
     }
 
@@ -328,17 +323,22 @@ final class RoomSceneCoordinator: ObservableObject {
         }
     }
 
-    // MARK: - Tap routing
-
-    /// Entry point for drops originating in the SwiftUI inventory bar (resolved to a
-    /// scene-space hotspot id by the caller). Public because GameRoomView drives it
-    /// directly from the exact SKView-based coordinate conversion (QA-BUG-014).
-    func handleExternalDrop(itemID: String, hotspotID: String) {
-        handleDrop(itemID, on: hotspotID)
-    }
+    // MARK: - Tap routing (select-then-tap)
 
     private func handleTap(_ hotspotID: String) {
-        SoundManager.shared.play(.click)
+        // An armed inventory item makes this tap a USE, never a look.
+        if let armed = interaction?.armedItem {
+            interaction?.disarm() // every use attempt disarms (design decision)
+            useItem(armed, on: hotspotID)
+            return
+        }
+        lookTap(hotspotID)
+    }
+
+    /// Bare taps: looks, direct pickups, and item-free apparatus actions. No generic
+    /// interaction sound — each case carries its own object-relevant cue or none
+    /// (F-005/F-009/F-019; dead hotspots are silent per F-006/F-014).
+    private func lookTap(_ hotspotID: String) {
         switch (viewID, hotspotID) {
 
         // -- z1 v-hearth --
@@ -347,40 +347,42 @@ final class RoomSceneCoordinator: ObservableObject {
                 state.addItem(PuzzleGraph.ItemID.poker)
                 SoundManager.shared.play(.pickup)
             }
+            // Taken: the hook is empty — dead hotspot, intentionally silent (F-006).
         case (.hearth, "ash"):
-            siftAshInteraction()
+            // No auto-apply: a bare tap is always a look. Sifting requires the armed
+            // poker (F-007/F-020/F-021 root cause fix).
+            present(.plain(image: RoomVisuals.ashCloseUp(state, justSifted: justSiftedAsh)), from: "ash")
         case (.hearth, "clock"):
-            activeCloseUp = .clock
+            present(.clock, from: "clock")
         case (.hearth, "bellows"):
-            activeCloseUp = .plain(image: "cu-bellows")
+            present(.plain(image: "cu-bellows"), from: "bellows")
         case (.hearth, "lintel"):
-            activeCloseUp = .plain(image: "cu-lintel")
+            present(.plain(image: "cu-lintel"), from: "lintel")
         case (.hearth, "rug"):
-            // QA-BUG-010: hidden-discovery free action. Latched; repeat taps inert.
             if !RoomVisuals.rugMoved(state) {
                 PuzzleEngine.moveRug(state: state)
-                SoundManager.shared.play(.pickup)
+                SoundManager.shared.play(.cloth)
             }
         case (.hearth, "trapdoor-dial"):
             guard RoomVisuals.rugMoved(state) else { break } // nothing there before discovery
             if RoomVisuals.trapdoorOpen(state) {
                 onNavigate?(.cellar) // diegetic passage (style guide Section 7)
             } else {
-                activeCloseUp = .dialPanel
+                present(.dialPanel, from: "trapdoor-dial")
             }
 
         // -- z1 v-study --
         case (.study, "grimoire"):
-            activeCloseUp = .grimoire
+            present(.grimoire, from: "grimoire")
         case (.study, "triptych"):
-            activeCloseUp = .triptych
+            present(.triptych, from: "triptych")
         case (.study, "flowerpot"):
-            activeCloseUp = .plain(image: "cu-flowerpot")
+            present(.plain(image: "cu-flowerpot"), from: "flowerpot")
         case (.study, "rune-door"):
             if state.hasSolved(PuzzleGraph.PuzzleID.runeDoor) {
                 onNavigate?(.bench) // the unbarred inner door is the passage to z2
             } else {
-                activeCloseUp = .runeDoor
+                present(.runeDoor, from: "rune-door")
             }
 
         // -- z1 v-entry --
@@ -390,130 +392,108 @@ final class RoomSceneCoordinator: ObservableObject {
                 SoundManager.shared.play(.pickup)
             }
         case (.entry, "windowsill"):
-            activeCloseUp = .plain(image: "cu-windowsill")
-        case (.entry, "cage"):
-            if state.hasFlag(PuzzleGraph.StateFlag.crowFreed) {
-                // QA-BUG-020: cage is open and empty; the crow is on the rafters.
-                activeCloseUp = .plain(image: "cu-cage-open-empty")
-            } else {
-                playTerminalRefusal()
-            }
-        case (.entry, "feed-cup"):
-            if state.hasFlag(PuzzleGraph.StateFlag.crowFreed) {
-                break // crow is gone; the cup is inert scenery now
-            }
-            playTerminalRefusal()
+            present(.plain(image: "cu-windowsill"), from: "windowsill")
+        case (.entry, "cage"), (.entry, "feed-cup"):
+            // F-011 fix: a bare tap is a LOOK at the caged crow's neutral pose. The
+            // turned-back pose is exclusively the D3/D4 refusal reaction, which now
+            // triggers only on an armed-item offer (a deliberate reach).
+            present(.plain(image: state.hasFlag(PuzzleGraph.StateFlag.crowFreed)
+                            ? "cu-cage-open-empty" : "cu-cage-crow"), from: hotspotID)
         case (.entry, "star-keyhole"):
             if state.hasFlag(PuzzleGraph.StateFlag.crowFreed) {
-                activeCloseUp = .plain(image: "cu-cage-open-empty")
-            } else if state.hasItem(PuzzleGraph.ItemID.cageKey) {
-                if PuzzleEngine.unlockCage(state: state) {
-                    SoundManager.shared.play(.solve)
-                    activeCloseUp = .plain(image: "cu-crow-rafters") // freed beat + falling feather frame
-                }
+                present(.plain(image: "cu-cage-open-empty"), from: "star-keyhole")
             } else {
-                activeCloseUp = .plain(image: "cu-star-keyhole") // star socket inspection
+                // No auto-unlock with the key merely held: look at the star socket.
+                present(.plain(image: "cu-star-keyhole"), from: "star-keyhole")
             }
         case (.entry, "door-lock"):
             doorLockTap()
 
         // -- z2 v-bench --
         case (.bench, "cauldron"), (.bench, "ladle"):
-            activeCloseUp = .brew
+            present(.brew, from: "cauldron")
         case (.bench, "floor-bellows"):
             pumpFloorBellows()
         case (.bench, "mortar"):
-            activeCloseUp = .plain(image: RoomVisuals.mortarState(state))
+            present(.plain(image: RoomVisuals.mortarState(state)), from: "mortar")
         case (.bench, "workbench"):
-            break // drop surface for p12; tap is inert
+            break // inert scenery tap: silent (F-014 class)
 
         // -- z2 v-cabinet --
         case (.cabinet, "sun-slot"), (.cabinet, "moon-slot"):
             if state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon) {
-                activeCloseUp = .plain(image: "cu-cabinet-open")
+                present(.container(.sunMoonCabinet), from: hotspotID)
             } else {
-                activeCloseUp = .plain(image: "cu-slots-empty")
+                present(.plain(image: "cu-slots-empty"), from: hotspotID)
             }
         case (.cabinet, "potion-shelf"):
-            activeCloseUp = .plain(image: "cu-potion-shelf")
+            present(.plain(image: "cu-potion-shelf"), from: "potion-shelf")
         case (.cabinet, "window"):
-            activeCloseUp = .plain(image: "cu-window-orion")
+            present(.plain(image: "cu-window-orion"), from: "window")
         case (.cabinet, "astrolabe"):
-            // QA-BUG-005 fix: a bare tap opens the six-plate mini-game; the player
-            // must choose the plate. The coordinator never supplies the answer.
             if state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion) {
-                activeCloseUp = .plain(image: "cu-astrolabe-drawer-empty")
+                present(.container(.astrolabeDrawer), from: "astrolabe")
             } else {
-                activeCloseUp = .astrolabe
+                present(.astrolabe, from: "astrolabe")
             }
 
         // -- z3 v-cellar --
         case (.cellar, "drawer"):
-            if !state.hasItem(PuzzleGraph.ItemID.spoon) {
+            // Manual pickup, two beats: opening the drawer is a latched free action;
+            // the visible spoon is then taken with its own tap (feedback round 1).
+            if !RoomVisuals.cellarDrawerOpened(state) {
+                PuzzleEngine.openCellarDrawer(state: state)
+                SoundManager.shared.play(.wood)
+            } else if !state.hasItem(PuzzleGraph.ItemID.spoon) {
                 state.addItem(PuzzleGraph.ItemID.spoon)
                 SoundManager.shared.play(.pickup)
             } else {
-                activeCloseUp = .plain(image: "cu-spoon-drawer")
+                present(.plain(image: "cu-spoon-drawer"), from: "drawer")
             }
         case (.cellar, "barrel"):
-            if state.hasItem(PuzzleGraph.ItemID.poker) {
-                let newlySolved = !state.hasSolved(PuzzleGraph.PuzzleID.barrelPry)
-                if PuzzleEngine.pryBarrel(state: state), newlySolved {
-                    SoundManager.shared.play(.solve)
-                }
-            } else {
-                activeCloseUp = .plain(image: "cu-barrel-gap") // pry-gap clue inspection
-            }
+            // No auto-pry with the poker merely held: look at the pry gap.
+            present(.plain(image: "cu-barrel-gap"), from: "barrel")
         case (.cellar, "winch"):
-            if state.hasItem(PuzzleGraph.ItemID.crank) {
-                let newly = !state.hasFlag(PuzzleGraph.StateFlag.moonbeamOn)
-                if PuzzleEngine.fitCrankAndTurn(state: state), newly {
-                    SoundManager.shared.play(.unlock)
-                }
-            } else {
-                activeCloseUp = .plain(image: state.hasFlag(PuzzleGraph.StateFlag.moonbeamOn) ? "cu-winch-crank" : "cu-winch-socket")
-            }
+            // No auto-fit with the crank merely held: look at the socket/crank.
+            present(.plain(image: state.hasFlag(PuzzleGraph.StateFlag.moonbeamOn)
+                            ? "cu-winch-crank" : "cu-winch-socket"), from: "winch")
         case (.cellar, "mirror"):
             let next = (state.data.mirrorDetent % MirrorSolution.detentCount) + 1
             PuzzleEngine.rotateMirror(toDetent: next, state: state)
-            SoundManager.shared.play(.click)
+            SoundManager.shared.play(.grind)
         case (.cellar, "hook"):
-            break // drop target for the weight; tap is inert
+            break // use target for the armed weight; bare tap is inert and silent
+        case (.cellar, "ladder"):
+            // Diegetic passage: up the ladder through the trapdoor (F-024).
+            if RoomVisuals.trapdoorOpen(state) {
+                onNavigate?(.hearth)
+            }
+        case (.cellar, "alcove-passage"):
+            // Diegetic passage: through the revealed alcove mouth (F-024). Inert
+            // (and invisible) until the shelf has slid.
+            if RoomVisuals.shelfSlid(state) {
+                onNavigate?(.alcove)
+            }
 
         // -- z4 v-alcove --
         case (.alcove, "planter"):
             if !state.hasSolved(PuzzleGraph.PuzzleID.moonflowerBloom), PuzzleEngine.pickBlossom(state: state) {
                 SoundManager.shared.play(.pickup)
             } else {
-                activeCloseUp = .plain(image: "cu-planter-\(RoomVisuals.planterState(state))")
+                present(.plain(image: "cu-planter-\(RoomVisuals.planterState(state))"), from: "planter")
             }
         case (.alcove, "statue-key"):
             if !RoomVisuals.cageKeyTaken(state) {
                 state.addItem(PuzzleGraph.ItemID.cageKey)
                 SoundManager.shared.play(.pickup)
             } else {
-                activeCloseUp = .plain(image: "cu-statue-key-taken")
+                present(.plain(image: "cu-statue-key-taken"), from: "statue-key")
             }
+        case (.alcove, "cellar-passage"):
+            onNavigate?(.cellar) // back out through the shelf gap (F-024)
 
         default:
             break
-        }
-    }
-
-    /// p05 via tap (poker already in inventory). Also reachable via drag-poker-on-ash.
-    private func siftAshInteraction() {
-        if state.hasItem(PuzzleGraph.ItemID.poker), !state.hasSolved(PuzzleGraph.PuzzleID.ashSift) {
-            if PuzzleEngine.siftAsh(state: state) {
-                SoundManager.shared.play(.solve)
-                justSiftedAsh = true
-                // QA-BUG-016: show the sifted-with-glint state as the success beat.
-                activeCloseUp = .plain(image: "cu-ash-sifted")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
-                    self?.justSiftedAsh = false
-                }
-            }
-        } else {
-            activeCloseUp = .plain(image: RoomVisuals.ashCloseUp(state, justSifted: justSiftedAsh))
         }
     }
 
@@ -527,15 +507,18 @@ final class RoomSceneCoordinator: ObservableObject {
                 }
             }
         } else {
-            activeCloseUp = .plain(image: "cu-door-lock")
+            present(.plain(image: "cu-door-lock"), from: "door-lock")
         }
     }
 
     /// D3/D4 shared refusal beat: identical pose, identical sound, zero state churn.
+    /// Reached ONLY by deliberately offering an armed item at the cage/feed cup —
+    /// bare taps show the neutral pose instead (F-011).
     private func playTerminalRefusal() {
         PuzzleEngine.triggerCrowTerminalRefusal()
         showTerminalRefusal = true
-        activeCloseUp = .refusal // QA-BUG-016: the pose is actually rendered now
+        activeCloseUp = .refusal
+        closeUpOrigin = nil
         SoundManager.shared.play(.refusal)
     }
 
@@ -545,20 +528,38 @@ final class RoomSceneCoordinator: ObservableObject {
         guard state.isZoneUnlocked(PuzzleGraph.ZoneID.z2Workshop) else { return }
         let next = (state.data.cauldronFlameStage % 3) + 1
         state.setCauldronFlameStage(next)
-        SoundManager.shared.play(.click)
+        SoundManager.shared.play(.bellows)
     }
 
     // MARK: - Close-up interactions (driven by CloseUpView)
 
-    /// p01: tile presses from the rune-door close-up. Pressed tiles derive from the
-    /// persisted in-progress sequence, so reopening the close-up restores them.
+    /// An armed item used while a close-up is open routes to the close-up's
+    /// originating hotspot (the zoomed view is the same object, just closer). This is
+    /// what makes every tool-on-hotspot puzzle solvable from inside its close-up —
+    /// the exact flow the user could not perform in F-020.
+    func useArmedItemInCloseUp() {
+        guard let armed = interaction?.armedItem else { return }
+        interaction?.disarm()
+        guard let origin = closeUpOrigin else { return }
+        useItem(armed, on: origin)
+    }
+
+    /// Collect one visible item from an opened container (F-023/F-018 manual pickup).
+    func collectContainerItem(_ itemID: String, from container: PuzzleEngine.Container) {
+        if PuzzleEngine.collectItem(itemID, from: container, state: state) {
+            SoundManager.shared.play(.pickup)
+            objectWillChange.send()
+        }
+    }
+
+    /// p01: tile presses from the rune-door close-up.
     func pressRuneTile(_ tile: Int) {
         guard let rune = RuneDoorSolution.tileRune[tile] else { return }
-        SoundManager.shared.play(.click)
+        SoundManager.shared.play(.stonePress)
         switch PuzzleEngine.pressRuneTile(rune, state: state) {
         case .solved:
             SoundManager.shared.play(.unlock)
-            activeCloseUp = nil // pull back so the opened door / new zone reads
+            dismissCloseUp() // pull back so the opened door / new zone reads
         case .reset:
             SoundManager.shared.play(.wrong) // dull knock; tiles reset flush
         case .inProgress:
@@ -574,20 +575,21 @@ final class RoomSceneCoordinator: ObservableObject {
     }
 
     /// p03: the player chose a plate in the astrolabe close-up (QA-BUG-005).
+    /// F-023: solving springs the drawer open with the coin + crank VISIBLE — the
+    /// container close-up follows, and the player taps each item to collect it.
     func selectAstrolabePlate(_ index: Int) {
         if PuzzleEngine.selectAstrolabePlate(index, state: state) {
             SoundManager.shared.play(.solve)
-            activeCloseUp = .plain(image: "cu-astrolabe-drawer-empty") // drawer sprung; items granted
+            present(.container(.astrolabeDrawer), from: "astrolabe")
         } else {
             SoundManager.shared.play(.wrong)
         }
     }
 
-    /// D5: advance the clock's hour hand one numeral. Reaching XII triggers the
-    /// one-shot cuckoo pop (first time only; spent state thereafter).
+    /// D5: advance the clock's hour hand one numeral.
     func advanceClockHour() {
         clockHour = clockHour % 12 + 1
-        SoundManager.shared.play(.click)
+        SoundManager.shared.play(.tick)
         guard clockHour == 12 else { return }
         if PuzzleEngine.setClockToTwelve(state: state) == .popped {
             justPoppedClock = true
@@ -596,7 +598,7 @@ final class RoomSceneCoordinator: ObservableObject {
                 self?.justPoppedClock = false
             }
         }
-        // Spent: door hangs ajar, toy inert — no sound beyond a faint creak (D5).
+        // Spent: door hangs ajar, toy inert — no sound beyond the hand tick (D5).
     }
 
     /// p14 brew resolve outcome, reported by BrewControlView inside the brew close-up.
@@ -604,9 +606,13 @@ final class RoomSceneCoordinator: ObservableObject {
         lastBrewOutcome = outcome
     }
 
-    // MARK: - Drop routing
+    // MARK: - Item use (armed item -> target hotspot)
 
-    private func handleDrop(_ itemID: String, on hotspotID: String) {
+    /// The single "use item X on hotspot Y" entry point (select-then-tap). Also the
+    /// programmatic surface unit tests drive. Unknown pairings do nothing — silently
+    /// (no generic error noise; the disarm itself is the feedback), and never mutate
+    /// state.
+    func useItem(_ itemID: String, on hotspotID: String) {
         switch (viewID, hotspotID) {
 
         // -- z1 v-entry --
@@ -621,25 +627,26 @@ final class RoomSceneCoordinator: ObservableObject {
             }
             showTerminalRefusal = true
             activeCloseUp = .refusal
+            closeUpOrigin = nil
             SoundManager.shared.play(.refusal)
         case (.entry, "star-keyhole"), (.entry, "cage"):
-            entryCageDrop(itemID, on: hotspotID)
+            entryCageUse(itemID, on: hotspotID)
         case (.entry, "door-lock"):
             if itemID == PuzzleGraph.ItemID.phialDraught {
                 if PuzzleEngine.pourDraughtOnBasin(state: state) {
                     SoundManager.shared.play(.solve)
-                    activeCloseUp = .plain(image: "cu-door-lock-vines-gone") // wither beat
+                    present(.plain(image: "cu-door-lock-vines-gone"), from: "door-lock") // wither beat
                 }
             } else if itemID == PuzzleGraph.ItemID.rustedKey {
                 // Red-herring fairness valve: visible mechanical reject.
                 SoundManager.shared.play(.wrong)
-                activeCloseUp = .plain(image: "cu-door-lock")
+                present(.plain(image: "cu-door-lock"), from: "door-lock")
             }
 
         // -- z1 v-hearth --
         case (.hearth, "ash"):
             if itemID == PuzzleGraph.ItemID.poker {
-                siftAshInteraction()
+                siftAsh()
             }
 
         // -- z3 v-cellar --
@@ -674,12 +681,12 @@ final class RoomSceneCoordinator: ObservableObject {
         case (.bench, "mortar"):
             if itemID == PuzzleGraph.ItemID.blossom, PuzzleEngine.grindPaste(state: state) {
                 SoundManager.shared.play(.solve)
-                activeCloseUp = .plain(image: "cu-mortar-paste")
+                present(.plain(image: "cu-mortar-paste"), from: "mortar")
             }
         case (.bench, "cauldron"), (.bench, "ladle"):
-            cauldronDrop(itemID)
+            cauldronUse(itemID)
         case (.bench, "workbench"):
-            // p12 secondary path: the workbench close-up/top accepts the combination.
+            // p12 secondary path: the workbench accepts the combination.
             if itemID == PuzzleGraph.ItemID.file || itemID == PuzzleGraph.ItemID.spoon {
                 let other = itemID == PuzzleGraph.ItemID.file ? PuzzleGraph.ItemID.spoon : PuzzleGraph.ItemID.file
                 let newly = !state.hasSolved(PuzzleGraph.PuzzleID.fileShavings)
@@ -693,29 +700,44 @@ final class RoomSceneCoordinator: ObservableObject {
         }
     }
 
-    /// QA-BUG-018: dropping keys on the cage/star keyhole acts. The star key unlocks;
-    /// the rusted key gets a visible mechanical reject at the keyhole close-up; any
-    /// other item offered at the cage is a reach and gets the terminal refusal (D3).
-    private func entryCageDrop(_ itemID: String, on hotspotID: String) {
+    /// p05 via the armed poker (the ONLY way to sift — no passive auto-apply).
+    private func siftAsh() {
+        guard state.hasItem(PuzzleGraph.ItemID.poker), !state.hasSolved(PuzzleGraph.PuzzleID.ashSift) else { return }
+        if PuzzleEngine.siftAsh(state: state) {
+            SoundManager.shared.play(.solve)
+            justSiftedAsh = true
+            // QA-BUG-016: show the sifted-with-glint state as the success beat.
+            present(.plain(image: "cu-ash-sifted"), from: "ash")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
+                self?.justSiftedAsh = false
+            }
+        }
+    }
+
+    /// QA-BUG-018 lineage, select-then-tap form: using keys on the cage/star keyhole
+    /// acts. The star key unlocks; the rusted key gets a visible mechanical reject at
+    /// the keyhole close-up; any other item offered at the cage is a reach and gets
+    /// the terminal refusal (D3).
+    private func entryCageUse(_ itemID: String, on hotspotID: String) {
         if itemID == PuzzleGraph.ItemID.cageKey, !state.hasFlag(PuzzleGraph.StateFlag.crowFreed) {
             if PuzzleEngine.unlockCage(state: state) {
                 SoundManager.shared.play(.solve)
-                activeCloseUp = .plain(image: "cu-crow-rafters")
+                present(.plain(image: "cu-crow-rafters"), from: hotspotID)
             }
         } else if itemID == PuzzleGraph.ItemID.rustedKey {
             SoundManager.shared.play(.wrong)
-            activeCloseUp = .plain(image: "cu-star-keyhole") // plain bit visibly rejected by the star socket
+            present(.plain(image: "cu-star-keyhole"), from: hotspotID) // plain bit visibly rejected
         } else if !state.hasFlag(PuzzleGraph.StateFlag.crowFreed) {
             playTerminalRefusal()
         }
     }
 
-    /// p14 ingredient adds + p15 bottling (QA-BUG-002) share the cauldron drop target.
-    private func cauldronDrop(_ itemID: String) {
+    /// p14 ingredient adds + p15 bottling (QA-BUG-002) share the cauldron target.
+    private func cauldronUse(_ itemID: String) {
         if itemID == PuzzleGraph.ItemID.phial {
             if PuzzleEngine.fillPhial(state: state) {
                 SoundManager.shared.play(.solve)
-                activeCloseUp = .brew // show the (still-ready) draught being bottled
+                present(.brew, from: "cauldron") // show the (still-ready) draught being bottled
             } else {
                 SoundManager.shared.play(.wrong) // cauldron isn't ready yet
             }
@@ -735,7 +757,8 @@ final class RoomSceneCoordinator: ObservableObject {
 
     /// QA-BUG-017 fix: per-slot validation. A wrong item never becomes "pending" — it
     /// pops back audibly. Only the correct item seats (rendered by refreshCabinet);
-    /// the pair completing hands over to the engine, which consumes both.
+    /// the pair completing hands over to the engine, which consumes both. On the pair
+    /// completing, the cabinet opens with its contents visible for manual pickup.
     private func attemptCabinetPlacement(_ itemID: String, slot: String) {
         guard !state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon) else { return }
         let correctItem = slot == "sun-slot" ? CabinetSolution.sunSlotItem : CabinetSolution.moonSlotItem
@@ -744,11 +767,12 @@ final class RoomSceneCoordinator: ObservableObject {
             return
         }
         if slot == "sun-slot" { pendingSunItem = itemID } else { pendingMoonItem = itemID }
-        SoundManager.shared.play(.click)
+        SoundManager.shared.play(.tick) // the seat catching — object-relevant, not generic
         if PuzzleEngine.placeCabinetItems(sun: pendingSunItem, moon: pendingMoonItem, state: state) {
             SoundManager.shared.play(.solve)
             pendingSunItem = nil
             pendingMoonItem = nil
+            present(.container(.sunMoonCabinet), from: slot) // F-023 manual pickup
         }
         refreshCabinet()
     }
@@ -762,7 +786,7 @@ final class RoomSceneCoordinator: ObservableObject {
         ingredients.insert(itemID)
         state.removeItem(itemID)
         state.setCauldronIngredients(ingredients)
-        SoundManager.shared.play(.pickup)
+        SoundManager.shared.play(.stir) // the ingredient slipping into the water
     }
 
     // MARK: - overlay rect lookup

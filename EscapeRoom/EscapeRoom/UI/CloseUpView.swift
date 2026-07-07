@@ -2,42 +2,64 @@ import SwiftUI
 
 /// The close-up / inspection layer (QA-BUG-013): presents a `CloseUpRequest` over the
 /// SpriteKit room. Leaving is always the style guide Section 7 down-chevron (plus tap-
-/// anywhere for the auto-dismissing refusal beat). Interactive close-ups drive puzzle
-/// logic exclusively through the coordinator.
+/// anywhere for the auto-dismissing refusal beat).
+///
+/// Feedback round 1:
+/// - The inventory bar stays visible/reachable BELOW this layer (F-020 systemic fix);
+///   `bottomInset` keeps close-up content clear of it.
+/// - An armed inventory item used on the plate routes to the close-up's originating
+///   hotspot (`useArmedItemInCloseUp`), so tool-on-hotspot puzzles work from inside
+///   their close-ups.
+/// - Solved containers present their contents for tap-to-collect (F-023/F-018).
+/// - Dismiss chevron visibility raised (F-025 interim; final per the Section 7 Rev-2
+///   addendum when it lands).
+/// - Page turns play a paper cue; opening/dismissing close-ups is silent (F-005).
 struct CloseUpView: View {
     @ObservedObject var coordinator: RoomSceneCoordinator
     let request: CloseUpRequest
+    var bottomInset: CGFloat = 0
 
     var body: some View {
         ZStack {
             Color.black.opacity(0.92).ignoresSafeArea()
+                .onTapGesture { armedUseOrNothing() }
 
-            switch request {
-            case .plain(let image):
-                FittedPlate(imageName: image)
-            case .grimoire:
-                PagerCloseUp(pages: CloseUpLayout.grimoirePages,
-                             initialIndex: CloseUpLayout.grimoireBookmarkIndex)
-            case .triptych:
-                PagerCloseUp(pages: CloseUpLayout.triptychPages, initialIndex: 0)
-            case .clock:
-                ClockCloseUp(coordinator: coordinator)
-            case .dialPanel:
-                DialPanelCloseUp(coordinator: coordinator)
-            case .astrolabe:
-                AstrolabeCloseUp(coordinator: coordinator)
-            case .runeDoor:
-                RuneDoorCloseUp(coordinator: coordinator)
-            case .brew:
-                BrewCloseUp(coordinator: coordinator)
-            case .refusal:
-                RefusalCloseUp(coordinator: coordinator)
+            Group {
+                switch request {
+                case .plain(let image):
+                    FittedPlate(imageName: image)
+                        .contentShape(Rectangle())
+                        .onTapGesture { armedUseOrNothing() }
+                case .container(let container):
+                    ContainerCloseUp(coordinator: coordinator, container: container)
+                case .grimoire:
+                    PagerCloseUp(coordinator: coordinator,
+                                 pages: CloseUpLayout.grimoirePages,
+                                 initialIndex: CloseUpLayout.grimoireBookmarkIndex)
+                case .triptych:
+                    PagerCloseUp(coordinator: coordinator,
+                                 pages: CloseUpLayout.triptychPages, initialIndex: 0)
+                case .clock:
+                    ClockCloseUp(coordinator: coordinator)
+                case .dialPanel:
+                    DialPanelCloseUp(coordinator: coordinator)
+                case .astrolabe:
+                    AstrolabeCloseUp(coordinator: coordinator)
+                case .runeDoor:
+                    RuneDoorCloseUp(coordinator: coordinator)
+                case .brew:
+                    BrewCloseUp(coordinator: coordinator)
+                case .refusal:
+                    RefusalCloseUp(coordinator: coordinator)
+                }
             }
+            .padding(.bottom, bottomInset)
 
             if request != .refusal {
                 VStack {
                     Spacer()
                     dismissChevron
+                        .padding(.bottom, bottomInset + 10)
                 }
             }
         }
@@ -47,21 +69,31 @@ struct CloseUpView: View {
         }
     }
 
+    /// A tap on the plate with an item armed = use it here (routed to the close-up's
+    /// originating hotspot). Without an armed item, plate taps do nothing — silence
+    /// over generic noise (F-005).
+    private func armedUseOrNothing() {
+        coordinator.useArmedItemInCloseUp()
+    }
+
+    /// F-025 interim visibility bump: bigger glyph, brighter, on a soft dark backing
+    /// (was a bare 30 pt glyph at 55% white). Final treatment comes from the Section 7
+    /// Rev-2 addendum.
     private var dismissChevron: some View {
         Button(action: dismiss) {
             Image(systemName: "chevron.down")
-                .font(.system(size: 30, weight: .regular))
-                .foregroundColor(Color(white: 0.92).opacity(0.55))
+                .font(.system(size: 30, weight: .medium))
+                .foregroundColor(Color(white: 0.92).opacity(0.85))
                 .frame(width: 64, height: 44)
+                .background(Capsule().fill(Color.black.opacity(0.45)))
         }
-        .padding(.bottom, 10)
         .accessibilityLabel("Back")
         .accessibilityIdentifier("closeup-dismiss")
     }
 
     private func dismiss() {
-        SoundManager.shared.play(.click)
-        coordinator.activeCloseUp = nil
+        // Silent: leaving a close-up needs no cue (F-005 — silence over generic).
+        coordinator.dismissCloseUp()
     }
 }
 
@@ -118,13 +150,66 @@ private extension CGRect {
     }
 }
 
+// MARK: - Solved-container manual pickup (F-023/F-018)
+
+/// Shows the opened container with its remaining contents; the player taps each item
+/// to collect it (with the liked pickup chime). Already-collected items are hidden
+/// under a soft dark patch (both containers have dark interiors, so absence reads
+/// naturally — flagged in implementation notes: per-item removal art doesn't exist).
+/// Once everything is collected the empty-container plate renders instead.
+private struct ContainerCloseUp: View {
+    @ObservedObject var coordinator: RoomSceneCoordinator
+    let container: PuzzleEngine.Container
+
+    var body: some View {
+        let plates = CloseUpLayout.containerPlates(container)
+        let uncollected = PuzzleEngine.uncollectedItems(in: container, state: coordinator.state)
+        if uncollected.isEmpty {
+            FittedPlate(imageName: plates.empty)
+        } else {
+            FittedPlateLayout(imageName: plates.open) { fitted in
+                ForEach(PuzzleEngine.containerContents(container), id: \.self) { itemID in
+                    if let normalized = CloseUpLayout.containerItemRects[container]?[itemID] {
+                        let rect = fitted.subRect(normalized)
+                        if uncollected.contains(itemID) {
+                            // Invisible tap target over the painted item (>= 44 pt floor).
+                            Color.white.opacity(0.001)
+                                .frame(width: max(rect.width, 44), height: max(rect.height, 44))
+                                .contentShape(Rectangle())
+                                .onTapGesture {
+                                    coordinator.collectContainerItem(itemID, from: container)
+                                }
+                                .accessibilityLabel(ItemCatalog.definition(for: itemID)?.name ?? "Item")
+                                .accessibilityIdentifier("collect-\(itemID)")
+                                .position(x: rect.midX, y: rect.midY)
+                        } else {
+                            // Collected while its sibling remains: soft dark patch so
+                            // the taken item no longer appears present (F-007 class).
+                            RadialGradient(colors: [Color.black.opacity(0.88), Color.black.opacity(0)],
+                                           center: .center,
+                                           startRadius: 0,
+                                           endRadius: max(rect.width, rect.height) * 0.72)
+                                .frame(width: rect.width * 1.5, height: rect.height * 1.7)
+                                .allowsHitTesting(false)
+                                .position(x: rect.midX, y: rect.midY)
+                        }
+                    }
+                }
+            }
+            .padding(24)
+        }
+    }
+}
+
 // MARK: - Browsable spreads (grimoire, triptych)
 
 private struct PagerCloseUp: View {
+    let coordinator: RoomSceneCoordinator
     let pages: [String]
     @State var index: Int
 
-    init(pages: [String], initialIndex: Int) {
+    init(coordinator: RoomSceneCoordinator, pages: [String], initialIndex: Int) {
+        self.coordinator = coordinator
         self.pages = pages
         _index = State(initialValue: initialIndex)
     }
@@ -139,17 +224,26 @@ private struct PagerCloseUp: View {
             }
             .padding(.horizontal, 6)
         }
+        .onAppear { recordPage() }
+        .onChange(of: index) { _ in recordPage() }
+    }
+
+    /// Per-page clue recording (F-012 substrate): the gate table can key on
+    /// individual spreads (e.g. the grimoire recipe page), not just the book.
+    private func recordPage() {
+        coordinator.recordClueViewed("plain-\(pages[index])")
     }
 
     private func pageChevron(_ symbol: String, enabled: Bool, action: @escaping () -> Void) -> some View {
         Button {
-            SoundManager.shared.play(.click)
+            SoundManager.shared.play(.page) // paper, not the generic click (F-005)
             action()
         } label: {
             Image(systemName: symbol)
-                .font(.system(size: 26))
-                .foregroundColor(Color(white: 0.92).opacity(enabled ? 0.55 : 0.12))
+                .font(.system(size: 26, weight: .medium))
+                .foregroundColor(Color(white: 0.92).opacity(enabled ? 0.85 : 0.15))
                 .frame(width: 44, height: 88)
+                .background(Capsule().fill(Color.black.opacity(enabled ? 0.35 : 0)))
         }
         .disabled(!enabled)
         .accessibilityLabel(symbol == "chevron.left" ? "Previous page" : "Next page")
@@ -197,8 +291,7 @@ private struct DialPanelCloseUp: View {
     var body: some View {
         GeometryReader { geo in
             // Section 8 / A5-R5 legibility floor (QA-BUG-011): each dial face spans
-            // >= 30% of screen width on the smallest iPhone. Sized from the actual
-            // container width, so it holds on every device.
+            // >= 30% of screen width on the smallest iPhone.
             let dialSize = geo.size.width * 0.30
             ZStack {
                 GameImage(name: "cu-dial-panel")
@@ -323,6 +416,10 @@ private struct BrewCloseUp: View {
                         .transition(.opacity)
                 }
             }
+            // Armed-item taps on the liquid add ingredients / bottle the draught
+            // without leaving the brew view (select-then-tap inside close-ups).
+            .contentShape(Rectangle())
+            .onTapGesture { coordinator.useArmedItemInCloseUp() }
             .padding(.vertical, 24)
             .padding(.leading, 24)
 
@@ -350,7 +447,7 @@ private struct RefusalCloseUp: View {
                 // Identical, short, non-escalating beat every repeat; auto-dismisses.
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
                     if coordinator.activeCloseUp == .refusal {
-                        coordinator.activeCloseUp = nil
+                        coordinator.dismissCloseUp()
                     }
                 }
             }

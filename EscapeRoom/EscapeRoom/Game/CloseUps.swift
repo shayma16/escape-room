@@ -10,6 +10,9 @@ import CoreGraphics
 enum CloseUpRequest: Equatable, Identifiable {
     /// A plain zoom-in on a single (state-resolved) plate.
     case plain(image: String)
+    /// A solved container with individually collectable contents (feedback round 1
+    /// F-023/F-018 manual pickup): astrolabe base drawer, sun/moon cabinet.
+    case container(PuzzleEngine.Container)
     /// Grimoire: browsable spreads, opens at the feather-bookmarked recipe page.
     case grimoire
     /// Triptych: the three night paintings, browsable.
@@ -31,6 +34,7 @@ enum CloseUpRequest: Equatable, Identifiable {
     var id: String {
         switch self {
         case .plain(let image): return "plain-\(image)"
+        case .container(let container): return "container-\(container.rawValue)"
         case .grimoire: return "grimoire"
         case .triptych: return "triptych"
         case .clock: return "clock"
@@ -77,4 +81,32 @@ enum CloseUpLayout {
     static let grimoireBookmarkIndex = 2
 
     static let triptychPages = ["cu-triptych-1", "cu-triptych-2", "cu-triptych-3"]
+
+    // MARK: Container close-ups (manual pickup, feedback round 1)
+
+    /// Plate shown while any content is uncollected / once everything is taken.
+    /// (`ov-cab-open-empty` doubles as the cabinet's empty inspection plate — no
+    /// dedicated empty close-up was generated; it letterboxes inside the close-up
+    /// frame, which the dark backdrop absorbs.)
+    static func containerPlates(_ container: PuzzleEngine.Container) -> (open: String, empty: String) {
+        switch container {
+        case .astrolabeDrawer: return ("cu-astrolabe-drawer-open", "cu-astrolabe-drawer-empty")
+        case .sunMoonCabinet: return ("cu-cabinet-open", "ov-cab-open-empty")
+        }
+    }
+
+    /// Collectable-item regions, normalized to the container's OPEN plate (measured
+    /// against the shipped art). Rendered as invisible tap targets (>= 44 pt enforced
+    /// by the view) with a soft dark patch over already-collected items (both
+    /// containers have dark interiors, so absence reads naturally).
+    static let containerItemRects: [PuzzleEngine.Container: [String: CGRect]] = [
+        .astrolabeDrawer: [
+            PuzzleGraph.ItemID.silverCoin: CGRect(x: 0.315, y: 0.765, width: 0.145, height: 0.115),
+            PuzzleGraph.ItemID.crank: CGRect(x: 0.455, y: 0.755, width: 0.255, height: 0.145),
+        ],
+        .sunMoonCabinet: [
+            PuzzleGraph.ItemID.file: CGRect(x: 0.29, y: 0.50, width: 0.29, height: 0.125),
+            PuzzleGraph.ItemID.phial: CGRect(x: 0.55, y: 0.335, width: 0.125, height: 0.29),
+        ],
+    ]
 }

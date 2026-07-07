@@ -111,6 +111,15 @@ enum RoomVisuals {
         s.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon)
     }
 
+    /// Open-cabinet wide overlay carries its contents until both are collected
+    /// (feedback round 1 F-023 manual pickup): ov-cab-open shows the file + phial on
+    /// the inner shelf; ov-cab-open-empty is the collected state.
+    static func cabinetOpenOverlay(_ s: GameState) -> String? {
+        guard s.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon) else { return nil }
+        let anyLeft = !PuzzleEngine.uncollectedItems(in: .sunMoonCabinet, state: s).isEmpty
+        return anyLeft ? "ov-cab-open" : "ov-cab-open-empty"
+    }
+
     static func astrolabeDrawerOpen(_ s: GameState) -> Bool {
         s.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion)
     }
@@ -126,8 +135,17 @@ enum RoomVisuals {
         s.hasSolved(PuzzleGraph.PuzzleID.barrelPry) ? "ov-barrel-pried" : nil
     }
 
-    static func drawerState(_ s: GameState) -> String {
-        s.hasItem(PuzzleGraph.ItemID.spoon) ? "ov-drawer-open" : "ov-drawer-empty"
+    /// Cellar drawer (feedback round 1 fix): graph states are shut / open-with-spoon /
+    /// open-empty. The previous mapping was inverted AND always overlaid an open
+    /// drawer from the first frame. `nil` = shut (the base plate's own art).
+    /// Saves from older builds (spoon held, no opened flag) migrate by implication.
+    static func cellarDrawerOpened(_ s: GameState) -> Bool {
+        s.hasFlag(PuzzleGraph.StateFlag.cellarDrawerOpened) || s.hasItem(PuzzleGraph.ItemID.spoon)
+    }
+
+    static func drawerOverlay(_ s: GameState) -> String? {
+        guard cellarDrawerOpened(s) else { return nil }
+        return s.hasItem(PuzzleGraph.ItemID.spoon) ? "ov-drawer-empty" : "ov-drawer-open"
     }
 
     static func shelfSlid(_ s: GameState) -> Bool {

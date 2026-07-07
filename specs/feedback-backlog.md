@@ -278,6 +278,7 @@ needs-clarification` items are blocked until answered._
 | 4 | F-001 (scaling half) | bug (needs device-config check) | major | Developer | Full if systemic inventory-bar layout defect; else targeted |
 | 5 | F-011 | bug (needs verify) | major | Developer + QA verify | Targeted — crow default-pose vs. refusal-pose trigger only |
 | 6 | F-010 | bug | minor | Art Director / Asset Generation | Targeted — v-entry door plates only |
+| _AF-1 ruling (Producer, 2026-07-07):_ close-up `cu-door-lock` is CANONICAL (it matches the graph's single "crow's-beak rune basin" element). Bring the wide `v-entry` base + all vine-state variants into line: unify the stray crow-head + round bowl into ONE crow's-beak rune basin over the bolt, matching the close-up. Spec-determined, not a free composition choice — no user input needed. EXECUTION QUEUED after the Developer batch lands (avoids concurrent asset-manifest.json writes while the Developer is running). AF-2/3/4 already done ($0.17). ||||
 | 7 | F-006 | bug | minor | Developer | Targeted — poker/hearth hotspot only |
 | 8 | F-014 | bug | minor | Developer | Targeted — herbs hotspot only |
 | 9 | Cluster CONFIRM-1: F-005+F-009+F-019 | polish | — | Developer (SFX sourcing, own scope per agent def) | Targeted — audio trigger points only, no state impact |
