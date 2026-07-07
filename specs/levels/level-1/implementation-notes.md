@@ -690,4 +690,21 @@ solution succeeds with no clue viewed. Fixed honestly, not hidden:
 ## CI
 
 Branch `feedback-round-1`, workflow `build-and-test.yml` (macos-15, simulator build+test).
-Run link + result recorded below once green.
+
+**GREEN:** run https://github.com/shayma16/escape-room/actions/runs/28895420694.
+Build + unit tests on all three device classes (iPad 13", iPhone SE, Dynamic Island
+iPhone) + UI smoke on all three + Dynamic Island safe-area screenshots all pass; the
+full-playthrough screenshot test is a documented `XCTSkip` (see the test-changes note
+above) pending QA scene-coordinate recalibration.
+
+Two prior red runs on this branch, both fixed:
+- run 28893796105 — 2 test failures (BUILD compiled first try; 96 tests executed):
+  `testCabinetWrongSlotUseRejectedWithoutStalePending_QA_BUG_017` (p04 refused by the new
+  clue gate — added `satisfyAllGates`) and `testBuildOneSaveWithoutViewedCluesStillDecodes`
+  (a never-run WIP test that assumed a `[Int: ...]` JSON array shape Foundation encodes as
+  an object here — rewritten encoding-agnostic).
+- run 28894384362 — the QA-OBS-023 landscape-composition guard failed at launch on the CI
+  SE simulator (`UIScreen.main` reported a stale 480 pt vs the real 667 pt window). That
+  guard had never actually run green before (it shipped in PR #2 whose merge run was a 3 s
+  no-op). Rewrote it to assert the app WINDOW frame is landscape (origin 0,0; width > height),
+  which is the guard's real intent and is environment-robust.

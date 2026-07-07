@@ -27,8 +27,30 @@ If the session is cut off, resume by taking stock — don't restart:
 5. Flux spend to date: $8.63 (progression-ledger.md). BUG-004 re-frame batch: 11/11
    done, verified, HOLD cleared.
 
-## RESUME NOTE — feedback round 1 Developer batch INCOMPLETE (2026-07-07)
+## RESUME NOTE — feedback round 1 Developer batch COMPLETE, CI GREEN, PR OPEN (2026-07-08)
 
+The resumed Developer batch is DONE. Branch `feedback-round-1` is **CI GREEN** (run
+28895420694: build + unit tests × 3 device classes + UI smoke × 3 + Dynamic Island
+safe-area screenshots all pass). A PR to `main` is open (do NOT auto-merge — user merges).
+
+What landed on top of the WIP: clue-gating rev 1.3 ENFORCED (was absent from the WIP —
+only the persistence substrate existed) for p01/p02/p03/p04/p14, p01 page-A REQUIRED per
+the final user ruling, IC-1 re-eval + D7 persistence; `LevelSession.availableViews()`
+(compile-break fix); Rev-2 chrome (§7-R1 inventory pill, §7-R2 NavChevron breathing
+chevrons, §7-R3 item inspect); all invalidated tests updated + new gating tests added.
+Full per-item status, judgment calls (JC-fb1-1..5), sound licensing (all synthesized-
+original, nothing sourced), and the security-checklist PASS are in
+`specs/levels/level-1/implementation-notes.md` ("Feedback round 1 → build 2").
+
+NEXT (Producer): user reviews the PR; on merge → **full QA regression** (interaction +
+nav + gating models changed everything; the UI full-playthrough screenshot test is a
+DOCUMENTED XCTSkip awaiting QA scene-coordinate recalibration) → **checkpoint 2 user
+review** → release build 2 to TestFlight. Still QUEUED: AF-1 door art fix (Asset Gen) and
+JC-fb1-4 (workshop return-door art). Judgment calls needing user/Producer attention:
+JC-fb1-1 (p03 has no stale-input surface for IC-1 — vacuous, noted) and JC-fb1-3
+(empty-scene disarm deferred).
+
+_Prior (now resolved) resume note — kept for history:_
 Developer agent ran out of credits mid-batch. ALL its work is committed + pushed to
 branch `feedback-round-1` (commit 5d90803, a WIP checkpoint) — NOT verified, NOT built,
 NO CI run yet. To resume:
