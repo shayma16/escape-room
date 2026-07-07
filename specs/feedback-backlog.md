@@ -10,19 +10,42 @@ triggers processing (Phase 2)._
 Full classification/routing table is in this section. Individual item entries below are
 kept verbatim as logged (Phase 1); this table is the Phase 2 output.
 
-**Awaiting user resolution before routing (do not execute):**
-- Cluster CONFIRM-1 (generic interaction sound): F-005 + F-009 + F-019 look like the same
-  root complaint at different trigger points (item zoom, rug move, inventory selection).
-  Propose merging into ONE routed item. F-014 is related but has a distinct root cause
-  (a hotspot that shouldn't exist at all) — kept separate.
-- Cluster CONFIRM-2 (ash-pile/gold-ring): F-007 + F-020 + F-021 together are internally
-  confusing (pickup-animation glitch vs. inventory-hidden-in-closeup vs.
-  ring-obtained-without-poker). Needs the user's actual sequence of actions to isolate
-  root cause — see clarifying question below.
-- F-018: needs clarification — same drawer as the astrolabe base drawer (F-016/F-017), or
-  a different one?
-- F-003: too vague standalone ("use neutralxe as a baseline") to route on its own; treated
-  as informing F-001/F-002 below — ask if there's more beyond those two.
+**User resolutions (2026-07-07):**
+- Cluster CONFIRM-1 (generic interaction sound): MERGE CONFIRMED — and user broadened the
+  scope: fix the generic "psh" across ALL interaction points game-wide, not just the
+  three reported triggers.
+- Cluster CONFIRM-2 (ash-pile/gold-ring) ROOT CAUSE IDENTIFIED from user's account: the
+  poker requirement WAS enforced (poker was in inventory) — the defect is the
+  interaction MODEL: merely having the item in inventory (or dragging it) auto-applies
+  it to the hotspot with no explicit selection step, so the sift fired without the user
+  understanding why, and the ring's grant had no legible feedback (F-007's "animation"
+  confusion). User direction: neutralxe-style explicit interaction — the player must
+  deliberately choose which inventory item to use on a target; no passive auto-apply.
+  (Drag-removal question posed to user; see design decisions.)
+  Reclassified: NOT a puzzle-logic bug — interaction-model defect, Developer-scoped.
+- Inventory bar hidden in close-ups: CONFIRMED SYSTEMIC by user — happens in every
+  close-up (ash, potions, cabinet, cage, ...). Inventory must be reachable throughout.
+- F-016 CONFIRMED as wanted feature: tapping an inventory item should also allow
+  enlarging it to identify it (currently tap only selects).
+- F-018 RESOLVED as duplicate: it is the astrolabe base drawer under the window; opened
+  on p03 solve with contents auto-granted (impl. judgment call 14), so the "empty drawer,
+  nothing to pick up" is the same auto-grant-confusion root as F-023. Merged into F-023.
+- F-003: informs F-001/F-002 + the interaction-model change above (neutralxe baseline).
+- F-012: user REJECTS the multiple-solve-paths defense — "remove multiple solving paths
+  i don't like it." NOTE: this contradicts core operating principle #4 in CLAUDE.md
+  (multiple valid solve paths / requirement-based state). Producer flagged the design
+  distinction (clue-gating vs. full linearization) back to the user before routing;
+  routing to Theme & Puzzle Designer + Validator + Blind Playtester re-check once scoped.
+  This is a DESIGN change, not a bug fix.
+
+**Design decisions (user, 2026-07-07 — CHECKPOINT 1 PASSED, round routed for execution):**
+- F-012 scope = **CLUE-GATING**: a puzzle won't accept its solution until its clues have
+  been viewed in-game. Parallel branches stay. (Amends CLAUDE.md principle #4's
+  order-freedom at the puzzle-input level only; requirement-based state model unchanged.)
+- Interaction model = **SELECT-THEN-TAP ONLY**: drag-to-use REMOVED, passive auto-apply
+  REMOVED. Player must arm an inventory item, then tap the target.
+- Sound: generic "psh" removed EVERYWHERE; per-object sounds or none. Ambience: quieter
+  scene overall, F-002 direction (possibly entry-sound-only, neutralxe register).
 
 **Informational — not routed, no bug found (FYI only):**
 - F-008 (clock cuckoo "nothing happened"): matches spec exactly (developer_notes D5) —
