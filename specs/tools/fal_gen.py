@@ -27,7 +27,13 @@ import urllib.error
 
 from PIL import Image
 
-SCRATCH = r"C:\Users\shaim\AppData\Local\Temp\claude\C--Users-shaim\d551cf43-749e-4f4a-81be-1d18a3d3b5ca\scratchpad"
+# Scratchpad for the RESULTS log. Overridable via FALGEN_SCRATCH so the driver
+# survives session-specific scratch paths (the committed default is a fallback).
+SCRATCH = os.environ.get(
+    "FALGEN_SCRATCH",
+    r"C:\Users\shaim\AppData\Local\Temp\claude\C--Users-shaim\d551cf43-749e-4f4a-81be-1d18a3d3b5ca\scratchpad",
+)
+os.makedirs(SCRATCH, exist_ok=True)
 ASSET_ROOT = r"C:\Users\shaim\escape-room\specs\assets\level-1"
 ENV_PATH = r"C:\Users\shaim\escape-room\.env"
 RESULTS = os.path.join(SCRATCH, "results.jsonl")

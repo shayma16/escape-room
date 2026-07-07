@@ -42,6 +42,16 @@ kept verbatim as logged (Phase 1); this table is the Phase 2 output.
 - F-012 scope = **CLUE-GATING**: a puzzle won't accept its solution until its clues have
   been viewed in-game. Parallel branches stay. (Amends CLAUDE.md principle #4's
   order-freedom at the puzzle-input level only; requirement-based state model unchanged.)
+  - Implemented as puzzle-graph **rev 1.3** (Designer), **VALIDATED PASS** (Validator,
+    difficulty holds 6.0, no soft-locks). Gates: p01 (rune marks + grimoire page A),
+    p02 (triptych), p03 (Orion window), p04 (slot/page-B), p14 (recipe, resolve-only);
+    all physical-act puzzles (p05–p13, p15–p17) ungated. Clue-viewed flags persist in
+    save (D7).
+  - **p01 page-A ruling (user, 2026-07-07): REQUIRED — decision is FINAL, do not revert.**
+    Both Designer and Validator advised demoting page A to *optional* (a rune-mark
+    glyph-matcher can solve p01 without it, so requiring it can knock back an earned
+    answer). User was shown that exact tradeoff and chose the strict "must view all
+    clues" reading. Keep page A in p01's gate; no config-flag demotion.
 - Interaction model = **SELECT-THEN-TAP ONLY**: drag-to-use REMOVED, passive auto-apply
   REMOVED. Player must arm an inventory item, then tap the target.
 - Sound: generic "psh" removed EVERYWHERE; per-object sounds or none. Ambience: quieter
@@ -268,6 +278,7 @@ needs-clarification` items are blocked until answered._
 | 4 | F-001 (scaling half) | bug (needs device-config check) | major | Developer | Full if systemic inventory-bar layout defect; else targeted |
 | 5 | F-011 | bug (needs verify) | major | Developer + QA verify | Targeted — crow default-pose vs. refusal-pose trigger only |
 | 6 | F-010 | bug | minor | Art Director / Asset Generation | Targeted — v-entry door plates only |
+| _AF-1 ruling (Producer, 2026-07-07):_ close-up `cu-door-lock` is CANONICAL (it matches the graph's single "crow's-beak rune basin" element). Bring the wide `v-entry` base + all vine-state variants into line: unify the stray crow-head + round bowl into ONE crow's-beak rune basin over the bolt, matching the close-up. Spec-determined, not a free composition choice — no user input needed. EXECUTION QUEUED after the Developer batch lands (avoids concurrent asset-manifest.json writes while the Developer is running). AF-2/3/4 already done ($0.17). ||||
 | 7 | F-006 | bug | minor | Developer | Targeted — poker/hearth hotspot only |
 | 8 | F-014 | bug | minor | Developer | Targeted — herbs hotspot only |
 | 9 | Cluster CONFIRM-1: F-005+F-009+F-019 | polish | — | Developer (SFX sourcing, own scope per agent def) | Targeted — audio trigger points only, no state impact |

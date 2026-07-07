@@ -110,3 +110,46 @@ _PIL-only work (no API cost): per-variant identical transforms (hearth ×3, entr
 - **Scale exports:** all 25 plates @2x/@1x present, size-correct, Lanczos-exact. Rejects archive complete (25 × 3 scales in `_rejects/bug004-pre-reframe/`).
 - **Manifest:** `bug004_reframe` section added — safe-zone def, per-view transforms, hotspot-rect deltas (incl. barrel scale map x′=1758+0.545·(x−1896), y′=690+0.545·(y−684)), measured element bounds, verification record; batch-2 flag F7 marked RESOLVED.
 - **Spend:** API $0.11 (vs $0.10 est, $4.00 cap); post-passes $0. Running project total $8.63 (level-1 $8.11 + global $0.41 + re-frame $0.11).
+
+---
+
+## Feedback round 1 art fixes (2026-07-07)
+
+PROGRESS: 6/8 done (AF-2/3/4) | 0 retrying | 3 BLOCKED on AF-1 AD ruling | 0 failed | $0.17 spent (cap $3.00)
+
+_Post-TestFlight round-1 corrections per style-guide §7-R "Feedback round 1 — art-fix briefs" (AF-1..AF-4)._
+_All inpaint/crop-scoped against approved plates (style anchors). Smallest-change: mask only named region, zero drift elsewhere. Grayscale check = acceptance gate. NO full re-renders, NO restyling._
+_Technique: fal flux-2-pro/edit on a tight anchored crop, then feathered-mask PIL composite of ONLY the masked region back onto the untouched original → guarantees zero pixel change outside mask (the /edit endpoint alone cannot)._
+_Pre-generation estimate: ~13 gens, ~$0.60 base / ~$0.90 with retries. Budget cap $3.00._
+_Anchors: masters/sky-master@3x.png, z1/v-entry/z1-entry-base@1x.png, masters/crescent-hallmark.json (AF-3), cu-door-lock (AF-1 canonical), cu-winch-crank (AF-2 socket rhyme)._
+_Superseded originals → specs/assets/level-1/_rejects/fb1/._
+
+| # | Brief | Asset | Method | Status | Cost | Note |
+|---|-------|-------|--------|--------|------|------|
+| 1 | AF-4 | (audit) potion-shelf blind-name test | inspect only | done | $0.00 | AUDIT DONE: frost(snowflake)=PASS, growth(seedling)=PASS; sleep=FAIL (open staring eye, reads vision not sleep). snake/mermaid = decoys, no fix. → row 8 REQUIRED. |
+| 2 | AF-1 | z1/v-entry/z1-entry-base (crow-head reloc) | crop-edit + composite | blocked | $0.00 | HOLD: needs AD ruling. Wide plate splits motif = separate crow head (mislocated) + separate basin bowl over bolt; close-up unifies beak=basin over bolt. Matching close-up implies merging head+bowl (touches basin, exceeds skull-only mask). See manifest.feedback_round1_fixes.AF-1. |
+| 3 | AF-1 | z1/v-entry/z1-entry-vines-withered (crow-head add) | PIL replicate skull patch | blocked | $0.00 | HOLD (same ruling): motif currently ABSENT in withered variant; add at canonical position once AD confirms layout. |
+| 4 | AF-1 | z1/v-entry/z1-entry-vines-gone (crow-head add) | PIL replicate skull patch | blocked | $0.00 | HOLD (same ruling): motif currently ABSENT in gone variant; add at canonical position once AD confirms layout. |
+| 5 | AF-2 | z2/icons/icon-crank (Z-crank re-render) | edit/t2i RGBA | done | $0.0315 | v2 (seed 40510) Z-crank: square drive collar + socket bore + offset arm + turned-wood grip. Sil-44 reads "crank" (NOT knife). Grayscale PASS. Teal-key→RGBA 1024. Old icon→_rejects/fb1/icon-crank-v2pre-af2. |
+| 6 | AF-3 | z2/v-cabinet/cu-slots-seated (ring recess) | crop-edit + composite | done | $0.0748 | v2 (seed 77219) gold ring seated in annular recess: lower band below seat, AO contact seam, top highlight, dulled-gold color restored (v1 went silver). Composited into recess mask only. Grayscale=embedded. PASS. [ring retries: 51823 silver + 77219 gold] |
+| 7 | AF-3 | z2/v-cabinet/cu-slots-seated (coin recess) | crop-edit + composite | done | $0.0468 | coin seated in crescent recess, edge swallowed + AO ring, hallmark up/legible. PASS. (paired edit fb1-slots-seated-edit) |
+| 8 | AF-4 | z2/v-cabinet/cu-potion-shelf (sleep glyph) | crop-edit + composite | done | $0.0138 | sleep glyph inpainted (seed 33017): open staring eye -> closed lidded eye w/ downturned lashes. Composited to label mask only (2 px >2 outside, rounding). Blind-name: sleep/frost/growth all PASS grayscale. frost+growth+decoys untouched. |
+
+_Note: rows 6+7 are two masks on ONE plate (cu-slots-seated); delivered as one updated plate. Row 8 conditional on AF-4 audit._
+
+### Feedback round 1 — outcome summary (2026-07-07)
+
+**Done (3 of 4 briefs) — API spend $0.1669 (5 gens), cap $3.00:**
+- **AF-2 (F-017) crank icon — DONE, $0.0315.** Re-rendered as unmistakable Z-crank (square drive collar/socket + offset arm + turned-wood barrel grip, 3/4 view). Flat-black silhouette at 44 pt reads "crank," not "swiss knife." Grayscale PASS. Teal-key → RGBA, long side 1024 px (per 7-R3). Old icon → `_rejects/fb1/icon-crank-v2pre-af2`. Manifest `icon-crank` geometry updated.
+- **AF-3 (F-022) seated ring + coin — DONE, $0.0748 (3 gens: 1 whole-crop coin + 2 ring retries; ring v1 went silver, v2 restored gold).** Both items now read embedded: recess walls swallow the lower gold band / coin edge, tight AO contact seam, single top highlight; crescent hallmark stays up + legible. Composited into recess masks only — 0 px changed >2 outside masks. Grayscale squint reads "embedded, not placed on top." Empty-slot + open-cabinet plates untouched.
+- **AF-4 (F-015) potion-shelf audit — AUDIT DONE + 1 fix, $0.0138.** Blind-name test: frost (snowflake) PASS, growth (seedling) PASS, **sleep FAIL** (was an open staring eye → reads vision/awake). snake + wavy-wisp = decoys, not load-bearing, untouched (2.3(6)). Fixed sleep glyph → one closed lidded eye with downturned lashes; composited to the label mask only (2 px >2 outside = rounding). All three load-bearing glyphs now blind-name correctly in grayscale.
+
+**BLOCKED (1 brief) — AF-1 (F-010) crow-skull continuity — $0.00, awaiting Art Director/user ruling.**
+Blocking ambiguity: the wide `v-entry` plates decompose the door motif as TWO separate elements — a carved crow head (mislocated upper-left, beak opening up-right) AND a separate round basin bowl sitting directly over the bolt. The canonical `cu-door-lock` close-up UNIFIES them: the crow's-beak IS the rune basin, sitting directly above the bolt, beak opening down-left with the pearlescent liquid pooled inside the beak. Also, the crow-head motif is **entirely absent** from the `vines-withered` and `vines-gone` wide variants (only the base plate has it).
+"Match the close-up" therefore cannot be executed inside a strict "skull region only, basin untouched" mask, because the close-up's basin is the beak — reconciling the two requires a composition decision about the basin element, which is an Art Director call, not an Asset-agent call. Options surfaced to AD:
+- **(A)** Relocate the wide crow head to sit above/around the existing separate bowl, beak angled down toward it, keeping the bowl as the basin (smallest change; head + bowl read as one unit but stay separate objects). Add the same head at the same position to withered + gone.
+- **(B)** Unify head + bowl into a single beak-basin per the close-up (touches the basin element; wider mask; changes basin hotspot read).
+- **(C)** Re-designate: treat the WIDE decomposition as canonical and fix the close-up instead (larger ripple — close-up carries the basin×vine×bolt state matrix; AD explicitly rejected this in the brief, but noting for completeness).
+No API budget spent on AF-1. Once AD picks A/B/C, execution is: render canonical head → remove old head from base (wood fill) → composite head at target position into all THREE wide plates (base/withered/gone) identically → scale-overlay acceptance (skull centroid within ~2% door width of close-up, same tilt) → grayscale gate. Est. ~4-6 gens, ~$0.20.
+
+**Verification performed:** every edited plate grayscale-checked (AF-2 sil-44 + gray-88; AF-3 two-slot grayscale + hallmark floor; AF-4 three-glyph grayscale strip). All composites seam-checked programmatically (pixels-changed-outside-mask ≈ 0). Superseded originals + all edit intermediates archived in `_rejects/fb1/`. Manifest `feedback_round1_fixes` block + per-asset `fb1_fix` records added.

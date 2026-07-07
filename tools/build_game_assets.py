@@ -658,12 +658,9 @@ def sine(n, f0, f1=None, amp=1.0, phase=0.0):
 
 
 def gen_sfx():
-    # interact click: soft wooden tick
-    n = int(0.07 * SR)
-    ns = lp_noise(n, 1400, 1, 3.2)
-    tone = sine(n, 780, 620, 0.35)
-    write_wav("sfx-click.wav", [(ns[i] * 0.7 + tone[i]) * env(i, n, 0.01, 0.75) * 0.5
-                                for i in range(n)])
+    # (feedback round 1: the generic interaction click — the "psh" of F-005/F-009/
+    # F-019 — is RETIRED and no longer generated or shipped; every interaction point
+    # now uses an object-relevant cue below, or silence.)
     # pickup: two quick soft blips
     n = int(0.16 * SR)
     b1 = sine(n, 660, amp=0.5)
@@ -732,6 +729,75 @@ def gen_sfx():
     ns = lp_noise(n, 3000, 6, 1.8)
     write_wav("sfx-fizzle.wav", [ns[i] * math.exp(-i / (0.3 * SR)) * 0.6 for i in range(n)])
 
+    # ---- feedback round 1 (F-005/F-009/F-019): per-object cues replacing the ----
+    # ---- generic interaction click, which is no longer used anywhere.        ----
+
+    # page turn (grimoire/triptych): two overlapping soft paper swishes
+    n = int(0.22 * SR)
+    ns = lp_noise(n, 1800, 21, 2.2)
+    out = []
+    for i in range(n):
+        g1 = math.sin(math.pi * min(1.0, i / (0.10 * SR))) if i < 0.10 * SR else 0.0
+        j = i - int(0.06 * SR)
+        g2 = math.sin(math.pi * min(1.0, j / (0.14 * SR))) if 0 < j < 0.14 * SR else 0.0
+        out.append(ns[i] * (g1 * 0.5 + g2 * 0.4) * 0.5)
+    write_wav("sfx-page.wav", out)
+    # stone tile press (rune door): compact stone thunk, higher than sfx-wrong
+    n = int(0.22 * SR)
+    thud = sine(n, 180, 120, 0.8)
+    ns = lp_noise(n, 420, 22, 1.4)
+    write_wav("sfx-stone.wav", [(thud[i] + ns[i] * 0.4) * math.exp(-i / (0.06 * SR)) * 0.7
+                                for i in range(n)])
+    # ratchet tick (dials, clock hand, item seating): tiny dry tick
+    n = int(0.08 * SR)
+    ns = lp_noise(n, 1400, 23, 2.0)
+    tone = sine(n, 520, amp=0.25)
+    write_wav("sfx-tick.wav", [(ns[i] * 0.6 + tone[i]) * math.exp(-i / (0.014 * SR)) * 0.5
+                               for i in range(n)])
+    # mirror detent scrape (stone/iron grind, short)
+    n = int(0.35 * SR)
+    ns = lp_noise(n, 300, 24, 5.0)
+    rough = lp_noise(n, 28, 25, 1.0)
+    write_wav("sfx-grind.wav", [ns[i] * (0.5 + 0.5 * abs(rough[i])) * env(i, n, 0.15, 0.35) * 0.5
+                                for i in range(n)])
+    # bellows air puff (floor bellows + brew pump)
+    n = int(0.45 * SR)
+    ns = lp_noise(n, 1000, 26, 2.6)
+    write_wav("sfx-bellows.wav", [ns[i] * env(i, n, 0.30, 0.50) * 0.55 for i in range(n)])
+    # ladle stir swish (also ingredient-into-water)
+    n = int(0.5 * SR)
+    ns = lp_noise(n, 600, 27, 3.0)
+    write_wav("sfx-stir.wav", [ns[i] * math.sin(math.pi * i / n) ** 2 * 0.5 for i in range(n)])
+    # rug/cloth slide
+    n = int(0.4 * SR)
+    ns = lp_noise(n, 800, 28, 2.6)
+    write_wav("sfx-cloth.wav", [ns[i] * math.sin(math.pi * min(1.0, i / (n * 0.85))) * 0.45
+                                for i in range(n)])
+    # wood slide/settle (drawer, zone passage beat): two soft wooden pulses
+    n = int(0.3 * SR)
+    ns = lp_noise(n, 900, 29, 2.2)
+    tone = sine(n, 200, amp=0.5)
+    out = []
+    for i in range(n):
+        g = 0.0
+        for t0 in (0.02, 0.15):
+            j = i - int(t0 * SR)
+            if j > 0:
+                g += math.exp(-j / (0.035 * SR))
+        out.append((ns[i] * 0.5 + tone[i] * 0.5) * g * 0.5)
+    write_wav("sfx-wood.wav", out)
+    # level-entry swell (F-002: the one diegetic weather beat, then near-silence)
+    n = int(7.0 * SR)
+    ns = lp_noise(n, 250, 30, 4.0)
+    low = sine(n, 58, amp=0.10)
+    out = []
+    for i in range(n):
+        t = i / SR
+        swell = math.sin(math.pi * min(1.0, t / 4.0)) if t < 4.0 else 0.0
+        tail = math.exp(-(t - 4.0) / 1.2) if t >= 4.0 else 1.0
+        out.append((ns[i] + low[i]) * (0.06 + 0.22 * swell) * tail)
+    write_wav("sfx-entry.wav", out)
+
 
 def loopable(samples, fade=1.0):
     """Crossfade tail into head for a seamless loop."""
@@ -746,51 +812,59 @@ def loopable(samples, fade=1.0):
 
 
 def gen_ambients():
+    # Feedback round 1 (F-002): the ambient beds are re-synthesized MUCH quieter and
+    # sparser — the neutralxe register. The level-entry weather beat lives in
+    # sfx-entry; these loops are near-silence with occasional texture (long quiet
+    # stretches, sparse events), and SoundManager additionally plays them at a lower
+    # volume than build 1. z1's constant rain-like wind bed (the direct subject of
+    # F-002) is gone entirely — replaced by two brief, soft wind swells per 24 s.
     dur = 24
     n = dur * SR
-    # z1 cabin: soft wind, mid lowpass, slow swell (integer LFO cycles => seamless)
-    base = lp_noise(n + SR, 420, 10, 5.5)
-    out = [base[i] * (0.55 + 0.35 * math.sin(2 * math.pi * 3 * i / n)) * 0.16
-           for i in range(n + SR)]
+    # z1 cabin: two soft wind swells over near-silence
+    base = lp_noise(n + SR, 300, 10, 4.0)
+    out = []
+    for i in range(n + SR):
+        t = (i % n) / SR
+        g = 0.0
+        for t0, ln in ((4.0, 5.0), (15.0, 4.0)):
+            if t0 <= t < t0 + ln:
+                g += math.sin(math.pi * (t - t0) / ln) ** 2
+        out.append(base[i] * (0.010 + 0.055 * g))
     write_wav("amb-z1.wav", loopable(out))
-    # z2 workshop: warmer, brighter noise + ember crackle pops + faint hum
-    base = lp_noise(n + SR, 700, 11, 4.5)
-    hum = sine(n + SR, 98, amp=0.05)
+    # z2 workshop: sparse faint ember pops + very low hum, no noise bed
+    hum = sine(n + SR, 98, amp=0.012)
     rng = random.Random(20)
     pops = [0.0] * (n + SR)
-    for _ in range(90):
+    for _ in range(24):
         t = rng.randint(0, n - 1)
-        ln = rng.randint(60, 300)
-        amp = rng.uniform(0.15, 0.5)
+        ln = rng.randint(60, 240)
+        amp = rng.uniform(0.05, 0.16)
         for j in range(ln):
             if t + j < len(pops):
                 pops[t + j] += math.exp(-j / 40.0) * amp * rng.uniform(-1, 1)
-    out = [(base[i] * (0.5 + 0.2 * math.sin(2 * math.pi * 2 * i / n)) + pops[i] * 0.8
-            + hum[i]) * 0.15 for i in range(n + SR)]
+    out = [pops[i] + hum[i] for i in range(n + SR)]
     write_wav("amb-z2.wav", loopable(out))
-    # z3 cellar: deep dark drone + sparse drips
-    base = lp_noise(n + SR, 180, 12, 7.0)
-    drone = sine(n + SR, 55, amp=0.08)
+    # z3 cellar: whisper 55 Hz drone + three sparse drips
+    drone = sine(n + SR, 55, amp=0.020)
     rng = random.Random(30)
     drips = [0.0] * (n + SR)
-    for t0 in (3.1, 9.4, 15.2, 20.6):
+    for t0 in (5.2, 13.6, 20.9):
         t = int(t0 * SR)
         f = rng.uniform(1400, 2100)
         for j in range(int(0.09 * SR)):
-            drips[t + j] += math.sin(2 * math.pi * f * j / SR) \
-                * math.exp(-j / (0.012 * SR)) * 0.22
-            drips[t + j] += math.sin(2 * math.pi * f * 0.75 * j / SR) \
-                * math.exp(-(j - 400) / (0.05 * SR)) * (0.05 if j > 400 else 0)
-    out = [(base[i] * (0.6 + 0.25 * math.sin(2 * math.pi * 2 * i / n)) + drone[i]
-            + drips[i]) * 0.16 for i in range(n + SR)]
+            if t + j < len(drips):
+                drips[t + j] += math.sin(2 * math.pi * f * j / SR) \
+                    * math.exp(-j / (0.012 * SR)) * 0.10
+    out = [drone[i] * (0.7 + 0.3 * math.sin(2 * math.pi * 2 * i / n)) + drips[i]
+           for i in range(n + SR)]
     write_wav("amb-z3.wav", loopable(out))
-    # z4 alcove: reverent airy shimmer - soft consonant cluster w/ slow beating
-    t1 = sine(n + SR, 196.0, amp=0.05)
-    t2 = sine(n + SR, 294.3, amp=0.04)
-    t3 = sine(n + SR, 392.4, amp=0.03)
-    air = lp_noise(n + SR, 1200, 13, 0.9)
-    out = [((t1[i] + t2[i] + t3[i]) * (0.7 + 0.3 * math.sin(2 * math.pi * 4 * i / n))
-            + air[i] * 0.05) * 0.5 for i in range(n + SR)]
+    # z4 alcove: faint reverent triad with slow beating, barely-there air
+    t1 = sine(n + SR, 196.0, amp=0.014)
+    t2 = sine(n + SR, 294.3, amp=0.011)
+    t3 = sine(n + SR, 392.4, amp=0.008)
+    air = lp_noise(n + SR, 1200, 13, 0.5)
+    out = [(t1[i] + t2[i] + t3[i]) * (0.7 + 0.3 * math.sin(2 * math.pi * 4 * i / n))
+           + air[i] * 0.006 for i in range(n + SR)]
     write_wav("amb-z4.wav", loopable(out))
 
 

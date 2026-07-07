@@ -9,7 +9,7 @@ _(from each level's validation-report.md; per-zone and overall)_
 
 | Level | Theme | Overall difficulty | Per-zone scores | Status |
 |-------|-------|--------------------|-----------------|--------|
-| 1 | The Wizard's Cabin (abandoned wizard's cabin in the woods; caged crow, potions) | 6.0/10 (Validator official; Designer est. 6.5) | z1 Main Room 5.0 · z2 Potion Workshop 6.0 · z3 Hidden Cellar 4.0 · z4 Walled Alcove 5.0 | COMPLETE 2026-07-06 — GO given at step 13; walkthrough FINAL; polish batch green (PR #2 pending merge). Total art spend $8.63 |
+| 1 | The Wizard's Cabin (abandoned wizard's cabin in the woods; caged crow, potions) | 6.0/10 (Validator official; unchanged at rev 1.3) | z1 Main Room 5.0 · z2 Potion Workshop 6.0 · z3 Hidden Cellar 4.0 · z4 Walled Alcove 5.0 | RELEASED to TestFlight (build 1) 2026-07-06. Feedback round 1 IN PROGRESS 2026-07-07 → build 2: puzzle-graph rev 1.3 (clue-gating) validated PASS (difficulty holds 6.0); Developer fix batch + art fixes running. Art spend $8.63 (+ round-1 fixes TBD) |
 
 ## Puzzle mechanics used
 

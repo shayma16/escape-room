@@ -27,9 +27,87 @@ If the session is cut off, resume by taking stock — don't restart:
 5. Flux spend to date: $8.63 (progression-ledger.md). BUG-004 re-frame batch: 11/11
    done, verified, HOLD cleared.
 
+## RESUME NOTE — feedback round 1 Developer batch COMPLETE, CI GREEN, PR OPEN (2026-07-08)
+
+The resumed Developer batch is DONE. Branch `feedback-round-1` is **CI GREEN** (run
+28895420694: build + unit tests × 3 device classes + UI smoke × 3 + Dynamic Island
+safe-area screenshots all pass). A PR to `main` is open (do NOT auto-merge — user merges).
+
+What landed on top of the WIP: clue-gating rev 1.3 ENFORCED (was absent from the WIP —
+only the persistence substrate existed) for p01/p02/p03/p04/p14, p01 page-A REQUIRED per
+the final user ruling, IC-1 re-eval + D7 persistence; `LevelSession.availableViews()`
+(compile-break fix); Rev-2 chrome (§7-R1 inventory pill, §7-R2 NavChevron breathing
+chevrons, §7-R3 item inspect); all invalidated tests updated + new gating tests added.
+Full per-item status, judgment calls (JC-fb1-1..5), sound licensing (all synthesized-
+original, nothing sourced), and the security-checklist PASS are in
+`specs/levels/level-1/implementation-notes.md` ("Feedback round 1 → build 2").
+
+NEXT (Producer): user reviews the PR; on merge → **full QA regression** (interaction +
+nav + gating models changed everything; the UI full-playthrough screenshot test is a
+DOCUMENTED XCTSkip awaiting QA scene-coordinate recalibration) → **checkpoint 2 user
+review** → release build 2 to TestFlight. Still QUEUED: AF-1 door art fix (Asset Gen) and
+JC-fb1-4 (workshop return-door art). Judgment calls needing user/Producer attention:
+JC-fb1-1 (p03 has no stale-input surface for IC-1 — vacuous, noted) and JC-fb1-3
+(empty-scene disarm deferred).
+
+_Prior (now resolved) resume note — kept for history:_
+Developer agent ran out of credits mid-batch. ALL its work is committed + pushed to
+branch `feedback-round-1` (commit 5d90803, a WIP checkpoint) — NOT verified, NOT built,
+NO CI run yet. To resume:
+1. Relaunch a developer agent on branch `feedback-round-1` with take-stock instructions
+   (re-read `specs/feedback-backlog.md` routed changelist + design decisions + the
+   Developer's original brief). It must: verify what's done vs. the 12-point work order,
+   finish the rest, ensure it BUILDS (16 Swift files changed but never compiled here),
+   run the security checklist, dispatch `gh workflow run build-and-test.yml` on the
+   branch, iterate to green, open a PR to main.
+2. Clue-gating: puzzle-graph rev 1.3 is committed + Validator PASS is in
+   `validation-report.md` — Developer implements the `clue_gate` table (persist
+   clue-viewed flags in save; D6/D7).
+3. Checkpoint: after CI green, run FULL QA regression (interaction + nav models changed
+   everything) → user checkpoint 2 → release build 2 to TestFlight.
+4. **AF-1 door fix still QUEUED** (Asset Gen): after the Developer batch settles, run the
+   AF-1 ruling (see feedback-backlog "AF-1 ruling" — unify wide v-entry door to match the
+   canonical close-up beak-basin). Held to avoid concurrent asset-manifest.json writes.
+5. What the WIP already contains (per commit msg): select-then-tap interaction, nav,
+   inventory, close-up, brew/dial UI edits; audio overhaul (quieter ambience + new
+   per-object SFX sfx-bellows/cloth/entry, generic sfx-click removed); AF-2/3/4 art
+   fixes; style-guide Rev-2 addendum; test edits. Unknown how complete/correct — VERIFY.
+6. gh at "C:\Program Files\GitHub CLI\gh.exe"; repo PUBLIC (free CI minutes).
+
 ## Pipeline position
 
-**RELEASE STAGE (TestFlight-only) — BUILD UPLOADED TO TESTFLIGHT 2026-07-07.** Within
+**POST-RELEASE FEEDBACK ROUND 1 → BUILD 2 IN PROGRESS (2026-07-07).** User tested build 1
+on TestFlight (iPad Pro) and reported 25 items (`specs/feedback-backlog.md`); intake
+processed, clustered, routed; both user checkpoints observed (checkpoint 1 = routed batch
+review PASSED with design decisions; checkpoint 2 = QA regression review, still upcoming).
+
+User-approved design decisions this round:
+- **Clue-gating** (F-012): puzzle inputs inert until their clues are viewed in-game.
+  Puzzle-graph **rev 1.3** (Designer) — VALIDATED PASS (difficulty holds 6.0, no
+  soft-locks). **p01 gates on grimoire page A = REQUIRED, FINAL user ruling** (overrode
+  a Designer+Validator advisory to demote it; do not revert). This is now a **standing
+  design rule for all future levels** — Level 2's Designer must apply clue-gating from
+  the start (amends CLAUDE.md principle #4 at the puzzle-input level; branches/order-free
+  state model otherwise unchanged). TODO: formalize in CLAUDE.md when convenient.
+- **Select-then-tap interaction** (drag + passive auto-apply removed) — neutralxe model.
+- **Sound overhaul** game-wide (generic "psh" gone; per-object or silence; pickup sound
+  kept), quieter ambience, and audio-lifecycle fix.
+- Inventory reachable in every close-up + item-inspect; nav model = chevrons cycle VIEWS
+  within a zone (zone changes only via diegetic passages); chrome restyle per style-guide
+  §7 Rev-2 addendum (Art Director). Manual pickup from solved containers.
+
+RUNNING: Developer fix batch (branch `feedback-round-1`) + Asset Generation art fixes
+(AF-1..AF-4). DONE: Designer rev 1.3, Validator PASS, Art Director §7-R addendum.
+NEXT: Developer integrates gating (polling for rev-1.3 PASS — now satisfied) → green CI →
+full QA regression (interaction + nav models touch everything) → **checkpoint 2 user
+review** → release build 2 to TestFlight.
+
+_Two items NOT changed (working as designed):_ F-008 clock cuckoo (one-shot flavor, D5),
+and rune-door-before-flowerpot was a valid alt path (now moot under gating).
+
+---
+
+_Prior:_ **RELEASE STAGE (TestFlight-only) — BUILD UPLOADED TO TESTFLIGHT 2026-07-07.** Within
 1.0 (build from release run 28822356309) archived, cloud-signed, security-scanned
 (clean), and uploaded to App Store Connect successfully. Repo is now PUBLIC (user
 choice — free Actions minutes, removed the GitHub-billing spend block that stopped the

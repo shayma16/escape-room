@@ -885,13 +885,27 @@
    "zone": "z2",
    "view": "v-cabinet",
    "element": "socket pair",
-   "state": "ring + coin seated; coin bears CANONICAL crescent hallmark",
+   "state": "ring + coin SEATED-EMBEDDED in recesses (recess walls swallow lower band/edge, AO contact ring, top highlight); coin bears CANONICAL crescent hallmark, up + legible",
    "method": "crop-edit + PIL hallmark stamp",
    "batch": 2,
    "generation": "edit-crop",
    "seed": 75011,
    "est_cost_usd": 0.0183,
-   "note": "hallmark geometry = masters/crescent-hallmark.json (binding for batch-3 spoon)"
+   "note": "hallmark geometry = masters/crescent-hallmark.json (binding for batch-3 spoon)",
+   "fb1_fix": {
+    "brief": "AF-3 / F-022",
+    "reason": "ring+coin read as resting ON cabinet face, not IN recesses",
+    "seeds": [
+     22071,
+     51823,
+     77219
+    ],
+    "est_cost_usd": 0.0748,
+    "method": "flux-2-pro/edit per-slot + feathered recess-mask PIL composite onto untouched original (0 px changed >2 outside masks)",
+    "acceptance": "grayscale squint reads 'embedded not placed on top'; hallmark legible at Section 8 close-up floor; empty-slot + open-cabinet plates untouched",
+    "geometry_change": "none (item positions unchanged; only depth/seating rendering)",
+    "superseded": "_rejects/fb1/cu-slots-seated-preAF3@{1,2,3}x.png"
+   }
   },
   {
    "file": "z2/v-cabinet/cu-cabinet-open@3x.png",
@@ -916,7 +930,18 @@
    "generation": "t2i",
    "seed": 70006,
    "est_cost_usd": 0.0944,
-   "note": "grayscale silhouette gate PASS; no text on labels"
+   "note": "grayscale silhouette gate PASS; no text on labels",
+   "fb1_fix": {
+    "brief": "AF-4 / F-015",
+    "reason": "sleep glyph was an OPEN staring eye (read 'vision/awake'), off-spec",
+    "audit": "blind-name: frost(snowflake)=PASS, growth(seedling)=PASS, sleep=FAIL; snake/wisp decoys untouched (2.3(6))",
+    "seed": 33017,
+    "est_cost_usd": 0.0138,
+    "method": "flux-2-pro/edit label crop + feathered label-mask PIL composite (2 px changed >2 outside mask = rounding)",
+    "acceptance": "blind-name sleep/frost/growth all correct in grayscale; >=5 silhouettes + fused-wax stoppers untouched",
+    "geometry_change": "none (label ink only: open eye -> closed lidded eye w/ downturned lashes)",
+    "superseded": "_rejects/fb1/cu-potion-shelf-preAF4@{1,2,3}x.png"
+   }
   },
   {
    "file": "z2/v-cabinet/cu-astrolabe@3x.png",
@@ -1038,13 +1063,22 @@
    "file": "z2/icons/icon-crank@3x.png",
    "zone": "z2",
    "view": "inventory",
-   "element": "winch crank icon (RGBA): square drive bit + wooden grip",
+   "element": "winch crank icon (RGBA): Z-shaped iron crank, SQUARE drive stub/socket end + offset arm + turned-wood barrel grip, three-quarter view",
    "state": "-",
-   "method": "t2i v2 on white + alpha cutout",
+   "method": "fb1 AF-2 re-render: flux-2-pro/edit on teal + alpha cutout (RGBA >=1024px)",
    "batch": 2,
    "generation": "t2i",
    "seed": 70207,
-   "est_cost_usd": 0.063
+   "est_cost_usd": 0.063,
+   "fb1_fix": {
+    "brief": "AF-2 / F-017",
+    "reason": "prior icon silhouette read 'swiss knife' (parallel folded lines)",
+    "seed": 40510,
+    "est_cost_usd": 0.0315,
+    "acceptance": "flat-black silhouette at 44pt reads 'crank'; square drive end rhymes with winch socket; grayscale PASS",
+    "geometry_change": "icon morphology re-authored (Z-crank); RGBA long side 1024px",
+    "superseded": "_rejects/fb1/icon-crank-v2pre-af2@{1,2,3}x.png"
+   }
   },
   {
    "file": "z2/icons/icon-file@3x.png",
@@ -1644,7 +1678,7 @@
   }
  },
  "global": {
-  "scope": "one-time app-wide custom art (app icon + launch screen) per specs/global-ui-style.md Section 10 \u2014 theme-independent, never restyled per level",
+  "scope": "one-time app-wide custom art (app icon + launch screen) per specs/global-ui-style.md Section 10 — theme-independent, never restyled per level",
   "generated": "2026-07-05",
   "model": "fal-ai/flux-2-pro (t2i + edit) + PIL derivation pass",
   "asset_root": "specs/assets/global/",
@@ -1659,7 +1693,7 @@
    },
    {
     "file": "launch/emblem-keyhole.png",
-    "role": "flat keyhole emblem \u2014 launch screen mark; Main Menu backdrop reuses at ~8% white (style guide 5.1)",
+    "role": "flat keyhole emblem — launch screen mark; Main Menu backdrop reuses at ~8% white (style guide 5.1)",
     "size": "1024x1024 RGBA, white on transparent, mark 55% of canvas height, centered",
     "method": "flux edit from app-icon-1024 (flat silhouette) + PIL luminance->alpha ramp cleanup + bbox re-center",
     "est_cost_usd": 0.0315
@@ -1678,7 +1712,7 @@
    }
   ],
   "developer_notes": [
-   "iOS icon size set: use asset catalog 'Single Size' with app-icon-1024.png \u2014 Xcode derives all sizes; do NOT hand-export the legacy size matrix.",
+   "iOS icon size set: use asset catalog 'Single Size' with app-icon-1024.png — Xcode derives all sizes; do NOT hand-export the legacy size matrix.",
    "Launch screen: prefer storyboard/launch-configuration with background color #101010 + centered emblem-keyhole.png image over the fixed rasters, so it matches the Main Menu backdrop pixel-for-pixel on every device; the two rasters are reference/fallback renders of the intended result.",
    "Launch must be visually identical to the Main Menu empty backdrop (fade-in effect, style guide 10.2); menu uses the same emblem at 8% white, launch at ~11%."
   ],
@@ -1894,5 +1928,38 @@
    "basis": "11 crop-edit generations + rejected takes at $0.03/MP (bug004-results.jsonl); all verification + fixes PIL-only",
    "running_total_note": "level-1 $8.11 + global $0.41 + BUG-004 re-frame $0.11 = $8.63 cumulative project spend"
   }
+ },
+ "feedback_round1_fixes": {
+  "date": "2026-07-07",
+  "spec": "style-guide.md Rev 2 §7-R 'Feedback round 1 — art-fix briefs' (AF-1..AF-4)",
+  "budget_cap_usd": 3.0,
+  "principle": "inpaint/crop-scoped; approved plates remain style anchors; smallest-change; grayscale acceptance gate; NO full re-renders / NO restyle",
+  "technique": "fal flux-2-pro/edit on tight anchored crop, then feathered-mask PIL composite of ONLY the masked region back onto untouched original -> zero drift outside mask",
+  "results": {
+   "AF-2": {
+    "status": "done",
+    "asset": "z2/icons/icon-crank",
+    "cost_usd": 0.0315
+   },
+   "AF-3": {
+    "status": "done",
+    "asset": "z2/v-cabinet/cu-slots-seated",
+    "cost_usd": 0.0748
+   },
+   "AF-4": {
+    "status": "done",
+    "asset": "z2/v-cabinet/cu-potion-shelf",
+    "cost_usd": 0.0138,
+    "audit_outcome": "1 of 3 glyphs off-spec (sleep); fixed"
+   },
+   "AF-1": {
+    "status": "ON HOLD - awaiting Art Director/user ruling",
+    "asset": "z1/v-entry/{z1-entry-base,vines-withered,vines-gone}",
+    "cost_usd": 0.0,
+    "blocking_question": "Wide plates decompose the door motif as a SEPARATE carved crow head (mislocated upper-left, beak up-right) + a SEPARATE round basin bowl over the bolt. The canonical close-up unifies them: the crow's-beak IS the basin, sitting directly above the bolt. 'Match the close-up' therefore implies merging head+bowl into one beak-basin unit over the bolt, which changes the basin element's read and cannot be done inside a 'skull region only' mask without touching the basin. Need AD ruling: (A) relocate crow head to sit above/around the existing bowl (head beak-down toward bowl), keeping bowl as a separate basin; or (B) unify head+bowl into a beak-basin per close-up (touches basin, wider mask); or (C) treat close-up as the one to change instead."
+   }
+  },
+  "spend_usd": 0.1201,
+  "note": "AF-1 (3 wide plates + variants) deferred pending ruling; rows 2-4 in asset-progress.md remain pending."
  }
 }

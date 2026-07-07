@@ -421,12 +421,15 @@ option (b) — do not generate until D1 is decided (flag F3).
 - **Item drag:** dragged item ghosts at ~70% opacity under the finger. While dragging,
   **every interactive drop region shows a faint cool rim** — including wrong ones (feed
   cup, decoy bottles) — so highlighting can never leak correctness.
+  *(Rev 2: superseded — drag removed; see §7-R1.4.)*
 - **Inventory bar:** bottom edge, aged dark-oak strip with a soft top shadow (96 pt tall
   iPad / 72 pt iPhone). Items rendered on transparency with a warm rim light; selected
   item lifts slightly with a pale silver ring. Horizontal scroll if overfull. No labels.
+  *(Rev 2: superseded — see §7-R1.)*
 - **Navigation:** thin bone-white chevrons at side edges for view rotation (40% idle
   opacity, pulse on tap); a down-chevron / back region for leaving close-ups. Zone
   passages (doors, trapdoor, shelf gap) are diegetic hotspots, not UI.
+  *(Rev 2: values superseded — see §7-R2.)*
 - **Transitions:** view-to-view = 300 ms crossfade with a 2% directional push;
   zone-to-zone (rune door, trapdoor, shelf) = 600 ms dip-to-near-black with vignette
   close and a diegetic sound.
@@ -495,3 +498,163 @@ option (b) — do not generate until D1 is decided (flag F3).
   shape/pattern/relief channel; Section 2.3 binds the grading so low-light never
   crushes them. The only load-bearing risk is executional (dial relief at iPhone size),
   gated by the Section 8 grayscale squint test at asset review.
+
+---
+
+## Rev 2 — post-release feedback round 1 (2026-07-07)
+
+*Art Director addendum after TestFlight round 1 (`specs/feedback-backlog.md`). Direction
+from the user: hold closer to the neutralxe baseline — quiet, minimal, diegetic. The
+§7-R sections below are **series-seed conventions** that supersede the marked bullets in
+Section 7 for this level and every level after it. Color-blind mandate (2.3) and device
+rules (8) remain binding on everything here. No puzzle-relevant changes.*
+
+### 7-R1. Inventory bar restyle (F-001 look-half + F-020 close-up reachability)
+
+The aged-oak strip is retired. The bar moves out of the scene's material world and into
+the **global chrome palette family** (`specs/global-ui-style.md` dark-neutral register):
+quieter, slimmer, translucent — a piece of glass over the painting, never a hole in it.
+
+1. **Geometry — content-hugging pill, not a full-width band.** The bar is a horizontally
+   centered rounded pill that hugs its contents; there is never empty bar surface to
+   read as dead space.
+   - **iPad:** bar height **64 pt**; item cell **56 × 56 pt**; inter-cell gap **10 pt**;
+     horizontal end padding **12 pt**; corner radius **16 pt**; bottom inset = safe-area
+     bottom + **8 pt**.
+   - **iPhone:** bar height **56 pt**; item cell **46 × 46 pt** (hit area padded to
+     ≥ 48 pt; 44 pt minimum honored); gap **8 pt**; end padding **10 pt**; corner radius
+     **14 pt**; bottom inset = safe-area bottom + **6 pt**. Landscape-locked; respects
+     home-indicator inset on both devices.
+   - Max width 70% of screen width; beyond that, horizontal scroll inside the pill with
+     2-pt edge fades (no arrows, no labels — unchanged).
+2. **Fill & stroke.** Fill: near-black neutral **`#14161A` at 62% opacity over a light
+   background blur** (SwiftUI material where the chrome layer hosts it; a flat 62%
+   `#14161A` fill is the approved SpriteKit fallback — Developer picks per layer, both
+   are on-spec). Stroke: **1 px hairline, `#F2F5F8` at 8%**, top and full perimeter. No
+   wood texture, no grain, no drop shadow. Item rendering unchanged: RGBA cutouts, warm
+   rim light.
+3. **Auto-collapse when empty.** Empty inventory = **no bar at all**. It slides/fades in
+   from the bottom edge (200 ms ease-out) on first pickup and slides out (200 ms
+   ease-in) whenever it empties. No handle, no ghost slot — nothing on screen that isn't
+   carrying something.
+4. **Armed state (replaces drag).** Per the round's select-then-tap decision, the §7
+   "Item drag" convention is retired. Tap a cell to **arm** it: cell backing lightens to
+   `#F2F5F8` at 16%, item lifts **4 pt**, pale silver ring (existing treatment) appears —
+   a pure-luminance cue, grayscale-safe. While an item is armed, the old
+   "all-drop-regions show a faint cool rim" rule carries over verbatim (all interactive
+   targets rim equally, wrong ones included, so highlighting never leaks correctness).
+   Tapping the armed cell again opens **inspect** (7-R3); tapping any other cell re-arms;
+   tapping empty scene disarms.
+5. **Close-up reachability (F-020 systemic — binding).** The bar presents **persistently
+   and identically in every close-up view**, same pill, same position, drawn above the
+   close-up plate. No tab, no hide — the select-then-tap model requires the bar to be
+   live wherever a target exists. Composition consequence (binding on Developer and
+   Asset Generation): **no puzzle-critical detail may sit under the bottom 72 pt (iPad)
+   / 62 pt (iPhone) band of any close-up frame**; where an existing close-up violates
+   this, re-frame the crop (Developer) rather than regenerate art. The 62% translucency
+   keeps the scene reading through the pill even when overlap is unavoidable on
+   atmosphere-only regions.
+
+### 7-R2. Navigation chevron visibility (F-025)
+
+Discoverable without shouting. Values supersede the §7 navigation bullet everywhere.
+
+1. **Glyph:** bone-white `#F2F5F8` chevron, stroke weight **2.5 pt**; glyph size
+   **28 pt** iPad / **24 pt** iPhone; hit area **56 × 88 pt** minimum at each side edge.
+2. **Idle treatment:** **70% opacity** (was 40%), seated on a **soft radial dark backing**
+   — 44 pt-diameter radial gradient, black at 25% center falling to 0 — so the glyph
+   holds ≥ 2 luminance steps against both bright and dark plate regions (2.3(7) applied
+   to chrome). No box, no button plate: still just a mark floating on the scene.
+3. **Idle breathing pulse:** opacity eases 70% → 100% → 70% over **2.4 s**, continuous,
+   ease-in-out. Slow enough to stay quiet; alive enough to be found. Tap state
+   unchanged (flash to 100% + the standard 12 pt radial pulse).
+4. **Close-up back affordance:** a **down-chevron, bottom-center**, same glyph spec,
+   positioned **12 pt above the inventory pill** (or at the pill's position when
+   inventory is empty/collapsed). On every close-up entry it plays **one entrance
+   accent**: scale 1.0 → 1.15 → 1.0 with opacity 100%, 600 ms, once — the "you can leave
+   this way" beat that F-025 missed. Then it joins the idle breathing cycle. Back hit
+   area **88 × 56 pt**.
+5. No vignette or edge-glow hints — the pulse plus backing carries discoverability;
+   anything more breaks the neutralxe register.
+
+### 7-R3. Inventory item inspect (F-016)
+
+One consistent, wordless convention, series-wide:
+
+- **Trigger:** second tap on an already-armed inventory cell (see 7-R1.4). One gesture
+  family: tap = arm, tap again = look closer.
+- **Presentation:** full-screen scrim `#0B0D10` at **78%**, 200 ms fade-in, covering
+  scene and inventory pill. The item's existing RGBA cutout renders centered at large
+  scale — target **60% of screen height** (cap: 4× its cell size if the source asset
+  would soften beyond that). Behind the item, a **faint radial parchment-white glow at
+  6% peak** lifts dark items off the scrim (luminance separation, grayscale-safe). No
+  card frame, no border, no text, no label — the object floats alone, examined by
+  moonlight.
+- **Dismiss:** tap anywhere, or the standard down-chevron bottom-center (7-R2.4 spec);
+  150 ms fade-out. **Dismissal does not disarm** — the item returns still armed, ready
+  to use, so inspect never costs the player a step.
+- **Asset note:** inspect reuses inventory cutouts at higher display scale; Asset
+  Generation should author item cutouts at ≥ 1024 px on the long side going forward so
+  the inspect scale holds without sharpening artifacts.
+
+### Feedback round 1 — art-fix briefs (for the Asset Generation Agent)
+
+*All fixes are inpaint/correction passes against approved plates — the approved plates
+remain the style anchors; smallest-change principle applies (mask only the named region,
+zero drift elsewhere). Same camera, same lighting, per Section 6. Grayscale check (2.3)
+is the acceptance gate on every deliverable. Nothing here alters puzzle logic.*
+
+**AF-1 (F-010) — bird-skull motif continuity, thorn-vine front door.**
+- **Canonical plate: `cu-door-lock` close-up.** Rationale: it is the scrutiny view where
+  the motif's geometry relative to basin and bolt is authoritative, and it carries the
+  larger state-variant matrix (basin × vine × bolt) — moving the close-up would ripple
+  through many more plates than moving the wide.
+- **Fix:** inpaint the **z1 `v-entry` wide base plate** (and each of its vine-state
+  variants: alive / withered / gone) so the bird-skull's position, scale, and
+  orientation relative to the bolt and basin match the close-up. Mask only the skull
+  region of the door.
+- **Acceptance:** scale-overlay test — crop the door from the wide plate, scale to the
+  close-up's framing: skull centroid within ~2% of door width of the close-up's, same
+  tilt; identical placement across all wide-plate state variants; no pixel change
+  outside the mask; motif stays subordinate ornament (no horror escalation, per 1.1).
+
+**AF-2 (F-017) — crank icon legibility (`itm-crank` inventory cutout).**
+- **Problem:** current icon silhouette reads "swiss knife" (parallel folded-blade lines).
+- **Fix:** re-render the RGBA cutout as an unmistakable **winch crank**: Z-shaped iron
+  crank — **square drive stub** at one end (visually matching the winch's empty square
+  socket in 5.6), offset arm, and a perpendicular **turned-wood barrel grip** at the
+  other. Three-quarter view so the Z-offset reads in silhouette; no parallel blade-like
+  lines. Materials per 1.2 (edge-rust iron, worn wood); standard warm rim light;
+  transparent background; author ≥ 1024 px per 7-R3.
+- **Acceptance:** flat-black silhouette test reads "crank handle" to a fresh viewer at
+  44 pt; the square drive end visibly rhymes with the winch-socket close-up; grayscale
+  pass.
+
+**AF-3 (F-022) — seated ring + coin fit (`cu-slots-seated` state plate, 5.5).**
+- **Problem:** gold ring and silver coin read as resting *on* the cabinet face instead
+  of *in* their recesses.
+- **Fix:** inpaint only the two slot regions of the seated-state close-up so both items
+  read flush-seated: visible recess wall depth swallowing the ring's lower band in the
+  annular seat and the coin's edge in the crescent seat; **tight contact/AO shadow
+  ring** around each item where it meets the recess; a single top-edge highlight per
+  the v-cabinet key light. Coin stays crescent-hallmark-up and legible; ring silhouette
+  and stamp distinction preserved per 2.3(3).
+- **Acceptance:** grayscale squint reads "embedded," not "placed on top"; hallmark
+  legible at the Section 8 close-up floor; empty-slot and open-cabinet state plates
+  untouched; no change outside the slot masks.
+
+**AF-4 (F-015, low priority) — potion-shelf pictogram audit (verify first, fix only if
+off-spec).**
+- **Step 1 — audit:** compare the shipped bottle-shelf inspection close-up against the
+  graph spec (labels sleep / frost / growth among ≥5 bottles). User read: "eyes,
+  snowflake, plant, snake, mermaid?" — snowflake→frost and plant→growth likely pass;
+  "eyes" (plural) suggests the sleep glyph is ambiguous, and "snake / mermaid" readings
+  on the remaining bottles need a check against whatever the graph specs there.
+- **Step 2 — correct only genuinely off-spec labels**, inpainting label areas only:
+  sleep = **one closed eye, lashes down** (single crescent-lidded eye, not a pair);
+  frost = six-point snowflake; growth = two-leaf sprouting seedling. Iron-gall-ink
+  pictogram style, zero text, per 5.2 page conventions.
+- **Acceptance:** a fresh viewer blind-names the three spec'd labels correctly; the ≥5
+  distinct bottle silhouettes and identical fused-wax stoppers are untouched (2.3(6));
+  no change outside label masks. If the audit passes as-is, report "no fix needed" —
+  do not regenerate.

@@ -3,9 +3,21 @@ import SpriteKit
 
 /// Top-level in-game screen: SpriteKit room view + navigation chevrons + inventory bar
 /// + pause glyph + the close-up layer, per style-guide Section 7. Landscape-locked (J6).
+///
+/// Feedback round 1 layering/navigation changes:
+/// - The inventory bar renders ABOVE the close-up layer, so it is visible and usable
+///   in EVERY close-up (F-020 systemic fix; presentation refinement pending the
+///   Section 7 Rev-2 addendum).
+/// - Chevrons cycle views WITHIN the current zone only and hide entirely in
+///   single-view zones (F-024); zone transitions are diegetic passages handled by the
+///   scene coordinator (rune door, trapdoor, cellar ladder, shelf gap), plus an
+///   interim exit affordance for z2 (no return-door art exists — flagged).
+/// - Chevron visibility raised per F-025 (interim treatment pending the addendum).
+/// - The item inspect view (F-016) presents over everything.
 struct GameRoomView: View {
     @ObservedObject var session: LevelSession
     @ObservedObject private var gameState: GameState
+    @ObservedObject private var interaction: InteractionModel
     @StateObject private var coordinatorBox: CoordinatorBox
     @State private var showPause = false
     /// Black dip used for view/zone transitions (style guide Section 7: 300 ms
@@ -17,8 +29,14 @@ struct GameRoomView: View {
     init(session: LevelSession) {
         self.session = session
         self.gameState = session.state
+        self.interaction = session.interaction
         _coordinatorBox = StateObject(wrappedValue: CoordinatorBox(session: session))
     }
+
+    /// Reserved height under close-up content so nothing puzzle-critical sits behind the
+    /// inventory pill (§7-R1.5 bottom-band rule: 72 pt iPad / 62 pt iPhone). This is the
+    /// pill height (§7-R1.1: 64/56) plus its bottom inset, matching the §7-R1.5 band.
+    private var barHeight: CGFloat { hSizeClass == .regular ? 72 : 62 }
 
     var body: some View {
         ZStack {
@@ -28,6 +46,13 @@ struct GameRoomView: View {
                 .ignoresSafeArea()
                 .accessibilityIdentifier("room-scene")
 
+            navigationChevrons
+
+            // Close-up / inspection layer (QA-BUG-013). Sits UNDER the inventory bar
+            // (F-020) and keeps its content clear of it via bottomInset.
+            CloseUpHost(coordinator: coordinatorBox.coordinator, bottomInset: barHeight)
+
+            // Chrome above the close-up layer: pause glyph (top-left).
             VStack {
                 HStack {
                     pauseButton
@@ -35,14 +60,29 @@ struct GameRoomView: View {
                 }
                 .padding(24)
                 Spacer()
-                InventoryBarView(state: session.state, coordinator: coordinatorBox.coordinator,
-                                  horizontalSizeClass_isPad: hSizeClass == .regular)
             }
 
-            navigationChevrons
+            // Inventory pill (§7-R1): full-screen overlay, self-anchored bottom-center,
+            // drawn above the close-up layer so it is live in EVERY close-up (§7-R1.5).
+            InventoryBarView(state: session.state, interaction: interaction,
+                             horizontalSizeClass_isPad: hSizeClass == .regular)
 
-            // Close-up / inspection layer (QA-BUG-013).
-            CloseUpHost(coordinator: coordinatorBox.coordinator)
+            // Interim diegetic-gap patch: z2 has no painted return door, so an exit
+            // affordance stands in for "back through the rune door" until the Art
+            // Director/asset pass supplies one (flagged in implementation notes).
+            if session.currentView.zoneID == PuzzleGraph.ZoneID.z2Workshop {
+                ZoneExitHost(coordinator: coordinatorBox.coordinator,
+                             barHeight: barHeight) {
+                    session.goTo(.study)
+                }
+            }
+
+            // F-016: enlarged item inspect, over everything.
+            if let inspecting = interaction.inspectingItem {
+                ItemInspectView(itemID: inspecting) {
+                    interaction.inspectingItem = nil
+                }
+            }
 
             // Transition dip overlay.
             Color.black.opacity(transitionDip).ignoresSafeArea().allowsHitTesting(false)
@@ -62,36 +102,19 @@ struct GameRoomView: View {
         .onChange(of: session.currentView) { newView in
             let zoneChanged = coordinatorBox.coordinator.viewID.zoneID != newView.zoneID
             let half = zoneChanged ? 0.3 : 0.15
+            if zoneChanged {
+                SoundManager.shared.play(.wood) // diegetic passage beat (Section 7)
+            }
             withAnimation(.easeIn(duration: half)) { transitionDip = 1 }
             DispatchQueue.main.asyncAfter(deadline: .now() + half) {
                 coordinatorBox.setView(newView, size: CGSize(width: 2732, height: 1366))
                 withAnimation(.easeOut(duration: half)) { transitionDip = 0 }
             }
         }
-        .onReceive(NotificationCenter.default.publisher(for: .inventoryItemDropped)) { note in
-            guard let itemID = note.userInfo?["itemID"] as? String,
-                  let point = note.userInfo?["globalPoint"] as? CGPoint else { return }
-            handleInventoryDrop(itemID: itemID, globalPoint: point)
-        }
         .sheet(isPresented: $showPause) {
             PauseMenuView(session: session, isPresented: $showPause)
         }
         .statusBarHidden(true)
-    }
-
-    /// QA-BUG-014 fix: exact conversion. SwiftUI's `.global` drag coordinates are
-    /// window base coordinates for a full-screen hierarchy; `UIView.convert(_:from:nil)`
-    /// maps window -> SKView space and `SKScene.convertPoint(fromView:)` applies the
-    /// real .aspectFill transform (crop included) — no hand-rolled linear mapping.
-    private func handleInventoryDrop(itemID: String, globalPoint: CGPoint) {
-        let coordinator = coordinatorBox.coordinator
-        guard let skView = coordinator.skView, skView.scene === coordinator.scene else { return }
-        let viewPoint = skView.convert(globalPoint, from: nil)
-        guard skView.bounds.contains(viewPoint) else { return }
-        let scenePoint = coordinator.scene.convertPoint(fromView: viewPoint)
-        if let hotspotID = coordinator.scene.hotspotID(atScenePoint: scenePoint) {
-            coordinator.handleExternalDrop(itemID: itemID, hotspotID: hotspotID)
-        }
     }
 
     private var pauseButton: some View {
@@ -106,34 +129,66 @@ struct GameRoomView: View {
         .accessibilityIdentifier("pause-button")
     }
 
+    /// F-024: chevrons rotate within the zone only; single-view zones show none.
+    /// §7-R2 (Rev 2): bone-white breathing chevrons on a soft radial backing.
+    @ViewBuilder
     private var navigationChevrons: some View {
-        HStack {
-            chevronButton(systemName: "chevron.left") { session.previousView() }
-            Spacer()
-            chevronButton(systemName: "chevron.right") { session.nextView() }
+        if session.hasViewNavigation {
+            HStack {
+                NavChevron.sideButton(systemName: "chevron.left", isPad: hSizeClass == .regular) {
+                    session.previousView()
+                }
+                Spacer()
+                NavChevron.sideButton(systemName: "chevron.right", isPad: hSizeClass == .regular) {
+                    session.nextView()
+                }
+            }
+            .padding(.horizontal, 8)
         }
-        .padding(.horizontal, 8)
     }
 
-    private func chevronButton(systemName: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Image(systemName: systemName)
-                .font(.system(size: 28, weight: .regular))
-                .foregroundColor(Color(white: 0.9).opacity(0.4))
-                .frame(width: 44, height: 44)
+}
+
+/// Interim z2 exit (see comment at the call site). Down-chevron = "step back", the
+/// same grammar as leaving a close-up. Hidden while a close-up is open (which has
+/// its own down-chevron — observing the coordinator keeps that in sync).
+private struct ZoneExitHost: View {
+    @ObservedObject var coordinator: RoomSceneCoordinator
+    let barHeight: CGFloat
+    let onExit: () -> Void
+
+    @Environment(\.horizontalSizeClass) private var hSizeClass
+
+    var body: some View {
+        if coordinator.activeCloseUp == nil {
+            VStack {
+                Spacer()
+                HStack {
+                    Button(action: onExit) {
+                        BreathingChevron(systemName: "chevron.down",
+                                         size: NavChevron.glyphSize(isPad: hSizeClass == .regular))
+                            .frame(width: 88, height: 56)
+                            .contentShape(Rectangle())
+                    }
+                    .accessibilityLabel("Leave the workshop")
+                    .accessibilityIdentifier("zone-exit")
+                    .padding(.leading, 8)
+                    .padding(.bottom, barHeight + 12)
+                    Spacer()
+                }
+            }
         }
-        .accessibilityLabel(systemName == "chevron.left" ? "Previous view" : "Next view")
-        .accessibilityIdentifier(systemName == "chevron.left" ? "nav-previous" : "nav-next")
     }
 }
 
 /// Observes the active coordinator and presents its requested close-up.
 private struct CloseUpHost: View {
     @ObservedObject var coordinator: RoomSceneCoordinator
+    let bottomInset: CGFloat
 
     var body: some View {
         if let request = coordinator.activeCloseUp {
-            CloseUpView(coordinator: coordinator, request: request)
+            CloseUpView(coordinator: coordinator, request: request, bottomInset: bottomInset)
                 .transition(.opacity)
         }
     }
@@ -189,13 +244,16 @@ final class CoordinatorBox: ObservableObject {
 
     init(session: LevelSession) {
         self.session = session
-        self.coordinator = RoomSceneCoordinator(viewID: session.currentView, state: session.state, size: CGSize(width: 2732, height: 1366))
+        self.coordinator = RoomSceneCoordinator(viewID: session.currentView, state: session.state,
+                                                size: CGSize(width: 2732, height: 1366),
+                                                interaction: session.interaction)
         wireNavigation(coordinator)
     }
 
     func setView(_ viewID: ViewID, size: CGSize) {
         guard coordinator.viewID != viewID else { return }
-        let next = RoomSceneCoordinator(viewID: viewID, state: session.state, size: size)
+        let next = RoomSceneCoordinator(viewID: viewID, state: session.state, size: size,
+                                        interaction: session.interaction)
         wireNavigation(next)
         coordinator = next
     }

@@ -26,6 +26,9 @@ struct LevelLoadingView: View {
                 withAnimation(.easeIn(duration: dipDuration)) {
                     opacity = 1
                 }
+                // F-002: one soft diegetic entry swell, then the whisper-level zone
+                // bed (near-silence with sparse texture — see SoundManager notes).
+                SoundManager.shared.play(.entry)
                 SoundManager.shared.setAmbientZone(.z1)
             }
         }
