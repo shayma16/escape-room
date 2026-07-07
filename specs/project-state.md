@@ -27,6 +27,31 @@ If the session is cut off, resume by taking stock — don't restart:
 5. Flux spend to date: $8.63 (progression-ledger.md). BUG-004 re-frame batch: 11/11
    done, verified, HOLD cleared.
 
+## RESUME NOTE — feedback round 1 Developer batch INCOMPLETE (2026-07-07)
+
+Developer agent ran out of credits mid-batch. ALL its work is committed + pushed to
+branch `feedback-round-1` (commit 5d90803, a WIP checkpoint) — NOT verified, NOT built,
+NO CI run yet. To resume:
+1. Relaunch a developer agent on branch `feedback-round-1` with take-stock instructions
+   (re-read `specs/feedback-backlog.md` routed changelist + design decisions + the
+   Developer's original brief). It must: verify what's done vs. the 12-point work order,
+   finish the rest, ensure it BUILDS (16 Swift files changed but never compiled here),
+   run the security checklist, dispatch `gh workflow run build-and-test.yml` on the
+   branch, iterate to green, open a PR to main.
+2. Clue-gating: puzzle-graph rev 1.3 is committed + Validator PASS is in
+   `validation-report.md` — Developer implements the `clue_gate` table (persist
+   clue-viewed flags in save; D6/D7).
+3. Checkpoint: after CI green, run FULL QA regression (interaction + nav models changed
+   everything) → user checkpoint 2 → release build 2 to TestFlight.
+4. **AF-1 door fix still QUEUED** (Asset Gen): after the Developer batch settles, run the
+   AF-1 ruling (see feedback-backlog "AF-1 ruling" — unify wide v-entry door to match the
+   canonical close-up beak-basin). Held to avoid concurrent asset-manifest.json writes.
+5. What the WIP already contains (per commit msg): select-then-tap interaction, nav,
+   inventory, close-up, brew/dial UI edits; audio overhaul (quieter ambience + new
+   per-object SFX sfx-bellows/cloth/entry, generic sfx-click removed); AF-2/3/4 art
+   fixes; style-guide Rev-2 addendum; test edits. Unknown how complete/correct — VERIFY.
+6. gh at "C:\Program Files\GitHub CLI\gh.exe"; repo PUBLIC (free CI minutes).
+
 ## Pipeline position
 
 **POST-RELEASE FEEDBACK ROUND 1 → BUILD 2 IN PROGRESS (2026-07-07).** User tested build 1
