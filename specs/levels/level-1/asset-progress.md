@@ -215,7 +215,7 @@ Statuses: pending / generating / done / retrying / failed. Cost includes retries
 | 4 | z1 v-hearth close-ups | free PIL crop + t2i std | partial ($0 so far) | $0 | DONE (free crop): cu-lintel-nb (triangle+II, grayscale PASS), cu-ash-undisturbed-nb. PENDING: bellows-rune (crisp AIR), clock-unspent (numeral ring), dial-panel (3 moon dials, precision). |
 | 5 | z1 v-study close-ups | t2i std x10 | pending | - | flowerpot, grimoire A/B/recipe/zodiac/bird, triptych 1/2/3, runedoor-tiles |
 | 6 | z1 v-entry close-ups | t2i std x5 | pending | - | door-lock (unified beak), star-keyhole, rusted-key, windowsill, cage-crow |
-| F1 | z1 state variants (free) | PIL/crop-edit | pending | $0 | hearth: poker-taken,rug-moved,trapdoor-open; entry: cage-open,crow-lintel,vines-gone,vines-withered; + basin/bolt/keyhole/ash/clock cu-states |
+| F1 | z1 state variants (free) | PIL/crop-edit | partial | $0.60 | z1-entry states DONE (region-edit, fresh-base anchored): vines-withered, vines-gone, basin-filled, cage-open (4 edits) + basin-drained (=empty base alias). crow-lintel/trapdoor pending in mixed wave. hearth poker-taken done (PIL). |
 
 ### z2 — Potion Workshop (v-bench / v-cabinet)
 | # | Asset | Method | Status | Cost | Note |
@@ -322,7 +322,7 @@ candidate becomes the locked seed + standing stylization language for the whole 
 
 ## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
 
-DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 7 remaining | $13.05 spent | z4 state variants DONE. Running $13.05 (4 z4 edits added).
+DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 7 remaining | $13.65 spent | z1-entry 4 state edits done ($13.65). Mixed wave (6 edits) running: crow-lintel/trapdoor/cabinet-open/drawer/brew x2.
 _Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
 _Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
 _Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._

@@ -457,6 +457,40 @@ re-release, per standard process — nothing in this round ships without that re
 > visual to their post-state. → Developer, and treat as a SYSTEMIC state-visual-refresh
 > audit across all pickups/solves, not a one-off. Persists in build 3.)
 
+### R2-015 — status: logged
+> solved the arrow/rune door (p01 — combination works). again i hear the two sounds together
+> like the rug puzzle — fix those sounds; the door opening should get a themed "door opening"
+> sound. also zooming out doesn't show the door opened or slightly opened — another image
+> generation that needs fixing
+> (context: p01 rune door. THIRD confirmation of BOTH systemic issues: (a) AUDIO — the psh +
+> mismatched add-to-inventory double-sound on solve (see R2-012, R2-009); the rune-door open
+> event needs a distinct themed door-opening SFX. (b) STATE-VISUAL — the wide view doesn't
+> show the door opened after solve (see R2-013 trapdoor, R2-014 spoon). For the door this may
+> also need a NEW "door open / ajar" art state generated in build 3 (verify whether an
+> open-rune-door plate exists; if not, ADD it to the z1 cascade). So: Developer (sound map +
+> state-visual wiring) + build-3 art (open-door state). Reinforces the two systemic audits.)
+
+### R2-016 — status: logged (art consistency — VERIFY/RESOLVE at z2 review)
+> [z2-bench narration: pot + bowl, not many clues, moving right.] at the astrolabe scene:
+> a cabinet with a crescent on one door, but zooming in shows a slightly DIFFERENT variation
+> — the crescent DIRECTION is different, and it's a HOLE when zoomed in vs GLOWING when
+> zoomed out. figured i need to put something in there. also the zoomed-in pic shows a plate
+> and a lantern on top of the cabinet and a window directly to the right — inconsistent with
+> the wide scene
+> (context: z2 v-cabinet, p04 sun/moon slots. WIDE↔CLOSE-UP INCONSISTENCY, same class as
+> R2-010 door: (a) crescent slot reads as glowing raised medallion in wide but recessed hole
+> in close-up, AND the crescent orientation differs — the recess ("hole to place the coin")
+> is the correct design; the wide should MATCH (recess, consistent crescent direction). This
+> SUPERSEDES my earlier "medallion-wide is fine" call — the user wants consistency. (b) the
+> close-up's surroundings (plate + lantern on top, window at right) don't match the wide
+> plate's composition. NOTE: user is viewing BUILD-2 (old) art; but build-3's approved
+> z2-cabinet base also shows medallions, so this WILL recur unless fixed. RESOLUTION: at z2
+> art review, make the build-3 z2-cabinet wide↔close-up consistent — likely re-roll the wide
+> to show recesses + align the close-up's framing/surroundings to the wide. Crescent
+> orientation must be consistent (puzzle-relevant: crescent coin fits crescent slot). Build-3
+> art; verify at z2 review. Also add door R2-010 to the same "wide↔close-up consistency"
+> verification pass.)
+
 ---
 
 _Say "that's all, process it" (or similar) when ready to process this round._
