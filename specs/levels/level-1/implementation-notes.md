@@ -948,4 +948,9 @@ rects are within ~2% of the previously derived ones, confirming the geometry is 
   NS*UsageDescription strings, no camera/mic/location/contacts capabilities. PASS.
 
 ### CI
-(run link recorded below once green on branch level1-rebuild-build3)
+GREEN: https://github.com/shayma16/escape-room/actions/runs/28978252461 (branch
+level1-rebuild-build3, workflow_dispatch). All steps success: Build (iOS Simulator);
+Unit tests x3 (iPad 13-inch, smallest iPhone, Dynamic Island iPhone); UI tests x3
+(iPhone-SE full playthrough + smoke + save-resume, iPad smoke + save-resume, Dynamic
+Island safe-area screenshots). The player-style UI playthrough passes with the re-staged
+plates. No test or game code changed this pass -- asset re-staging only.
