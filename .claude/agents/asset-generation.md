@@ -49,12 +49,20 @@ creative decisions.
   fixed style scaffold. The style language below is invariant across levels — only the
   content composed into it changes:
 
-  > _"stylized real-time 3D game render (not painterly/matte-painting), physically based
-  > clean materials (wood, brass, parchment, leather, stone) with realistic but non-noisy
-  > surface detail, softened edges with subtle bevels on furniture/objects so they read
-  > clearly as interactive game elements, realistic engine-style lighting (Unreal Engine 5
-  > Lumen-comparable), single-point perspective at standing eye level, no painterly brush
-  > texture or oil-painting look, no text/letters/people/watermarks."_
+  > _"**clearly stylized** real-time 3D game render (not painterly/matte-painting, and
+  > deliberately NOT photorealistic) — cohesive stylized-PBR like a high-end stylized
+  > Unreal Engine 5 environment / modern stylized adventure game; physically based clean
+  > materials (wood, brass, parchment, leather, stone), simplified-but-believable with
+  > realistic but non-noisy surface detail, pronounced softened bevels and cleaner
+  > silhouettes on furniture/objects so they read clearly as interactive game elements,
+  > art-directed color, realistic engine-style lighting (Unreal Engine 5 Lumen-comparable),
+  > single-point perspective at standing eye level, no painterly brush texture or
+  > oil-painting look, no text/letters/people/watermarks."_
+
+  _Stylization strength calibrated by the user via the Level-1 build-3 seed pick
+  (2026-07-08): the earlier plain-"stylized" wording drifted photoreal and was rejected;
+  the "clearly stylized game art" level above (seed `z1-hearth-base` candidate B) is the
+  approved standing target — keep this strength, do not drift back toward photorealism._
 
   Keep this template verbatim as the standing style layer; the Art Director's brief
   supplies WHAT is in the scene, this template supplies HOW it is rendered. If a style
