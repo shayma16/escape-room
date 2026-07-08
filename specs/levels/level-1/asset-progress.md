@@ -153,3 +153,119 @@ Blocking ambiguity: the wide `v-entry` plates decompose the door motif as TWO se
 No API budget spent on AF-1. Once AD picks A/B/C, execution is: render canonical head → remove old head from base (wood fill) → composite head at target position into all THREE wide plates (base/withered/gone) identically → scale-overlay acceptance (skull centroid within ~2% door width of close-up, same tilt) → grayscale gate. Est. ~4-6 gens, ~$0.20.
 
 **Verification performed:** every edited plate grayscale-checked (AF-2 sil-44 + gray-88; AF-3 two-slot grayscale + hallmark floor; AF-4 three-glyph grayscale strip). All composites seam-checked programmatically (pixels-changed-outside-mask ≈ 0). Superseded originals + all edit intermediates archived in `_rejects/fb1/`. Manifest `feedback_round1_fixes` block + per-asset `fb1_fix` records added.
+
+---
+
+# Level 1 — BUILD-3 FULL REBUILD (Nano Banana Pro engine-render style)
+
+PROGRESS: 2/64 done | 0 retrying | 0 failed | 62 remaining | $0.90 spent | AWAITING style-seed approval before anchoring remaining 6 bases
+
+_Asset Generation Agent live tracker for the full engine-render rebuild (build 3)._
+_Model: `fal-ai/nano-banana-pro` (t2i + edit). Mandatory engine-render style template_
+_composed into EVERY prompt (verbatim per .claude/agents/asset-generation.md)._
+_Pricing: $0.30/4K image, $0.15/std image. @2x/@1x = FREE PIL downscales._
+_HARD CAP $18.90 (user, final). Pre-gen estimate: $11.10 paid, ~$15.50 with retries →_
+_UNDER cap → PROCEEDING (pre-authorized). Track actual spend after each gen._
+_All paths relative to specs/assets/level-1/. Superseded painterly originals move to_
+_`_rejects/flux-painterly/` at integration (rollback safety, never deleted)._
+
+## Consistency protocol
+- First approved fresh base plate = new-style SEED. Every later gen anchors to it +
+  up to 13 more relevant same-level fresh plates (14-ref cap). Old painterly plates are
+  NEVER style refs.
+- Canonical sky (moon waxing-gibbous lit-right + Orion 7-dot at 35deg) per
+  masters/orion-canonical.json — re-rendered fresh, geometry unchanged.
+- Section 2.3 grayscale check is the acceptance gate on every glyph/precision asset.
+
+## Pre-generation cost estimate (vs $18.90 cap)
+| Group | Count | Unit | Paid subtotal |
+|---|---|---|---|
+| Base plates (4K t2i, FRESH seed + anchored) | 7 | $0.30 | $2.10 |
+| Sky master (4K t2i, canonical) | 1 | $0.30 | $0.30 |
+| Independently-framed close-ups (std t2i) | 32 | $0.15 | $4.80 |
+| Inventory icons (std t2i, white-bg + PIL cutout) | 15 | $0.15 | $2.25 |
+| Sprites needing fresh render (glyph/geometry) | 8 | $0.15 | $1.20 |
+| App icon (1 + candidates) | 3 | $0.15 | $0.45 |
+| PAID SUBTOTAL (no retries) | 66 | | $11.10 |
+| Retry buffer (~40%, bases+glyphs highest-risk) | | | ~$4.40 |
+| PROJECTED TOTAL w/ retries | | | ~$15.50 |
+| FREE via PIL/crop-from-fresh-4K (30 state variants, ~26 zoom close-ups, sprite recomposites, all @2x/@1x, launch screens) | ~64 | $0 | $0 |
+| GRAND TOTAL | | | ~$15.50 <= $18.90 -> PROCEED |
+
+## Per-asset plan (paid generations tracked; free derivations rolled up per zone)
+Statuses: pending / generating / done / retrying / failed. Cost includes retries.
+
+### Shared masters
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 0 | masters/sky-master | t2i 4K + PIL Orion stamp | done | $0.60 | 2 sky gens (framed cand rejected); clean sky-only base + canonical 7-dot Orion stamped from orion-canonical.json; belt 35deg, non-rival field; STYLE VALIDATED |
+
+### z1 — Main Cabin (v-hearth / v-study / v-entry)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 1 | z1/v-hearth/z1-hearth-base | t2i 4K FRESH (nb1) | SEED-DONE (awaiting user OK) | $0.30 | STYLE SEED. Clean engine render, warm/cool duet, cold hearth+ash, poker/bellows/armchair/rug/clock all present. Wide-plate clock is round-face; cuckoo door is close-up job. Anchor for all later gens once approved. |
+| 2 | z1/v-study/z1-study-base | t2i 4K anchored | pending | - | desk/grimoire/triptych/rune-door; warmest z1 pocket |
+| 3 | z1/v-entry/z1-entry-base | t2i 4K anchored | pending | - | door + crow-beak BASIN (unified beak, AF-1) + cage + window sky |
+| 4 | z1 v-hearth close-ups | t2i std x5 | pending | - | bellows, lintel, clock-unspent, dial-panel, ash-undisturbed |
+| 5 | z1 v-study close-ups | t2i std x10 | pending | - | flowerpot, grimoire A/B/recipe/zodiac/bird, triptych 1/2/3, runedoor-tiles |
+| 6 | z1 v-entry close-ups | t2i std x5 | pending | - | door-lock (unified beak), star-keyhole, rusted-key, windowsill, cage-crow |
+| F1 | z1 state variants (free) | PIL/crop-edit | pending | $0 | hearth: poker-taken,rug-moved,trapdoor-open; entry: cage-open,crow-lintel,vines-gone,vines-withered; + basin/bolt/keyhole/ash/clock cu-states |
+
+### z2 — Potion Workshop (v-bench / v-cabinet)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 7 | z2/v-bench/z2-bench-base | t2i 4K anchored | pending | - | cauldron/firepit/bellows/mortar; + JC-fb1 painted return-passage |
+| 8 | z2/v-cabinet/z2-cabinet-base | t2i 4K anchored | pending | - | cabinet slots/astrolabe/potion-shelf/Orion window |
+| 9 | z2 v-bench close-ups | t2i std x2 | pending | - | brew-clear (65deg top-down), mortar-empty |
+| 10 | z2 v-cabinet close-ups | t2i std x4 | pending | - | slots-empty, astrolabe, potion-shelf, window-orion |
+| F2 | z2 state variants (free) | PIL/crop-edit | pending | $0 | bench: flame1/2/3, brew-fizzle/draught, mortar-blossom/paste; cabinet: open,drawer-open,slots-seated,astrolabe-drawer |
+
+### z3 — Hidden Cellar (v-cellar)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 11 | z3/v-cellar/z3-cellar-base | t2i 4K anchored | pending | - | barrel/drawer/sliding-shelf+pulley/winch/mirror; coolest darks |
+| 12 | z3 v-cellar close-ups | t2i std x4 | pending | - | winch-socket, mirror-scratches, spoon-drawer (hallmark), barrel-gap |
+| F3 | z3 state+beam matrix (free) | PIL beam_engine | pending | $0 | barrel-pried,drawer-open,weight-hung,shelf-slid,crank-fitted,mirror-d2/d3, beam floor/blocked/alcove/shelf-slid |
+
+### z4 — Walled Alcove (v-alcove)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 13 | z4/v-alcove/z4-alcove-base | t2i 4K anchored | pending | - | planter closed / statue+key; 90% cool shrine |
+| 14 | z4 v-alcove close-ups | t2i std x2 | pending | - | statue-key, planter-closed |
+| F4 | z4 state variants (free) | PIL/crop-edit | pending | $0 | trembling,blooming,blooming-keytaken,key-taken,picked,picked-keytaken; planter cu-states |
+
+### Icons (15) — white-bg render + PIL cutout to RGBA 1024
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 15 | icon-poker | t2i std + cutout | pending | - | |
+| 16 | icon-gold-ring | t2i std + cutout | pending | - | plain round band |
+| 17 | icon-rusted-key | t2i std + cutout | pending | - | snapped plain bit |
+| 18 | icon-feather | t2i std + cutout | pending | - | glossy black |
+| 19 | icon-crank | t2i std + cutout | pending | - | AF-2: Z-crank, square drive stub, wood grip |
+| 20 | icon-file | t2i std + cutout | pending | - | |
+| 21 | icon-phial | t2i std + cutout | pending | - | empty glass |
+| 22 | icon-phial-draught | t2i std + cutout | pending | - | pearlescent draught |
+| 23 | icon-silver-coin | t2i std + cutout | pending | - | crescent hallmark (canonical die) |
+| 24 | icon-paste | t2i std + cutout | pending | - | moonflower paste |
+| 25 | icon-spoon | t2i std + cutout | pending | - | crescent hallmark bowl |
+| 26 | icon-weight | t2i std + cutout | pending | - | iron plumb |
+| 27 | icon-shavings | t2i std + cutout | pending | - | silver shavings |
+| 28 | icon-blossom | t2i std + cutout | pending | - | moonflower |
+| 29 | icon-cage-key | t2i std + cutout | pending | - | star bit |
+
+### Sprites (glyph/geometry — fresh render or PIL recomposite off fresh)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 30 | dial-face | t2i std + PIL relief | pending | - | 8 moon-phase embossed, relief per 2.3(1) |
+| 31 | astrolabe-plate-2 | t2i std + PIL orion stamp | pending | - | canonical 7-dot geometry |
+| 32 | astrolabe-plates 1/3/4/5/6 | PIL recomposite | pending | $0 | dot patterns off plate-2 blank |
+| 33 | astrolabe-pointer | t2i std OR PIL | pending | - | brass pointer |
+| 34 | rune-ember-I/II/III | t2i std x1 + PIL | pending | - | lit ember channel, molten fill |
+| 35 | ladle-ripple-ccw | t2i std OR PIL | pending | - | CCW glowing ripple arc |
+| 36 | runedoor-tile1-4-pressed | PIL from cu-runedoor | pending | $0 | pressed relief off tile close-up |
+
+### Global
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 37 | global/app-icon | t2i std x1-3 | pending | - | keyhole+crow motif per global-ui-style.md; all App Store sizes via PIL |
+| 38 | global/launch-screens | PIL composite | pending | $0 | iPad + iPhone dims, $0 |
