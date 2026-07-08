@@ -90,7 +90,23 @@ shipping (needs user checkpoint-2 GO). Still per-zone user art review before int
 AF-1 door fix + JC-fb1-4 workshop return-door art fold into this rebuild (done in the new
 style, not the old).
 
-## CHECKPOINT 2 STATUS (for user's morning, 2026-07-08)
+## BUILD 2 SHIPPED TO TESTFLIGHT + BUILD 3 REBUILD RUNNING (2026-07-08)
+
+**Build 2 (Within 1.0, build 6) is UPLOADED to App Store Connect / TestFlight** — release
+run 28916912716 green end-to-end. Took a release-workflow fix (PR #7, branch
+`fix-build-number`): the app Info.plist pinned CFBundleVersion=1 so uploads collided on
+"must be higher than 1"; fix stamps the real build number into BOTH the app binary AND the
+.xcarchive ApplicationProperties before export. **TODO: merge PR #7 to main** (release was
+run from the fix branch). User's device install + spot-check of build 2 is their
+step-16 checkpoint.
+
+**Build 3 = Level 1 full art rebuild RUNNING** (Asset Gen, branch `level1-rebuild-build3`,
+$18.90 cap, new Nano Banana Pro engine style, no painterly carryover). Long multi-hour
+job; delivers per-zone for user review; do NOT ship build 3 without per-zone art approval.
+NOTE: while it runs, the main working tree is on `level1-rebuild-build3` — use a git
+worktree for any main/release git ops (as done for PR #7) so Asset Gen is undisturbed.
+
+## CHECKPOINT 2 STATUS (2026-07-08) — build 2 QA GO (now shipped, see above)
 
 **Build 2 QA regression = GO** (qa-report.md "Build 2 regression": zero bugs, full
 end-to-end playthrough un-skipped + GREEN, clue-gating/D6/D7/select-then-tap/nav/audio all
