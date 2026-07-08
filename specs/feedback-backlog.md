@@ -411,6 +411,52 @@ re-release, per standard process — nothing in this round ships without that re
 > z1 derived batch comes back for review; targeted re-roll if they don't match. So: covered
 > by build 3, but do NOT assume — confirm at z1 art review.)
 
+### R2-011 — status: logged (POSITIVE, not an issue)
+> the caged bird doesn't interact with me, but if i use any key item it turns away — i like
+> the idea, it indicates it needs to accept a specific something
+> (confirmation: the D3/D4 crow terminal-refusal behavior works and the user LIKES it. Keep
+> as-is. Minor watch: user reads it as "needs a specific item" — the design intent is the
+> crow gives the feather FREELY once freed, not fed; but the interaction is well-received,
+> no change. Narration also: right-nav returns to first scene, triptych clue → p02 solve.)
+
+### R2-012 — status: logged
+> on successful opening [of the trapdoor / p02], another psh sound comes up ALONG WITH the
+> add-to-inventory sound i liked — is this normal? shouldn't we change that psh sound i hate?
+> (context: TWO audio problems on puzzle-solve/trapdoor-open: (a) the hated generic "psh"
+> STILL plays here — another surviving instance of the round-1 game-wide-removal that was
+> missed (see also R2-009 page-flip). (b) the add-to-INVENTORY sound fires on a trapdoor
+> OPEN where nothing is added to inventory — WRONG cue; a solve/zone-unlock/reveal sound
+> belongs there, not the pickup sound. Fix: remove psh globally (thorough audit of ALL
+> triggers), and map correct distinct cues — pickup≠solve≠unlock. Audio/functional →
+> Developer; persists in build 3. Escalates R2-009 into a full sound-trigger audit.)
+
+### R2-013 — status: logged
+> the sound indicated i did something right, but zooming out to the original scene doesn't
+> show any visual indication — like a slightly opened cellar door / open trapdoor
+> (context: after solving p02 (moon dials), the wide z1-hearth view shows NO visual state
+> change — the solved/open trapdoor isn't reflected, so the player gets audio success but no
+> visual confirmation or wayfinding to the new path. The graph DEFINES this state
+> (z1-hearth-trapdoor-open plate + ov-trapdoor-open overlay exist), so the ART is available
+> (and being regenerated in build 3) — the defect is the game not APPLYING/rendering the
+> open-trapdoor state in the wide view after the solve. Functional (state→visual wiring) →
+> Developer; persists in build 3. IMPORTANT UX: state-change visual feedback after a solve
+> is load-bearing for wayfinding — Developer should audit that ALL solves show their wide-
+> view state change, not just this one, e.g. rune-door opening, cabinet, etc.)
+
+### R2-014 — status: logged
+> in the cellar, found the spoon and added it to inventory. but with the drawer opened, the
+> place where the spoon was looks blurry and patchy (another bug). zooming in, the spoon is
+> STILL there despite being in my inventory. [also narration: sees lever, movable mirror,
+> barrel — can't do much yet, going out]
+> (context: z3 v-cellar drawer/spoon (itm-spoon pickup). TWO parts: (a) ART — the drawer-
+> open region is blurry/patchy in build-2 art (a Flux-plate defect); build 3 regenerates
+> this, so COVERED — but verify the new z3 drawer plate is clean at z3 review. (b)
+> FUNCTIONAL — the drawer close-up still shows the spoon after it's picked up; the
+> "spoon-taken / empty drawer" state isn't applied. SAME systemic bug as R2-003 (ash ring
+> persists) and R2-013 (trapdoor open not shown): interactions/pickups don't update the
+> visual to their post-state. → Developer, and treat as a SYSTEMIC state-visual-refresh
+> audit across all pickups/solves, not a one-off. Persists in build 3.)
+
 ---
 
 _Say "that's all, process it" (or similar) when ready to process this round._

@@ -238,7 +238,7 @@ Statuses: pending / generating / done / retrying / failed. Cost includes retries
 |---|-------|--------|--------|------|------|
 | 13 | z4/v-alcove/z4-alcove-base | t2i 4K anchored (seed 44100) | done | $0.30 | 1 take PASS. Shrine niche, 90% cool silver. Moonflower planter buds CLOSED (low center, future-beam spot, rim-lit), carved folk-art crow statue on ledge above facing planter (register 3) holding STAR-BIT key in beak (5-point star reads, matches cage keyhole), dusty empty shelf ledge (honest emptiness). Reverent. Strongest plate. cu-statue-key will lock exact star geometry. |
 | 14 | z4 v-alcove close-ups | t2i std x2 | pending | - | statue-key, planter-closed |
-| F4 | z4 state variants (free) | PIL/crop-edit | pending | $0 | trembling,blooming,blooming-keytaken,key-taken,picked,picked-keytaken; planter cu-states |
+| F4 | z4 state variants (free) | PIL/crop-edit | done | $0.60 | z4 states via region-edit + PIL: key-taken/trembling/blooming(radial glow)/picked wide (4 edits) + blooming-keytaken/picked-keytaken (PIL compose) + cu-planter x3 + cu-statue-key-taken (PIL crops). Composited seamless to fresh base. |
 
 ### Icons (15) — white-bg render + PIL cutout to RGBA 1024
 | # | Asset | Method | Status | Cost | Note |
@@ -322,7 +322,7 @@ candidate becomes the locked seed + standing stylization language for the whole 
 
 ## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
 
-DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 7 remaining | $12.45 spent | SPRITES DONE (astrolabe plates 1-6 + pointer + rune-ember + ladle-ripple all covered). Remaining: state-variant PIL + app-icon check.
+DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 7 remaining | $13.05 spent | z4 state variants DONE. Running $13.05 (4 z4 edits added).
 _Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
 _Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
 _Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._
