@@ -398,6 +398,19 @@ re-release, per standard process — nothing in this round ships without that re
 > flowerpot — confirms the new build-3 EARTH glyph reads correctly) · "went to the scene on
 > the right" — all progress narration, no complaints.
 
+### R2-010 — status: logged (expected: COVERED BY BUILD 3 — but VERIFY at z1 review)
+> found the puzzle clue under the window [WATER rune — narration]. graphics bug in the
+> door: in the wide scene the thorn-door's bird skull comes out from the side, but clicking
+> to zoom in, it looks DIFFERENT. "make sure u confirm the imagery is consistent of how i
+> interact with the game"
+> (context: this is the round-1 F-010 / AF-1 door continuity bug (wide plate had a skull +
+> separate bowl; close-up had a unified crow's-beak basin). Build 3 already fixed the WIDE
+> z1-entry base (unified beak-basin). The CLOSE-UP (cu-door-lock etc.) is being regenerated
+> NOW in the derived cascade — the per-scene-consistency directive should make it match the
+> new wide plate. PRODUCER ACTION: explicitly verify wide↔close-up door consistency when the
+> z1 derived batch comes back for review; targeted re-roll if they don't match. So: covered
+> by build 3, but do NOT assume — confirm at z1 art review.)
+
 ---
 
 _Say "that's all, process it" (or similar) when ready to process this round._
