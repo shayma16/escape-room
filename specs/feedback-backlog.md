@@ -735,7 +735,67 @@ re-release, per standard process — nothing in this round ships without that re
 > hotspot pruning, item lifecycle) — the underlying design/logic is sound.)
 
 ---
-## ROUND 2 — testing COMPLETE (level finished). Ready to process on user "process it" + music.
+## ROUND 2 — PROCESSED 2026-07-08 (routed changelist — pending user CHECKPOINT-1 approval + 3 design calls)
+
+**Framing:** level is completable end-to-end; puzzle LOGIC is sound. ~all issues are
+PRESENTATION-LAYER. They consolidate into root fixes. Build 3 (art) must ALSO carry the
+round-2 Developer fixes or it still ships the critical soft-lock — so **build 3 = new art +
+round-2 dev batch + art-consistency verify**, then player-style QA, then user review → ship.
+
+### Root-cause clusters & routing
+
+**CLUSTER B — Resolved-state / state-visual rendering 🔴 CRITICAL (contains the soft-lock) → Developer**
+Items: R2-018/019/025/026 (grey-box: p03 astrolabe drawer + p04 cabinet render blank; items
+invisible/uncollectible = PROGRESSION SOFT-LOCK), R2-013 (trapdoor open not shown), R2-014b
+(spoon persists), R2-015b (door open not shown), R2-022a (barrel), R2-027a (crank fitted).
+Root: after any solve/pickup the game fails to render the resolved/opened/taken state (close-up
+AND wide) — one mechanism fix (composite & show resolved-state overlays; refresh wide view;
+make revealed items visible+tappable) + wire the build-3 resolved-state art. Regression: FULL.
+
+**CLUSTER A — Sound completion → Developer**
+Items: R2-024 (ROOT: kill the default per-tap sound — tap feedback stays visual; it fires on
+every tap incl. nav/empty), R2-009 (page-flip), R2-012 (trapdoor), R2-015a (door), R2-027b —
+all subsumed by R2-024 + event-mapped themed sounds (keep pickup R2-002; add solve/unlock/
+door-open/page-flip). R2-004/R2-005 integrate the user's `music-level1.wav` (loop, unobtrusive,
+replace ocean). R2-006 add TWO mute toggles (ambiance/music + SFX) — updates global-ui-style
+§5.4/§8. Regression: targeted (audio) + toggle test.
+
+**CLUSTER C — Item lifecycle & interaction → Developer**
+R2-003a (ash ring: manual pickup, no auto-grant), R2-020 (place/consume/retain lifecycle —
+remove placed items; retain tools until all `uses` satisfied then drop; respect anti-softlock),
+R2-030 (don't auto-deselect on failed use — keep armed), R2-028 (intuitive combine — proposed:
+arm item A → tap item B in bar shows "combine?"; confirm approach). Regression: FULL (inventory).
+
+**CLUSTER D — Navigation clarity → Developer**
+R2-021 (transient/first-run directional hint labels — near-wordless-safe: brief, auto-hide),
+R2-023b (single-view zone exit affordance), R2-008 (swipe to flip pages + cycle views; arrows
+stay; NOT item-drag). Regression: targeted.
+
+**CLUSTER E — Wide↔close-up art consistency → Asset Generation / Art Director (build-3 verify + targeted re-roll)**
+R2-010 (door), R2-016 + R2-025 (cabinet slots + window/drawer position/state), R2-023a (statue
+head-only), R2-014a (drawer blurry), R2-003b (ash sifted/cleared states). Build 3 already
+regenerated most (cu-slots recesses, unified beak-basin) — VERIFY at per-zone review; re-roll
+any mismatch. Regression: targeted visual.
+
+**CLUSTER F — Discrete bug → Developer**
+R2-007 (triptych hotspot mismap: right painting opens left's close-up; puzzle-relevant). FULL-ish.
+
+**CLUSTER G — Clock cuckoo clarity → design (see Q3)**
+R2-001 (cuckoo reads as a clue but is intentional flavor/rh-clock).
+
+**PROCESS — next QA must test like a PLAYER (R2-META-QA)**
+Player-style verification: assert each solve's RENDERED resolved-state, hotspot→close-up
+mapping, and item collectibility as a human sees them (screenshot-reviewed) — not scripted-
+coordinate logic flags (which masked the soft-lock). Binding for the post-fix QA pass.
+
+**POSITIVES (keep, no action):** R2-002 inventory sound, R2-011 crow refusal, light-routing
+chain, level completable.
+
+### 3 DESIGN CALLS surfaced to user (CHECKPOINT-1 — not decided unilaterally)
+- Q1 red-herring / depleted-hotspot / dead-end-zoom pruning (R2-017/022b/027c)
+- Q2 rotate-to-inspect items scope now vs Level 2+ (R2-029)
+- Q3 clock cuckoo treatment (R2-001)
+(answers recorded, then CHECKPOINT-1 approval → execute; CHECKPOINT-2 = player-style QA review
+before build-3 ship.)
 
 _Say "that's all, process it" (or similar) when ready to process this round._
-_REMINDER PENDING: R2-005 — get the exact background music from the user before closing._
