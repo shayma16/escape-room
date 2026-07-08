@@ -322,7 +322,7 @@ candidate becomes the locked seed + standing stylization language for the whole 
 
 ## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
 
-DERIVED PROGRESS: 3/52 fresh done | 0 retrying | 0 failed | 49 remaining | $5.55 spent | z1-hearth close-ups DONE (clock/bellows/dial-panel w/ moon stamp).
+DERIVED PROGRESS: 12/52 fresh done | 0 retrying | 0 failed | 40 remaining | $6.90 spent | z1-study close-ups DONE (grimoire5/triptych3/runedoor/flowerpot).
 _Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
 _Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
 _Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._
@@ -339,16 +339,16 @@ _Grayscale 2.3 gate on every glyph/precision asset. cu-slots MUST carry inset su
 ### z1-study fresh close-ups (anchor: z1-study-base)
 | # | Asset | Method | Status | Cost | Note |
 |---|-------|--------|--------|------|------|
-| D-s1 | cu-grimoire-A | t2i std anchored | pending | - | 4 element runes + pictograms (flame/wave/cloud/mountain) |
-| D-s2 | cu-grimoire-B | t2i std anchored | pending | - | sun+ring / crescent+coin margin |
-| D-s3 | cu-grimoire-recipe | t2i std anchored | pending | - | moonflower+pestle, filed crescent-metal, feather-into-hand, flame+III, CCW 5-dot spiral (handedness = brew view) |
-| D-s4 | cu-grimoire-zodiac | t2i std anchored | pending | - | DECOY: zodiac wheel, NO highlighted constellation |
-| D-s5 | cu-grimoire-bird | t2i std anchored | pending | - | DECOY: graphite crow study, no callouts |
-| D-s6 | cu-triptych-1 | t2i std anchored | pending | - | waxing-crescent moon, 1 crow, same tree |
-| D-s7 | cu-triptych-2 | t2i std anchored | pending | - | full moon, 2 crows, same tree |
-| D-s8 | cu-triptych-3 | t2i std anchored | pending | - | waning-gibbous moon, 3 crows, same tree |
-| D-s9 | cu-flowerpot-rune | free crop OR t2i | pending | - | EARTH downward-triangle-with-bar + III |
-| D-s10 | cu-runedoor-tiles | t2i std anchored | pending | - | 4 pressable rune tiles, pressed/unpressed relief; generic runes (no code leak) |
+| D-s1 | cu-grimoire-A | t2i std anchored | done | $0.15 | cu-grimoire-A-nb: 4 element runes+pictograms (FIRE=up-tri/flame, WATER=down-tri/wave, AIR=tri-bar/cloud, EARTH=down-tri-bar/mountain). Matches scene glyph legend. Grayscale PASS. |
+| D-s2 | cu-grimoire-B | t2i std anchored | done | $0.15 | cu-grimoire-B-nb: sun+ring / crescent+crescent-coin mapping clue. Legible. |
+| D-s3 | cu-grimoire-recipe | t2i std anchored | done | $0.15 | cu-grimoire-recipe-nb: feather bookmark + moonflower/pestle, filed crescent-metal, feather-into-hand, flame+III, CCW 5-dot spiral (arrowhead confirms CCW center-out). R3 handedness = brew view (enforce on cu-brew). |
+| D-s4 | cu-grimoire-zodiac | t2i std anchored | done | $0.15 | cu-grimoire-zodiac-nb: DECOY, uniform line weight, no highlighted constellation. |
+| D-s5 | cu-grimoire-bird | t2i std anchored | done | $0.15 | cu-grimoire-bird-nb: DECOY graphite crow study, no callouts. |
+| D-s6 | cu-triptych-1 | t2i std anchored | done | $0.15 | cu-triptych-1-nb: 1 crow, waxing-crescent moon (lit right), same bare tree left. Painted-artifact. Grayscale PASS. |
+| D-s7 | cu-triptych-2 | t2i std anchored | done | $0.15 | cu-triptych-2-nb: 2 crows, full moon, same tree. PASS. |
+| D-s8 | cu-triptych-3 | t2i std anchored | done | $0.15 | cu-triptych-3-nb: 3 crows, waning-gibbous moon (lit left), same tree. PASS. |
+| D-s9 | cu-flowerpot-rune | free crop OR t2i | done | $0 | cu-flowerpot-rune-nb: FREE crop off study base. EARTH down-tri-with-bar + III engraved in clay, legible. Grayscale PASS. |
+| D-s10 | cu-runedoor-tiles | t2i std anchored | done | $0.15 | cu-runedoor-tiles-nb: 4 pressable brass rune tiles, generic runes (no code leak), pressed/unpressed relief. Pressed-state variants via PIL. |
 
 ### z1-entry fresh close-ups (anchor: z1-entry-base)
 | # | Asset | Method | Status | Cost | Note |
