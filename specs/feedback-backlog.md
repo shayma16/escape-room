@@ -795,7 +795,17 @@ chain, level completable.
 - Q1 red-herring / depleted-hotspot / dead-end-zoom pruning (R2-017/022b/027c)
 - Q2 rotate-to-inspect items scope now vs Level 2+ (R2-029)
 - Q3 clock cuckoo treatment (R2-001)
-(answers recorded, then CHECKPOINT-1 approval → execute; CHECKPOINT-2 = player-style QA review
-before build-3 ship.)
+
+**USER DECISIONS (2026-07-08) — CHECKPOINT-1 approved, executing:**
+- Q1 = **PRUNE DEPLETED ONLY.** Keep red-herring decoys (potions, decoy grimoire pages — deliberate).
+  But once a hotspot is USED UP (barrel emptied, flower picked, etc.), stop offering its zoom /
+  render it clearly spent. Much of this falls out of the Cluster-B spent-state rendering. Developer
+  + (design: which hotspots count as "depleted" from the graph's yields/uses).
+- Q2 = **DEFER rotate-to-inspect to Level 2+.** Do NOT build for Level 1 (no L1 item needs it).
+  Logged as a planned feature; introduce when a level's puzzle uses it. (R2-029 parked.)
+- Q3 = **REMOVE the cuckoo entirely.** Cut the cuckoo pop (rh-clock); keep clock face + numeral
+  ring (numeral ring stays the p01 reference). Removes D5 one-shot. Developer + graph note (drop D5
+  cuckoo from the design; the clock is now purely the numeral reference). Art: build-3 clock close-up
+  no longer needs the cuckoo-door/toy states.
 
 _Say "that's all, process it" (or similar) when ready to process this round._
