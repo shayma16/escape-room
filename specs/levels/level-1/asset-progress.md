@@ -269,3 +269,41 @@ Statuses: pending / generating / done / retrying / failed. Cost includes retries
 |---|-------|--------|--------|------|------|
 | 37 | global/app-icon | t2i std x1-3 | pending | - | keyhole+crow motif per global-ui-style.md; all App Store sizes via PIL |
 | 38 | global/launch-screens | PIL composite | pending | $0 | iPad + iPhone dims, $0 |
+
+---
+
+## RE-SEED ITERATION — z1 v-hearth base (nb1 rejected: too photorealistic) [2026-07-08]
+
+PROGRESS: 3/3 generated (A + B PASS correction; C DEFECTIVE) | 0 retrying | 1 defect held | 0 remaining | $1.50 spent (this task, AT CAP) | running rebuild spend $2.40 | HOLD for user pick
+
+_User reviewed nb1 (`z1-hearth-base-nb1@3x.png`) and REJECTED it for reading too photorealistic
+(architectural-viz / photo look). Mandatory template intent = "stylized real-time 3D game render, NOT
+painterly/matte-painting" — nb1 drifted photoreal. SEED-ONLY iteration: 3 candidates progressively
+pushing STYLIZATION so the user picks the degree. No cascade; nb1 kept in place for comparison; no
+commit (Producer commits)._
+
+_Correction (all candidates, user-approved): ONE clock only — single MANTEL clock bearing BOTH the
+Roman-numeral ring I–XII AND a cuckoo door above XII; REMOVE the separate wall-mounted cuckoo clock
+from nb1. Same fixed camera + §5.1 scene content + z1-cabin visually_necessary_elements. Duet §4:
+60% cool / 40% warm._
+
+_Anchors: nb1 plate (LAYOUT/framing continuity only, never a style ref) + masters/sky-master-nb2@3x
+(cool moonlight). Mandatory style template verbatim in every prompt; only stylization-degree language
+varies A→B→C. Method that worked: `edit` endpoint (preserves the approved §5.1 composition) + an
+explicit two-part correction clause (delete wall clock -> plain stone; add cuckoo door above XII)._
+
+_Method notes / discarded takes (counted in spend): A first try used the `edit` endpoint WITHOUT the
+reinforced correction -> copied nb1's two-clock layout + no cuckoo door (discard). A second try used
+`t2i` (no layout anchor) -> abandoned the §5.1 composition entirely + overshot stylization + spelled
+runes as letters (discard). Final method for all three = `edit` + reinforced correction clause._
+
+| # | Candidate | Stylization degree | Method | Status | Cost | Note |
+|---|-----------|--------------------|--------|--------|------|------|
+| A | z1-hearth-base-nbCA | lightly stylized (art-directed stylized realism) | edit 4K + corr (seed 30810) | done — PASS | $0.90 | includes 2 discarded takes (edit-no-corr, t2i). Correction PASS: 1 mantel clock, numeral ring I–XII legible + cuckoo door in peaked top; wall clock gone. Composition matches §5.1. Lightest of 3. DEFECT: lintel rune spelled "FIRE" as letters (flag — re-rendered at lintel close-up anyway). |
+| B | z1-hearth-base-nbCB | clearly / strongly stylized game art | edit 4K + corr (seed 30820) | done — PASS | $0.30 | Correction PASS: 1 mantel clock w/ numeral ring + cuckoo door above XII (recessed door visible in arched top); wall clock gone -> plain stone. Clearly stylized sculpted-stone game-art look; landed toward the strong end. DEFECT: lintel "FIRE" letters (same flag). Slight painterly lean on stone surface — flag. |
+| C | z1-hearth-base-nbCC | strongly stylized (intended) | edit 4K + corr (seed 30830) | done — DEFECTIVE | $0.30 | FAILS correction: wall cuckoo clock NOT removed (still upper-right) AND mantel clock has NO cuckoo door (reverted to nb1 two-clock layout). Also stayed closest to photoreal -> also missed the strongly-stylized brief. DO NOT USE. Re-roll needs a small budget bump beyond this task's $1.50 cap. |
+
+**HOLD — at $1.50 task cap.** Report A/B/C to user. A = lightly stylized (correction PASS). B =
+clearly/strongly stylized (correction PASS). C = defective (two-clock revert; least stylized).
+Recommend picking A or B; C-strong re-roll needs Producer/user budget go-ahead (+~$0.30). Chosen
+candidate becomes the locked seed + standing stylization language for the whole rebuild.
