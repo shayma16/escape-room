@@ -366,3 +366,108 @@ No **Critical/Major/Moderate** bugs found. Observations (all non-blocking):
 - No regression in the 22 build-1 bugs; unit/QA-flow net green x3 device classes.
 - No new Moderate-or-above bugs. Open items are non-blocking: QA-OBS-023 screenshot fidelity (route a stronger simulator-orientation fix to the Developer), F-010/AF-1 art (Producer to sequence before release), and prior polish carry-forwards.
 - Standing scope disclaimer: CI-simulator evidence only — real-touch feel, thermals, haptics, and true-device presentation (incl. QA-OBS-023 confirmation) remain the user's manual TestFlight spot-check.
+
+---
+
+# Build 3 — player-style regression (QA, 2026-07-09)
+
+**Branch:** `level1-rebuild-build3` (commit `33d2d27` lineage)
+**Build under test:** new engine-style art + round-2 fix clusters (A/B/C/D/F/G) + build-3 consistency re-rolls
+**Spec under test:** `puzzle-graph.json` rev 1.3, `implementation-notes.md` "Round 2 fix batch (build 3)" + "Build-3 consistency re-roll integration"
+**CI run analysed:** [28978252461](https://github.com/shayma16/escape-room/actions/runs/28978252461) — all steps success (build; unit x3; UI x3)
+**Method (binding R2-META-QA):** screenshot review of the RENDERED frames from the CI xcresult artifacts, not just green assertions. All three UI-test result bundles (iPhone SE, iPad 13", Dynamic Island iPhone) were pulled with `gh run download`, the attachment PNGs extracted and VIEWED, and per-device content composition measured pixel-wise. A frame that passes on coordinates but shows a blank/grey/stale/clipped picture is treated as a FAIL.
+
+## Headline verdict: NO-GO
+
+The #1 acceptance gate (the Cluster-B soft-lock) is DEAD — verified by screenshot. However, screenshot review surfaced a critical, cross-device presentation regression (QA-B3-001) that the green CI could not see: the game renders into a SQUARE viewport pinned to the left edge of the screen, leaving 25 % (iPad) to 54 % (Dynamic Island) of the display as a dead black band, and on the Dynamic Island device the pause menu is partially off-screen. The level is completable by the scripted robot (its taps use the same square-viewport math), but a HUMAN sees the game boxed into part of the screen. This is exactly the green-but-broken-for-a-human class R2-META-QA was written to catch, so it blocks GO.
+
+## #1 SOFT-LOCK VERDICT (Cluster B): DEAD — resolved, screenshot-verified
+
+The build-2 soft-lock was: solving p03 (astrolabe) / p04 (sun-moon cabinet) produced a GREY BOX where the coin+crank / file+phial should render, so the yielded items were invisible and uncollectible. Build 3 root-caused it to two missing PLAIN_PLATES entries (cu-cabinet-open, cu-astrolabe-drawer-open) and re-staged them.
+
+Verified on the rendered iPhone-SE playthrough frames:
+- play-11-astrolabe: the six-plate Orion selection mini-game renders with distinct engraved dot-patterns — NOT a grey box.
+- play-12-cabinet-open: the opened cabinet interior renders real art (container interior + item targets), NOT a grey box.
+- Inventory bar in the post-solve frames shows itm-crank, itm-silver-coin, itm-file, itm-phial held — proving the container yields were REVEALED and COLLECTED by tapping visible targets (collect-itm-silver-coin / -crank / -file / -phial), not blind-clicked.
+- Activity log confirms the collect-* taps executed and the subsequent assertHolding XCTAsserts passed; the playthrough reached play-18-complete and play-19-badge.
+
+No grey-box / missing-texture frame was found ANYWHERE in the 27 iPhone, 6 iPad, or 6 Dynamic-Island rendered frames reviewed. The soft-lock is dead.
+
+## State-visual rendering after solve/pickup — screenshot-verified PASS
+
+Each resolved state renders its real art in close-up and/or wide view (no stale/blank frames):
+
+| State | Evidence | Result |
+|---|---|---|
+| p05 ash ring reveal to collect to cleared (R2-003a) | play-02-ash-glint: ring visible in sifted ash; two-step collect confirmed by collect-itm-gold-ring tap + inventory | PASS |
+| p02 trapdoor / dial panel | play-03-dial-panel, play-04-dials-solved: 3x8-phase dials render, positions change | PASS |
+| p06 barrel pried + weight | cellar frames: nailed barrel pre-solve; weight collected (inventory) | PASS |
+| p03 astrolabe drawer open (coin+crank) | play-11 + inventory (crank/coin held) | PASS |
+| p04 cabinet open (file+phial) | play-12-cabinet-open + inventory (file/phial held) | PASS |
+| p08 shutter/winch to moonbeam-on | play-14-beam: vertical light shaft rendered ON in the cellar | PASS |
+| p01 rune door | tiles pressable in close-up; solve reaches z2 (bench mortar close-up opens) | PASS |
+| p10 moonflower states | play-07-alcove buds CLOSED; play-15-blooming flowers OPEN | PASS |
+| p11 crow freed + lintel perch | play-13-crow-freed (feather beat); play-13b-crow-lintel (crow on doorframe, p16 nudge) | PASS |
+| p14 brew draught-ready | play-16-draught: pearlescent cauldron + stir control render | PASS |
+| p16/p17 door unseal + complete | play-17-unsealed, play-18-complete (completion card) | PASS |
+
+## Area-by-area (round-2 clusters)
+
+- Cluster A (sound): cannot be screenshot-verified; verified by code/behaviour. music-level1.wav wired as the looping bed replacing ocean; two independent toggles (Ambiance/Music + SFX) in SoundManager/SettingsView; no default per-tap "psh" (flashTapFeedback is visual-only); pickup + distinct event cues retained; new sfx-door. Licensing table present (music user-owned, Producer-cleared). PASS (behaviour/code; real audio is the user TestFlight check).
+- Cluster C (item lifecycle): ash ring manual two-step pickup verified on-frame; dropItemIfDepleted place/consume/retain and R2-030 keep-armed-on-failed-use present and unit-tested; combine (file+spoon) verified on the playthrough (combine-itm-spoon). PASS.
+- Cluster D (navigation): chevrons cycle views within a zone; diegetic passages (trapdoor/ladder/shelf-gap/rune-door) for zone changes; single-view zone exit down-chevron present; transient nav hint auto-hides; swipe wired. Verified via smoke + playthrough. PASS (functional). See QA-B3-001 for the DI pause-menu clipping.
+- Cluster F (triptych R2-007): three per-panel hotspots each opening their own close-up; shared clu-triptych gate id preserved (build-3 test fix tapped the real triptych-3 panel). PASS.
+- Cluster G / Q3 (cuckoo removed): every hearth frame (play-01, smoke-03) shows the mantel clock with an INTACT Roman-numeral ring and NO cuckoo bird/door. testAdvancingClockHandsNeverLatchesState_Q3 asserts no latch. PASS.
+- Q1 (depleted-hotspot pruning): spent barrel / picked planter show spent state in wide view without pointless zooms. PASS (code; consistent with frames).
+- Clue-gating (rev 1.3): the playthrough gathers all gate clues (four marks + grimoire page A for p01, triptych for p02, Orion window for p03, slot-shapes for p04, recipe page for p14) before each gated act; testSaveResumeMidPlaythroughPersistsGate proves D7 (gate stays satisfied across relaunch). PASS.
+- Art consistency re-rolls: play-17 / iPad entry frame shows the door beak-basin as GREY STONE (was warm wood); cabinet is the two-door ARMOIRE with a carved SUN emblem (shape-primary, color-blind-safe); statue key reads as a gold star on grey stone. Close-ups match their wide scenes. PASS.
+
+## Full regression — completability
+
+The level is completable END-TO-END by a human-reachable path: the iPhone-SE full playthrough solved p02, p06, p07, p11, p01, p03, p05, p04, p08, p09, p10, p12, p13, p14, p15, p16, p17, collecting every item via VISIBLE targets (no invisible-item reliance), reaching the completion card and Level Select badge. No regression of the round-1 22-bug set or the build-2 fixes was observed in the rendered frames. Functional completability: PASS. (Blocked from GO only by the QA-B3-001 presentation regression, which does not stop completion but is not shippable.)
+
+## Bug list (this pass)
+
+### QA-B3-001 — Game content confined to a left-anchored SQUARE viewport; large dead black band on every device (CRITICAL, blocks GO)
+- Severity: Critical (presentation). Not a soft-lock — the level completes — but a real player sees the game boxed into part of the screen with a huge black void, and on the Dynamic Island device the pause menu is partially off-screen.
+- Evidence (pixel-measured on rendered CI frames): the rendered content bounding box is a perfect SQUARE pinned to the top-left in every device class:
+  - iPhone SE (screen 1334x750): content = 748x748 (aspect 1.0), 43.9 % dead black band on the right.
+  - iPad 13" (screen 2752x2064): content approx 2062 wide, 25.1 % black band.
+  - Dynamic Island iPhone (screen 2622x1206): content = 1204x1204, 54.1 % black band; pause-menu frame shows the pause buttons crammed into the bottom-left and clipped at the bottom.
+- Signature: content width is approximately equal to screen HEIGHT on all three devices, so the SpriteKit scene (2:1 landscape plate, .aspectFill) is being composed into a square SKView of side = screen height rather than filling the full landscape width. The 2:1 plate is cropped to a square viewport occupying only the leading portion of the screen.
+- Repro (human): launch on any device (or view any play-* / smoke-* scene screenshot in the CI artifact); the room art fills a square on the left; the right 25-54 % of the screen is solid black. On the Dynamic Island iPhone, open the pause menu; the buttons sit in the bottom-left and are partially below the visible area.
+- Why CI stayed green: EscapeRoomUITests.sceneCoordinate() and the app both use the same .aspectFill(2732x1366) math, so scripted taps land inside the square viewport and every assertion passes; assertFullScreenLandscapeComposition only checks the WINDOW frame (origin 0,0, width>height) and does NOT check that the game CONTENT fills the window. This is the build-2 QA-OBS-023 observation, previously ruled "screenshot-fidelity limitation, not a play defect" — that ruling is OVERTURNED: the content is genuinely boxed into a square viewport on the real rendered frames, not a screenshot rotation artifact.
+- Route to: Developer (via Producer). Likely fix locus: the SKView / SpriteKitContainerView sizing (a square proposed size is reaching the SKView) or a fixed / aspect-1 frame in the SwiftUI host chain. Fix is presentation-layer; no puzzle logic/art/spec change. After the fix, hotspot rects and the UI-test sceneCoordinate math must be re-verified against the now-full-width composition.
+
+### QA-B3-002 — Completion card / pause chrome clip on wide + notch aspects (MAJOR, likely same root cause)
+- Severity: Major. play-18-complete shows the completion card Main Menu / Play Again buttons truncated ("Main Men", "Play Agai"); the Dynamic Island pause menu shows clipped, bottom-left-crammed buttons.
+- Assessment: almost certainly a downstream symptom of QA-B3-001 viewport sizing (chrome laid out relative to the square region, not the full screen). The scripted tests still hit the buttons because they resolve by accessibility id, not visible position. Verify it clears once QA-B3-001 is fixed; if it persists, treat as an independent chrome-layout bug.
+- Route to: Developer (bundle with QA-B3-001 re-verify).
+
+No Moderate-or-lower new bugs were found in the rendered frames. Prior non-blocking carry-forwards (moonbeam overlay seam residual, in-game VoiceOver labels, Reduce-Motion audit, JC-fb1-3 empty-scene disarm, z2 return-door art AF-1) still stand and remain non-blocking.
+
+## Device / orientation matrix (CI simulators)
+
+| Device | Build | Unit | UI | Rendered-frame review | Verdict |
+|---|---|---|---|---|---|
+| iPad Pro 13" | pass | pass | smoke + save/resume pass | study/entry/hearth frames reviewed; content is a left-anchored square, 25 % black band | FUNCTIONAL / QA-B3-001 |
+| iPhone SE (smallest) | pass | pass | full playthrough + smoke + save/resume pass | all 19 playthrough states reviewed; 44 % black band | FUNCTIONAL / QA-B3-001 |
+| Dynamic Island iPhone | pass | pass | smoke (safe-area) pass | in-game + pause frames reviewed; 54 % black band, pause menu partially off-screen | FUNCTIONAL / QA-B3-001 + 002 |
+
+Landscape composition of the WINDOW is correct on all three (QA-OBS-023 window guard passes); the CONTENT composition inside the window is the defect.
+
+## Test-suite recalibration (QA request to Developer — I analyse, the runner executes)
+
+The current suite cannot catch QA-B3-001 because it never asserts that game content fills the screen. Requested additions (route to Developer to implement in EscapeRoomUITests, since QA has no local macOS to run them):
+1. Screenshot composition assertion (FAILS on the current bug): after level entry, sample the app screenshot and assert non-black pixels extend across at least ~90 % of BOTH screen width and height (reject the square-viewport / large-black-band case). This assertion is EXPECTED TO FAIL on the current build — that is the point; it turns the human-visible defect into a red CI signal.
+2. Chrome on-screen assertion: assert the completion card complete-main-menu / complete-play-again and the pause menu buttons have frames fully inside the screen bounds (catch QA-B3-002).
+3. Keep the existing grey-box guard intent: the playthrough already asserts collect-* targets exist and items reach inventory, which would catch a Cluster-B regression; retain and extend to assert the container-open close-up screenshot is not uniformly grey.
+
+## Go / no-go recommendation (decision is the user)
+
+NO-GO for this build.
+
+- The #1 gate (Cluster-B soft-lock) is DEAD and the level is functionally completable end-to-end by a human-reachable path — genuinely good progress over build 2.
+- But QA-B3-001 (content boxed into a left-anchored square; 25-54 % dead black band; DI pause menu partially off-screen) is a critical, human-visible presentation defect on EVERY device class tested. It is not shippable and the green CI does not surface it. QA-B3-002 (clipped completion/pause chrome) rides along.
+- Recommended path: route QA-B3-001 (+ 002) to the Developer via the Producer as a presentation-layer fix (no logic/art/spec change), add the screenshot-composition + chrome-on-screen assertions so CI goes red until fixed, then re-run this player-style pass. Everything else (soft-lock, state rendering, clue-gating, sound wiring, nav, re-rolls, completability) is GREEN and would clear on the re-run.
+- Standing scope disclaimer: CI-simulator evidence only. Real-touch feel, thermals, haptics, and final on-device presentation confirmation remain the user manual TestFlight spot-check before release approval.
