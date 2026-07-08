@@ -11,6 +11,30 @@ Level 1 in design. Theme received from user on 2026-07-04.
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
 caged crow, potions/potion-making (user-specified elements).
 
+## ⭐ CURRENT RESUME NOTE (2026-07-08) — READ THIS FIRST
+
+**State:** Build 2 SHIPPED to TestFlight (Within 1.0 build 6; release fix on PR #7,
+awaiting merge to main — release ran from branch `fix-build-number`). **Build 3 = Level 1
+full art rebuild is RUNNING** (Asset Gen, this branch `level1-rebuild-build3`).
+
+**If a usage/session limit cut off mid-cascade — resume WITHOUT re-spending budget (this
+is the one job where sloppy resume wastes real money against the $18.90 cap):**
+1. Read `specs/levels/level-1/asset-progress.md` "BUILD-3 FULL REBUILD" section — the
+   authoritative per-asset status + cost tracker — and check the PNGs already on disk in
+   `specs/assets/level-1/`. The cascade agent commits+pushes PER COMPLETED ZONE, so
+   `git log` on this branch shows the last durably-saved zone.
+2. Relaunch a FRESH asset-generation agent told to READ the tracker + on-disk files FIRST
+   and **SKIP every asset already `done` — NEVER re-generate a completed asset** (re-spend).
+   Continue only from the first not-done asset. Respect the $18.90 hard cap; check the
+   tracker header for live spend (was $2.40 at cascade start).
+3. **Seed is LOCKED** = candidate B, promoted to `z1/v-hearth/z1-hearth-base` (clearly
+   stylized). Style template calibrated to that strength in `.claude/agents/asset-
+   generation.md`. Do NOT re-pick the seed or re-open the style.
+4. Delivery is PER-ZONE for user review; do NOT integrate into `EscapeRoom/Resources` or
+   ship build 3 without the user's per-zone art approval.
+5. To do main/release git ops while the cascade holds the working tree, use a git worktree
+   (as done for PR #7) so the running Asset Gen is undisturbed.
+
 ## RESUME NOTE (2026-07-06, written pre-session-limit by the Producer)
 
 If the session is cut off, resume by taking stock — don't restart:

@@ -158,14 +158,20 @@ No API budget spent on AF-1. Once AD picks A/B/C, execution is: render canonical
 
 # Level 1 — BUILD-3 FULL REBUILD (Nano Banana Pro engine-render style)
 
-PROGRESS: 2/64 done | 0 retrying | 0 failed | 62 remaining | $0.90 spent | AWAITING style-seed approval before anchoring remaining 6 bases
+PROGRESS: 3/64 done | 0 retrying | 0 failed | 61 remaining | $2.40 spent | SEED B LOCKED + promoted to canonical + FIRE/AIR glyph fix applied -> cascading zones
 
 _Asset Generation Agent live tracker for the full engine-render rebuild (build 3)._
 _Model: `fal-ai/nano-banana-pro` (t2i + edit). Mandatory engine-render style template_
 _composed into EVERY prompt (verbatim per .claude/agents/asset-generation.md)._
 _Pricing: $0.30/4K image, $0.15/std image. @2x/@1x = FREE PIL downscales._
-_HARD CAP $18.90 (user, final). Pre-gen estimate: $11.10 paid, ~$15.50 with retries →_
-_UNDER cap → PROCEEDING (pre-authorized). Track actual spend after each gen._
+_HARD CAP $18.90 (user, final). Pre-gen estimate: $11.10 paid, ~$15.50 with retries ->_
+_UNDER cap -> PROCEEDING (pre-authorized). Track actual spend after each gen._
+_RUNNING SPEND BASELINE (this cascade start): $2.40 = sky $0.60 + nb1 $0.30 + reseed $1.50._
+_SEED: candidate B (`z1-hearth-base-nbCB`) user-approved 2026-07-08 -> promoted to canonical_
+_`z1/v-hearth/z1-hearth-base@3x/2x/1x` AFTER the near-wordless FIRE/AIR glyph fix (PIL, $0):_
+_lintel "FIRE"->upward-triangle glyph + numeral II; bellows slash->triangle-with-bar (AIR) +_
+_numeral I, per clu-grimoire-elements. Grayscale-verified. Rejected seed attempts + old_
+_painterly hearth plates -> _rejects/flux-painterly/. Seed anchors ALL later gens (14-ref cap)._
 _All paths relative to specs/assets/level-1/. Superseded painterly originals move to_
 _`_rejects/flux-painterly/` at integration (rollback safety, never deleted)._
 
@@ -203,7 +209,7 @@ Statuses: pending / generating / done / retrying / failed. Cost includes retries
 ### z1 — Main Cabin (v-hearth / v-study / v-entry)
 | # | Asset | Method | Status | Cost | Note |
 |---|-------|--------|--------|------|------|
-| 1 | z1/v-hearth/z1-hearth-base | t2i 4K FRESH (nb1) | SEED-DONE (awaiting user OK) | $0.30 | STYLE SEED. Clean engine render, warm/cool duet, cold hearth+ash, poker/bellows/armchair/rug/clock all present. Wide-plate clock is round-face; cuckoo door is close-up job. Anchor for all later gens once approved. |
+| 1 | z1/v-hearth/z1-hearth-base | edit 4K (seed B 30820) + PIL glyph fix | done (CANONICAL SEED) | $0.30 | LOCKED STYLE SEED. Candidate B promoted to canonical after PIL FIRE/AIR near-wordless fix ($0): lintel upward-triangle FIRE glyph + II; bellows triangle-with-bar AIR glyph + I. Grayscale PASS. 1 mantel clock (numeral ring I-XII + cuckoo door above XII), cold hearth+ash, poker/bellows/armchair/rug/lamp all present. ANCHOR for all later gens. |
 | 2 | z1/v-study/z1-study-base | t2i 4K anchored | pending | - | desk/grimoire/triptych/rune-door; warmest z1 pocket |
 | 3 | z1/v-entry/z1-entry-base | t2i 4K anchored | pending | - | door + crow-beak BASIN (unified beak, AF-1) + cage + window sky |
 | 4 | z1 v-hearth close-ups | t2i std x5 | pending | - | bellows, lintel, clock-unspent, dial-panel, ash-undisturbed |
@@ -302,6 +308,10 @@ runes as letters (discard). Final method for all three = `edit` + reinforced cor
 | A | z1-hearth-base-nbCA | lightly stylized (art-directed stylized realism) | edit 4K + corr (seed 30810) | done — PASS | $0.90 | includes 2 discarded takes (edit-no-corr, t2i). Correction PASS: 1 mantel clock, numeral ring I–XII legible + cuckoo door in peaked top; wall clock gone. Composition matches §5.1. Lightest of 3. DEFECT: lintel rune spelled "FIRE" as letters (flag — re-rendered at lintel close-up anyway). |
 | B | z1-hearth-base-nbCB | clearly / strongly stylized game art | edit 4K + corr (seed 30820) | done — PASS | $0.30 | Correction PASS: 1 mantel clock w/ numeral ring + cuckoo door above XII (recessed door visible in arched top); wall clock gone -> plain stone. Clearly stylized sculpted-stone game-art look; landed toward the strong end. DEFECT: lintel "FIRE" letters (same flag). Slight painterly lean on stone surface — flag. |
 | C | z1-hearth-base-nbCC | strongly stylized (intended) | edit 4K + corr (seed 30830) | done — DEFECTIVE | $0.30 | FAILS correction: wall cuckoo clock NOT removed (still upper-right) AND mantel clock has NO cuckoo door (reverted to nb1 two-clock layout). Also stayed closest to photoreal -> also missed the strongly-stylized brief. DO NOT USE. Re-roll needs a small budget bump beyond this task's $1.50 cap. |
+
+**RESOLVED 2026-07-08:** user picked **candidate B** (clearly-stylized game art). B promoted to
+canonical `z1-hearth-base` after the FIRE/AIR PIL glyph fix; A & C archived to _rejects/flux-painterly/.
+Stylization language of B is now the standing rebuild target (encoded in agent template).
 
 **HOLD — at $1.50 task cap.** Report A/B/C to user. A = lightly stylized (correction PASS). B =
 clearly/strongly stylized (correction PASS). C = defective (two-clock revert; least stylized).
