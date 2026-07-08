@@ -388,9 +388,11 @@ final class EscapeRoomUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 0.5)
         shoot(app, "play-13b-crow-lintel")
 
-        // File + spoon -> shavings (inventory combine).
+        // File + spoon -> shavings (inventory combine). R2-028: once the file is armed the
+        // combinable spoon cell exposes the "combine" affordance, so its accessibility id
+        // becomes `combine-itm-spoon` (not `inventory-itm-spoon`) — tap that to combine.
         tapID(app, "inventory-itm-file")
-        tapID(app, "inventory-itm-spoon")
+        tapID(app, "combine-itm-spoon")
         assertHolding(app, "itm-shavings")
 
         // Light the alcove: reach the cellar (via z1 hearth trapdoor), fit the crank at

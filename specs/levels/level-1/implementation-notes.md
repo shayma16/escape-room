@@ -841,6 +841,23 @@ stale test — again a TEST fix, not a code bug:
   unit test `testBareTapNeverAutoAppliesHeldItem_ashSift`) before the assert. The shipped
   two-step ash/ring behavior is correct and unchanged.
 
+With the ash-ring collect in place the full-playthrough UI test ran end-to-end for the
+first time and surfaced a FOURTH stale test spot (again TEST-only, not a code bug):
+- `testFullPlaythroughWithScreenshots` performed the file+spoon combine by tapping
+  `inventory-itm-file` then `inventory-itm-spoon`. R2-028 gives a combinable cell a
+  "combine" affordance while another item is armed, and (InventoryBarView.swift:128) flips
+  that cell's accessibility id to `combine-<item>`. So once the file is armed the spoon
+  cell is `combine-itm-spoon`, not `inventory-itm-spoon`, and the old id no longer existed
+  ("inventory-itm-spoon must exist"). Fixed the test to tap `combine-itm-spoon` — the
+  shipped R2-028 combine gesture. file+spoon is the game's only combinable pair, so this is
+  the only combine spot affected.
+
+All four fixes are at the TEST layer; no shipped game code changed. Root cause pattern:
+the build-3 batch changed several interaction contracts (Q3 cuckoo removal, R2-007 triptych
+split, R2-003a reveal-then-collect ring, R2-028 combine affordance) but the corresponding
+unit/UI test assertions were not all updated, and the UI-playthrough failures were masked
+because the job aborted at the first failing unit step. CI green run: see below.
+
 ### Security checklist (re-run for build 3)
 - No development-time secrets in the shipped app. Grepped source + bundled resources for
   fal/api/key/secret/token/Bearer/sk- - no hardcoded keys/credentials; the fal.ai key is used
