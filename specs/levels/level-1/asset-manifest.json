@@ -1678,7 +1678,7 @@
   }
  },
  "global": {
-  "scope": "one-time app-wide custom art (app icon + launch screen) per specs/global-ui-style.md Section 10 — theme-independent, never restyled per level",
+  "scope": "one-time app-wide custom art (app icon + launch screen) per specs/global-ui-style.md Section 10 \u2014 theme-independent, never restyled per level",
   "generated": "2026-07-05",
   "model": "fal-ai/flux-2-pro (t2i + edit) + PIL derivation pass",
   "asset_root": "specs/assets/global/",
@@ -1693,7 +1693,7 @@
    },
    {
     "file": "launch/emblem-keyhole.png",
-    "role": "flat keyhole emblem — launch screen mark; Main Menu backdrop reuses at ~8% white (style guide 5.1)",
+    "role": "flat keyhole emblem \u2014 launch screen mark; Main Menu backdrop reuses at ~8% white (style guide 5.1)",
     "size": "1024x1024 RGBA, white on transparent, mark 55% of canvas height, centered",
     "method": "flux edit from app-icon-1024 (flat silhouette) + PIL luminance->alpha ramp cleanup + bbox re-center",
     "est_cost_usd": 0.0315
@@ -1712,7 +1712,7 @@
    }
   ],
   "developer_notes": [
-   "iOS icon size set: use asset catalog 'Single Size' with app-icon-1024.png — Xcode derives all sizes; do NOT hand-export the legacy size matrix.",
+   "iOS icon size set: use asset catalog 'Single Size' with app-icon-1024.png \u2014 Xcode derives all sizes; do NOT hand-export the legacy size matrix.",
    "Launch screen: prefer storyboard/launch-configuration with background color #101010 + centered emblem-keyhole.png image over the fixed rasters, so it matches the Main Menu backdrop pixel-for-pixel on every device; the two rasters are reference/fallback renders of the intended result.",
    "Launch must be visually identical to the Main Menu empty backdrop (fade-in effect, style guide 10.2); menu uses the same emblem at 8% white, launch at ~11%."
   ],
@@ -1931,7 +1931,7 @@
  },
  "feedback_round1_fixes": {
   "date": "2026-07-07",
-  "spec": "style-guide.md Rev 2 §7-R 'Feedback round 1 — art-fix briefs' (AF-1..AF-4)",
+  "spec": "style-guide.md Rev 2 \u00a77-R 'Feedback round 1 \u2014 art-fix briefs' (AF-1..AF-4)",
   "budget_cap_usd": 3.0,
   "principle": "inpaint/crop-scoped; approved plates remain style anchors; smallest-change; grayscale acceptance gate; NO full re-renders / NO restyle",
   "technique": "fal flux-2-pro/edit on tight anchored crop, then feathered-mask PIL composite of ONLY the masked region back onto untouched original -> zero drift outside mask",
@@ -1961,5 +1961,22 @@
   },
   "spend_usd": 0.1201,
   "note": "AF-1 (3 wide plates + variants) deferred pending ruling; rows 2-4 in asset-progress.md remain pending."
+ },
+ "build3_rebuild": {
+  "engine": "fal-ai/nano-banana-pro",
+  "style": "clearly stylized real-time 3D game render (mandatory template, verbatim); seed=z1-hearth-base candidate B, user-approved 2026-07-08",
+  "note": "Full engine-render rebuild replacing painterly Flux plates. All 7 base plates FRESH at 4K, anchored to the locked seed (+ up to 13 refs). Superseded painterly plates -> _rejects/flux-painterly/. Raw pre-PIL-fix takes -> _rejects/build3-takes/. Puzzle logic + fixed solution values UNCHANGED (render-style swap only).",
+  "bases_done": {
+   "z1/v-hearth/z1-hearth-base": "CANONICAL SEED. Camera/composition per style-guide 5.1 unchanged. GEOMETRY CHANGE vs painterly: lintel now upward-triangle FIRE glyph + numeral II (was English 'FIRE'); bellows now triangle-with-bar AIR glyph + numeral I (was slash); single mantel clock (numeral ring I-XII + cuckoo door above XII).",
+   "z1/v-entry/z1-entry-base": "AF-1 RESOLVED: crow's-head where open beak IS the rune basin (unified, one carved piece; NOT skull+separate-bowl). Sill WATER rune = downward triangle + numeral IV (was 'W' letter). Window: moon+Orion present (model-drawn, not canonical-stamped in base wide; authoritative Orion read is z2 window + astrolabe plate-2).",
+   "z1/v-study/z1-study-base": "Flowerpot EARTH rune = downward-triangle-with-bar + numeral III (bar PIL-added; distinct from WATER plain triangle). Door 4 rune tiles show generic runes (no code leak). Grimoire/triptych framing per 5.2.",
+   "z2/v-bench/z2-bench-base": "JC-fb1: painted diegetic return-passage (arched doorway center-back to main cabin) added -> no UI exit chevron needed. Cauldron/firepit/bellows/mortar per 5.4.",
+   "z2/v-cabinet/z2-cabinet-base": "Window sky = CANONICAL: waxing-gibbous moon lit-right (from sky-master) + 7-dot Orion belt stamped from orion-canonical.json (35deg). NOTE: sunburst+crescent render as raised medallions at wide scale; recess geometry carried by cu-slots close-up.",
+   "z3/v-cellar/z3-cellar-base": "All mechanism elements per 5.6 (barrel/drawer/sliding-shelf+pulley+hook+rope/winch-socket/mirror+scratches/ladder+lantern).",
+   "z4/v-alcove/z4-alcove-base": "Planter buds-closed + folk-art crow statue holding 5-point star-bit key (matches cage keyhole) per 5.7."
+  },
+  "spend_running": 4.8,
+  "cap": 18.9,
+  "status": "BASES COMPLETE. Derived assets (close-ups/icons/sprites/state variants) pending; user reviews bases per-zone before integration."
  }
 }
