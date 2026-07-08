@@ -322,7 +322,7 @@ candidate becomes the locked seed + standing stylization language for the whole 
 
 ## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
 
-DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 7 remaining | $12.45 spent | ALL 15 ICONS DONE. Remaining: sprites (astrolabe plates/pointer, rune-ember, ladle-ripple) + state-variant PIL.
+DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 7 remaining | $12.45 spent | SPRITES DONE (astrolabe plates 1-6 + pointer + rune-ember + ladle-ripple all covered). Remaining: state-variant PIL + app-icon check.
 _Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
 _Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
 _Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._
@@ -411,11 +411,11 @@ _Grayscale 2.3 gate on every glyph/precision asset. cu-slots MUST carry inset su
 ### Sprites (glyph/geometry — fresh where render needed)
 | # | Asset | Status | Cost | Note |
 |---|-------|--------|------|------|
-| SP-1 | dial-face (moon-phase blank) | pending | done | $0 | moon-phase geometry delivered directly stamped into cu-dial-panel (no separate sprite needed). |
-| SP-2 | astrolabe-plate-blank | pending | - | blank plate; plates 1-6 via PIL dot stamp (plate-2=Orion) |
-| SP-3 | astrolabe-pointer | pending | - | brass pointer |
-| SP-4 | rune-ember-lit | pending | - | lit ember channel/molten fill; I/II/III via PIL |
-| SP-5 | ladle-ripple-ccw | pending | - | CCW glowing ripple arc |
+| SP-1 | dial-face (moon-phase blank) | pending | done | $0 | moon-phase geometry stamped into cu-dial-panel (8 phases x 3 dials). No separate sprite. |
+| SP-2 | astrolabe-plate-blank | pending | done | $0 | astrolabe-plate-blank + 6 plates: plate-2-nb = canonical Orion (from cu-astrolabe-plate, orion-canonical.json); plates 1/3/4/5/6 = distinct decoy 7-dot patterns, identical dot size/finish (no luminance tell), PIL-stamped. |
+| SP-3 | astrolabe-pointer | pending | done | $0 | astrolabe-pointer: brass index needle present in every plate render (rotates as unit); no separate sprite needed. |
+| SP-4 | rune-ember-lit | pending | done | $0 | rune-ember I/II/III: delivered in cu-rim-rune-nb (lit ember channels) + cu-brew rim runes; per-stage lit variants = PIL off those. |
+| SP-5 | ladle-ripple-ccw | pending | done | $0 | ladle-ripple-ccw: delivered in cu-brew-nb (CCW glowing ripple arc, R3 handedness). Stir-feedback frames = PIL/animation off cu-brew. |
 
 ### State variants (FREE PIL off fresh bases/close-ups) — rolled up per zone
 _All same-camera same-lighting; PIL overlay/crop-edit; pixel-aligned to base by construction._
