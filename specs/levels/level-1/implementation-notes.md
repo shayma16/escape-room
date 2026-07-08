@@ -708,3 +708,121 @@ Two prior red runs on this branch, both fixed:
   guard had never actually run green before (it shipped in PR #2 whose merge run was a 3 s
   no-op). Rewrote it to assert the app WINDOW frame is landscape (origin 0,0; width > height),
   which is the guard's real intent and is environment-robust.
+
+
+---
+
+## Round 2 fix batch (build 3) - 2026-07-08
+
+Build 3 = new build-3 engine-render art + the round-2 Developer fix clusters, on branch
+`level1-rebuild-build3`. Framing (per feedback-backlog ROUND 2 PROCESSED): the level was
+completable end-to-end; every issue was presentation-layer. Root-cause clusters below.
+
+### Part 1 - art integration + build-pipeline gaps (flagged to Producer for the ledger)
+
+The bundle is (re)staged deterministically by tools/build_game_assets.py from the approved
+build-3 plates under specs/assets/level-1/. Integrating the new art surfaced three build-3
+asset-delivery inconsistencies handled defensively in the build script (flagged here for the
+Producer / Asset-Gen; the level builds and renders correctly now):
+
+- G1 - missing/renamed z1-hearth wide variants. Build 3 shipped poker-taken and trapdoor-open
+  ONLY as raw -nb files (never promoted to the canonical filename) and shipped NO rug-moved
+  plate at all. Fix: resolve_src() prefers the canonical name then falls back to -nb;
+  rug-moved is DERIVED from the build-3 trapdoor-open plate by inpainting the raised lid +
+  haze into a dark closed recess (real build-3 art, deterministic; the 3-dial detail lives in
+  the cu-dial-panel close-up).
+- G2/G3 - base/variant dimension + generation mismatch. Build-3 BASE plates are fresh 4K
+  (3840x1920); the state-VARIANT wide plates are superseded-generation region-edits at
+  2560x1280 that do NOT pixel-align with the new bases, so automatic diff-overlays produced
+  garbage full-frame crops (whole frame differs even at matched size / high threshold). Fix:
+  the misaligned wide states are composited from hand-specified element-rect crops
+  (MANUAL_OVERLAYS, rects from the known hotspot geometry) out of the size-matched variant,
+  so the coordinator's multi-state overlay layering still works with only the intended element
+  replaced. Residual: minor tonal drift inside a crop where the variant's global lighting
+  differs from the 4K base (feather-softened). A future Asset-Gen pass could re-derive these
+  variants against the 4K bases for pixel-perfect crops.
+
+Only genuinely-aligned variants still use the automatic diff (ov-poker-taken, and the
+G1-derived ov-rug-moved / ov-trapdoor-open).
+
+### Part 2 - fix clusters
+
+CLUSTER B (progression soft-lock) - RESOLVED. Root cause was at the STAGING layer: the two
+solved-container OPEN close-up plates cu-cabinet-open and cu-astrolabe-drawer-open were absent
+from PLAIN_PLATES, so ContainerCloseUp rendered a missing texture -> the grey box where
+coin/crank (p03) and file/phial (p04) were invisible/uncollectible. Both are now staged; the
+container close-ups render the open plate with tappable item targets. Wide-view resolved
+states render via the localized manual overlays. All RoomVisuals resolvers are f(state) ->
+image, never event-ordered.
+
+CLUSTER A (sound) - RESOLVED. Confirmed NO default per-tap sound: the only always-on tap
+feedback (RoomScene.flashTapFeedback) plays nothing (visual parchment pulse only), so R2-024's
+"psh on every tap incl. nav/empty" cannot recur. Cues are event-mapped (pickup kept per
+R2-002; solve/unlock/door/page/etc.). Added a themed sfx-door cue for the rune door + front
+door (R2-015a). SoundManager now has two independent channels - ambianceEnabled (music + beds)
+and sfxEnabled (interaction cues). The user-supplied music-level1.wav loops seamlessly as the
+level bed at an unobtrusive volume, REPLACING the ocean ambience (R2-004/005); the per-zone
+amb-z* loops are retained as a very faint tint UNDER the music so zones stay tonally distinct.
+Music rights: fal.ai-generated, user-owned, commercial use OK (Producer-cleared 2026-07-08;
+see licensing table).
+
+CLUSTER C (item lifecycle) - RESOLVED. Ash ring is now manual pickup: siftAsh reveals the ring
+(no auto-grant) and the new .ashPile close-up shows a tap-to-collect ring, then the cleared
+plate renders (R2-003a). dropItemIfDepleted implements R2-020 place/consume/retain: a tool is
+retained while any graph uses entry is unsatisfied and dropped once ALL are done (poker = p05
+ash AND p06 barrel; crank = p08; weight = p07; file = p12; cage key = p11) - never before,
+preserving anti-softlock. R2-030: useItem returns Bool; a wrong-target no-op keeps the item
+ARMED, disarm only on a successful/engaged use. R2-028: a combinable inventory item shows a
+clear combine link badge + amber backing when its partner is armed.
+
+CLUSTER D (navigation) - RESOLVED. R2-008 swipe cycles views (arrows stay) and flips grimoire
+pages (navigation swipe only; item-drag stays removed). R2-021 transient first-run directional
+hint (SF-Symbol glyphs + brief captions, auto-hides after ~3s, shown once per install via
+UserDefaults - near-wordless-safe). R2-023b single-view zones (cellar/alcove) get a clear
+always-visible down-chevron EXIT affordance routing the diegetic passage back.
+
+CLUSTER F (R2-007) - RESOLVED. The triptych is now three per-panel hotspots, each opening its
+OWN close-up (tapping the 3-crow right panel opens the 3-crow close-up), fixing the right->left
+mismap. Shared clu-triptych gate id preserved.
+
+CLUSTER G / Q3 - cuckoo REMOVED. No cuckoo pop, no cu-clock-pop/cu-clock-spent states, no D5
+latch/setClockToTwelve. The mantel clock is purely the p01 numeral-ring reference (hands still
+move cosmetically). GRAPH NOTE for the Producer/ledger: this is the only graph-affecting change
+- drop the D5 cuckoo one-shot from the design (rh-clock is now just the numeral reference).
+clockCuckooSpent flag kept for save migration only.
+
+Q1 - depleted-hotspot pruning: the barrel (after weight taken) and the planter (after the
+single blossom picked) no longer offer a pointless zoom; their spent state shows in the wide
+view. Red-herring decoys (potion shelf, decoy grimoire pages) stay zoomable by design.
+
+Q2 - rotate-to-inspect: DEFERRED to Level 2+ per user decision; TODO note left in
+InventoryBarView.swift above ItemInspectView.
+
+R2-006 - settings: two independent, separately-persisted toggles (Music & Ambiance / Sound
+Effects) replacing the single Sound toggle. specs/global-ui-style.md sections 5.4/8 updated
+with the second speaker-state row. SaveGame migrates both from legacy soundOn.
+
+### Part 4 - tests verify like a player
+New/updated unit tests assert the rendered/collectible outcome, not just engine flags: the ash
+close-up presents .ashPile and the ring is revealed-then-collected (not auto-granted);
+container yields are collected via explicit taps; a failed use keeps the item armed (R2-030);
+the clock is inert (Q3). The full-playthrough engine flows now collect the ash ring the
+two-step way (siftAndCollectRing).
+
+### Security checklist (re-run for build 3)
+- No development-time secrets in the shipped app. Grepped source + bundled resources for
+  fal/api/key/secret/token/Bearer/sk- - no hardcoded keys/credentials; the fal.ai key is used
+  only at asset-generation time and lives in the gitignored .env (never copied into any
+  bundle/build phase). PASS.
+- Minimal entitlements/permissions. No NS*UsageDescription strings and no camera/mic/location/
+  contacts capabilities; the app requests none. PASS.
+
+### Sound-source licensing table (build 3)
+| File | Source | License / rights |
+|---|---|---|
+| music-level1.wav | User-provided, fal.ai-generated | User-owned; commercial use OK (Producer-cleared 2026-07-08) |
+| sfx-*.wav, amb-z*.wav | Synthesized in tools/build_game_assets.py | Original work, no third-party license |
+
+### CI
+Round-2 build-3 CI run: https://github.com/shayma16/escape-room/actions/runs/28965195362
+(branch level1-rebuild-build3). Iterating to green before QA handoff.

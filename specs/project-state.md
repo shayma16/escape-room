@@ -15,7 +15,28 @@ caged crow, potions/potion-making (user-specified elements).
 
 **State:** Build 2 SHIPPED to TestFlight (Within 1.0 build 6; release fix on PR #7,
 awaiting merge to main — release ran from branch `fix-build-number`). **Build 3 = Level 1
-full art rebuild is RUNNING** (Asset Gen, this branch `level1-rebuild-build3`).
+full art rebuild + round-2 Developer fix batch — the DEVELOPER BATCH HAS LANDED** on branch
+`level1-rebuild-build3` (commits `BUILD 3 Part 1` art integration + `BUILD 3 Part 2` fix
+clusters). Build-3 art is integrated into `EscapeRoom/Resources/GameAssets`; all six fix
+clusters (B/A/C/D/F/G) + Q1/Q2/R2-006 implemented; implementation-notes updated with a
+"Round 2 fix batch (build 3)" section. CI on the branch iterating to green (run
+28965195362). **DO NOT open a PR to main or ship yet** — after CI is green, the Producer
+runs player-style QA and the user does per-zone art review before release.
+
+**Developer flags to the Producer/user (from the build-3 batch):**
+- 3 build-3 ASSET-DELIVERY GAPS (G1/G2/G3) handled defensively in the build script but the
+  ART may want an Asset-Gen cleanup: G1 = z1-hearth poker-taken/trapdoor-open shipped only
+  as `-nb` (never renamed) + no rug-moved plate; G2/G3 = state-variant wide plates are
+  superseded-generation 2560x1280 region-edits that do not pixel-align with the fresh 4K
+  bases (wide state overlays are now hand-rect crops with minor tonal drift, feather-
+  softened; a re-derive against the 4K bases would be pixel-perfect).
+- GRAPH/LEDGER: Q3 removed the D5 clock cuckoo entirely (only graph-affecting change) — the
+  clock is now purely the p01 numeral reference; drop rh-clock's cuckoo one-shot from the
+  design ledger.
+- Music `music-level1.wav` rights confirmed by Producer (fal.ai-generated, user-owned,
+  commercial-use OK) — recorded in the implementation-notes licensing table.
+
+**Remaining before QA:** CI green on `level1-rebuild-build3`.
 
 **If a usage/session limit cut off mid-cascade — resume WITHOUT re-spending budget (this
 is the one job where sloppy resume wastes real money against the $18.90 cap):**
