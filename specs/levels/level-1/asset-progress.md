@@ -158,7 +158,7 @@ No API budget spent on AF-1. Once AD picks A/B/C, execution is: render canonical
 
 # Level 1 — BUILD-3 FULL REBUILD (Nano Banana Pro engine-render style)
 
-PROGRESS: 7/64 done | 0 retrying | 0 failed | 57 remaining | $4.20 spent | z1+z2 zone bases DONE; cascading z3+z4 bases
+PROGRESS: 9/64 done | 0 retrying | 0 failed | 55 remaining | $4.80 spent | ALL 7 BASES DONE (seed+6 fresh); cascading close-ups/icons/sprites/variants per zone
 
 _Asset Generation Agent live tracker for the full engine-render rebuild (build 3)._
 _Model: `fal-ai/nano-banana-pro` (t2i + edit). Mandatory engine-render style template_
@@ -229,14 +229,14 @@ Statuses: pending / generating / done / retrying / failed. Cost includes retries
 ### z3 — Hidden Cellar (v-cellar)
 | # | Asset | Method | Status | Cost | Note |
 |---|-------|--------|--------|------|------|
-| 11 | z3/v-cellar/z3-cellar-base | t2i 4K anchored | pending | - | barrel/drawer/sliding-shelf+pulley/winch/mirror; coolest darks |
+| 11 | z3/v-cellar/z3-cellar-base | t2i 4K anchored (seed 43100) | done | $0.30 | 1 take PASS. ALL elements: ladder+trapdoor spill+lantern (R edge), barrel w/ pry-gap lid (mid-right), root-shelf drawer (brass handle), sliding shelf flush to wall + pulley + empty hook + taut rope to runners (L-center), ceiling shaft+shutter+winch empty socket (upper-L), mirror on floor stand + scratch-arcs in dirt (L). Coolest darks, readable by edge light. Winch-socket/scratch geometry = close-up jobs. |
 | 12 | z3 v-cellar close-ups | t2i std x4 | pending | - | winch-socket, mirror-scratches, spoon-drawer (hallmark), barrel-gap |
 | F3 | z3 state+beam matrix (free) | PIL beam_engine | pending | $0 | barrel-pried,drawer-open,weight-hung,shelf-slid,crank-fitted,mirror-d2/d3, beam floor/blocked/alcove/shelf-slid |
 
 ### z4 — Walled Alcove (v-alcove)
 | # | Asset | Method | Status | Cost | Note |
 |---|-------|--------|--------|------|------|
-| 13 | z4/v-alcove/z4-alcove-base | t2i 4K anchored | pending | - | planter closed / statue+key; 90% cool shrine |
+| 13 | z4/v-alcove/z4-alcove-base | t2i 4K anchored (seed 44100) | done | $0.30 | 1 take PASS. Shrine niche, 90% cool silver. Moonflower planter buds CLOSED (low center, future-beam spot, rim-lit), carved folk-art crow statue on ledge above facing planter (register 3) holding STAR-BIT key in beak (5-point star reads, matches cage keyhole), dusty empty shelf ledge (honest emptiness). Reverent. Strongest plate. cu-statue-key will lock exact star geometry. |
 | 14 | z4 v-alcove close-ups | t2i std x2 | pending | - | statue-key, planter-closed |
 | F4 | z4 state variants (free) | PIL/crop-edit | pending | $0 | trembling,blooming,blooming-keytaken,key-taken,picked,picked-keytaken; planter cu-states |
 
