@@ -138,6 +138,22 @@ jobs:
             MARKETING_VERSION="$MARKETING_VERSION" \
             CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
 
+      # The app's Info.plist pins CFBundleVersion to a literal ("1"), so the archive-time
+      # CURRENT_PROJECT_VERSION override does NOT reach the built app — every upload came
+      # out as build "1" and App Store Connect rejects duplicates. Stamp the real build
+      # number (and marketing version) directly into the archived app's Info.plist before
+      # export. manageAppVersionAndBuildNumber=false in the export plists preserves this;
+      # export re-signs the app, so the edited plist is carried into the signed .ipa.
+      - name: Stamp build number into the archive
+        run: |
+          set -euo pipefail
+          APP=$(ls -d "$ARCHIVE_PATH"/Products/Applications/*.app | head -n1)
+          PLIST="$APP/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $MARKETING_VERSION" "$PLIST"
+          echo "Stamped $(basename "$APP"): version $MARKETING_VERSION, build $BUILD_NUMBER"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$PLIST"
+
       - name: Export .ipa
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
