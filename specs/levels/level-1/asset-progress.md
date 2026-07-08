@@ -322,7 +322,7 @@ candidate becomes the locked seed + standing stylization language for the whole 
 
 ## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
 
-DERIVED PROGRESS: 28/52 fresh done | 0 retrying | 0 failed | 24 remaining | $9.90 spent | z3-cellar close-ups DONE (winch-socket/mirror-scratches/spoon-hallmark/barrel-gap).
+DERIVED PROGRESS: 30/52 fresh done | 0 retrying | 0 failed | 22 remaining | $10.20 spent | z4-alcove close-ups DONE. ALL fresh close-ups complete (30). Next: 15 icons + sprites.
 _Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
 _Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
 _Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._
@@ -386,8 +386,8 @@ _Grayscale 2.3 gate on every glyph/precision asset. cu-slots MUST carry inset su
 ### z4-alcove fresh close-ups (anchor: z4-alcove-base)
 | # | Asset | Method | Status | Cost | Note |
 |---|-------|--------|--------|------|------|
-| D-a1 | cu-statue-key | t2i std anchored | pending | - | folk-art crow (register 3) + 5-point star-bit key glint; + key-taken via PIL |
-| D-a2 | cu-planter-closed | t2i std anchored | pending | - | buds closed; 4 states (closed/trembling/blooming/picked) via PIL, radial glow grayscale-readable |
+| D-a1 | cu-statue-key | t2i std anchored | done | $0.15 | cu-statue-key-nb: dignified folk-art carved crow (register 3, not toy/not alive) + 5-point star-bit key in beak (matches cage keyhole/cage-key icon). key-taken via PIL. |
+| D-a2 | cu-planter-closed | t2i std anchored | done | $0.15 | cu-planter-closed-nb: moonflower buds tightly closed, cool moonlit, shrine niche = base state. trembling/blooming(radial glow)/picked via PIL. |
 
 ### Icons (15) — white-bg t2i std + PIL cutout to RGBA
 | # | Asset | Status | Cost | Note |
