@@ -25,6 +25,11 @@ struct ChromePrimaryButtonStyle: ButtonStyle {
         configuration.label
             .font(.headline)
             .foregroundColor(isDestructive ? Chrome.destructive : Chrome.textPrimary)
+            // QA-B3-002: the label must never truncate ("Main Men" / "Play Agai"). Pin it
+            // to a single line at its natural width so the capsule grows to fit the text
+            // instead of clipping it, and keep the minWidth only as a lower bound.
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
             .padding(.horizontal, 32)
             .frame(minWidth: isPad ? 220 : 200, minHeight: isPad ? 56 : 50)
             .background(

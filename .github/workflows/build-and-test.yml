@@ -163,6 +163,7 @@ jobs:
             -scheme EscapeRoomUITests \
             -only-testing:EscapeRoomUITests/EscapeRoomUITests/testMenuAndNavigationSmoke \
             -only-testing:EscapeRoomUITests/EscapeRoomUITests/testSaveResumeMidPlaythroughPersistsGate \
+            -only-testing:EscapeRoomUITests/EscapeRoomUITests/testSceneContentFillsScreen_QA_B3_001 \
             -destination "platform=iOS Simulator,name=${{ steps.sims.outputs.ipad_name }}" \
             -resultBundlePath TestResults/EscapeRoomUITests-iPad.xcresult \
             CODE_SIGNING_ALLOWED=NO \
@@ -175,6 +176,7 @@ jobs:
             -project EscapeRoom/EscapeRoom.xcodeproj \
             -scheme EscapeRoomUITests \
             -only-testing:EscapeRoomUITests/EscapeRoomUITests/testMenuAndNavigationSmoke \
+            -only-testing:EscapeRoomUITests/EscapeRoomUITests/testSceneContentFillsScreen_QA_B3_001 \
             -destination "platform=iOS Simulator,name=${{ steps.sims.outputs.iphone_di_name }}" \
             -resultBundlePath TestResults/EscapeRoomUITests-iPhoneDI.xcresult \
             CODE_SIGNING_ALLOWED=NO \

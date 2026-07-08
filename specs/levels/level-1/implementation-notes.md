@@ -954,3 +954,80 @@ Unit tests x3 (iPad 13-inch, smallest iPhone, Dynamic Island iPhone); UI tests x
 (iPhone-SE full playthrough + smoke + save-resume, iPad smoke + save-resume, Dynamic
 Island safe-area screenshots). The player-style UI playthrough passes with the re-staged
 plates. No test or game code changed this pass -- asset re-staging only.
+
+---
+
+## QA-B3-001 / QA-B3-002 viewport fix (build 3.1, 2026-07-09)
+
+Presentation-layer-only fix on branch `level1-rebuild-build3` for the build-3 player-style
+NO-GO. No puzzle logic / art / spec change; engine, hotspot rects, close-ups, gating, and
+all puzzle values are untouched.
+
+### QA-B3-001 (CRITICAL) — root cause + fix
+- **Root cause:** `SpriteKitContainerView` handed the bare `SKView` to SwiftUI's
+  `UIViewRepresentable` sizing with no explicit frame. Inside the NavigationStack host
+  chain the proposed size collapsed to a SQUARE (side = screen HEIGHT), pinned to the
+  leading edge. `RoomScene.scaleMode = .aspectFill` then filled that square SKView, so the
+  2:1 plate was cropped into a left-anchored square with a dead black band on the trailing
+  edge (iPad ~25%, iPhone SE ~44%, Dynamic Island ~54%). The SCENE math was always correct
+  — the defect was purely the SKView frame.
+- **Fix (`SpriteKitContainerView.swift`):** wrap the representable in a `GeometryReader` and
+  drive the `SKView` frame from the full proposed landscape size (the real window rect),
+  plus `autoresizingMask = [.flexibleWidth, .flexibleHeight]` so it tracks host bounds on any
+  rotation / size-class change. The scene KEEPS its fixed 2732×1366 `.aspectFill` size;
+  SpriteKit now scales+centers it to fill the full-window SKView edge-to-edge (cropping
+  top/bottom on wider-than-2:1 aspects), never a square. `RoomScene` is unchanged except a
+  clarifying comment on `scaleMode`.
+- **Why the scene math needed no change:** with the SKView full-window, the app's real
+  `.aspectFill` composition is now identical to what the UI test's `sceneCoordinate(_:_:_:)`
+  full-frame `.aspectFill(2732×1366)` math already assumed. Before the fix, taps "passed"
+  only because the app and the test shared the SAME (wrong) square geometry; after the fix
+  they agree on the TRUE full-window aspectFill, so the plate-normalized hotspot centers
+  remain correct.
+
+### QA-B3-002 (MAJOR) — resolved with its OWN fix (NOT purely downstream of 001)
+The SwiftUI chrome ZStack always filled the full window (only the SKView child was square),
+so the completion-card truncation and the pause-menu clipping were INDEPENDENT layout bugs,
+not artifacts of 001. Two fixes:
+- **Label truncation ("Main Men" / "Play Agai"):** `ChromePrimaryButtonStyle` had a min-width
+  but no line/width handling, so the `Label` truncated in narrow contexts. Added
+  `.lineLimit(1)` + `.fixedSize(horizontal: true, vertical: false)` so the capsule grows to
+  fit the text (min-width stays a lower bound).
+- **Pause menu crammed bottom-left / off-screen on Dynamic Island:** the pause menu was a
+  `.sheet`, which on a landscape iPhone / DI device composes as a narrow partial page. Moved
+  it to a FULL-SCREEN overlay inside the game ZStack (same pattern as the completion card),
+  with a full-window scrim and `.frame(maxWidth:.infinity, maxHeight:.infinity)` so the
+  button column centers within the safe area on every device.
+
+### Hotspot / coordinate re-verification (result)
+Re-verified against the NEW full-width composition: hotspot rects are plate-normalized
+against the fixed 2732×1366 scene and are UNCHANGED; under `.aspectFill` on the now-full-
+window SKView they map uniformly onto the window on every device class. The UI-test
+`sceneCoordinate` full-frame `.aspectFill(2732×1366)` math is UNCHANGED and is now the SAME
+composition the app renders (previously both were internally consistent on the square, which
+is why scripted taps passed on a broken frame). The scripted full solve was re-run against
+this composition (shared `solveLevelOne` helper) and completes end-to-end.
+
+### New regression assertions (RED on pre-fix build, GREEN after)
+Both in `EscapeRoomUITests.swift`:
+1. `testSceneContentFillsScreen_QA_B3_001` — enters the level, screenshots it, computes the
+   non-black bounding box of the rendered frame, and asserts content spans >=90% of BOTH
+   screen width and height. FAILS on the square-viewport build (SE ~56% width); passes on
+   the edge-to-edge fill. Added to the iPhone-SE, iPad, and Dynamic-Island UI CI steps
+   (the band was worst on iPad/DI). Closes the gap where the old
+   `assertFullScreenLandscapeComposition` only checked the WINDOW frame, not the CONTENT.
+2. `testChromeFullyOnScreen_QA_B3_002` — asserts the pause-menu buttons and the completion-
+   card buttons (`complete-main-menu`, `complete-replay`) have frames fully inside the
+   window bounds (catches the clip; buttons resolve by accessibility id regardless of visible
+   position, so a frame check is what actually detects it). Runs the full solve, so it stays
+   on the unfiltered iPhone-SE UI step to respect the CI time budget.
+
+### Security checklist (re-run for this pass)
+- No development-time secrets in the shipped app: re-grepped source + bundled resources for
+  fal/api/key/secret/token/Bearer/sk- — none; fal.ai key remains only in gitignored .env,
+  never bundled. PASS.
+- Minimal entitlements/permissions: unchanged this pass (presentation-layer edits only); no
+  NS*UsageDescription strings, no camera/mic/location/contacts capabilities. PASS.
+
+### CI
+(link added after the green run below)

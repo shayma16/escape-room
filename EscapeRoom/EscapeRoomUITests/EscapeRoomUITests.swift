@@ -166,6 +166,133 @@ final class EscapeRoomUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 1.5)
     }
 
+    // MARK: - QA-B3-001 / QA-B3-002 presentation regression guards
+
+    /// QA-B3-001 content-fill guard. The build-3 defect composed the game into a SQUARE
+    /// viewport pinned to the leading edge (side = screen HEIGHT), leaving a dead black
+    /// band of 25 % (iPad) to 54 % (Dynamic Island) of the width. The old
+    /// `assertFullScreenLandscapeComposition` only checked the WINDOW frame, never the
+    /// rendered CONTENT — so CI stayed green while a human saw the game boxed on the left.
+    ///
+    /// This asserts the rendered scene CONTENT spans essentially the full width AND height
+    /// (no large black margin), by measuring the non-black bounding box of the in-level
+    /// screenshot. It is EXPECTED TO FAIL on the pre-fix build (square viewport) and pass
+    /// once the SKView fills the full landscape window.
+    func testSceneContentFillsScreen_QA_B3_001() {
+        let app = launchFreshApp()
+        enterLevelOne(app)
+        Thread.sleep(forTimeInterval: 1.5) // scene fade-up settles
+        shoot(app, "b3-001-full-width-scene")
+
+        let box = nonBlackBoundingBoxFraction(app.screenshot())
+        // The room art (a lit painterly plate) is overwhelmingly non-black, so a full-
+        // window .aspectFill composition fills ~100 % of both axes. The square-viewport
+        // bug left >=25 % of the width black. Require >=90 % coverage on BOTH axes: this
+        // fails loudly on the dead-band bug and passes on the edge-to-edge fill.
+        XCTAssertGreaterThanOrEqual(box.widthFraction, 0.90,
+            "scene content must span >=90% of screen WIDTH (no dead black band — QA-B3-001). measured=\(box.widthFraction)")
+        XCTAssertGreaterThanOrEqual(box.heightFraction, 0.90,
+            "scene content must span >=90% of screen HEIGHT (QA-B3-001). measured=\(box.heightFraction)")
+    }
+
+    /// QA-B3-002 chrome-on-screen guard. Build 3 clipped the completion card ("Main Men",
+    /// "Play Agai") and crammed the pause menu bottom-left / off-screen on the Dynamic
+    /// Island device. This drives the level to completion and asserts BOTH the completion-
+    /// card and the pause-menu buttons have frames fully inside the window bounds (they
+    /// resolve by accessibility id regardless of visible position, so a frame check is
+    /// what actually catches the clip). Runs the full solve, so it is gated to the same
+    /// device as the full playthrough (iPhone SE) to stay within the CI time budget.
+    func testChromeFullyOnScreen_QA_B3_002() throws {
+        let app = launchFreshApp()
+        let window = app.windows.firstMatch
+        XCTAssertTrue(window.waitForExistence(timeout: coldLaunchTimeout))
+        let screen = window.frame
+
+        // Pause menu chrome: reachable immediately after entering the level.
+        enterLevelOne(app)
+        tapID(app, "pause-button")
+        for id in ["pause-main-menu"] {
+            let el = app.descendants(matching: .any)[id].firstMatch
+            XCTAssertTrue(el.waitForExistence(timeout: 6), "\(id) must exist in the pause menu")
+            assertFrameInside(el.frame, screen, label: id)
+        }
+        let resume = app.buttons["Resume"].firstMatch
+        XCTAssertTrue(resume.waitForExistence(timeout: 6), "Resume must exist")
+        assertFrameInside(resume.frame, screen, label: "Resume")
+        shoot(app, "b3-002-pause-on-screen")
+        resume.tap()
+        Thread.sleep(forTimeInterval: 0.4)
+
+        // Completion-card chrome: run the full scripted solve, then assert both buttons
+        // sit fully inside the window (the truncation was a layout clip, not an id issue).
+        solveLevelOne(app) // shared with the playthrough test
+        for id in ["complete-main-menu", "complete-replay"] {
+            let el = app.descendants(matching: .any)[id].firstMatch
+            XCTAssertTrue(el.waitForExistence(timeout: 6), "\(id) must exist on the completion card")
+            assertFrameInside(el.frame, screen, label: id)
+        }
+        shoot(app, "b3-002-completion-on-screen")
+    }
+
+    /// Asserts `frame` lies fully within `container` (QA-B3-002). A clipped/off-screen
+    /// button has an edge outside the window — this catches it.
+    private func assertFrameInside(_ frame: CGRect, _ container: CGRect, label: String,
+                                   file: StaticString = #filePath, line: UInt = #line) {
+        // A zero frame means XCUITest could not resolve a real position — treat as a fail.
+        XCTAssertFalse(frame.isEmpty, "\(label) has an empty frame (unresolved / off-screen)", file: file, line: line)
+        XCTAssertGreaterThanOrEqual(frame.minX, container.minX - 0.5, "\(label) clipped at LEFT", file: file, line: line)
+        XCTAssertGreaterThanOrEqual(frame.minY, container.minY - 0.5, "\(label) clipped at TOP", file: file, line: line)
+        XCTAssertLessThanOrEqual(frame.maxX, container.maxX + 0.5, "\(label) clipped at RIGHT", file: file, line: line)
+        XCTAssertLessThanOrEqual(frame.maxY, container.maxY + 0.5, "\(label) clipped at BOTTOM", file: file, line: line)
+    }
+
+    /// Measures the non-black bounding box of a screenshot as a fraction of its full
+    /// dimensions. A near-black pixel (luma < threshold) counts as background; the
+    /// leftmost/rightmost/topmost/bottommost non-black pixels define the content box.
+    /// Used by the QA-B3-001 content-fill guard.
+    private func nonBlackBoundingBoxFraction(_ screenshot: XCUIScreenshot,
+                                             lumaThreshold: UInt8 = 24)
+        -> (widthFraction: CGFloat, heightFraction: CGFloat) {
+        guard let cg = screenshot.image.cgImage else { return (0, 0) }
+        let w = cg.width, h = cg.height
+        guard w > 0, h > 0 else { return (0, 0) }
+        let bytesPerPixel = 4
+        let bytesPerRow = bytesPerPixel * w
+        var pixels = [UInt8](repeating: 0, count: bytesPerRow * h)
+        let colorSpace = CGColorSpaceCreateDeviceRGB()
+        guard let ctx = CGContext(data: &pixels, width: w, height: h, bitsPerComponent: 8,
+                                  bytesPerRow: bytesPerRow, space: colorSpace,
+                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else {
+            return (0, 0)
+        }
+        ctx.draw(cg, in: CGRect(x: 0, y: 0, width: w, height: h))
+        // Sample on a stride for speed; content bands are large so a coarse grid suffices.
+        let stride = max(1, min(w, h) / 400)
+        var minX = w, maxX = -1, minY = h, maxY = -1
+        var y = 0
+        while y < h {
+            var x = 0
+            while x < w {
+                let i = y * bytesPerRow + x * bytesPerPixel
+                let r = pixels[i], g = pixels[i + 1], b = pixels[i + 2]
+                // Rough luma; any channel clearly above black => content.
+                let luma = UInt16(r) * 3 + UInt16(g) * 6 + UInt16(b)
+                if luma / 10 > UInt16(lumaThreshold) {
+                    if x < minX { minX = x }
+                    if x > maxX { maxX = x }
+                    if y < minY { minY = y }
+                    if y > maxY { maxY = y }
+                }
+                x += stride
+            }
+            y += stride
+        }
+        guard maxX >= minX, maxY >= minY else { return (0, 0) }
+        let wf = CGFloat(maxX - minX + 1) / CGFloat(w)
+        let hf = CGFloat(maxY - minY + 1) / CGFloat(h)
+        return (wf, hf)
+    }
+
     // MARK: - All-device smoke: menus, level entry, z1 navigation, pause, settings
 
     func testMenuAndNavigationSmoke() {
@@ -227,6 +354,33 @@ final class EscapeRoomUITests: XCTestCase {
 
         let app = launchFreshApp()
         enterLevelOne(app)
+        solveLevelOne(app) // shared full solve; leaves the completion card presented
+
+        tapID(app, "complete-main-menu")
+
+        // Completion badge propagates to Level Select from the same save layer.
+        tapID(app, "menu-play")
+        XCTAssertTrue(app.descendants(matching: .any)["level-card-1-complete"].waitForExistence(timeout: 6),
+                      "Level Select must show the completion badge")
+        shoot(app, "play-19-badge")
+    }
+
+    /// The full scripted end-to-end solve, shared by `testFullPlaythroughWithScreenshots`
+    /// and `testChromeFullyOnScreen_QA_B3_002`. Assumes the app is already inside Level 1
+    /// (post `enterLevelOne`). Runs every puzzle via human-reachable taps and RETURNS with
+    /// the completion card presented (`complete-main-menu` existing) — it does NOT tap the
+    /// card, so callers can assert on the card or continue to Level Select.
+    ///
+    /// QA-B3-001 re-verification (2026-07-09): every scene tap below is a plate-normalized
+    /// coordinate fed through `sceneCoordinate(_:_:_:)`, whose full-frame .aspectFill
+    /// (2732x1366) math is now the SAME composition the app actually renders (the SKView
+    /// fills the full landscape window). Before the fix the app rendered into a left-
+    /// anchored square while the test used full-frame math; taps "passed" only because BOTH
+    /// used consistent-but-wrong square geometry (the taps and the hit-tests shared it).
+    /// After the fix, the app composition and this math agree on the TRUE full-window
+    /// .aspectFill, so these same plate-normalized centers remain correct — re-verified
+    /// against the RoomSceneCoordinator hotspot rects (unchanged).
+    private func solveLevelOne(_ app: XCUIApplication) {
         shoot(app, "play-01-hearth")
 
         // z1 hearth: poker, ash sift (glint close-up).
@@ -448,13 +602,6 @@ final class EscapeRoomUITests: XCTestCase {
         XCTAssertTrue(app.descendants(matching: .any)["complete-main-menu"].waitForExistence(timeout: 6),
                       "completing p17 must present the completion card")
         shoot(app, "play-18-complete")
-        tapID(app, "complete-main-menu")
-
-        // Completion badge propagates to Level Select from the same save layer.
-        tapID(app, "menu-play")
-        XCTAssertTrue(app.descendants(matching: .any)["level-card-1-complete"].waitForExistence(timeout: 6),
-                      "Level Select must show the completion badge")
-        shoot(app, "play-19-badge")
     }
 
     // MARK: - Save/resume + clue-gate persistence (D7), driven through the real chrome

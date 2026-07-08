@@ -126,6 +126,16 @@ struct GameRoomView: View {
                     }
                 )
             }
+
+            // Pause menu (QA-B3-002): presented as a FULL-SCREEN overlay inside the game
+            // ZStack, not a `.sheet`. On a landscape iPhone / Dynamic Island device a
+            // `.sheet` composes as a narrow partial page (buttons crammed bottom-left,
+            // partially off-screen); a full-window overlay centers within the safe area
+            // on every device, matching the completion card.
+            if showPause {
+                PauseMenuView(session: session, isPresented: $showPause)
+                    .transition(.opacity)
+            }
         }
         .onChange(of: session.currentView) { newView in
             let zoneChanged = coordinatorBox.coordinator.viewID.zoneID != newView.zoneID
@@ -138,9 +148,6 @@ struct GameRoomView: View {
                 coordinatorBox.setView(newView, size: CGSize(width: 2732, height: 1366))
                 withAnimation(.easeOut(duration: half)) { transitionDip = 0 }
             }
-        }
-        .sheet(isPresented: $showPause) {
-            PauseMenuView(session: session, isPresented: $showPause)
         }
         .statusBarHidden(true)
         .onAppear { maybeShowFirstRunHint() }

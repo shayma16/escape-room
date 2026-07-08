@@ -48,6 +48,12 @@ final class RoomScene: SKScene {
     init(viewID: ViewID, size: CGSize) {
         self.viewID = viewID
         super.init(size: size)
+        // `.aspectFill` on the fixed 2732×1366 authoring scene: SpriteKit scales + centers
+        // the scene to FILL the SKView bounds. Once the host SKView is the full landscape
+        // window (QA-B3-001 container fix), the 2:1 plate covers the whole window edge-to-
+        // edge (cropping top/bottom on wider-than-2:1 aspects), NOT a left-pinned square.
+        // The scene size stays 2732×1366 so plate-normalized hotspots and the UI-test
+        // .aspectFill(2732×1366) coordinate math map 1:1 onto the window — unchanged.
         scaleMode = .aspectFill
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
         baseNode.anchorPoint = CGPoint(x: 0.5, y: 0.5)
@@ -61,6 +67,8 @@ final class RoomScene: SKScene {
         baseNode.texture = Self.texture(named: named)
         // Plates are authored 2:1 to match the 2:1 scene exactly (Section 8); always
         // fill the scene so plate-normalized coordinates == scene-normalized coordinates.
+        // The scene keeps this fixed 2732×1366 size and `.aspectFill` covers the full-
+        // window SKView (QA-B3-001 container fix); nothing here needs a runtime resize.
         baseNode.size = size
     }
 
@@ -173,6 +181,9 @@ final class RoomScene: SKScene {
                             height: rectNormalized.height * baseSize.height)
     }
 
+    /// Hotspots are plate-normalized against the fixed 2732×1366 scene. Under `.aspectFill`
+    /// on the full-window SKView (QA-B3-001), SpriteKit maps scene coordinates onto the
+    /// window uniformly, so these centers stay pixel-accurate to the art on every device.
     func configureHotspots(_ hotspots: [Hotspot]) {
         for node in hotspotNodes.values { node.removeFromParent() }
         hotspotNodes.removeAll()

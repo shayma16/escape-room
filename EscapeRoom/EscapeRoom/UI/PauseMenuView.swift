@@ -14,7 +14,11 @@ struct PauseMenuView: View {
 
     var body: some View {
         ZStack {
+            // Full-window scrim (QA-B3-002): this view is now a full-screen overlay, not a
+            // `.sheet`, so the scrim covers the whole game and the button column centers
+            // in the safe area on every device (incl. landscape iPhone / Dynamic Island).
             Chrome.scrim.ignoresSafeArea()
+                .contentShape(Rectangle())
                 .onTapGesture { isPresented = false }
 
             VStack(spacing: 16) {
@@ -39,7 +43,10 @@ struct PauseMenuView: View {
                 .buttonStyle(.chromePrimary)
                 .accessibilityIdentifier("pause-main-menu")
             }
+            // Keep the whole column inside the safe area on notch/Dynamic-Island devices.
+            .padding(.vertical, 24)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .alert("Restart level?", isPresented: $showRestartConfirm) {
             Button("Cancel", role: .cancel) {}
             Button("Restart") {
