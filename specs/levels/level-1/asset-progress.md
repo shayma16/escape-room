@@ -322,7 +322,7 @@ candidate becomes the locked seed + standing stylization language for the whole 
 
 ## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
 
-DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 0 remaining | $16.05 spent | ALL DERIVED ASSETS DONE. Final spend $16.05 of $18.90. Verification in progress.
+DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 0 remaining | $16.05 spent | COMPLETE. All fresh close-ups(30)+icons(15)+plates(6)+state variants(38) done. Grayscale gate PASS. All visually_necessary_elements present. Final $16.05 of $18.90.
 _Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
 _Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
 _Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._

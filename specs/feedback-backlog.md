@@ -517,6 +517,14 @@ re-release, per standard process — nothing in this round ships without that re
 > the build-3 astrolabe sprites/resolved-state art. → Developer (state render) + verify
 > build-3 astrolabe assets at z2 review. Also: the "clearing" success sound is at least
 > firing, but confirm it's an event-appropriate solve cue, not the generic one.)
+>
+> **CONFIRMED (user re-tested):** re-zooming onto the solved astrolabe shows the SAME grey
+> background — so the solved-state astrolabe close-up is a broken/transparent/missing IMAGE.
+> This is the root of R2-019 too: the drawer items can't be collected because the resolved
+> close-up renders empty grey. So R2-018 + R2-019 = ONE bug: the p03-resolved cabinet/
+> astrolabe close-up asset (drawer-open-with-coin+crank, plates resolved) is broken/absent.
+> Fix = correct build-3 art for that state + Developer wiring so items are visible+tappable.
+> HIGH priority (progression-blocking per R2-019).
 
 ### R2-019 — status: logged ⚠️ POSSIBLE CRITICAL (progression-blocking)
 > the hidden drawer opened [p03], let me pick up the items. i can't seem to pick anything

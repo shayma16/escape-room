@@ -1978,5 +1978,38 @@
   "spend_running": 4.8,
   "cap": 18.9,
   "status": "BASES COMPLETE. Derived assets (close-ups/icons/sprites/state variants) pending; user reviews bases per-zone before integration."
+ },
+ "build3_derived": {
+  "engine": "fal-ai/nano-banana-pro (t2i + edit)",
+  "style": "clearly stylized engine-render (mandatory template verbatim); per-scene consistency: each derived asset anchored to ITS OWN zone base + up to 13 refs",
+  "method": {
+   "close_ups": "fresh t2i std anchored to zone base; free PIL crops where true zoom-in",
+   "state_variants": "region_edit.py = crop region -> nano-banana edit (state prompt) -> feathered composite back onto fresh base => ZERO drift outside region, pixel-aligned; PIL removals/overlays for simple states",
+   "precision": "PIL geometry stamp on clean render substrate: moon-phase dials (moon_dials.py), canonical Orion astrolabe plate-2 (orion_stamp.py from orion-canonical.json), crescent hallmark on coin+spoon (crescent_stamp.py), z3 beam matrix (beam_engine_v3.py, #DCE8F2 core)"
+  },
+  "counts": {
+   "fresh_close_ups": 30,
+   "icons": 15,
+   "astrolabe_plates": 6,
+   "wide_and_cu_state_variants": 38,
+   "total_nb_derived": 95
+  },
+  "coverage": "ALL puzzle-graph visually_necessary_elements present across the finished set (verified). Grayscale 2.3 gate PASS on all glyph/precision assets (dial phases, element runes, star keyhole, cabinet recesses, Orion plate, potion glyphs, crescent hallmarks, triptych crow-counts/moons, CCW brew spiral, radial bloom).",
+  "canonical_geometry": {
+   "orion": "masters/orion-canonical.json (belt 35deg, 7 dots)",
+   "crescent": "masters/crescent-hallmark.json (horns RIGHT) reused on coin+spoon+cu-slots+cu-coin",
+   "moon_phases": "waxing lit-RIGHT / waning lit-LEFT"
+  },
+  "spend": {
+   "baseline_bases": 4.8,
+   "derived_session": 11.25,
+   "grand_total": 16.05,
+   "cap": 18.9
+  },
+  "flags": [
+   "z2-bench flame1/2/3 are retained build-2 painterly plates (flame HEIGHT stages + rim ember). If a style-jump vs fresh bench base is flagged in QA, re-derive via region-edit (est ~$0.45, budget available).",
+   "z3 beam matrix landing spots are PIL glow (functional, R4-correct: each shutter x detent x shelf combo reads distinctly; beam-blocked reads look-here not bugged). Refine to volumetric if QA flags.",
+   "z1-entry crow-rafters state not separately rendered (crow-lintel covers the endgame nudge; rafters = animation beat off cu-cage-crow if Developer needs it)."
+  ]
  }
 }
