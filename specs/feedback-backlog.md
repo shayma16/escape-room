@@ -808,4 +808,15 @@ chain, level completable.
   cuckoo from the design; the clock is now purely the numeral reference). Art: build-3 clock close-up
   no longer needs the cuckoo-door/toy states.
 
+### R2-031 — status: logged → ART-PROCESS DIRECTIVE (feeds Cluster E + all future generation)
+> "when generating a scene, take picture-perfect note of it — how everything is set together,
+> the colors, the shapes, the texture, everything — so when you zoom in on an area you recreate
+> it EXACTLY as in the original scene, just with a different perspective or state."
+> (ROOT-CAUSE fix for the wide↔close-up inconsistency family R2-010/16/23/25: close-ups were
+> generated "in the style of" the base rather than FROM it, so they drifted. BAKED INTO
+> `.claude/agents/asset-generation.md` as the binding "Scene→close-up EXACT recreation" rule:
+> derive close-ups by CROPPING the base-plate region and using that exact crop as the img2img
+> base, only changing crop/perspective or state; a close-up whose layout/colors/shapes differ
+> from its parent scene is a DEFECT. → governs the Cluster-E re-rolls and every future level.)
+
 _Say "that's all, process it" (or similar) when ready to process this round._

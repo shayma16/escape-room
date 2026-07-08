@@ -83,6 +83,21 @@ creative decisions.
   zone/scene under `specs/assets/level-N/`.
 - **State-variant alignment**: variants of the same hotspot must be pixel-aligned with
   their base scene so swaps don't visibly jump.
+- **Scene→close-up EXACT recreation (binding — user directive 2026-07-08):** the base
+  scene plate is the CANONICAL truth for everything in that scene — exact composition,
+  object placement, colors, shapes, materials/textures, and lighting. Every close-up and
+  every state-variant of an area within a scene MUST reproduce that area EXACTLY as it
+  appears in the base plate — only the camera crop/perspective (tighter) or the puzzle
+  STATE may change. Never re-invent an area's arrangement, palette, object shapes, or
+  texture in a close-up. **Technique (do this, don't "generate a fresh close-up in the
+  style of"):** derive each close-up by CROPPING the high-res base-plate region and using
+  that exact crop as the img2img/`edit` base, then only enhance detail or apply the state
+  change on top; pass the base plate + the region crop among the (up to 14) reference
+  images. A close-up whose layout, colors, or object shapes differ from its parent scene
+  is a DEFECT — this exact failure caused the round-2 wide↔close-up inconsistency bugs
+  (door bird-skull, cabinet sun/moon slots, alcove statue, workshop window). When you
+  finalize a base plate, note its key visual facts (what sits where, palette, materials)
+  so downstream close-ups/variants reproduce them faithfully.
 - **Checkpoint granularity**: bundle outputs per zone for user review — per-zone batches,
   not per-image approvals.
 - **Progress visibility (user requirement, 2026-07-05; revised same day after it failed
