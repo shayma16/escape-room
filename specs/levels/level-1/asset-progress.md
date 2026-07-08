@@ -322,7 +322,7 @@ candidate becomes the locked seed + standing stylization language for the whole 
 
 ## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
 
-DERIVED PROGRESS: 20/52 fresh done | 0 retrying | 0 failed | 32 remaining | $8.10 spent | z2-bench close-ups DONE (brew/mortar/rim-rune).
+DERIVED PROGRESS: 24/52 fresh done | 0 retrying | 0 failed | 28 remaining | $9.30 spent | z2-cabinet close-ups DONE (slots-RECESS/astrolabe-Orion/potion-shelf/window/coin). z2 COMPLETE.
 _Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
 _Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
 _Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._
@@ -369,11 +369,11 @@ _Grayscale 2.3 gate on every glyph/precision asset. cu-slots MUST carry inset su
 ### z2-cabinet fresh close-ups (anchor: z2-cabinet-base)
 | # | Asset | Method | Status | Cost | Note |
 |---|-------|--------|--------|------|------|
-| D-c1 | cu-slots | t2i std anchored | pending | - | CRITICAL: INSET sun/moon RECESS geometry (wide shows raised medallions); ring-annular + crescent seat; 3 states via PIL |
-| D-c2 | cu-astrolabe-plate | t2i std + PIL orion | pending | - | plate-2 = canonical 7-dot Orion (orion-canonical.json); interactive ring |
-| D-c3 | cu-potion-shelf | t2i std anchored | pending | - | 5 bottle silhouettes + wax seals + pictogram labels (sleep=closed-eye, frost, growth) |
-| D-c4 | cu-window-orion | free crop from canonical sky | pending | 0 | crop z2-cabinet window OR sky-master |
-| D-c5 | cu-coin-hallmark | t2i std + PIL hallmark | pending | - | crescent hallmark = canonical die (matches spoon) |
+| D-c1 | cu-slots | t2i std anchored | done | $0.15 | cu-slots-nb: CRITICAL PASS - both slots are INSET RECESSES (sun ring-annular seat + crescent cavity, visible interior depth/shadow, NOT raised medallions). Crescent horns RIGHT = canonical. seated/open states via PIL. |
+| D-c2 | cu-astrolabe-plate | t2i std + PIL orion | done | $0.30 | cu-astrolabe-plate-nb: regen as BLANK brass disc (dots take archived) + PIL canonical 7-dot Orion stamp from orion-canonical.json (belt 35deg, clears hub). Grayscale PASS. Other 5 plate dot-patterns via PIL (SP-2/32). incl 1 regen. |
+| D-c3 | cu-potion-shelf | t2i std anchored | done | $0.15 | cu-potion-shelf-nb: 5 distinct bottle sils + wax seals + labels: frost(snowflake)/growth(seedling)/sleep(CLOSED lidded eye, AF-4 correct)/2 decoys. Blind-name PASS in grayscale. |
+| D-c4 | cu-window-orion | free crop from canonical sky | done | $0 | cu-window-orion-nb: FREE crop of cabinet window (canonical moon lit-right + 7-dot Orion). In-scene sky the player matches to plate-2. |
+| D-c5 | cu-coin-hallmark | t2i std + PIL hallmark | done | $0.15 | cu-coin-hallmark-nb: silver coin, crescent hallmark horns-RIGHT = canonical die (matches cu-slots crescent + spoon bowl). Legible. |
 
 ### z3-cellar fresh close-ups (anchor: z3-cellar-base)
 | # | Asset | Method | Status | Cost | Note |

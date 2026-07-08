@@ -297,4 +297,43 @@ re-release, per standard process — nothing in this round ships without that re
 
 ---
 
+## Round 2 (in progress — logging, not yet processed)
+
+**Device/context:** iPad Pro, TestFlight, **build 2** (Within 1.0 build 6). NOTE: build 3
+(art-only rebuild) is concurrently in progress — triage each item at processing into:
+(a) covered-by-build-3 art, (b) functional/logic → Developer (persists regardless of art),
+(c) art-legibility/composition → steer the live build-3 cascade.
+
+### R2-001 — status: logged
+> the clock atop the fireplace is a bit confusing, i click the clock needle, and when it
+> reaches 12 a bird pops, not sure what's the purpose of this clue really if it is really
+> a clue
+> (context: the D5 clock cuckoo — by design a FLAVOR/red-herring beat, NOT a clue; the
+> real p01 reference is the numeral ring. Recurrence of round-1 F-008 confusion. This is a
+> DESIGN/UX-clarity issue that persists in build 3 (art-only) — the cuckoo reads as "this
+> should do something." Candidate fixes: make it read more clearly as inert flavor, or
+> reconsider the beat. Functional/design, not art-render.)
+
+### R2-002 — status: logged (POSITIVE, not an issue)
+> i like the new add to inventory sound, it's quiet and nice and indicative so that's good
+> (confirmation: the round-1 sound overhaul landed well; keep the add-to-inventory sound.)
+
+### R2-003 — status: logged
+> i picked up the iron, saw the triangle-up mark atop the fireplace [FIRE rune glyph — the
+> new build-3-style glyph reads correctly, good], zoomed onto the ash, and using the iron
+> stick unveiled the ring — but immediately upon finding the ring it is added to my
+> inventory without me picking it up. Better: unveil the ring, have me click it AGAIN to
+> pick it up from the ash pile, and once it's in inventory the ash pile shows empty (I
+> cleared it). "think that needs an image generation too"
+> (context: p05-ash-sift. TWO-PART: (a) FUNCTIONAL — insert a manual pickup step: poker →
+> ring becomes visible in the sifted ash (no auto-grant) → tap ring to collect → ash shows
+> ring-taken. Same manual-pickup principle as round-1 F-023/F-018, applied to the ash ring.
+> (b) ART — needs a clear "sifted ash with the ring sitting visible/pickable" state and a
+> "ring-taken / cleared" state. The graph already defines ash states
+> undisturbed/sifted-with-glint/ring-taken + cu-ash-* close-ups; build 3 is regenerating
+> these anyway — STEER the live cascade to render the sifted state with the ring clearly
+> pickable and a distinct cleared state. So: functional → Developer; art → fold into build 3.)
+
+---
+
 _Say "that's all, process it" (or similar) when ready to process this round._
