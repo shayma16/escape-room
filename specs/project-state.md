@@ -36,7 +36,17 @@ runs player-style QA and the user does per-zone art review before release.
 - Music `music-level1.wav` rights confirmed by Producer (fal.ai-generated, user-owned,
   commercial-use OK) — recorded in the implementation-notes licensing table.
 
-**Remaining before QA:** CI green on `level1-rebuild-build3`.
+**Remaining before QA:** ✅ CI GREEN (run 28969620585 — build + unit×3 devices + UI
+incl. full playthrough all pass; 4 stale tests fixed, no game-code bugs). BUILD 3 is
+code-complete. **NEXT CHECKPOINT = USER PER-ZONE ART REVIEW (before QA).** Agreed
+sequencing (user, 2026-07-08): Developer → art review → drop-in re-rolls of flagged
+plates (using the R2-031 scene→close-up exact-recreation rule) → player-style QA → ship.
+Art review agenda: (1) wide↔close-up consistency on the previously-buggy spots (door
+beak-basin, cabinet sun/moon slots, alcove statue, workshop window — R2-010/16/23/25);
+(2) the Developer's flagged art-gaps G1/G2/G3 (missing z1 rug-moved plate; state-variant
+wide overlays not pixel-aligned to the 4K bases — re-derive for pixel-perfect). Re-rolls
+are drop-in PNG swaps (same paths, no code change). After review+re-rolls → player-style
+QA (R2-META-QA: verify rendered states + reachability as a human sees them).
 
 **If a usage/session limit cut off mid-cascade — resume WITHOUT re-spending budget (this
 is the one job where sloppy resume wastes real money against the $18.90 cap):**
