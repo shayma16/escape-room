@@ -22,7 +22,12 @@ on:
 jobs:
   build-and-test:
     runs-on: macos-15          # macOS runners bill at 10x minutes on private repos
-    timeout-minutes: 60
+    # QA build-2 regression (2026-07-08): raised 60 -> 90. Un-skipping the iPad UI
+    # playthrough plus the new save/resume UI test pushed the two UI-test device steps
+    # past the old 60-min job budget (run 28899880260 was cancelled with the iPad step
+    # still running AFTER the iPhone step had already passed). 90 min gives headroom;
+    # the iPad step is also scoped down below to not re-run the heaviest test.
+    timeout-minutes: 90
 
     steps:
       - name: Checkout
@@ -126,9 +131,20 @@ jobs:
             | xcpretty
 
       # UI tests (QA test-infrastructure request 1): scripted full playthrough with
-      # per-view screenshots as xcresult attachments, on both primary devices
-      # (BUG-004 re-framed plates put all puzzle-critical elements in the shared crop).
-      - name: UI tests - smallest supported iPhone (full playthrough + screenshots)
+      # per-view screenshots as xcresult attachments.
+      #
+      # Device split (QA build-2 regression, 2026-07-08): the FULL 19-step playthrough
+      # runs on the smallest supported iPhone (SE) — the canonical completability proof
+      # on the tightest layout — PLUS the smoke + save/resume tests. The iPad step runs
+      # only smoke + save/resume (NOT the heavy full playthrough again), which keeps
+      # iPad UI coverage (chrome scaling, landscape composition, save/resume, gate
+      # persistence on the primary device) without re-paying the full playthrough's
+      # ~4-5 min on the larger simulator — the double-full-playthrough is what blew the
+      # job time budget in run 28899880260. The full playthrough's hotspot geometry is
+      # device-independent (plate-normalized, all taps inside the iPad-safe band), so the
+      # iPhone-SE full run plus the iPad unit + smoke + save/resume suites cover the iPad
+      # completability path; the shared crop was already proven by BUG-004's re-frame.
+      - name: UI tests - smallest supported iPhone (full playthrough + smoke + save-resume)
         run: |
           set -o pipefail
           xcodebuild test \
@@ -139,12 +155,14 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
 
-      - name: UI tests - iPad (full playthrough + smoke)
+      - name: UI tests - iPad (smoke + save-resume)
         run: |
           set -o pipefail
           xcodebuild test \
             -project EscapeRoom/EscapeRoom.xcodeproj \
             -scheme EscapeRoomUITests \
+            -only-testing:EscapeRoomUITests/EscapeRoomUITests/testMenuAndNavigationSmoke \
+            -only-testing:EscapeRoomUITests/EscapeRoomUITests/testSaveResumeMidPlaythroughPersistsGate \
             -destination "platform=iOS Simulator,name=${{ steps.sims.outputs.ipad_name }}" \
             -resultBundlePath TestResults/EscapeRoomUITests-iPad.xcresult \
             CODE_SIGNING_ALLOWED=NO \

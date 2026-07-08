@@ -75,7 +75,10 @@ Non-checkpoint steps auto-proceed but still escalate individual ambiguities per 
   (approved 2026-07-05: serif title accent, dark-only, thumbnail level cards, keyhole
   identity motif). One-time build; never restyled per level.
 - Business: free, no IAP at launch; architect so IAP can be added later without rework.
-- Art: Flux 2 Pro via fal.ai API (user supplies the API key). Not Midjourney, not Claude
-  Design for scene art.
+- Art: Nano Banana Pro (`fal-ai/nano-banana-pro`) via fal.ai API (user supplies the API
+  key). Not Midjourney, not Claude Design for scene art. (Was Flux 2 Pro through
+  2026-07-07; switched after Flux's painterly/matte-painting output missed the target
+  style. A mandatory engine-render style template + up to 14 reference images per
+  generation now govern every asset — see `.claude/agents/asset-generation.md`.)
 - Genre: near-wordless; atmosphere via visuals; no hint system (separate full walkthrough
   document instead).

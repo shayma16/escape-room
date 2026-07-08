@@ -74,6 +74,43 @@ NO CI run yet. To resume:
    fixes; style-guide Rev-2 addendum; test edits. Unknown how complete/correct — VERIFY.
 6. gh at "C:\Program Files\GitHub CLI\gh.exe"; repo PUBLIC (free CI minutes).
 
+## QUEUED: Level 1 art rebuild → build 3 (user directive 2026-07-08)
+
+After build 2 ships to TestFlight, redo ALL Level 1 art in the new Nano Banana Pro
+engine-render style (build-1/2 art was painterly Flux, user rejected). **FULL rebuild —
+NO painterly carryover** (user 2026-07-08: carrying over any old asset would look
+inconsistent; the earlier "carry over glyph geometry to save money" plan is SUPERSEDED).
+**Hard cap: $18.90, and not more** (raised from $10). Every visible asset is freshly
+generated OR derived from a FRESH new-style base (never a painterly original). Budget
+stretches via free PIL downscales + free crops/overlays *off the fresh bases* (keeps
+retries affordable inside the cap). Nano Banana Pro pricing: $0.15/img std, $0.30 4K.
+Full costed strategy in `specs/levels/level-1/rebuild-plan.md`. Puzzle graph / solution
+values / Designer+Validator UNCHANGED — render-style swap only. Blocked on build 2
+shipping (needs user checkpoint-2 GO). Still per-zone user art review before integration.
+AF-1 door fix + JC-fb1-4 workshop return-door art fold into this rebuild (done in the new
+style, not the old).
+
+## CHECKPOINT 2 STATUS (for user's morning, 2026-07-08)
+
+**Build 2 QA regression = GO** (qa-report.md "Build 2 regression": zero bugs, full
+end-to-end playthrough un-skipped + GREEN, clue-gating/D6/D7/select-then-tap/nav/audio all
+verified, no regressions, +new save/resume UI test). Branch `feedback-round-1` is green
+(run 28903408232).
+
+**ACTION NEEDED FROM USER: merge PR #6** (https://github.com/shayma16/escape-room/pull/6).
+PR #5 was merged but only captured build-2 code up to 6c82467; it MISSED 5 later commits —
+critically the **CI 90-min timeout fix** (without it main's merge CI CANCELLED at 65 min,
+so **main is NOT currently green**), plus the QA GO report, the Nano Banana art-model
+switch, and the rebuild plan/budget. PR #6 brings all 5 to main. Sequence: merge PR #6 →
+confirm main CI green → release build 2 to TestFlight (release.yml, macos-26/Xcode 26,
+Admin ASC key already set) → then Level 1 rebuild (build 3, $18.90 cap, see QUEUED
+section above).
+
+Known non-blocking carry-forwards into/after build 2: QA-OBS-023 (CI screenshots render
+rotated/letterboxed — screenshot fidelity only, not a play defect; real-device is the
+user's TestFlight spot-check); F-010/AF-1 door art NOT fixed in build 2 — deliberately
+folded into the build-3 full rebuild instead of patching painterly art.
+
 ## Pipeline position
 
 **POST-RELEASE FEEDBACK ROUND 1 → BUILD 2 IN PROGRESS (2026-07-07).** User tested build 1
