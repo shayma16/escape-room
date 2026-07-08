@@ -645,14 +645,92 @@ re-release, per standard process — nothing in this round ships without that re
 > Reinforces R2-META-QA (this hard-lock passed automated QA). → Developer (astrolabe resolved-
 > state render + item collectibility, CRITICAL) + build-3 art consistency (z2 window/drawer).)
 
+### R2-026 — status: logged 🔴 CRITICAL — grey-box bug is SYSTEMIC (not just astrolabe)
+> placed the silver moon on the cabinet hole — SAME grey box issue here. randomly picked up a
+> knife [file] and a bottle [phial] from the grey box. going to use them, but log it.
+> (context: the broken grey-box resolved-state is NOT astrolabe-only — the sun/moon cabinet
+> (p04 resolved → cabinet-open revealing file+phial) ALSO renders as an empty grey box with
+> invisible-but-present items. So this is a SYSTEMIC class: every close-up that transitions to
+> a "revealed items" / opened state (astrolabe drawer p03, sun/moon cabinet p04, and likely
+> others — verify cellar drawer, alcove, etc.) renders grey/blank instead of the resolved-state
+> art, leaving items invisible. Almost certainly ONE root cause: the "open/revealed" overlay or
+> state-image isn't being composited/shown (missing/transparent), same mechanism as the
+> systemic state-visual-refresh bug (R2-013/14/15/18/22). Build 3 regenerated these resolved
+> states (cabinet-open, drawer-open) — so the ART now exists; the Developer must fix the
+> render/compositing so those states DISPLAY and their items are visible+tappable. TOP CRITICAL
+> with R2-025. → Developer (fix the resolved-state rendering across ALL such close-ups) +
+> confirm build-3 resolved-state assets are wired in. Reinforces R2-META-QA.)
+
 ### R2-context (narration — not routed)
+> "tried to feed the bird with the spoon but i have no food. let me open the cage. cool i got
+> [reconfirm R2-024] the down/back arrow ALSO plays the psh — reinforces that the default
+> per-tap sound fires on navigation too; one fix (kill the default tap sound) covers it.
+>
 > "tried to feed the bird with the spoon but i have no food. let me open the cage. cool i got
 > the feather." — p11 solved via the cage key (feather granted) — WORKING. Minor design note:
 > the 'feed the crow' theory-magnet still flickered ("i have no food"), the exact theory D4/R1
 > aimed to defuse — but it resolved fine (user pivoted to the key), so no action; just noting
 > the magnet isn't 100% dead. Reinforces R2-011 (user likes the refusal).
 
+### R2-027 — status: logged
+> using that tool [crank] that twists things into the right zoomed placeholder [winch socket,
+> p08]. i hear psh+success tone but i DON'T see the items attached — another image glitch. zoom
+> out: window/shutter opened, moonbeam shines. turned the mirror to direct moonlight [p09], went
+> in and picked up the moonbloom [p10] — able to pick it up WITHOUT zooming on it. but clicking
+> the flowerpot AGAIN still lets me zoom in, really unnecessary
+> (context: (a) crank-fitted state doesn't render the crank attached after fitting the winch
+> (p08) — same resolved-state-not-showing family as grey-box R2-025/26 + state-refresh
+> R2-013/14/22; add to that fix. (b) psh+success double-sound → R2-024/sound audit. (c)
+> DEPLETED-HOTSPOT: after picking the moonbloom the flowerpot still invites a pointless zoom —
+> SAME as R2-022 (spent barrel)/R2-017 (dead-end zooms); confirms the pattern → "prune depleted/
+> dead-end zooms" design discussion. POSITIVE: the moonbeam→mirror→bloom light-routing chain
+> (p08/09/10) otherwise WORKED and read well. → Developer (crank render + sound) + design
+> (depleted-hotspot pruning). Persists in build 3.)
+
+### R2-028 — status: logged
+> combining items isn't intuitive — how can i make combining two objects from inventory more
+> intuitive?
+> (context: p12 file+spoon combine. Current combine (round-1: tap item A then tap item B, or
+> drop on workbench) is undiscoverable. FEATURE/UX → Developer. Producer to propose options at
+> processing, e.g.: select item A (armed) → tap item B in the inventory bar shows a "combine?"
+> affordance/animation; or a small two-slot combine tray in the enlarged inventory; keep it
+> consistent with select-then-tap. Persists in build 3. User explicitly invites a solution.)
+
+### R2-029 — status: logged (feature, forward-looking)
+> when enlarging an inventory item, i should be able to ROTATE it to look around it for clues
+> (maybe something written under an item in future rooms)
+> (context: enhance the item-inspect view (F-016/§7-R3) with rotation / multi-angle inspection
+> so items can hide clues on their back/underside — a puzzle mechanic for FUTURE levels too.
+> Bigger feature: needs either lightweight 3D item models or multiple rendered angles per item
+> (art + tech implication; icons currently single-angle RGBA). → Developer + Asset/Art for
+> multi-angle assets; scope at processing (likely a Level-2+ investment, but decide whether to
+> seed the interaction now). Note for the Designer: enables "clue hidden under/behind an item".)
+
+### R2-030 — status: logged
+> when i select an inventory item and try to use it on something it's not made for, it auto-
+> deselects on failure. don't — let me manually select/deselect
+> (context: refines the round-1 select-then-tap model. On a FAILED use (wrong target), KEEP the
+> item armed instead of auto-disarming, so the user can immediately try another target without
+> re-selecting; deselect only on explicit user action (tap the item again / tap-away) or on a
+> SUCCESSFUL use. Careful: the crow feed-cup (D4) and wrong-slot placements already return the
+> item to inventory — those should leave it armed too, per this. Functional → Developer;
+> persists in build 3.)
+
+### R2-completion — status: logged (LEVEL COMPLETED end-to-end)
+> added moon dust [shavings] to mortar... pumped bellows to 3, stirred CCW 5 times (psh on
+> pump/stir/release buttons), released, bottled the moonwater [draught] with the empty bottle
+> (psh), went to the main gate, poured the moonwater into the thorny-door placeholder, unlocked
+> (psh). "i'm out."
+> (context: LEVEL COMPLETED end-to-end — p13→p14→p15→p16→p17 all work; win condition fires. So
+> the PUZZLE LOGIC is fully solvable and complete; the user got through despite the bugs (partly
+> via build-1 knowledge past the grey-box soft-lock R2-025/26). Sound: psh reconfirmed on brew
+> buttons, item-pickup-into-bottle, door unlock, cellar nav — all the DEFAULT tap sound (R2-024)
+> — plus the brew mini-game buttons work functionally. Net: bugs are ~entirely PRESENTATION
+> layer (sound, resolved-state rendering, state refresh, wide↔close-up consistency, nav clarity,
+> hotspot pruning, item lifecycle) — the underlying design/logic is sound.)
+
 ---
+## ROUND 2 — testing COMPLETE (level finished). Ready to process on user "process it" + music.
 
 _Say "that's all, process it" (or similar) when ready to process this round._
 _REMINDER PENDING: R2-005 — get the exact background music from the user before closing._
