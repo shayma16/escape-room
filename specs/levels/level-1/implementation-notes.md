@@ -856,7 +856,14 @@ All four fixes are at the TEST layer; no shipped game code changed. Root cause p
 the build-3 batch changed several interaction contracts (Q3 cuckoo removal, R2-007 triptych
 split, R2-003a reveal-then-collect ring, R2-028 combine affordance) but the corresponding
 unit/UI test assertions were not all updated, and the UI-playthrough failures were masked
-because the job aborted at the first failing unit step. CI green run: see below.
+because the job aborted at the first failing unit step.
+
+CI GREEN run: https://github.com/shayma16/escape-room/actions/runs/28969620585 — all steps
+success: Build (iOS Simulator); Unit tests x3 (iPad 13-inch, iPhone SE, Dynamic Island
+iPhone); UI tests x3 (iPhone-SE full playthrough + smoke + save-resume, iPad smoke +
+save-resume, Dynamic Island safe-area screenshots). Predecessor failing run was
+28965195362 (2 unit tests); intermediate runs 28966543895 and 28967618579 surfaced the
+UI-playthrough staleness in sequence as each earlier failure was cleared.
 
 ### Security checklist (re-run for build 3)
 - No development-time secrets in the shipped app. Grepped source + bundled resources for
