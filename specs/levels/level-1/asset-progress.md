@@ -322,7 +322,7 @@ candidate becomes the locked seed + standing stylization language for the whole 
 
 ## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
 
-DERIVED PROGRESS: 24/52 fresh done | 0 retrying | 0 failed | 28 remaining | $9.30 spent | z2-cabinet close-ups DONE (slots-RECESS/astrolabe-Orion/potion-shelf/window/coin). z2 COMPLETE.
+DERIVED PROGRESS: 28/52 fresh done | 0 retrying | 0 failed | 24 remaining | $9.90 spent | z3-cellar close-ups DONE (winch-socket/mirror-scratches/spoon-hallmark/barrel-gap).
 _Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
 _Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
 _Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._
@@ -378,10 +378,10 @@ _Grayscale 2.3 gate on every glyph/precision asset. cu-slots MUST carry inset su
 ### z3-cellar fresh close-ups (anchor: z3-cellar-base)
 | # | Asset | Method | Status | Cost | Note |
 |---|-------|--------|--------|------|------|
-| D-z1 | cu-winch-socket | t2i std anchored | pending | - | empty SQUARE socket = crank-shaped absence; too big for key bit; + crank-fitted via PIL |
-| D-z2 | cu-mirror-scratches | t2i std anchored | pending | - | 3 detents + floor scratch arcs at detent-3 |
-| D-z3 | cu-spoon-drawer | t2i std + PIL hallmark | pending | - | crescent hallmark in spoon bowl (canonical die) |
-| D-z4 | cu-barrel-gap | t2i std anchored | pending | - | rim pry gap; weight visible when pried (PIL state) |
+| D-z1 | cu-winch-socket | t2i std anchored | done | $0.15 | cu-winch-socket-nb: iron hub w/ EMPTY SQUARE SOCKET (crank-shaped absence, too big/wrong for key) + pulley/rope. crank-fitted via PIL. |
+| D-z2 | cu-mirror-scratches | t2i std anchored | done | $0.15 | cu-mirror-scratches-nb: floor mirror on iron stand w/ detent bracket + pale scratch arcs worn in dirt floor. mirror-sweep/detent states via PIL. |
+| D-z3 | cu-spoon-drawer | t2i std + PIL hallmark | done | $0.15 | cu-spoon-drawer-nb: open drawer + silver spoon; PIL-stamped canonical crescent hallmark (horns RIGHT) in bowl = coin die match. PASS. |
+| D-z4 | cu-barrel-gap | t2i std anchored | done | $0.15 | cu-barrel-gap-nb: barrel nailed lid w/ visible pry-gap wedge + lifted nails. pried+weight state via PIL. |
 
 ### z4-alcove fresh close-ups (anchor: z4-alcove-base)
 | # | Asset | Method | Status | Cost | Note |
