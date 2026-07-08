@@ -224,7 +224,7 @@ Statuses: pending / generating / done / retrying / failed. Cost includes retries
 | 8 | z2/v-cabinet/z2-cabinet-base | t2i 4K anchored (seed 42200) + PIL canonical sky | done | $0.30 | 1 take + PIL sky fix ($0). Potion shelf 5+ distinct bottles+pictogram labels, ingredient cabinet (sunburst+crescent), astrolabe pedestal+base drawer, cool 35% window slab. PIL FIX: model drew scattered stars + wrong crescent moon -> replaced with CANONICAL waxing-gibbous moon (lit-right, cropped from sky-master) + canonical 7-dot Orion belt (orion-canonical.json, 35deg) stamped in pane; grayscale PASS. NOTE for user: cabinet sunburst+crescent render as raised MEDALLIONS not inset recesses at wide scale - recess geometry carried by cu-slots close-up (fresh). |
 | 9 | z2 v-bench close-ups | t2i std x2 | pending | - | brew-clear (65deg top-down), mortar-empty |
 | 10 | z2 v-cabinet close-ups | t2i std x4 | pending | - | slots-empty, astrolabe, potion-shelf, window-orion |
-| F2 | z2 state variants (free) | PIL/crop-edit | done | $0.60 | z2 states via region-edit (fresh-base anchored): cabinet-open (file+phial inner shelf), cabinet-drawer-open (coin+crank), brew-clear, brew-fizzle. flame1/2/3 = build-2 plates retained (flame HEIGHT + rim ember stages; flag: painterly, may re-derive if style-jump flagged). mortar states pending PIL. |
+| F2 | z2 state variants (free) | PIL/crop-edit | done | $0.90 | z2 states DONE: cabinet-open(file+phial)/drawer-open(coin+crank)/brew-clear/brew-fizzle + mortar-blossom/mortar-paste (all region-edit, fresh-base anchored). flame1/2/3 = build-2 retained (see flag). |
 
 ### z3 — Hidden Cellar (v-cellar)
 | # | Asset | Method | Status | Cost | Note |
@@ -322,7 +322,7 @@ candidate becomes the locked seed + standing stylization language for the whole 
 
 ## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
 
-DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 7 remaining | $16.20 spent | z3 COMPLETE (mechanism edits + PIL beam matrix). $16.20. Remaining: mortar states + verification.
+DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 0 remaining | $16.05 spent | ALL DERIVED ASSETS DONE. Final spend $16.05 of $18.90. Verification in progress.
 _Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
 _Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
 _Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._

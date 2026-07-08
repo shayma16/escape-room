@@ -491,6 +491,47 @@ re-release, per standard process — nothing in this round ships without that re
 > art; verify at z2 review. Also add door R2-010 to the same "wide↔close-up consistency"
 > verification pass.)
 
+### R2-017 — status: logged ⚠️ DESIGN TENSION — flag at processing, don't silently apply
+> zoomed onto the potions on the shelf — since i solved this before i know they don't do
+> anything, a cheap decoy. in principle, don't let me zoom into areas which cannot be used
+> for clues
+> (context: the potion shelf is an INTENTIONAL red herring (rh-potion-shelf — tempts pouring
+> a potion in the door as a shortcut). The user's "no zoom on non-clue areas" principle
+> CONFLICTS with the deliberate red-herring design (rh-clock, rh-potion-shelf, rh-rusted-key,
+> rh-grimoire-decoys — all intentional challenge/atmosphere). This is a design-philosophy
+> change with real tradeoffs (removing zoom-dead-ends strips the red herrings + some
+> atmosphere). DO NOT silently strip them — SURFACE to the user at processing: do they want
+> (a) red herrings removed entirely, (b) kept but made more obviously inert, or (c) this was
+> just an in-the-moment gripe? Design → Theme & Puzzle Designer if a real change. Persists in
+> build 3 regardless of art.)
+
+### R2-018 — status: logged
+> clicking the astrolabe i selected the Orion-shaped plate [p03]. i hear the "clearing" sound
+> used on successful items, but the plates DISAPPEAR — left with only a transparent grey
+> background where the 6 plates used to be (graphical bug)
+> (context: z2 v-cabinet astrolabe p03. On selecting the correct plate, the 6 plate sprites
+> vanish to a transparent grey void instead of showing the resolved state (selected plate /
+> drawer springs open with coin+crank). State-visual/graphical bug — likely the plate
+> sprites are removed on solve with nothing rendered beneath, or a missing/!transparent
+> resolved-state asset. Ties to the systemic state-visual issue (R2-013/14/15) AND may need
+> the build-3 astrolabe sprites/resolved-state art. → Developer (state render) + verify
+> build-3 astrolabe assets at z2 review. Also: the "clearing" success sound is at least
+> firing, but confirm it's an event-appropriate solve cue, not the generic one.)
+
+### R2-019 — status: logged ⚠️ POSSIBLE CRITICAL (progression-blocking)
+> the hidden drawer opened [p03], let me pick up the items. i can't seem to pick anything
+> up? is this normal?
+> (context: z2 astrolabe base drawer yields itm-silver-coin + itm-crank. User CANNOT collect
+> them. LIKELY SAME BUG as R2-018 (plates vanished to grey void) — the p03-solved cabinet
+> close-up appears to render into a broken/empty state where the drawer items aren't shown or
+> aren't tappable. POTENTIALLY CRITICAL: coin is needed for p04, crank for p08 — if a real
+> player can't collect them, it's a SOFT-LOCK. NOTE the discrepancy: QA's build-2 automated
+> full-playthrough PASSED (collected these items via scripted coords) — so the LOGIC works
+> but the human-facing interactive/visual state is broken (scripted taps hit rects the user
+> can't see/reach). This is exactly the kind of thing an automated test can mask. →
+> Developer, HIGH priority, investigate R2-018+R2-019 together as one broken p03-resolved
+> state. Persists in build 3 (functional). Escalate at processing.)
+
 ---
 
 _Say "that's all, process it" (or similar) when ready to process this round._
