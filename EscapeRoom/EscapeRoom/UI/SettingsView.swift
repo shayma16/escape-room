@@ -1,9 +1,11 @@
 import SwiftUI
 
-/// Settings per Section 5.4: Sound toggle, Reset Progress (destructive, confirmed),
+/// Settings per Section 5.4 (Rev, R2-006): TWO independent audio toggles —
+/// Ambiance/Music and Sound Effects — plus Reset Progress (destructive, confirmed),
 /// About, version footer (read from the bundle, never hardcoded).
 struct SettingsView: View {
-    @State private var soundOn: Bool = SoundManager.shared.soundOn
+    @State private var ambianceOn: Bool = SoundManager.shared.ambianceEnabled
+    @State private var sfxOn: Bool = SoundManager.shared.sfxEnabled
     @State private var showResetConfirm = false
     @State private var showAbout = false
     @State private var resetVersion = 0
@@ -14,20 +16,39 @@ struct SettingsView: View {
             VStack(spacing: 0) {
                 List {
                     Section {
+                        // R2-006 toggle 1: ambiance + music.
                         HStack {
-                            Image(systemName: soundOn ? "speaker.wave.2" : "speaker.slash")
+                            Image(systemName: ambianceOn ? "speaker.wave.2" : "speaker.slash")
                                 .foregroundColor(Chrome.textPrimary)
-                            Text("Sound")
+                            Text("Music & Ambiance")
                                 .foregroundColor(Chrome.textPrimary)
                             Spacer()
-                            Toggle("", isOn: $soundOn)
+                            Toggle("", isOn: $ambianceOn)
                                 .labelsHidden()
                                 .tint(Chrome.accent)
-                                .onChange(of: soundOn) { newValue in
-                                    SoundManager.shared.soundOn = newValue
+                                .onChange(of: ambianceOn) { newValue in
+                                    SoundManager.shared.ambianceEnabled = newValue
                                 }
                         }
                         .frame(minHeight: 52)
+                        .accessibilityIdentifier("settings-ambiance-toggle")
+
+                        // R2-006 toggle 2: sound effects (interaction cues).
+                        HStack {
+                            Image(systemName: sfxOn ? "speaker.wave.2.fill" : "speaker.slash.fill")
+                                .foregroundColor(Chrome.textPrimary)
+                            Text("Sound Effects")
+                                .foregroundColor(Chrome.textPrimary)
+                            Spacer()
+                            Toggle("", isOn: $sfxOn)
+                                .labelsHidden()
+                                .tint(Chrome.accent)
+                                .onChange(of: sfxOn) { newValue in
+                                    SoundManager.shared.sfxEnabled = newValue
+                                }
+                        }
+                        .frame(minHeight: 52)
+                        .accessibilityIdentifier("settings-sfx-toggle")
 
                         Button(role: .destructive) {
                             showResetConfirm = true

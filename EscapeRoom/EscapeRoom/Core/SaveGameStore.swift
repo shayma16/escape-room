@@ -63,9 +63,22 @@ final class SaveGameStore {
         load().levels[levelID]?.isComplete ?? false
     }
 
+    /// Legacy master toggle — retained only so pre-split saves migrate. Reads true iff
+    /// EITHER split channel is on (so old code paths that consulted it don't hard-mute).
     var soundOn: Bool {
-        get { load().soundOn }
-        set { update { $0.soundOn = newValue } }
+        get { let s = load(); return s.ambianceOn || s.sfxOn }
+        set { update { $0.soundOn = newValue; $0.ambianceOn = newValue; $0.sfxOn = newValue } }
+    }
+
+    /// R2-006 split audio settings, persisted independently.
+    var ambianceOn: Bool {
+        get { load().ambianceOn }
+        set { update { $0.ambianceOn = newValue } }
+    }
+
+    var sfxOn: Bool {
+        get { load().sfxOn }
+        set { update { $0.sfxOn = newValue } }
     }
 
     /// Reset ALL progress (Settings -> Reset Progress). Destructive; caller is

@@ -31,7 +31,6 @@ final class RoomSceneCoordinator: ObservableObject {
     // MARK: Transient (non-persisted) per-scene UI state.
 
     @Published var lastBrewOutcome: PuzzleEngine.BrewOutcome?
-    @Published var justPoppedClock: Bool = false
     @Published var showTerminalRefusal: Bool = false
     /// The close-up currently presented over this scene. Set by tap handling below;
     /// cleared by the close-up's down-chevron (CloseUpView).
@@ -49,8 +48,6 @@ final class RoomSceneCoordinator: ObservableObject {
     /// (it was never removed from inventory), so no soft-lock is possible (QA-BUG-017).
     @Published private(set) var pendingSunItem: String?
     @Published private(set) var pendingMoonItem: String?
-    /// True briefly after a successful ash sift so the glint state renders (QA-BUG-016).
-    private(set) var justSiftedAsh: Bool = false
     /// True briefly after hanging the weight so the z3-cellar-weight-hung plate renders
     /// before the shelf slides (QA-BUG-016).
     private var showingWeightHungBeat: Bool = false
@@ -139,6 +136,14 @@ final class RoomSceneCoordinator: ObservableObject {
         closeUpOrigin = nil
     }
 
+    /// R2-023b: the single-view-zone exit affordance navigates out via the diegetic
+    /// passage. Only fires if the target zone is actually reachable (the cellar's ladder
+    /// requires the trapdoor open; the alcove's shelf gap is always open once you're in
+    /// the alcove). Guards keep it from stranding the player.
+    func exitSingleViewZone(to target: ViewID) {
+        onNavigate?(target)
+    }
+
     /// Also called by PagerCloseUp per page so multi-spread clues (grimoire recipe
     /// page, individual triptych paintings) record at page granularity.
     ///
@@ -205,9 +210,16 @@ final class RoomSceneCoordinator: ObservableObject {
 
     private func configureStudy() {
         scene.setBaseTexture("z1-study-base")
+        // R2-007: the triptych is THREE separate panels, each mapping to its OWN close-up
+        // (tapping the right/3-crow painting must open the 3-crow close-up, not the left).
+        // The old single "triptych" hotspot always opened the pager at panel 1, which is
+        // what produced the reported right->left mismap. Panels laid left-to-right across
+        // the old triptych rect (x 0.29..0.66).
         scene.configureHotspots([
             Hotspot(id: "grimoire", 0.36, 0.46, 0.25, 0.18),
-            Hotspot(id: "triptych", 0.29, 0.07, 0.37, 0.20),
+            Hotspot(id: "triptych-1", 0.29, 0.07, 0.123, 0.20),
+            Hotspot(id: "triptych-2", 0.413, 0.07, 0.123, 0.20),
+            Hotspot(id: "triptych-3", 0.536, 0.07, 0.123, 0.20),
             Hotspot(id: "flowerpot", 0.59, 0.46, 0.09, 0.14),
             Hotspot(id: "rune-door", 0.75, 0.33, 0.07, 0.26),
         ])
@@ -279,11 +291,17 @@ final class RoomSceneCoordinator: ObservableObject {
     }
 
     private func refreshCabinet() {
-        scene.setOverlay("slots", imageNamed: RoomVisuals.cabinetDoorState(state) ? "ov-slots-seated" : nil,
+        // The open-cabinet overlay already shows the seated medallions, so only render
+        // the separate slots-seated overlay while the cabinet is solved but NOT yet drawn
+        // open (transient) — in practice solving opens it immediately, so this collapses
+        // to "open overlay only" and avoids a redundant double-composite (gap G3 overlays
+        // are localized crops that would otherwise fight for z-order).
+        let cabOverlay = RoomVisuals.cabinetOpenOverlay(state)
+        let showSlotsOnly = RoomVisuals.cabinetDoorState(state) && cabOverlay == nil
+        scene.setOverlay("slots", imageNamed: showSlotsOnly ? "ov-slots-seated" : nil,
                           rectNormalized: overlayRect("z2/v-cabinet", "ov-slots-seated"))
         // F-023: the open cabinet keeps its contents visible in the wide shot until
         // both are collected, then swaps to the empty-shelf overlay.
-        let cabOverlay = RoomVisuals.cabinetOpenOverlay(state)
         scene.setOverlay("cabinet-door", imageNamed: cabOverlay,
                           rectNormalized: cabOverlay.map { overlayRect("z2/v-cabinet", $0) } ?? .zero)
         scene.setOverlay("adrawer", imageNamed: RoomVisuals.astrolabeDrawerOpen(state) ? "ov-adrawer-open" : nil,
@@ -384,9 +402,15 @@ final class RoomSceneCoordinator: ObservableObject {
 
     private func handleTap(_ hotspotID: String) {
         // An armed inventory item makes this tap a USE, never a look.
+        // R2-030: keep the item ARMED on a FAILED use so the player can immediately try
+        // another target; disarm ONLY on a successful use (or explicit tap-away/re-tap,
+        // handled in the inventory bar). "Successful" = the use meaningfully progressed
+        // OR triggered its intended in-world reaction (e.g. the crow refusal, a fairness
+        // reject) — anything that isn't a silent no-op on the wrong target.
         if let armed = interaction?.armedItem {
-            interaction?.disarm() // every use attempt disarms (design decision)
-            useItem(armed, on: hotspotID)
+            if useItem(armed, on: hotspotID) {
+                interaction?.disarm()
+            }
             return
         }
         lookTap(hotspotID)
@@ -407,8 +431,9 @@ final class RoomSceneCoordinator: ObservableObject {
             // Taken: the hook is empty — dead hotspot, intentionally silent (F-006).
         case (.hearth, "ash"):
             // No auto-apply: a bare tap is always a look. Sifting requires the armed
-            // poker (F-007/F-020/F-021 root cause fix).
-            present(.plain(image: RoomVisuals.ashCloseUp(state, justSifted: justSiftedAsh)), from: "ash")
+            // poker (F-007/F-020/F-021). If the ring is already revealed-but-uncollected,
+            // the ash close-up presents it as a tap-to-collect target (R2-003a).
+            present(.ashPile, from: "ash")
         case (.hearth, "clock"):
             present(.clock, from: "clock")
         case (.hearth, "bellows"):
@@ -431,8 +456,12 @@ final class RoomSceneCoordinator: ObservableObject {
         // -- z1 v-study --
         case (.study, "grimoire"):
             present(.grimoire, from: "grimoire")
-        case (.study, "triptych"):
-            present(.triptych, from: "triptych")
+        case (.study, "triptych-1"):
+            present(.triptych(panel: 0), from: "triptych")
+        case (.study, "triptych-2"):
+            present(.triptych(panel: 1), from: "triptych")
+        case (.study, "triptych-3"):
+            present(.triptych(panel: 2), from: "triptych")
         case (.study, "flowerpot"):
             present(.plain(image: "cu-flowerpot"), from: "flowerpot")
         case (.study, "rune-door"):
@@ -508,7 +537,14 @@ final class RoomSceneCoordinator: ObservableObject {
                 present(.plain(image: "cu-spoon-drawer"), from: "drawer")
             }
         case (.cellar, "barrel"):
-            // No auto-pry with the poker merely held: look at the pry gap.
+            // Q1 (depleted-hotspot pruning): once the barrel is pried AND the weight is
+            // collected, it's spent — stop offering the pry-gap zoom (R2-022). Before
+            // that, a bare look at the pry gap (the poker sift itself needs the armed
+            // poker). The pried/empty state renders in the wide view (barrelOverlay).
+            if state.hasSolved(PuzzleGraph.PuzzleID.barrelPry), state.hasItem(PuzzleGraph.ItemID.weight)
+                || state.hasSolved(PuzzleGraph.PuzzleID.shelfCounterweight) {
+                break // depleted: no pointless zoom
+            }
             present(.plain(image: "cu-barrel-gap"), from: "barrel")
         case (.cellar, "winch"):
             // No auto-fit with the crank merely held: look at the socket/crank.
@@ -534,11 +570,16 @@ final class RoomSceneCoordinator: ObservableObject {
 
         // -- z4 v-alcove --
         case (.alcove, "planter"):
-            if !state.hasSolved(PuzzleGraph.PuzzleID.moonflowerBloom), PuzzleEngine.pickBlossom(state: state) {
-                SoundManager.shared.play(.pickup)
-            } else {
-                present(.plain(image: "cu-planter-\(RoomVisuals.planterState(state))"), from: "planter")
+            if !state.hasSolved(PuzzleGraph.PuzzleID.moonflowerBloom) {
+                if PuzzleEngine.pickBlossom(state: state) {
+                    SoundManager.shared.play(.pickup)
+                } else {
+                    // Not yet bloomed (needs the moonbeam): a look is still informative.
+                    present(.plain(image: "cu-planter-\(RoomVisuals.planterState(state))"), from: "planter")
+                }
             }
+            // Q1: after the single blossom is picked the planter is spent — no more zoom
+            // (R2-027). The picked state renders in the wide view.
         case (.alcove, "statue-key"):
             if !RoomVisuals.cageKeyTaken(state) {
                 state.addItem(PuzzleGraph.ItemID.cageKey)
@@ -560,7 +601,7 @@ final class RoomSceneCoordinator: ObservableObject {
         if state.hasFlag(PuzzleGraph.StateFlag.doorUnsealed) {
             if !state.isComplete {
                 if PuzzleEngine.slideBoltAndLeave(state: state) {
-                    SoundManager.shared.play(.unlock)
+                    SoundManager.shared.play(.door) // the front door swinging open (R2-015a)
                 }
             }
         } else {
@@ -596,9 +637,12 @@ final class RoomSceneCoordinator: ObservableObject {
     /// the exact flow the user could not perform in F-020.
     func useArmedItemInCloseUp() {
         guard let armed = interaction?.armedItem else { return }
-        interaction?.disarm()
         guard let origin = closeUpOrigin else { return }
-        useItem(armed, on: origin)
+        // R2-030: disarm only on a successful/engaged use; a wrong-target no-op keeps the
+        // item armed so the player can try elsewhere without re-selecting.
+        if useItem(armed, on: origin) {
+            interaction?.disarm()
+        }
     }
 
     /// Collect one visible item from an opened container (F-023/F-018 manual pickup).
@@ -615,7 +659,7 @@ final class RoomSceneCoordinator: ObservableObject {
         SoundManager.shared.play(.stonePress)
         switch PuzzleEngine.pressRuneTile(rune, state: state) {
         case .solved:
-            SoundManager.shared.play(.unlock)
+            SoundManager.shared.play(.door) // themed rune-door opening (R2-015a)
             dismissCloseUp() // pull back so the opened door / new zone reads
         case .reset:
             SoundManager.shared.play(.wrong) // dull knock; tiles reset flush
@@ -643,19 +687,12 @@ final class RoomSceneCoordinator: ObservableObject {
         }
     }
 
-    /// D5: advance the clock's hour hand one numeral.
+    /// Q3 (user decision 2026-07-08): the D5 cuckoo is REMOVED. The mantel clock is now
+    /// purely the p01 numeral-ring reference; its hands still move (a small tactile beat)
+    /// but nothing pops and no state is latched — the clock never gates or rewards.
     func advanceClockHour() {
         clockHour = clockHour % 12 + 1
         SoundManager.shared.play(.tick)
-        guard clockHour == 12 else { return }
-        if PuzzleEngine.setClockToTwelve(state: state) == .popped {
-            justPoppedClock = true
-            SoundManager.shared.play(.clockClack)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.8) { [weak self] in
-                self?.justPoppedClock = false
-            }
-        }
-        // Spent: door hangs ajar, toy inert — no sound beyond the hand tick (D5).
     }
 
     /// p14 brew resolve outcome, reported by BrewControlView inside the brew close-up.
@@ -666,17 +703,23 @@ final class RoomSceneCoordinator: ObservableObject {
     // MARK: - Item use (armed item -> target hotspot)
 
     /// The single "use item X on hotspot Y" entry point (select-then-tap). Also the
-    /// programmatic surface unit tests drive. Unknown pairings do nothing — silently
-    /// (no generic error noise; the disarm itself is the feedback), and never mutate
-    /// state.
-    func useItem(_ itemID: String, on hotspotID: String) {
+    /// programmatic surface unit tests drive.
+    ///
+    /// Returns TRUE when the use meaningfully engaged the target (progressed a puzzle OR
+    /// produced its intended in-world reaction — a refusal, a fairness reject) and the
+    /// caller should DISARM. Returns FALSE for a wrong-target no-op, so the item stays
+    /// ARMED and the player can try another target immediately (R2-030). Never mutates
+    /// state on a false return.
+    @discardableResult
+    func useItem(_ itemID: String, on hotspotID: String) -> Bool {
         switch (viewID, hotspotID) {
 
         // -- z1 v-entry --
         case (.entry, "feed-cup"):
             // D4 (+ D1 for the draught specifically): ANY item offered here gets the
-            // identical terminal refusal; item is returned to inventory unspent.
-            guard !state.hasFlag(PuzzleGraph.StateFlag.crowFreed) else { break }
+            // identical terminal refusal; item is returned to inventory unspent. This IS
+            // the item's intended reaction here, so it counts as a use (disarm).
+            guard !state.hasFlag(PuzzleGraph.StateFlag.crowFreed) else { return false }
             if itemID == PuzzleGraph.ItemID.phialDraught {
                 PuzzleEngine.attemptPourDraughtAtFeedCup()
             } else {
@@ -686,62 +729,82 @@ final class RoomSceneCoordinator: ObservableObject {
             activeCloseUp = .refusal
             closeUpOrigin = nil
             SoundManager.shared.play(.refusal)
+            return true
         case (.entry, "star-keyhole"), (.entry, "cage"):
-            entryCageUse(itemID, on: hotspotID)
+            return entryCageUse(itemID, on: hotspotID)
         case (.entry, "door-lock"):
             if itemID == PuzzleGraph.ItemID.phialDraught {
                 if PuzzleEngine.pourDraughtOnBasin(state: state) {
                     SoundManager.shared.play(.solve)
                     present(.plain(image: "cu-door-lock-vines-gone"), from: "door-lock") // wither beat
+                    return true
                 }
+                return false
             } else if itemID == PuzzleGraph.ItemID.rustedKey {
-                // Red-herring fairness valve: visible mechanical reject.
+                // Red-herring fairness valve: visible mechanical reject (an intended
+                // reaction — disarm).
                 SoundManager.shared.play(.wrong)
                 present(.plain(image: "cu-door-lock"), from: "door-lock")
+                return true
             }
+            return false
 
         // -- z1 v-hearth --
         case (.hearth, "ash"):
             if itemID == PuzzleGraph.ItemID.poker {
-                siftAsh()
+                return siftAsh()
             }
+            return false
 
         // -- z3 v-cellar --
         case (.cellar, "barrel"):
             if itemID == PuzzleGraph.ItemID.poker {
                 let newly = !state.hasSolved(PuzzleGraph.PuzzleID.barrelPry)
-                if PuzzleEngine.pryBarrel(state: state), newly {
-                    SoundManager.shared.play(.solve)
+                if PuzzleEngine.pryBarrel(state: state) {
+                    if newly { SoundManager.shared.play(.solve) }
+                    dropItemIfDepleted(PuzzleGraph.ItemID.poker)
+                    return true
                 }
             }
+            return false
         case (.cellar, "hook"):
             if itemID == PuzzleGraph.ItemID.weight {
                 let newly = !state.hasSolved(PuzzleGraph.PuzzleID.shelfCounterweight)
-                if PuzzleEngine.hangWeight(state: state), newly {
-                    SoundManager.shared.play(.unlock)
-                    playWeightHungBeat()
+                if PuzzleEngine.hangWeight(state: state) {
+                    if newly {
+                        SoundManager.shared.play(.unlock)
+                        playWeightHungBeat()
+                    }
+                    dropItemIfDepleted(PuzzleGraph.ItemID.weight)
+                    return true
                 }
             }
+            return false
         case (.cellar, "winch"):
             if itemID == PuzzleGraph.ItemID.crank {
                 let newly = !state.hasFlag(PuzzleGraph.StateFlag.moonbeamOn)
-                if PuzzleEngine.fitCrankAndTurn(state: state), newly {
-                    SoundManager.shared.play(.unlock)
+                if PuzzleEngine.fitCrankAndTurn(state: state) {
+                    if newly { SoundManager.shared.play(.unlock) }
+                    dropItemIfDepleted(PuzzleGraph.ItemID.crank)
+                    return true
                 }
             }
+            return false
 
         // -- z2 v-cabinet --
         case (.cabinet, "sun-slot"), (.cabinet, "moon-slot"):
-            attemptCabinetPlacement(itemID, slot: hotspotID)
+            return attemptCabinetPlacement(itemID, slot: hotspotID)
 
         // -- z2 v-bench --
         case (.bench, "mortar"):
             if itemID == PuzzleGraph.ItemID.blossom, PuzzleEngine.grindPaste(state: state) {
                 SoundManager.shared.play(.solve)
                 present(.plain(image: "cu-mortar-paste"), from: "mortar")
+                return true
             }
+            return false
         case (.bench, "cauldron"), (.bench, "ladle"):
-            cauldronUse(itemID)
+            return cauldronUse(itemID)
         case (.bench, "workbench"):
             // p12 secondary path: the workbench accepts the combination.
             if itemID == PuzzleGraph.ItemID.file || itemID == PuzzleGraph.ItemID.spoon {
@@ -749,25 +812,67 @@ final class RoomSceneCoordinator: ObservableObject {
                 let newly = !state.hasSolved(PuzzleGraph.PuzzleID.fileShavings)
                 if ItemCombinations.combine(itemID, other, state: state), newly {
                     SoundManager.shared.play(.solve)
+                    dropItemIfDepleted(PuzzleGraph.ItemID.file)
+                    return true
                 }
             }
+            return false
 
         default:
-            break
+            return false
         }
     }
 
-    /// p05 via the armed poker (the ONLY way to sift — no passive auto-apply).
-    private func siftAsh() {
-        guard state.hasItem(PuzzleGraph.ItemID.poker), !state.hasSolved(PuzzleGraph.PuzzleID.ashSift) else { return }
+    // MARK: - Item lifecycle (R2-020 place/consume/retain)
+
+    /// Remaining-uses table (from the puzzle graph's tool `uses`): a TOOL is retained
+    /// while it still has an unsatisfied use and dropped from inventory once EVERY use is
+    /// done. Placed/consumed items are removed at their placement by the engine already
+    /// (cabinet coin, ground blossom, filled phial, poured draught). This covers the
+    /// multi-use / single-use TOOLS the graph never consumes, so a finished tool doesn't
+    /// linger. Anti-softlock: a tool is dropped ONLY when all its uses are provably done.
+    private static let toolUseGates: [String: (GameState) -> Bool] = [
+        // Poker: p05 ash sift AND p06 barrel pry.
+        PuzzleGraph.ItemID.poker: { s in
+            s.hasSolved(PuzzleGraph.PuzzleID.ashSift) && s.hasSolved(PuzzleGraph.PuzzleID.barrelPry)
+        },
+        // Crank: p08 winch only.
+        PuzzleGraph.ItemID.crank: { s in s.hasFlag(PuzzleGraph.StateFlag.moonbeamOn) },
+        // Weight: p07 counterweight only (placed on the hook — consumed).
+        PuzzleGraph.ItemID.weight: { s in s.hasSolved(PuzzleGraph.PuzzleID.shelfCounterweight) },
+        // File: p12 shavings only (its shavings persist; the file itself is spent after).
+        PuzzleGraph.ItemID.file: { s in s.hasSolved(PuzzleGraph.PuzzleID.fileShavings) },
+        // Cage key: p11 only (placed/spent in the cage lock).
+        PuzzleGraph.ItemID.cageKey: { s in s.hasFlag(PuzzleGraph.StateFlag.crowFreed) },
+    ]
+
+    /// Drops a tool from inventory iff ALL its graph uses are satisfied (R2-020). No-op if
+    /// the item still has a pending use, keeping the anti-softlock invariant intact.
+    private func dropItemIfDepleted(_ itemID: String) {
+        guard let gate = Self.toolUseGates[itemID], gate(state), state.hasItem(itemID) else { return }
+        state.removeItem(itemID)
+    }
+
+    /// p05 via the armed poker (the ONLY way to sift — no passive auto-apply). R2-003a:
+    /// sifting reveals the ring in the ash (no auto-grant); the ash close-up now shows it
+    /// as a tap-to-collect target and the sifted plate renders until it's taken.
+    @discardableResult
+    private func siftAsh() -> Bool {
+        guard state.hasItem(PuzzleGraph.ItemID.poker), !state.hasSolved(PuzzleGraph.PuzzleID.ashSift) else { return false }
         if PuzzleEngine.siftAsh(state: state) {
             SoundManager.shared.play(.solve)
-            justSiftedAsh = true
-            // QA-BUG-016: show the sifted-with-glint state as the success beat.
-            present(.plain(image: "cu-ash-sifted"), from: "ash")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) { [weak self] in
-                self?.justSiftedAsh = false
-            }
+            present(.ashPile, from: "ash") // ring now visible + pickable
+            dropItemIfDepleted(PuzzleGraph.ItemID.poker) // no-op unless barrel also done
+            return true
+        }
+        return false
+    }
+
+    /// R2-003a: explicit pickup tap on the revealed ash ring.
+    func collectAshRing() {
+        if PuzzleEngine.collectAshRing(state) {
+            SoundManager.shared.play(.pickup)
+            objectWillChange.send()
         }
     }
 
@@ -775,31 +880,41 @@ final class RoomSceneCoordinator: ObservableObject {
     /// acts. The star key unlocks; the rusted key gets a visible mechanical reject at
     /// the keyhole close-up; any other item offered at the cage is a reach and gets
     /// the terminal refusal (D3).
-    private func entryCageUse(_ itemID: String, on hotspotID: String) {
+    @discardableResult
+    private func entryCageUse(_ itemID: String, on hotspotID: String) -> Bool {
         if itemID == PuzzleGraph.ItemID.cageKey, !state.hasFlag(PuzzleGraph.StateFlag.crowFreed) {
             if PuzzleEngine.unlockCage(state: state) {
                 SoundManager.shared.play(.solve)
                 present(.plain(image: "cu-crow-rafters"), from: hotspotID)
+                dropItemIfDepleted(PuzzleGraph.ItemID.cageKey)
+                return true
             }
+            return false
         } else if itemID == PuzzleGraph.ItemID.rustedKey {
             SoundManager.shared.play(.wrong)
             present(.plain(image: "cu-star-keyhole"), from: hotspotID) // plain bit visibly rejected
+            return true // intended fairness reject — disarm
         } else if !state.hasFlag(PuzzleGraph.StateFlag.crowFreed) {
             playTerminalRefusal()
+            return true // intended refusal reaction — disarm
         }
+        return false
     }
 
     /// p14 ingredient adds + p15 bottling (QA-BUG-002) share the cauldron target.
-    private func cauldronUse(_ itemID: String) {
+    @discardableResult
+    private func cauldronUse(_ itemID: String) -> Bool {
         if itemID == PuzzleGraph.ItemID.phial {
             if PuzzleEngine.fillPhial(state: state) {
                 SoundManager.shared.play(.solve)
                 present(.brew, from: "cauldron") // show the (still-ready) draught being bottled
+                return true
             } else {
                 SoundManager.shared.play(.wrong) // cauldron isn't ready yet
+                return false // let the player re-try once ready without re-arming
             }
         } else {
-            addCauldronIngredient(itemID)
+            return addCauldronIngredient(itemID)
         }
     }
 
@@ -816,12 +931,15 @@ final class RoomSceneCoordinator: ObservableObject {
     /// pops back audibly. Only the correct item seats (rendered by refreshCabinet);
     /// the pair completing hands over to the engine, which consumes both. On the pair
     /// completing, the cabinet opens with its contents visible for manual pickup.
-    private func attemptCabinetPlacement(_ itemID: String, slot: String) {
-        guard !state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon) else { return }
+    @discardableResult
+    private func attemptCabinetPlacement(_ itemID: String, slot: String) -> Bool {
+        guard !state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon) else { return false }
         let correctItem = slot == "sun-slot" ? CabinetSolution.sunSlotItem : CabinetSolution.moonSlotItem
         guard itemID == correctItem, state.hasItem(itemID) else {
             SoundManager.shared.play(.wrong) // "item pops back out" (failure_behavior)
-            return
+            // R2-030: a wrong item at a slot pops back — keep it armed to try the other
+            // slot immediately. (Returns false = no disarm.)
+            return false
         }
         if slot == "sun-slot" { pendingSunItem = itemID } else { pendingMoonItem = itemID }
         SoundManager.shared.play(.tick) // the seat catching — object-relevant, not generic
@@ -832,18 +950,21 @@ final class RoomSceneCoordinator: ObservableObject {
             present(.container(.sunMoonCabinet), from: slot) // F-023 manual pickup
         }
         refreshCabinet()
+        return true // correct item seated (placed) — disarm
     }
 
-    private func addCauldronIngredient(_ itemID: String) {
+    @discardableResult
+    private func addCauldronIngredient(_ itemID: String) -> Bool {
         // Post-success adds are refused: the draught is done and ingredients must not
         // vanish into it (QA-BUG-006 companion guard).
-        guard !state.hasFlag(PuzzleGraph.StateFlag.draughtReady) else { return }
-        guard BrewSolution.requiredIngredients.contains(itemID), state.hasItem(itemID) else { return }
+        guard !state.hasFlag(PuzzleGraph.StateFlag.draughtReady) else { return false }
+        guard BrewSolution.requiredIngredients.contains(itemID), state.hasItem(itemID) else { return false }
         var ingredients = state.data.cauldronIngredients
         ingredients.insert(itemID)
-        state.removeItem(itemID)
+        state.removeItem(itemID) // placed into the cauldron (removed from inventory, R2-020)
         state.setCauldronIngredients(ingredients)
         SoundManager.shared.play(.stir) // the ingredient slipping into the water
+        return true
     }
 
     // MARK: - overlay rect lookup

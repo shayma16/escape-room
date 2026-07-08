@@ -13,10 +13,14 @@ enum CloseUpRequest: Equatable, Identifiable {
     /// A solved container with individually collectable contents (feedback round 1
     /// F-023/F-018 manual pickup): astrolabe base drawer, sun/moon cabinet.
     case container(PuzzleEngine.Container)
+    /// The hearth ash pile (R2-003a): undisturbed / sifted-with-ring (tap to collect) /
+    /// cleared. A state-resolved plate plus a tap-to-collect ring target when revealed.
+    case ashPile
     /// Grimoire: browsable spreads, opens at the feather-bookmarked recipe page.
     case grimoire
-    /// Triptych: the three night paintings, browsable.
-    case triptych
+    /// Triptych: the three night paintings, browsable, opened at the tapped panel
+    /// (R2-007 — each panel maps to its own close-up).
+    case triptych(panel: Int)
     /// Mantel clock: movable hands; first XII pops the cuckoo toy once (D5).
     case clock
     /// Trapdoor three-dial moon-phase lock (interactive; A5/R5 legibility floor).
@@ -35,8 +39,9 @@ enum CloseUpRequest: Equatable, Identifiable {
         switch self {
         case .plain(let image): return "plain-\(image)"
         case .container(let container): return "container-\(container.rawValue)"
+        case .ashPile: return "ash-pile"
         case .grimoire: return "grimoire"
-        case .triptych: return "triptych"
+        case .triptych: return "triptych"  // shared clue id across panels (F-012 gate)
         case .clock: return "clock"
         case .dialPanel: return "dial-panel"
         case .astrolabe: return "astrolabe"
@@ -82,16 +87,22 @@ enum CloseUpLayout {
 
     static let triptychPages = ["cu-triptych-1", "cu-triptych-2", "cu-triptych-3"]
 
+    /// The revealed ring's tap target within the cu-ash-sifted plate (R2-003a), measured
+    /// against the shipped art: the ring sits between the rake furrows, lower-center.
+    static let ashRingRect = CGRect(x: 0.40, y: 0.52, width: 0.20, height: 0.20)
+
     // MARK: Container close-ups (manual pickup, feedback round 1)
 
-    /// Plate shown while any content is uncollected / once everything is taken.
-    /// (`ov-cab-open-empty` doubles as the cabinet's empty inspection plate — no
-    /// dedicated empty close-up was generated; it letterboxes inside the close-up
-    /// frame, which the dark backdrop absorbs.)
+    /// Plate shown while any content is uncollected / once everything is taken. The
+    /// astrolabe has a dedicated inpainted empty close-up; the cabinet has no dedicated
+    /// empty CLOSE-UP plate (build-3 gap G3: ov-cab-open-empty is only a cropped WIDE
+    /// overlay, not a full close-up), so a fully-collected cabinet just re-shows the open
+    /// plate — correct because ContainerCloseUp renders no tap targets once everything is
+    /// collected, and the WIDE view already carries the emptied state.
     static func containerPlates(_ container: PuzzleEngine.Container) -> (open: String, empty: String) {
         switch container {
         case .astrolabeDrawer: return ("cu-astrolabe-drawer-open", "cu-astrolabe-drawer-empty")
-        case .sunMoonCabinet: return ("cu-cabinet-open", "ov-cab-open-empty")
+        case .sunMoonCabinet: return ("cu-cabinet-open", "cu-cabinet-open")
         }
     }
 

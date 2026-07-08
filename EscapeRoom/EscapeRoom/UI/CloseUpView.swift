@@ -33,13 +33,16 @@ struct CloseUpView: View {
                         .onTapGesture { armedUseOrNothing() }
                 case .container(let container):
                     ContainerCloseUp(coordinator: coordinator, container: container)
+                case .ashPile:
+                    AshPileCloseUp(coordinator: coordinator)
                 case .grimoire:
                     PagerCloseUp(coordinator: coordinator,
                                  pages: CloseUpLayout.grimoirePages,
                                  initialIndex: CloseUpLayout.grimoireBookmarkIndex)
-                case .triptych:
+                case .triptych(let panel):
                     PagerCloseUp(coordinator: coordinator,
-                                 pages: CloseUpLayout.triptychPages, initialIndex: 0)
+                                 pages: CloseUpLayout.triptychPages,
+                                 initialIndex: min(max(panel, 0), CloseUpLayout.triptychPages.count - 1))
                 case .clock:
                     ClockCloseUp(coordinator: coordinator)
                 case .dialPanel:
@@ -194,6 +197,36 @@ private struct ContainerCloseUp: View {
     }
 }
 
+// MARK: - Ash pile manual ring pickup (R2-003a)
+
+/// The hearth ash close-up. State-resolved plate; when the ring has been sifted up but
+/// not yet taken, an invisible tap target over the visible ring collects it (the liked
+/// pickup chime), after which the cleared-ash plate renders. Also honors armed-item use
+/// (the poker) so sifting works from inside the close-up (F-020).
+private struct AshPileCloseUp: View {
+    @ObservedObject var coordinator: RoomSceneCoordinator
+
+    var body: some View {
+        let ringVisible = PuzzleEngine.isRingUncollectedInAsh(coordinator.state)
+        FittedPlateLayout(imageName: RoomVisuals.ashCloseUp(coordinator.state)) { fitted in
+            if ringVisible {
+                let rect = fitted.subRect(CloseUpLayout.ashRingRect)
+                Color.white.opacity(0.001)
+                    .frame(width: max(rect.width, 44), height: max(rect.height, 44))
+                    .contentShape(Rectangle())
+                    .onTapGesture { coordinator.collectAshRing() }
+                    .accessibilityLabel(ItemCatalog.definition(for: PuzzleGraph.ItemID.goldRing)?.name ?? "Ring")
+                    .accessibilityIdentifier("collect-\(PuzzleGraph.ItemID.goldRing)")
+                    .position(x: rect.midX, y: rect.midY)
+            }
+        }
+        // Armed poker used on the plate sifts the ash (routes to the "ash" hotspot).
+        .contentShape(Rectangle())
+        .onTapGesture { coordinator.useArmedItemInCloseUp() }
+        .padding(24)
+    }
+}
+
 // MARK: - Browsable spreads (grimoire, triptych)
 
 private struct PagerCloseUp: View {
@@ -217,6 +250,20 @@ private struct PagerCloseUp: View {
             }
             .padding(.horizontal, 6)
         }
+        // R2-008: swipe to flip pages (arrows STAY). Navigation swipe only — no item drag.
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture(minimumDistance: 24)
+                .onEnded { value in
+                    let dx = value.translation.width
+                    guard abs(dx) > 50, abs(dx) > abs(value.translation.height) else { return }
+                    if dx < 0, index < pages.count - 1 {
+                        SoundManager.shared.play(.page); index += 1
+                    } else if dx > 0, index > 0 {
+                        SoundManager.shared.play(.page); index -= 1
+                    }
+                }
+        )
         .onAppear { recordPage() }
         .onChange(of: index) { _ in recordPage() }
     }
@@ -249,7 +296,7 @@ private struct ClockCloseUp: View {
     @ObservedObject var coordinator: RoomSceneCoordinator
 
     var body: some View {
-        FittedPlateLayout(imageName: RoomVisuals.clockState(coordinator.state, justPopped: coordinator.justPoppedClock)) { fitted in
+        FittedPlateLayout(imageName: RoomVisuals.clockState(coordinator.state)) { fitted in
             let center = CGPoint(x: fitted.minX + CloseUpLayout.clockFaceCenter.x * fitted.width,
                                  y: fitted.minY + CloseUpLayout.clockFaceCenter.y * fitted.height)
             let radius = CloseUpLayout.clockFaceRadius * fitted.width

@@ -76,14 +76,27 @@ struct InventoryBarView: View {
         ItemCatalog.all.map(\.id).filter { state.inventory.contains($0) }
     }
 
+    /// R2-028: when an item is armed, any OTHER inventory item it can combine with shows
+    /// a clear "combine" affordance (a link badge), so "these two go together" reads at a
+    /// glance and tapping it performs the combine. Consistent with select-then-tap.
+    private func isCombineTarget(_ itemID: String) -> Bool {
+        guard let armed = interaction.armedItem, armed != itemID else { return false }
+        return ItemCombinations.pairToPuzzle[Set([armed, itemID])] != nil
+    }
+
     @ViewBuilder
     private func itemCell(_ itemID: String) -> some View {
         let def = ItemCatalog.definition(for: itemID)
         let isArmed = interaction.armedItem == itemID
+        let combineTarget = isCombineTarget(itemID)
         ZStack {
             // §7-R1.4: armed backing lightens to #F2F5F8 @ 16%.
             RoundedRectangle(cornerRadius: cornerRadius - 4)
                 .fill(Color(red: 0.949, green: 0.961, blue: 0.973).opacity(isArmed ? 0.16 : 0))
+            // R2-028: a combine target gets a soft amber backing so it reads as "these
+            // two go together" (distinct from the armed pale-silver treatment).
+            RoundedRectangle(cornerRadius: cornerRadius - 4)
+                .fill(Color(red: 0.85, green: 0.62, blue: 0.28).opacity(combineTarget ? 0.20 : 0))
             GameImage(name: def?.iconAsset ?? "icon-poker")
                 .aspectRatio(contentMode: .fit)
                 .padding(6)
@@ -93,14 +106,26 @@ struct InventoryBarView: View {
                 )
                 .offset(y: isArmed ? -4 : 0)   // §7-R1.4: item lifts 4 pt
         }
+        // R2-028: link badge on a combinable target — the clear "combine" affordance.
+        .overlay(alignment: .topLeading) {
+            if combineTarget {
+                Image(systemName: "link")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(Color(red: 0.949, green: 0.961, blue: 0.973))
+                    .padding(4)
+                    .background(Circle().fill(Color(red: 0.55, green: 0.40, blue: 0.14).opacity(0.9)))
+                    .offset(x: -4, y: -6)
+                    .accessibilityHidden(true)
+            }
+        }
         .frame(width: cellSize, height: cellSize)
         .frame(minWidth: 44, minHeight: 44)     // hit area >= 44 pt (48 padded on iPhone by cellSize+gap)
         .contentShape(Rectangle())
         .animation(.easeOut(duration: 0.12), value: isArmed)
         .onTapGesture { handleTap(itemID) }
         .onLongPressGesture(minimumDuration: 0.45) { inspect(itemID) }
-        .accessibilityLabel(def?.name ?? "Item")
-        .accessibilityIdentifier("inventory-\(itemID)")
+        .accessibilityLabel(combineTarget ? "Combine with \(def?.name ?? "item")" : (def?.name ?? "Item"))
+        .accessibilityIdentifier(combineTarget ? "combine-\(itemID)" : "inventory-\(itemID)")
         // §7-R1.4: a second tap on the armed cell inspects (F-016). Kept as a discrete,
         // testable affordance too, so XCUITest can reach inspect deterministically.
         .overlay(alignment: .topTrailing) {
@@ -145,6 +170,11 @@ struct InventoryBarView: View {
         interaction.inspectingItem = itemID
     }
 }
+
+// TODO (R2-029, Q2 DEFERRED to Level 2+ per user decision 2026-07-08): rotate-to-inspect.
+// No Level-1 item hides a clue on its back, so the inspect view stays a single-angle
+// enlargement for now. When a future level needs it, add a rotation gesture here plus
+// multi-angle art per item (icons are currently single-angle RGBA). Not built for L1.
 
 /// Enlarged item inspect per style-guide §7-R3 (Rev 2, F-016). Universal — every item
 /// shows its RGBA cutout enlarged, floating alone "examined by moonlight": full-screen

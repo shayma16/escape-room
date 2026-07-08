@@ -76,6 +76,16 @@ final class QALevelFlowTests: XCTestCase {
                       file: file, line: line)
     }
 
+    /// R2-003a: sifting reveals the ring; a player then collects it with an explicit tap.
+    /// This helper mirrors that two-step flow so the full-playthrough tests obtain the
+    /// gold ring exactly as a human does (test-like-a-player mandate).
+    private func siftAndCollectRing(_ state: GameState, file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertTrue(PuzzleEngine.siftAsh(state: state), file: file, line: line)
+        XCTAssertTrue(PuzzleEngine.isRingUncollectedInAsh(state), file: file, line: line)
+        XCTAssertTrue(PuzzleEngine.collectAshRing(state), file: file, line: line)
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing), file: file, line: line)
+    }
+
     private func collectCabinetYield(_ state: GameState, file: StaticString = #filePath, line: UInt = #line) {
         XCTAssertTrue(PuzzleEngine.collectItem(PuzzleGraph.ItemID.file, from: .sunMoonCabinet, state: state),
                       file: file, line: line)
@@ -114,7 +124,7 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertTrue(state.isZoneUnlocked(PuzzleGraph.ZoneID.z2Workshop))
         XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state)) // p03
         collectAstrolabeYield(state)
-        XCTAssertTrue(PuzzleEngine.siftAsh(state: state))                            // p05
+        siftAndCollectRing(state)                                                    // p05
         XCTAssertTrue(PuzzleEngine.placeCabinetItems(sun: CabinetSolution.sunSlotItem,
                                                      moon: CabinetSolution.moonSlotItem, state: state)) // p04
         collectCabinetYield(state)
@@ -135,7 +145,7 @@ final class QALevelFlowTests: XCTestCase {
         pressRunes(state)                                                            // p01
         XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state)) // p03
         collectAstrolabeYield(state)
-        XCTAssertTrue(PuzzleEngine.siftAsh(state: state))                            // p05
+        siftAndCollectRing(state)                                                    // p05
         XCTAssertTrue(PuzzleEngine.placeCabinetItems(sun: CabinetSolution.sunSlotItem,
                                                      moon: CabinetSolution.moonSlotItem, state: state)) // p04
         collectCabinetYield(state)
@@ -171,7 +181,7 @@ final class QALevelFlowTests: XCTestCase {
         pressRunes(state)                                                            // p01
         XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state)) // p03
         collectAstrolabeYield(state)
-        XCTAssertTrue(PuzzleEngine.siftAsh(state: state))                            // p05
+        siftAndCollectRing(state)                                                    // p05
         XCTAssertTrue(PuzzleEngine.placeCabinetItems(sun: CabinetSolution.sunSlotItem,
                                                      moon: CabinetSolution.moonSlotItem, state: state)) // p04
         collectCabinetYield(state)
@@ -318,7 +328,11 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.poker))
         interaction.armedItem = PuzzleGraph.ItemID.poker // player arms the poker
         coordinator.scene.onHotspotTap?("ash")
-        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing), "p05: armed poker on ash yields the gold ring")
+        // R2-003a: sifting reveals the ring; the player collects it with an explicit tap.
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.goldRing), "ring is revealed, not auto-granted")
+        XCTAssertTrue(PuzzleEngine.isRingUncollectedInAsh(state))
+        coordinator.collectAshRing()
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing), "p05: explicit tap collects the gold ring")
     }
 
     func testCellarFlow_barrelHookWinchMirror() {
@@ -397,12 +411,13 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertTrue(PuzzleEngine.pickBlossom(state: resumed))
     }
 
-    func testClockCuckooOneShotLatchSurvivesRelaunch_D5() {
+    func testClockIsInertAfterCuckooRemoval_Q3() {
+        // Q3: the cuckoo is gone; the clock never gates progression and the level is
+        // still completable without ever touching it (covered by the full-playthrough
+        // tests, none of which touch the clock). Assert the clock render is inert.
         let dir = tempDir()
         let state = GameState(levelID: 1, store: SaveGameStore(directory: dir))
-        XCTAssertEqual(PuzzleEngine.setClockToTwelve(state: state), .popped)
-        let resumed = GameState(levelID: 1, store: SaveGameStore(directory: dir))
-        XCTAssertEqual(PuzzleEngine.setClockToTwelve(state: resumed), .spentAlready, "one-shot pop is per save file")
+        XCTAssertEqual(RoomVisuals.clockState(state), "cu-clock-unspent")
     }
 
     func testRestartLevelResetsApparatusPositionsAndFlags() {

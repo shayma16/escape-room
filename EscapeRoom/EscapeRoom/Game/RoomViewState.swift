@@ -12,25 +12,26 @@ enum RoomVisuals {
         "z1-hearth-base"
     }
 
+    /// R2-003a manual pickup: undisturbed before sifting; sifted-with-ring while the ring
+    /// is revealed-but-uncollected; cleared once the ring is taken. Purely state-derived.
     static func ashState(_ s: GameState) -> String {
-        if s.hasItem(PuzzleGraph.ItemID.goldRing) || s.hasSolved(PuzzleGraph.PuzzleID.ashSift) {
-            return "cu-ash-ring-taken"
-        }
+        if PuzzleEngine.isRingUncollectedInAsh(s) { return "cu-ash-sifted" }   // ring visible
+        if s.hasSolved(PuzzleGraph.PuzzleID.ashSift) { return "cu-ash-ring-taken" } // cleared
         return "cu-ash-undisturbed"
     }
 
-    /// QA-BUG-016: the sifted-with-glint state (p05's secondary discoverability cue) is
-    /// shown as the sift-success close-up moment; afterwards the ash close-up shows the
-    /// ring-taken state (the engine grants the ring at the sift itself).
-    static func ashCloseUp(_ s: GameState, justSifted: Bool) -> String {
-        if justSifted { return "cu-ash-sifted" }
-        return ashState(s)
+    /// The ash close-up is a plain state-resolved plate now (no transient beat): the ring
+    /// shows in the sifted plate until collected, then the cleared plate renders. The
+    /// close-up layer overlays a tappable ring target while `isRingUncollectedInAsh`.
+    static func ashCloseUp(_ s: GameState) -> String {
+        ashState(s)
     }
 
-    /// D5: one-shot cuckoo pop, then permanently spent. Never gates progression.
-    static func clockState(_ s: GameState, justPopped: Bool) -> String {
-        if justPopped { return "cu-clock-pop" }
-        return s.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent) ? "cu-clock-spent" : "cu-clock-unspent"
+    /// Q3 (user decision 2026-07-08): the cuckoo is removed — the clock is now purely the
+    /// p01 numeral-ring reference and has a single inert face state. (`cu-clock-unspent`
+    /// remains the shipped face+numeral-ring plate; the pop/spent states are retired.)
+    static func clockState(_ s: GameState) -> String {
+        "cu-clock-unspent"
     }
 
     static func rugMoved(_ s: GameState) -> Bool {

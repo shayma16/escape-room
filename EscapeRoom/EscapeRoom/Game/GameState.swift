@@ -54,9 +54,30 @@ struct LevelSaveData: Codable, Equatable {
 /// save/resume and the Level Select completion indicators.
 struct SaveGame: Codable, Equatable {
     var levels: [Int: LevelSaveData] = [:]
+    /// Legacy single master toggle (build <= 2). Retained for migration only; the live
+    /// settings are the two independent toggles below (R2-006). Never surfaced in the UI
+    /// anymore — kept so an older save decodes and seeds the split toggles once.
     var soundOn: Bool = true
+    /// R2-006: split audio settings — ambiance/music mute and SFX mute, independent and
+    /// persisted separately. `nil` in a decoded pre-split save; migrated from `soundOn`
+    /// on first load (see custom init).
+    var ambianceOn: Bool = true
+    var sfxOn: Bool = true
 
     static let empty = SaveGame()
+
+    init() {}
+
+    /// Migration-tolerant decode: pre-split saves carry only `soundOn`; seed BOTH new
+    /// toggles from it so muted players stay muted and everyone else stays on.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        levels = try c.decodeIfPresent([Int: LevelSaveData].self, forKey: .levels) ?? [:]
+        let legacy = try c.decodeIfPresent(Bool.self, forKey: .soundOn) ?? true
+        soundOn = legacy
+        ambianceOn = try c.decodeIfPresent(Bool.self, forKey: .ambianceOn) ?? legacy
+        sfxOn = try c.decodeIfPresent(Bool.self, forKey: .sfxOn) ?? legacy
+    }
 }
 
 /// Observable runtime game state for a single level. Wraps a `LevelSaveData` and

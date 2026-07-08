@@ -200,12 +200,32 @@ enum PuzzleEngine {
         return true
     }
 
-    // MARK: - p05 ash sift (tool-on-hotspot)
+    // MARK: - p05 ash sift (tool-on-hotspot, manual ring pickup)
 
+    /// R2-003a: sifting the ash with the poker REVEALS the ring (marks p05 solved) but no
+    /// longer auto-grants it — the player must tap the visible ring to collect it (same
+    /// manual-pickup philosophy as the containers, F-023). The ring is uncollected while
+    /// p05 is solved and the ring isn't yet held (see `isRingUncollectedInAsh`).
     static func siftAsh(state: GameState) -> Bool {
         guard state.hasItem(PuzzleGraph.ItemID.poker) else { return false }
         guard !state.hasSolved(PuzzleGraph.PuzzleID.ashSift) else { return true }
         state.markSolved(PuzzleGraph.PuzzleID.ashSift)
+        return true
+    }
+
+    /// The gold ring sits visible-and-pickable in the sifted ash iff p05 is solved and the
+    /// ring hasn't been taken. Derived (not stored), like the container items: the ring's
+    /// only sink is p04 (sun slot), so a taken-and-spent ring never re-appears.
+    static func isRingUncollectedInAsh(_ state: GameState) -> Bool {
+        state.hasSolved(PuzzleGraph.PuzzleID.ashSift)
+            && !state.hasItem(PuzzleGraph.ItemID.goldRing)
+            && !state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon) // ring's only sink
+    }
+
+    /// Explicit pickup tap on the visible ash ring. Returns false if not collectable now.
+    @discardableResult
+    static func collectAshRing(_ state: GameState) -> Bool {
+        guard isRingUncollectedInAsh(state) else { return false }
         state.addItem(PuzzleGraph.ItemID.goldRing)
         return true
     }
@@ -403,16 +423,8 @@ enum PuzzleEngine {
         return true
     }
 
-    // MARK: - D5 clock cuckoo (cosmetic one-shot latch; never gates progression)
-
-    enum ClockPopResult: Equatable { case popped, spentAlready }
-
-    @discardableResult
-    static func setClockToTwelve(state: GameState) -> ClockPopResult {
-        if state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent) {
-            return .spentAlready
-        }
-        state.setFlag(PuzzleGraph.StateFlag.clockCuckooSpent)
-        return .popped
-    }
+    // Q3 (user decision 2026-07-08): the D5 clock cuckoo is REMOVED. There is no
+    // setClockToTwelve / cuckoo latch anymore — the mantel clock is purely the p01
+    // numeral-ring reference (its hands still move cosmetically, but nothing pops and
+    // no state is written). `clockCuckooSpent` remains defined for save-migration only.
 }

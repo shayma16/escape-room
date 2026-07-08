@@ -265,22 +265,17 @@ final class PuzzleEngineTests: XCTestCase {
         XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.doorUnsealed))
     }
 
-    // MARK: - D5 clock cuckoo: one-shot cosmetic latch, never gates progression
+    // MARK: - Q3: clock cuckoo REMOVED — the clock is a purely inert numeral reference
 
-    func testClockCuckooPopsOnceThenSpent() {
+    func testClockIsInertReference() {
+        // Q3 (user decision 2026-07-08): there is no cuckoo latch anymore. The clock
+        // never writes state and always renders its single face plate — so it can never
+        // gate or reward. Assert the visual resolver is state-independent and inert.
         let state = makeState(tempDir())
-        XCTAssertEqual(PuzzleEngine.setClockToTwelve(state: state), .popped)
-        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent))
-        XCTAssertEqual(PuzzleEngine.setClockToTwelve(state: state), .spentAlready)
-        XCTAssertEqual(PuzzleEngine.setClockToTwelve(state: state), .spentAlready)
-    }
-
-    func testClockCuckooNeverBlocksOtherPuzzles() {
-        // Never touching the clock at all must not prevent solving the level; this is
-        // implicitly covered by every other test never calling setClockToTwelve, but we
-        // assert explicitly that the flag defaults to false and nothing reads it as a gate.
-        let state = makeState(tempDir())
-        XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent))
+        XCTAssertEqual(RoomVisuals.clockState(state), "cu-clock-unspent")
+        // Even a legacy save that still carries the retired flag renders the same face.
+        state.setFlag(PuzzleGraph.StateFlag.clockCuckooSpent)
+        XCTAssertEqual(RoomVisuals.clockState(state), "cu-clock-unspent")
     }
 
     // MARK: - Save / resume persistence
@@ -534,14 +529,19 @@ final class PuzzleEngineTests: XCTestCase {
         coordinator.scene.onHotspotTap?("ash")
         XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.ashSift),
                        "a bare tap must NOT sift just because the poker is held (passive auto-apply removed)")
-        XCTAssertEqual(coordinator.activeCloseUp, .plain(image: "cu-ash-undisturbed"), "bare tap = look")
+        XCTAssertEqual(coordinator.activeCloseUp, .ashPile, "bare tap = look at the ash pile")
         coordinator.dismissCloseUp()
         // Arm the poker, then tap the ash: the deliberate select-then-tap use.
         interaction.armedItem = PuzzleGraph.ItemID.poker
         coordinator.scene.onHotspotTap?("ash")
         XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.ashSift))
-        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing))
-        XCTAssertNil(interaction.armedItem, "every use attempt disarms")
+        // R2-003a: sifting REVEALS the ring but does NOT auto-grant it — it must be
+        // collected with an explicit tap.
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.goldRing), "ring is revealed, not auto-granted")
+        XCTAssertTrue(PuzzleEngine.isRingUncollectedInAsh(state), "ring visible+pickable in ash")
+        XCTAssertNil(interaction.armedItem, "a successful sift disarms the poker")
+        coordinator.collectAshRing()
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing), "explicit tap collects the ring")
     }
 
     func testBareTapNeverAutoApplies_barrelWinchKeyhole() {
@@ -573,8 +573,9 @@ final class PuzzleEngineTests: XCTestCase {
         XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.crowFreed))
     }
 
-    /// A failed use (wrong item on a target) also disarms and never mutates state.
-    func testFailedUseDisarmsWithoutStateChurn() {
+    /// R2-030: a failed use (wrong item on a wrong target) KEEPS the item armed so the
+    /// player can immediately try elsewhere, and never mutates state.
+    func testFailedUseKeepsItemArmedWithoutStateChurn_R2_030() {
         let state = makeState(tempDir())
         state.addItem(PuzzleGraph.ItemID.rustedKey)
         let interaction = InteractionModel()
@@ -582,10 +583,24 @@ final class PuzzleEngineTests: XCTestCase {
                                                interaction: interaction)
         let before = state.data
         interaction.armedItem = PuzzleGraph.ItemID.rustedKey
-        coordinator.scene.onHotspotTap?("ash")
-        XCTAssertNil(interaction.armedItem, "failure disarms")
+        coordinator.scene.onHotspotTap?("ash") // rusted key on ash = wrong-target no-op
+        XCTAssertEqual(interaction.armedItem, PuzzleGraph.ItemID.rustedKey,
+                       "R2-030: a wrong-target no-op keeps the item armed")
         XCTAssertEqual(state.data.inventory, before.inventory)
         XCTAssertEqual(state.data.solvedPuzzles, before.solvedPuzzles)
+    }
+
+    /// R2-030 corollary: an intended reaction on the wrong-but-recognized target (the
+    /// rusted-key fairness reject at the door) DOES disarm — it engaged the target.
+    func testIntendedRejectDisarms_R2_030() {
+        let state = makeState(tempDir())
+        state.addItem(PuzzleGraph.ItemID.rustedKey)
+        let interaction = InteractionModel()
+        let coordinator = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize,
+                                               interaction: interaction)
+        interaction.armedItem = PuzzleGraph.ItemID.rustedKey
+        coordinator.scene.onHotspotTap?("door-lock") // fairness reject = engaged
+        XCTAssertNil(interaction.armedItem, "an intended reaction disarms")
     }
 
     /// F-020: an item armed while a close-up is open routes to the close-up's origin
@@ -597,11 +612,14 @@ final class PuzzleEngineTests: XCTestCase {
         let coordinator = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize,
                                                interaction: interaction)
         coordinator.scene.onHotspotTap?("ash") // open the ash close-up (a look)
-        XCTAssertEqual(coordinator.activeCloseUp, .plain(image: "cu-ash-undisturbed"))
+        XCTAssertEqual(coordinator.activeCloseUp, .ashPile)
         interaction.armedItem = PuzzleGraph.ItemID.poker
         coordinator.useArmedItemInCloseUp() // tap the plate with the poker armed
         XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.ashSift),
                       "the close-up must not wall the player off from item use (F-020)")
+        // R2-003a: ring revealed, collected via explicit tap.
+        XCTAssertTrue(PuzzleEngine.isRingUncollectedInAsh(state))
+        coordinator.collectAshRing()
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing))
     }
 
