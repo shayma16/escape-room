@@ -540,6 +540,24 @@ re-release, per standard process — nothing in this round ships without that re
 > Developer, HIGH priority, investigate R2-018+R2-019 together as one broken p03-resolved
 > state. Persists in build 3 (functional). Escalate at processing.)
 
+### R2-020 — status: logged (inventory-lifecycle principle — Developer + build-3 art)
+> put the gold ring on the cabinet door / sun placeholder — it works but looks weird (let's
+> see on the regenerated images). BUT despite placing the ring in the sun slot, i still see
+> it in my inventory. PRINCIPLE: (1) any item i use to interact — when placed and visible on
+> the scene — must be REMOVED from inventory. (2) once an item has no further use for any
+> puzzle, remove it from inventory entirely, like a CONSUMED item — e.g. the ring goes in the
+> sun hole (its only use) → remove it. But the iron poker (used to sift ash AND later needed)
+> → KEEP until all its uses are depleted, then remove.
+> (context: p04 sun/moon placement. TWO parts: (a) ART — seated ring "looks weird"; ties to
+> round-1 F-022 / AF-3 (seated ring/coin); build 3 regenerated cu-slots-seated — VERIFY at z2
+> review. (b) FUNCTIONAL, a proper item-lifecycle model → Developer: an item PLACED into its
+> slot/final use is removed from inventory (it's now on the scene); a tool is retained while
+> it still has remaining uses and removed once ALL its uses are satisfied. MUST respect the
+> anti-softlock invariants — never remove an item before every one of its uses is done (poker
+> = p05 ash + p06 barrel; file = p12; crank = p08; etc. — Developer tracks remaining-uses per
+> item from the puzzle graph's `uses` arrays). Persists in build 3. This refines round-1's
+> manual-pickup work into a full place/consume/retain lifecycle.)
+
 ---
 
 _Say "that's all, process it" (or similar) when ready to process this round._
