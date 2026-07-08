@@ -829,6 +829,18 @@ were fixed at the TEST layer (the shipped code was already correct):
   mappings it asserts (markAir/markFire/markEarth/markWater/triptych/windowOrion) are
   otherwise unchanged and correct.
 
+Fixing the two unit tests unblocked the job, which then reached the iPhone-SE UI-test
+step for the first time (the full-playthrough UI test runs on iPhone SE only; the earlier
+unit-test failure had aborted the job before any UI step ran). That step exposed a THIRD
+stale test — again a TEST fix, not a code bug:
+- `testFullPlaythroughWithScreenshots` + `testSaveResumeMidPlaythroughPersistsGate` sifted
+  the ash then immediately asserted `itm-gold-ring` was in the inventory bar. R2-003a made
+  sifting REVEAL the ring in the ash close-up (tap-to-collect), not auto-grant it, so the
+  ring was never in inventory at the assert. Fixed by inserting the explicit
+  `collect-itm-gold-ring` tap (the R2-003a reveal-then-collect flow already covered by the
+  unit test `testBareTapNeverAutoAppliesHeldItem_ashSift`) before the assert. The shipped
+  two-step ash/ring behavior is correct and unchanged.
+
 ### Security checklist (re-run for build 3)
 - No development-time secrets in the shipped app. Grepped source + bundled resources for
   fal/api/key/secret/token/Bearer/sk- - no hardcoded keys/credentials; the fal.ai key is used
