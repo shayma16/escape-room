@@ -317,3 +317,111 @@ Stylization language of B is now the standing rebuild target (encoded in agent t
 clearly/strongly stylized (correction PASS). C = defective (two-clock revert; least stylized).
 Recommend picking A or B; C-strong re-roll needs Producer/user budget go-ahead (+~$0.30). Chosen
 candidate becomes the locked seed + standing stylization language for the whole rebuild.
+
+---
+
+## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
+
+DERIVED PROGRESS: 3/52 fresh done | 0 retrying | 0 failed | 49 remaining | $5.55 spent | z1-hearth close-ups DONE (clock/bellows/dial-panel w/ moon stamp).
+_Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
+_Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
+_Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._
+_Pre-gen estimate: 52 fresh x $0.15 = $7.80 base; ~$10.15 w/ 30% retry buffer. $4.80 + $10.15 = $14.95 < $18.90 -> PROCEED._
+_Grayscale 2.3 gate on every glyph/precision asset. cu-slots MUST carry inset sun/moon RECESS geometry (wide shows raised medallions)._
+
+### z1-hearth fresh close-ups (anchor: z1-hearth-base seed)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| D-h1 | cu-clock-face | t2i std anchored | done | $0.30 | cu-clock-face-nb: numeral ring legible, cuckoo door above XII, 2 distinct hands. incl 1 retry (422 numeral-string reword). states via PIL. |
+| D-h2 | cu-bellows-rune | t2i std anchored | done | $0.15 | cu-bellows-rune-nb: AIR triangle-with-bar + numeral I crisp. Grayscale PASS (reads by shape). |
+| D-h3 | cu-dial-panel | t2i std + PIL relief | done | $0.30 | cu-dial-panel-nb: head-on substrate (persp take archived) + PIL 8-phase moon stamp on all 3 dials. Waxing lit-RIGHT / waning lit-LEFT, unmistakable. Grayscale 2.3(1)/A5/R5 PASS. incl 1 regen. |
+
+### z1-study fresh close-ups (anchor: z1-study-base)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| D-s1 | cu-grimoire-A | t2i std anchored | pending | - | 4 element runes + pictograms (flame/wave/cloud/mountain) |
+| D-s2 | cu-grimoire-B | t2i std anchored | pending | - | sun+ring / crescent+coin margin |
+| D-s3 | cu-grimoire-recipe | t2i std anchored | pending | - | moonflower+pestle, filed crescent-metal, feather-into-hand, flame+III, CCW 5-dot spiral (handedness = brew view) |
+| D-s4 | cu-grimoire-zodiac | t2i std anchored | pending | - | DECOY: zodiac wheel, NO highlighted constellation |
+| D-s5 | cu-grimoire-bird | t2i std anchored | pending | - | DECOY: graphite crow study, no callouts |
+| D-s6 | cu-triptych-1 | t2i std anchored | pending | - | waxing-crescent moon, 1 crow, same tree |
+| D-s7 | cu-triptych-2 | t2i std anchored | pending | - | full moon, 2 crows, same tree |
+| D-s8 | cu-triptych-3 | t2i std anchored | pending | - | waning-gibbous moon, 3 crows, same tree |
+| D-s9 | cu-flowerpot-rune | free crop OR t2i | pending | - | EARTH downward-triangle-with-bar + III |
+| D-s10 | cu-runedoor-tiles | t2i std anchored | pending | - | 4 pressable rune tiles, pressed/unpressed relief; generic runes (no code leak) |
+
+### z1-entry fresh close-ups (anchor: z1-entry-base)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| D-e1 | cu-door-lock | t2i std anchored | pending | - | unified crow-beak basin over bolt (AF-1 canonical); 3 basin states via PIL |
+| D-e2 | cu-star-keyhole | t2i std anchored | pending | - | 5-point star socket; rejects rusted key plain bit; + key-in-lock success frame (PIL) |
+| D-e3 | cu-rusted-key | free crop OR t2i | pending | - | snapped plain bit visible (fairness valve) |
+| D-e4 | cu-windowsill-rune | free crop OR t2i | pending | - | WATER downward-triangle + IV |
+| D-e5 | cu-cage-crow | t2i std anchored | pending | - | live crow (register 1); refusal pose + feed cup |
+
+### z2-bench fresh close-ups (anchor: z2-bench-base)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| D-b1 | cu-brew | t2i std anchored | pending | - | ~65deg top-down over rim; liquid states + rim runes I/II/III at ellipse edge; CCW handedness = recipe spiral |
+| D-b2 | cu-mortar | t2i std anchored | pending | - | 3 states (empty/blossom/paste via PIL) |
+| D-b3 | cu-rim-rune | free crop OR t2i | pending | - | rim runes I/II/III + ember channels, flame-stage detail |
+
+### z2-cabinet fresh close-ups (anchor: z2-cabinet-base)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| D-c1 | cu-slots | t2i std anchored | pending | - | CRITICAL: INSET sun/moon RECESS geometry (wide shows raised medallions); ring-annular + crescent seat; 3 states via PIL |
+| D-c2 | cu-astrolabe-plate | t2i std + PIL orion | pending | - | plate-2 = canonical 7-dot Orion (orion-canonical.json); interactive ring |
+| D-c3 | cu-potion-shelf | t2i std anchored | pending | - | 5 bottle silhouettes + wax seals + pictogram labels (sleep=closed-eye, frost, growth) |
+| D-c4 | cu-window-orion | free crop from canonical sky | pending | 0 | crop z2-cabinet window OR sky-master |
+| D-c5 | cu-coin-hallmark | t2i std + PIL hallmark | pending | - | crescent hallmark = canonical die (matches spoon) |
+
+### z3-cellar fresh close-ups (anchor: z3-cellar-base)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| D-z1 | cu-winch-socket | t2i std anchored | pending | - | empty SQUARE socket = crank-shaped absence; too big for key bit; + crank-fitted via PIL |
+| D-z2 | cu-mirror-scratches | t2i std anchored | pending | - | 3 detents + floor scratch arcs at detent-3 |
+| D-z3 | cu-spoon-drawer | t2i std + PIL hallmark | pending | - | crescent hallmark in spoon bowl (canonical die) |
+| D-z4 | cu-barrel-gap | t2i std anchored | pending | - | rim pry gap; weight visible when pried (PIL state) |
+
+### z4-alcove fresh close-ups (anchor: z4-alcove-base)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| D-a1 | cu-statue-key | t2i std anchored | pending | - | folk-art crow (register 3) + 5-point star-bit key glint; + key-taken via PIL |
+| D-a2 | cu-planter-closed | t2i std anchored | pending | - | buds closed; 4 states (closed/trembling/blooming/picked) via PIL, radial glow grayscale-readable |
+
+### Icons (15) — white-bg t2i std + PIL cutout to RGBA
+| # | Asset | Status | Cost | Note |
+|---|-------|--------|------|------|
+| I-1 | icon-poker | pending | - | iron poker, loop hole |
+| I-2 | icon-gold-ring | pending | - | plain round band, ring hole |
+| I-3 | icon-rusted-key | pending | - | snapped plain bit, bow hole |
+| I-4 | icon-feather | pending | - | glossy black |
+| I-5 | icon-crank | pending | - | AF-2 Z-crank: square drive collar + offset arm + wood grip |
+| I-6 | icon-file | pending | - | metal file |
+| I-7 | icon-phial | pending | - | empty glass |
+| I-8 | icon-phial-draught | pending | - | pearlescent draught |
+| I-9 | icon-silver-coin | pending | - | crescent hallmark (canonical die) |
+| I-10 | icon-paste | pending | - | moonflower paste |
+| I-11 | icon-spoon | pending | - | crescent hallmark bowl |
+| I-12 | icon-weight | pending | - | iron plumb |
+| I-13 | icon-shavings | pending | - | silver shavings |
+| I-14 | icon-blossom | pending | - | moonflower blossom |
+| I-15 | icon-cage-key | pending | - | 5-point star bit (matches cage keyhole) |
+
+### Sprites (glyph/geometry — fresh where render needed)
+| # | Asset | Status | Cost | Note |
+|---|-------|--------|------|------|
+| SP-1 | dial-face (moon-phase blank) | pending | done | $0 | moon-phase geometry delivered directly stamped into cu-dial-panel (no separate sprite needed). |
+| SP-2 | astrolabe-plate-blank | pending | - | blank plate; plates 1-6 via PIL dot stamp (plate-2=Orion) |
+| SP-3 | astrolabe-pointer | pending | - | brass pointer |
+| SP-4 | rune-ember-lit | pending | - | lit ember channel/molten fill; I/II/III via PIL |
+| SP-5 | ladle-ripple-ccw | pending | - | CCW glowing ripple arc |
+
+### State variants (FREE PIL off fresh bases/close-ups) — rolled up per zone
+_All same-camera same-lighting; PIL overlay/crop-edit; pixel-aligned to base by construction._
+- z1-hearth: poker-taken, rug-moved, trapdoor-open, ash-sifted, ash-ring-taken, clock-pop, clock-spent
+- z1-entry: cage-open, crow-rafters, crow-lintel, vines-withered, vines-gone, basin-filled, basin-drained, bolt-free, bolt-slid, key-in-lock
+- z2-bench: flame-1/2/3, brew-fizzle, brew-draught, mortar-blossom, mortar-paste
+- z2-cabinet: cabinet-open, drawer-open, slots-seated, astrolabe-drawer-open
+- z3-cellar: rebuild via PIL off fresh cellar base + beam engine (barrel-pried/drawer-open/weight-hung/shelf-slid/crank-fitted/mirror-d2/d3/beam matrix)
+- z4-alcove: planter-trembling, planter-blooming, planter-picked, statue-key-taken
