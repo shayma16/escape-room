@@ -151,8 +151,15 @@ jobs:
           PLIST="$APP/Info.plist"
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$PLIST"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $MARKETING_VERSION" "$PLIST"
-          echo "Stamped $(basename "$APP"): version $MARKETING_VERSION, build $BUILD_NUMBER"
-          /usr/libexec/PlistBuddy -c "Print :CFBundleVersion" "$PLIST"
+          # exportArchive reads the version from the archive's OWN metadata
+          # (ApplicationProperties in the .xcarchive Info.plist), not just the app binary —
+          # stamp that too, or the delivery still carries the stale build "1".
+          ARCH_PLIST="$ARCHIVE_PATH/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :ApplicationProperties:CFBundleVersion $BUILD_NUMBER" "$ARCH_PLIST"
+          /usr/libexec/PlistBuddy -c "Set :ApplicationProperties:CFBundleShortVersionString $MARKETING_VERSION" "$ARCH_PLIST"
+          echo "Stamped $(basename "$APP") + archive metadata: version $MARKETING_VERSION, build $BUILD_NUMBER"
+          echo "app CFBundleVersion:     $(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")"
+          echo "archive CFBundleVersion: $(/usr/libexec/PlistBuddy -c 'Print :ApplicationProperties:CFBundleVersion' "$ARCH_PLIST")"
 
       - name: Export .ipa
         env:
