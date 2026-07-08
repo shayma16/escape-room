@@ -322,7 +322,7 @@ candidate becomes the locked seed + standing stylization language for the whole 
 
 ## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
 
-DERIVED PROGRESS: 30/52 fresh done | 0 retrying | 0 failed | 22 remaining | $10.20 spent | z4-alcove close-ups DONE. ALL fresh close-ups complete (30). Next: 15 icons + sprites.
+DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 7 remaining | $12.45 spent | ALL 15 ICONS DONE. Remaining: sprites (astrolabe plates/pointer, rune-ember, ladle-ripple) + state-variant PIL.
 _Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
 _Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
 _Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._
@@ -392,21 +392,21 @@ _Grayscale 2.3 gate on every glyph/precision asset. cu-slots MUST carry inset su
 ### Icons (15) — white-bg t2i std + PIL cutout to RGBA
 | # | Asset | Status | Cost | Note |
 |---|-------|--------|------|------|
-| I-1 | icon-poker | pending | - | iron poker, loop hole |
-| I-2 | icon-gold-ring | pending | - | plain round band, ring hole |
-| I-3 | icon-rusted-key | pending | - | snapped plain bit, bow hole |
-| I-4 | icon-feather | pending | - | glossy black |
-| I-5 | icon-crank | pending | - | AF-2 Z-crank: square drive collar + offset arm + wood grip |
-| I-6 | icon-file | pending | - | metal file |
-| I-7 | icon-phial | pending | - | empty glass |
-| I-8 | icon-phial-draught | pending | - | pearlescent draught |
-| I-9 | icon-silver-coin | pending | - | crescent hallmark (canonical die) |
-| I-10 | icon-paste | pending | - | moonflower paste |
-| I-11 | icon-spoon | pending | - | crescent hallmark bowl |
-| I-12 | icon-weight | pending | - | iron plumb |
-| I-13 | icon-shavings | pending | - | silver shavings |
-| I-14 | icon-blossom | pending | - | moonflower blossom |
-| I-15 | icon-cage-key | pending | - | 5-point star bit (matches cage keyhole) |
+| I-1 | icon-poker | pending | done | $0.15 | icon-poker-nb RGBA: iron poker+hook+loop, loop hole transparent. Clean cutout. |
+| I-2 | icon-gold-ring | pending | done | $0.15 | icon-gold-ring-nb RGBA: plain gold band, center hole transparent. |
+| I-3 | icon-rusted-key | pending | done | $0.15 | icon-rusted-key-nb RGBA: bent rusted key, plain snapped bit, bow hole transparent. |
+| I-4 | icon-feather | pending | done | $0.15 | icon-feather-nb RGBA: glossy black feather w/ iridescence. |
+| I-5 | icon-crank | pending | done | $0.15 | icon-crank-nb RGBA: AF-2 Z-crank (square drive+offset arm+wood grip), reads crank not knife. |
+| I-6 | icon-file | pending | done | $0.15 | icon-file-nb RGBA: steel file w/ cross-hatch + wood handle. |
+| I-7 | icon-phial | pending | done | $0.15 | icon-phial-nb RGBA: empty glass vial+cork. |
+| I-8 | icon-phial-draught | pending | done | $0.15 | icon-phial-draught-nb RGBA: pearlescent draught, silhouette matches empty phial. |
+| I-9 | icon-silver-coin | pending | done | $0.15 | icon-silver-coin-nb RGBA + PIL canonical crescent hallmark (horns RIGHT). Matches spoon/cu-slots/cu-coin. |
+| I-10 | icon-paste | pending | done | $0.15 | icon-paste-nb RGBA: pale moonflower paste in stone dish. |
+| I-11 | icon-spoon | pending | done | $0.15 | icon-spoon-nb RGBA + PIL canonical crescent hallmark in bowl (matches coin). |
+| I-12 | icon-weight | pending | done | $0.15 | icon-weight-nb RGBA: iron plumb weight, ring loop hole transparent. |
+| I-13 | icon-shavings | pending | done | $0.15 | icon-shavings-nb RGBA: curled silver filed shavings. |
+| I-14 | icon-blossom | pending | done | $0.15 | icon-blossom-nb RGBA: luminous moonflower blossom + green stem. |
+| I-15 | icon-cage-key | pending | done | $0.15 | icon-cage-key-nb RGBA: iron key w/ crisp 5-POINT STAR bit (matches star keyhole + statue key), bow hole transparent. |
 
 ### Sprites (glyph/geometry — fresh where render needed)
 | # | Asset | Status | Cost | Note |

@@ -334,6 +334,71 @@ re-release, per standard process — nothing in this round ships without that re
 > these anyway — STEER the live cascade to render the sifted state with the ring clearly
 > pickable and a distinct cleared state. So: functional → Developer; art → fold into build 3.)
 
+### R2-004 — status: logged
+> is the background noise ocean? doesn't really fit cabin in the woods theme no?
+> (context: the z1 ambient loop reads as ocean/waves — wrong for an abandoned-cabin-in-
+> the-woods setting. Audio/functional, persists in build 3 (art-only). Superseded in intent
+> by R2-005 (user will supply exact music) — but the "ambience must fit the woods/cabin
+> theme, not ocean" note stands regardless. → Developer.)
+
+### R2-005 — status: logged ⚠️ PENDING USER INPUT — REMIND BEFORE ENDING FEEDBACK SESSION
+> "let me share with you the exact background music that you need to use, remind me before
+> we end the feedback session"
+> (ACTION FOR PRODUCER: when the user says "that's all / process it", REMIND them to share
+> the exact background music file/link before processing. Do NOT close round 2 without this.
+> The supplied music replaces the current ocean-like ambience (R2-004). → Developer to
+> integrate once provided, honoring the mute-ambiance toggle R2-006 + licensing rules.)
+
+### R2-006 — status: logged
+> in the settings menu, add two toggles: one to mute ambiance, one to mute sound effects
+> (the interaction sounds)
+> (context: FEATURE — split the current single "Sound" master toggle into TWO independent
+> toggles: (1) Ambiance/music mute, (2) SFX/interaction-sounds mute. Updates
+> `specs/global-ui-style.md` §5.4 (which specs one master Sound toggle) + §8 SF-Symbol set
+> (needs a second speaker-state row). Functional → Developer. Persists in build 3.)
+
+### R2-context (non-issues, narration — not routed)
+> "sweeped the rug and i see the puzzle, can't do much with it now so that's ok" — working
+> as intended (trapdoor moon-dial revealed; not yet solvable). "i see the top arrow mark" —
+> confirming a rune glyph reads (AIR/EARTH mark); no complaint.
+
+### R2-007 — status: logged
+> i see the three pictures on the wall with the crows [triptych]. i clicked on the picture
+> on the RIGHT (with 3 crows), but the game zoomed onto the picture on the LEFT (with 1
+> crow) — i think that's a bug
+> (context: z1 v-study triptych, the p02 moon-trapdoor clue. Hotspot→close-up MISMAPPING:
+> tapping the right painting opens the wrong (left) painting's close-up. A real functional
+> bug and puzzle-relevant — could mislead the p02 solve (crow-count → dial index). Likely
+> swapped/mis-ordered hotspot rects or close-up routing for the three triptych panels.
+> Functional → Developer; persists in build 3 (art-only). Verify all three map correctly.)
+
+### R2-008 — status: logged
+> i zoomed onto the book [grimoire]. can we add swipe to flip through pages (in addition
+> to the arrows)? also add swipe to switching between scenes/perspectives — keep the arrows
+> too
+> (context: FEATURE — additive gesture navigation, arrows STAY: (a) horizontal swipe to
+> flip grimoire pages in the book close-up; (b) horizontal swipe to cycle views/
+> perspectives within a zone (complements the §7-R2 chevrons). NOTE: distinct from the
+> removed drag-to-USE-items (round-1 select-then-tap decision) — this is navigation
+> swiping, which is fine and additive; don't reintroduce item-drag. Functional → Developer;
+> persists in build 3.)
+
+### R2-009 — status: logged
+> i think you forgot to remove the pshh sound when swiping between pages — replace it with
+> a page-flipping sound fitting the game theme
+> (context: the round-1 game-wide generic-"psh" removal (F-005/F-009/F-019) MISSED the
+> grimoire page-navigation sound — the psh still plays there. TWO parts: (a) remove the
+> generic psh on page-flip; (b) add a themed page-flip/paper SFX. Ties to the new R2-008
+> swipe-to-flip. Audio/functional → Developer; persists in build 3. Flag as an incomplete-
+> fix carry-over from round 1, and sweep for any OTHER surviving psh instances while at it.)
+
+### R2-context (more narration — not routed)
+> "found the arrows puzzle" (p01 rune door) · "found the clue for the feather and recipe"
+> (recipe page) · "found the down-arrow deadplant" (EARTH rune = downward triangle on the
+> flowerpot — confirms the new build-3 EARTH glyph reads correctly) · "went to the scene on
+> the right" — all progress narration, no complaints.
+
 ---
 
 _Say "that's all, process it" (or similar) when ready to process this round._
+_REMINDER PENDING: R2-005 — get the exact background music from the user before closing._
