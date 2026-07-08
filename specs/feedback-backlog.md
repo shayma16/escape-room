@@ -353,6 +353,9 @@ re-release, per standard process — nothing in this round ships without that re
 > per-zone amb-z1..z4 loops: Developer decides whether to drop them or keep as subtle texture
 > under the music. It's user-supplied — confirm the user has rights to ship it commercially
 > before it goes in a public release (record in implementation notes per the licensing rule).
+> ✅ RIGHTS CLEARED (user, 2026-07-08): the track is **fal.ai-generated** → commercial use is
+> fine, no third-party licensing issue. Developer: proceed; record "fal.ai-generated, user-
+> owned, commercial-use OK" in the implementation-notes licensing table.
 
 ### R2-006 — status: logged
 > in the settings menu, add two toggles: one to mute ambiance, one to mute sound effects
