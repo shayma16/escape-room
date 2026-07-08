@@ -501,18 +501,19 @@ final class PuzzleEngineTests: XCTestCase {
         XCTAssertTrue(coordinator.pressedRuneTiles.isEmpty, "dull knock resets tiles flush; no lockout")
     }
 
-    func testClockCloseUpAdvanceTriggersOneShotAtTwelve_D5() {
+    /// Q3 (user decision 2026-07-08): the D5 clock cuckoo one-shot was REMOVED, so the
+    /// old `testClockCloseUpAdvanceTriggersOneShotAtTwelve_D5` (which asserted the first
+    /// XII spent a `clockCuckooSpent` latch) is obsolete and was deleted. Advancing the
+    /// hands is now purely cosmetic and must NEVER write clock state — asserted here and
+    /// in `testClockIsInertReference`.
+    func testAdvancingClockHandsNeverLatchesState_Q3() {
         let state = makeState(tempDir())
         let coordinator = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize)
         XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent))
-        // Advance from the initial position until the hands reach XII exactly once.
-        for _ in 0..<12 where coordinator.clockHour != 12 {
-            coordinator.advanceClockHour()
-        }
-        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent), "first XII must spend the one-shot pop")
-        // Going around again must not un-spend or re-trigger anything.
-        for _ in 0..<12 { coordinator.advanceClockHour() }
-        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent))
+        // Sweep the hands all the way around (past XII) more than once.
+        for _ in 0..<24 { coordinator.advanceClockHour() }
+        XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent),
+                       "reaching XII must NOT latch any cuckoo state — the clock is inert (Q3)")
     }
 
     // MARK: - Feedback round 1 regression net (select-then-tap, containers, nav, audio)
@@ -980,7 +981,10 @@ final class PuzzleEngineTests: XCTestCase {
         let study = RoomSceneCoordinator(viewID: .study, state: state, size: sceneSize)
         study.scene.onHotspotTap?("flowerpot")
         XCTAssertTrue(state.hasViewedClue(ClueID.markEarth), "the flowerpot is F-012's missed EARTH clue")
-        study.scene.onHotspotTap?("triptych")
+        // R2-007: the triptych is now three per-panel hotspots (there is no single
+        // "triptych" hotspot anymore). Any panel opens its own close-up but all share the
+        // clu-triptych gate id — tap the right (3-crow) panel and assert the shared gate.
+        study.scene.onHotspotTap?("triptych-3")
         XCTAssertTrue(state.hasViewedClue(ClueID.triptych))
         let entry = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize)
         entry.scene.onHotspotTap?("windowsill")

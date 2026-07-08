@@ -21,7 +21,8 @@ enum CloseUpRequest: Equatable, Identifiable {
     /// Triptych: the three night paintings, browsable, opened at the tapped panel
     /// (R2-007 — each panel maps to its own close-up).
     case triptych(panel: Int)
-    /// Mantel clock: movable hands; first XII pops the cuckoo toy once (D5).
+    /// Mantel clock: movable hands, purely the p01 numeral-ring reference. The D5 cuckoo
+    /// one-shot was REMOVED (Q3, user decision 2026-07-08) — advancing is cosmetic only.
     case clock
     /// Trapdoor three-dial moon-phase lock (interactive; A5/R5 legibility floor).
     case dialPanel

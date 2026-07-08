@@ -809,6 +809,26 @@ container yields are collected via explicit taps; a failed use keeps the item ar
 the clock is inert (Q3). The full-playthrough engine flows now collect the ash ring the
 two-step way (siftAndCollectRing).
 
+#### Build-3 CI test fixes (2026-07-08) — two stale unit tests corrected, no code change
+The build-3 batch left two obsolete test assertions that failed CI run 28965195362; both
+were fixed at the TEST layer (the shipped code was already correct):
+- `testClockCloseUpAdvanceTriggersOneShotAtTwelve_D5` asserted the removed D5 cuckoo
+  one-shot latch (`clockCuckooSpent` set on reaching XII). Per the Q3 cuckoo removal the
+  clock never latches state, so the test was obsolete. REMOVED and replaced with
+  `testAdvancingClockHandsNeverLatchesState_Q3`, which asserts the inverse — sweeping the
+  hands past XII writes no cuckoo state (complements `testClockIsInertReference`). No other
+  test/code references the retired cuckoo latch (`clockCuckooSpent` survives only as the
+  save-migration flag + its legacy-save render test at PuzzleEngineTests:277).
+- `testGatingCloseUpsRecordClueNodeIDs` tapped a `"triptych"` hotspot that no longer
+  exists: the R2-007 (CLUSTER F) batch split the triptych into three per-panel hotspots
+  (`triptych-1/2/3`). The retired id matched no `handleTap` case, recorded no clue, and the
+  `clu-triptych` assertion failed. This was a TEST bug from the R2-007 change, NOT a code
+  regression — the coordinator still records the shared `ClueID.triptych` from any panel
+  (`.triptych(panel:) -> id "triptych" -> gatingClues -> [ClueID.triptych]`). Fixed by
+  tapping the real right/3-crow panel `triptych-3`; the p01/p02/p03/p04/p14 clue-gate
+  mappings it asserts (markAir/markFire/markEarth/markWater/triptych/windowOrion) are
+  otherwise unchanged and correct.
+
 ### Security checklist (re-run for build 3)
 - No development-time secrets in the shipped app. Grepped source + bundled resources for
   fal/api/key/secret/token/Bearer/sk- - no hardcoded keys/credentials; the fal.ai key is used
