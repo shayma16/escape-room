@@ -231,7 +231,7 @@ Statuses: pending / generating / done / retrying / failed. Cost includes retries
 |---|-------|--------|--------|------|------|
 | 11 | z3/v-cellar/z3-cellar-base | t2i 4K anchored (seed 43100) | done | $0.30 | 1 take PASS. ALL elements: ladder+trapdoor spill+lantern (R edge), barrel w/ pry-gap lid (mid-right), root-shelf drawer (brass handle), sliding shelf flush to wall + pulley + empty hook + taut rope to runners (L-center), ceiling shaft+shutter+winch empty socket (upper-L), mirror on floor stand + scratch-arcs in dirt (L). Coolest darks, readable by edge light. Winch-socket/scratch geometry = close-up jobs. |
 | 12 | z3 v-cellar close-ups | t2i std x4 | pending | - | winch-socket, mirror-scratches, spoon-drawer (hallmark), barrel-gap |
-| F3 | z3 state+beam matrix (free) | PIL beam_engine | pending | $0 | barrel-pried,drawer-open,weight-hung,shelf-slid,crank-fitted,mirror-d2/d3, beam floor/blocked/alcove/shelf-slid |
+| F3 | z3 state+beam matrix (free) | PIL beam_engine | done | $1.05 | z3 states DONE: mechanism (barrel/drawer/weight/shelf-slid/crank/mirror-d2/d3) via region-edit (7); beam matrix (nobeam/beam-floor/beam-blocked/beam-alcove/beam-floor-shelf-slid) via PIL beam_engine_v3 ($0). R4 all combos read distinctly; beam-blocked reads 'look here' not bugged. |
 
 ### z4 — Walled Alcove (v-alcove)
 | # | Asset | Method | Status | Cost | Note |
@@ -322,7 +322,7 @@ candidate becomes the locked seed + standing stylization language for the whole 
 
 ## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
 
-DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 7 remaining | $16.20 spent | z3 mechanism states DONE (barrel/drawer/weight/shelf-slid/crank/mirror-d2/d3). $16.20 running ($2.70 headroom). Beam matrix (4) via PIL next.
+DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 7 remaining | $16.20 spent | z3 COMPLETE (mechanism edits + PIL beam matrix). $16.20. Remaining: mortar states + verification.
 _Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
 _Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
 _Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._
