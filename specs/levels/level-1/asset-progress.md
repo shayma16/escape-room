@@ -322,7 +322,7 @@ candidate becomes the locked seed + standing stylization language for the whole 
 
 ## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
 
-DERIVED PROGRESS: 17/52 fresh done | 0 retrying | 0 failed | 35 remaining | $7.65 spent | z1-entry close-ups DONE (door-lock/star-keyhole/rusted-key/windowsill/cage-crow). z1 COMPLETE.
+DERIVED PROGRESS: 20/52 fresh done | 0 retrying | 0 failed | 32 remaining | $8.10 spent | z2-bench close-ups DONE (brew/mortar/rim-rune).
 _Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
 _Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
 _Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._
@@ -362,9 +362,9 @@ _Grayscale 2.3 gate on every glyph/precision asset. cu-slots MUST carry inset su
 ### z2-bench fresh close-ups (anchor: z2-bench-base)
 | # | Asset | Method | Status | Cost | Note |
 |---|-------|--------|--------|------|------|
-| D-b1 | cu-brew | t2i std anchored | pending | - | ~65deg top-down over rim; liquid states + rim runes I/II/III at ellipse edge; CCW handedness = recipe spiral |
-| D-b2 | cu-mortar | t2i std anchored | pending | - | 3 states (empty/blossom/paste via PIL) |
-| D-b3 | cu-rim-rune | free crop OR t2i | pending | - | rim runes I/II/III + ember channels, flame-stage detail |
+| D-b1 | cu-brew | t2i std anchored | done | $0.15 | cu-brew-nb: ~65deg top-down over rim; pearlescent draught w/ CCW spiral (handedness matches recipe page, R3 PASS) + ladle CCW ripple; rim runes I/II/III w/ lit ember channels. clear/fizzle states via PIL. |
+| D-b2 | cu-mortar | t2i std anchored | done | $0.15 | cu-mortar-nb: empty stone mortar+pestle, warm key light. blossom/paste states via PIL. |
+| D-b3 | cu-rim-rune | free crop OR t2i | done | $0.15 | cu-rim-rune-nb: I/II/III rim runes w/ molten ember channels, firelight. flame-stage detail. |
 
 ### z2-cabinet fresh close-ups (anchor: z2-cabinet-base)
 | # | Asset | Method | Status | Cost | Note |
