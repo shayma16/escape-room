@@ -158,7 +158,7 @@ No API budget spent on AF-1. Once AD picks A/B/C, execution is: render canonical
 
 # Level 1 — BUILD-3 FULL REBUILD (Nano Banana Pro engine-render style)
 
-PROGRESS: 5/64 done | 0 retrying | 0 failed | 59 remaining | $3.60 spent | z1 zone bases DONE (hearth-seed+entry+study); cascading z2-z4 bases
+PROGRESS: 7/64 done | 0 retrying | 0 failed | 57 remaining | $4.20 spent | z1+z2 zone bases DONE; cascading z3+z4 bases
 
 _Asset Generation Agent live tracker for the full engine-render rebuild (build 3)._
 _Model: `fal-ai/nano-banana-pro` (t2i + edit). Mandatory engine-render style template_
@@ -220,8 +220,8 @@ Statuses: pending / generating / done / retrying / failed. Cost includes retries
 ### z2 — Potion Workshop (v-bench / v-cabinet)
 | # | Asset | Method | Status | Cost | Note |
 |---|-------|--------|--------|------|------|
-| 7 | z2/v-bench/z2-bench-base | t2i 4K anchored | pending | - | cauldron/firepit/bellows/mortar; + JC-fb1 painted return-passage |
-| 8 | z2/v-cabinet/z2-cabinet-base | t2i 4K anchored | pending | - | cabinet slots/astrolabe/potion-shelf/Orion window |
+| 7 | z2/v-bench/z2-bench-base | t2i 4K anchored (seed 42100) | done | $0.30 | 1 take PASS. Cauldron over fire pit (under-lit warm), ladle, floor bellows w/ pump handle to camera, mortar&pestle on bench, hanging herbs, cool window slab (eye warm->cool per 5.4). JC-fb1 PAINTED RETURN-PASSAGE present: open arched doorway center-back to warmly-lit main cabin -> no UI exit chevron needed. Rim runes I/II/III = cauldron close-up job. |
+| 8 | z2/v-cabinet/z2-cabinet-base | t2i 4K anchored (seed 42200) + PIL canonical sky | done | $0.30 | 1 take + PIL sky fix ($0). Potion shelf 5+ distinct bottles+pictogram labels, ingredient cabinet (sunburst+crescent), astrolabe pedestal+base drawer, cool 35% window slab. PIL FIX: model drew scattered stars + wrong crescent moon -> replaced with CANONICAL waxing-gibbous moon (lit-right, cropped from sky-master) + canonical 7-dot Orion belt (orion-canonical.json, 35deg) stamped in pane; grayscale PASS. NOTE for user: cabinet sunburst+crescent render as raised MEDALLIONS not inset recesses at wide scale - recess geometry carried by cu-slots close-up (fresh). |
 | 9 | z2 v-bench close-ups | t2i std x2 | pending | - | brew-clear (65deg top-down), mortar-empty |
 | 10 | z2 v-cabinet close-ups | t2i std x4 | pending | - | slots-empty, astrolabe, potion-shelf, window-orion |
 | F2 | z2 state variants (free) | PIL/crop-edit | pending | $0 | bench: flame1/2/3, brew-fizzle/draught, mortar-blossom/paste; cabinet: open,drawer-open,slots-seated,astrolabe-drawer |
