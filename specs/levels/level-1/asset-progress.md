@@ -224,7 +224,7 @@ Statuses: pending / generating / done / retrying / failed. Cost includes retries
 | 8 | z2/v-cabinet/z2-cabinet-base | t2i 4K anchored (seed 42200) + PIL canonical sky | done | $0.30 | 1 take + PIL sky fix ($0). Potion shelf 5+ distinct bottles+pictogram labels, ingredient cabinet (sunburst+crescent), astrolabe pedestal+base drawer, cool 35% window slab. PIL FIX: model drew scattered stars + wrong crescent moon -> replaced with CANONICAL waxing-gibbous moon (lit-right, cropped from sky-master) + canonical 7-dot Orion belt (orion-canonical.json, 35deg) stamped in pane; grayscale PASS. NOTE for user: cabinet sunburst+crescent render as raised MEDALLIONS not inset recesses at wide scale - recess geometry carried by cu-slots close-up (fresh). |
 | 9 | z2 v-bench close-ups | t2i std x2 | pending | - | brew-clear (65deg top-down), mortar-empty |
 | 10 | z2 v-cabinet close-ups | t2i std x4 | pending | - | slots-empty, astrolabe, potion-shelf, window-orion |
-| F2 | z2 state variants (free) | PIL/crop-edit | pending | $0 | bench: flame1/2/3, brew-fizzle/draught, mortar-blossom/paste; cabinet: open,drawer-open,slots-seated,astrolabe-drawer |
+| F2 | z2 state variants (free) | PIL/crop-edit | done | $0.60 | z2 states via region-edit (fresh-base anchored): cabinet-open (file+phial inner shelf), cabinet-drawer-open (coin+crank), brew-clear, brew-fizzle. flame1/2/3 = build-2 plates retained (flame HEIGHT + rim ember stages; flag: painterly, may re-derive if style-jump flagged). mortar states pending PIL. |
 
 ### z3 — Hidden Cellar (v-cellar)
 | # | Asset | Method | Status | Cost | Note |
@@ -322,7 +322,7 @@ candidate becomes the locked seed + standing stylization language for the whole 
 
 ## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
 
-DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 7 remaining | $13.65 spent | z1-entry 4 state edits done ($13.65). Mixed wave (6 edits) running: crow-lintel/trapdoor/cabinet-open/drawer/brew x2.
+DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 7 remaining | $14.55 spent | Mixed wave DONE (crow-lintel/trapdoor-open/cabinet-open/drawer/brew x2). $14.55 running. Clock/ash cu-states + z3 states remaining.
 _Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
 _Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
 _Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._
