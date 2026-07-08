@@ -239,8 +239,11 @@ final class EscapeRoomUITests: XCTestCase {
         // A bare tap on ash is now only a look (no passive auto-apply), so the sift MUST
         // go through the armed-item path or the ring is never yielded.
         useItem(app, item: "itm-poker", onScene: 0.325, 0.650)  // sift ash -> glint close-up
-        assertHolding(app, "itm-gold-ring")
         shoot(app, "play-02-ash-glint")
+        // R2-003a two-step: sifting REVEALS the ring in the (now-open) ash close-up; it is
+        // NOT auto-granted. Collect it with an explicit tap on the revealed-ring target.
+        tapID(app, "collect-itm-gold-ring")
+        assertHolding(app, "itm-gold-ring")
         dismissCloseUp(app)
 
         // Clue-gating (rev 1.3): a thorough player views the clue close-ups before the
@@ -471,7 +474,9 @@ final class EscapeRoomUITests: XCTestCase {
         // Progress + p01 clue-gathering on the z1 views.
         tapScene(app, 0.235, 0.685)                 // take poker
         assertHolding(app, "itm-poker")
-        useItem(app, item: "itm-poker", onScene: 0.325, 0.650) // sift ash -> ring
+        useItem(app, item: "itm-poker", onScene: 0.325, 0.650) // sift ash -> reveals ring
+        // R2-003a two-step: explicitly collect the revealed ring from the ash close-up.
+        tapID(app, "collect-itm-gold-ring")
         assertHolding(app, "itm-gold-ring")
         dismissCloseUp(app)
         tapScene(app, 0.643, 0.40); dismissCloseUp(app)   // AIR mark
