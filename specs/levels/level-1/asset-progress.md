@@ -322,7 +322,7 @@ candidate becomes the locked seed + standing stylization language for the whole 
 
 ## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
 
-DERIVED PROGRESS: 12/52 fresh done | 0 retrying | 0 failed | 40 remaining | $6.90 spent | z1-study close-ups DONE (grimoire5/triptych3/runedoor/flowerpot).
+DERIVED PROGRESS: 17/52 fresh done | 0 retrying | 0 failed | 35 remaining | $7.65 spent | z1-entry close-ups DONE (door-lock/star-keyhole/rusted-key/windowsill/cage-crow). z1 COMPLETE.
 _Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
 _Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
 _Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._
@@ -353,11 +353,11 @@ _Grayscale 2.3 gate on every glyph/precision asset. cu-slots MUST carry inset su
 ### z1-entry fresh close-ups (anchor: z1-entry-base)
 | # | Asset | Method | Status | Cost | Note |
 |---|-------|--------|--------|------|------|
-| D-e1 | cu-door-lock | t2i std anchored | pending | - | unified crow-beak basin over bolt (AF-1 canonical); 3 basin states via PIL |
-| D-e2 | cu-star-keyhole | t2i std anchored | pending | - | 5-point star socket; rejects rusted key plain bit; + key-in-lock success frame (PIL) |
-| D-e3 | cu-rusted-key | free crop OR t2i | pending | - | snapped plain bit visible (fairness valve) |
-| D-e4 | cu-windowsill-rune | free crop OR t2i | pending | - | WATER downward-triangle + IV |
-| D-e5 | cu-cage-crow | t2i std anchored | pending | - | live crow (register 1); refusal pose + feed cup |
+| D-e1 | cu-door-lock | t2i std anchored | done | $0.15 | cu-door-lock-nb: unified crow-beak basin (one carved piece, beak IS basin) over vine-wrapped bolt. AF-1 canonical. Basin states via PIL. |
+| D-e2 | cu-star-keyhole | t2i std anchored | done | $0.15 | cu-star-keyhole-nb: clean 5-point star socket, rejects plain key. PIL-patched OUT a baked 'INTERACT' text/icon (no-text rule). key-in-lock frame via PIL. |
+| D-e3 | cu-rusted-key | free crop OR t2i | done | $0.15 | cu-rusted-key-nb: bent rusted key, plain simple bit (no star) = fairness valve, visually rejects star keyhole. |
+| D-e4 | cu-windowsill-rune | free crop OR t2i | done | $0.15 | cu-windowsill-rune-nb: WATER down-triangle + IV etched in sill, moonlit. Grayscale PASS (slight perspective skew, legible). |
+| D-e5 | cu-cage-crow | t2i std anchored | done | $0.15 | cu-cage-crow-nb: live corvid (register 1, glossy, catch-light) + brass feed cup in bars = base CAGED state. Refusal-pose + crow-states via PIL variants. |
 
 ### z2-bench fresh close-ups (anchor: z2-bench-base)
 | # | Asset | Method | Status | Cost | Note |
