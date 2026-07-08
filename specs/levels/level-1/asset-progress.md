@@ -158,7 +158,7 @@ No API budget spent on AF-1. Once AD picks A/B/C, execution is: render canonical
 
 # Level 1 — BUILD-3 FULL REBUILD (Nano Banana Pro engine-render style)
 
-PROGRESS: 3/64 done | 0 retrying | 0 failed | 61 remaining | $2.40 spent | SEED B LOCKED + promoted to canonical + FIRE/AIR glyph fix applied -> cascading zones
+PROGRESS: 5/64 done | 0 retrying | 0 failed | 59 remaining | $3.60 spent | z1 zone bases DONE (hearth-seed+entry+study); cascading z2-z4 bases
 
 _Asset Generation Agent live tracker for the full engine-render rebuild (build 3)._
 _Model: `fal-ai/nano-banana-pro` (t2i + edit). Mandatory engine-render style template_
@@ -210,8 +210,8 @@ Statuses: pending / generating / done / retrying / failed. Cost includes retries
 | # | Asset | Method | Status | Cost | Note |
 |---|-------|--------|--------|------|------|
 | 1 | z1/v-hearth/z1-hearth-base | edit 4K (seed B 30820) + PIL glyph fix | done (CANONICAL SEED) | $0.30 | LOCKED STYLE SEED. Candidate B promoted to canonical after PIL FIRE/AIR near-wordless fix ($0): lintel upward-triangle FIRE glyph + II; bellows triangle-with-bar AIR glyph + I. Grayscale PASS. 1 mantel clock (numeral ring I-XII + cuckoo door above XII), cold hearth+ash, poker/bellows/armchair/rug/lamp all present. ANCHOR for all later gens. |
-| 2 | z1/v-study/z1-study-base | t2i 4K anchored | pending | - | desk/grimoire/triptych/rune-door; warmest z1 pocket |
-| 3 | z1/v-entry/z1-entry-base | t2i 4K anchored | pending | - | door + crow-beak BASIN (unified beak, AF-1) + cage + window sky |
+| 2 | z1/v-study/z1-study-base | t2i 4K anchored (seed 41200) + PIL EARTH-bar fix | done | $0.30 | 1 take PASS. All elements: open grimoire+black-feather bookmark+pictogram pages, triptych same-tree x3 w/ moons, plain bookshelf, dead flowerpot rune, inner workshop door w/ 4-tile brass rune plate, warm lamp key. PIL fix: added horizontal bar to flowerpot's downward-triangle -> EARTH glyph (distinct from WATER plain-triangle) + numeral III; grayscale PASS. Door tiles show generic runes (NOT the answer glyphs -> no code leak, correct). Style leans toon like entry - flag for per-zone review. |
+| 3 | z1/v-entry/z1-entry-base | t2i 4K anchored (seed 41142) + PIL WATER glyph fix | done | $0.60 | 2 takes ($0.30x2): take1 gave a crow SKULL + SEPARATE bowl (AF-1 decomposition + skull=1.1 violation) -> re-rolled. take2 PASS: UNIFIED crow's-head where open beak IS the basin (one carved piece, AF-1 satisfied). All elements present (window moon+Orion, rune sill, rusted bent key, thorn vines/bolt, cage star-keyhole+feed-cup+live crow). PIL fix: sill "W" letter -> WATER downward-triangle glyph + numeral IV (grayscale PASS). STYLE NOTE for user: entry skews cooler/more-graphic than seed (per-spec 60% cool zone) - flag for per-zone review. |
 | 4 | z1 v-hearth close-ups | t2i std x5 | pending | - | bellows, lintel, clock-unspent, dial-panel, ash-undisturbed |
 | 5 | z1 v-study close-ups | t2i std x10 | pending | - | flowerpot, grimoire A/B/recipe/zodiac/bird, triptych 1/2/3, runedoor-tiles |
 | 6 | z1 v-entry close-ups | t2i std x5 | pending | - | door-lock (unified beak), star-keyhole, rusted-key, windowsill, cage-crow |
