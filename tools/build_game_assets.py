@@ -37,12 +37,41 @@ XCASSETS = os.path.join(ROOT, "EscapeRoom", "Resources", "Assets.xcassets")
 JPEG_Q = 87
 
 
+# Build-3 delivery gap reconciliation (2026-07-08, round-2 fix batch / build 3):
+# A few state-variant wide plates were regenerated in the build-3 engine-render rebuild
+# but committed only under their raw "-nb" (nano-banana) filename, never promoted to the
+# canonical name the pipeline expects. Rather than hand-rename art in specs/ (Asset Gen's
+# territory) we resolve the source here: canonical path first, then the "-nb" fallback.
+# Flagged to the Producer in implementation-notes.md (build-3 art gap G1).
+SRC_OVERRIDE = {
+    "z1/v-hearth/z1-hearth-poker-taken@3x.png": "z1/v-hearth/z1-hearth-poker-taken-nb@3x.png",
+    "z1/v-hearth/z1-hearth-trapdoor-open@3x.png": "z1/v-hearth/z1-hearth-trapdoor-open-nb@3x.png",
+}
+
+
+def resolve_src(path):
+    """Map a requested canonical asset path to the file that actually ships in specs/.
+
+    Prefers the canonical name; falls back to a build-3 "-nb" delivery, then to the
+    SRC_OVERRIDE table. Raises if nothing exists so a genuine gap fails loudly rather
+    than silently shipping stale/grey art (the exact class of defect this batch fixes).
+    """
+    if os.path.exists(src(path)):
+        return path
+    if path in SRC_OVERRIDE and os.path.exists(src(SRC_OVERRIDE[path])):
+        return SRC_OVERRIDE[path]
+    nb = path.replace("@3x.png", "-nb@3x.png")
+    if os.path.exists(src(nb)):
+        return nb
+    return path  # let the caller raise a clear FileNotFoundError on open
+
+
 def src(path):
     return os.path.join(SRC, path.replace("/", os.sep))
 
 
 def load(path):
-    return Image.open(src(path))
+    return Image.open(src(resolve_src(path)))
 
 
 def ensure(d):
@@ -71,7 +100,7 @@ def save_png(im, rel):
 
 # ---------------------------------------------------------------- inpainting
 
-def flatten_hue(rgb, mask, ring=70):
+def flatten_hue(rgb, mask, ring=25):  # was 70 — a 141px MaxFilter is O(minutes) on 4K
     """Recolour masked pixels to the average surround hue, keeping luminance."""
     grown = mask.filter(ImageFilter.MaxFilter(ring * 2 + 1))
     ring_mask = ImageChops.subtract(grown, mask)
@@ -219,25 +248,43 @@ def strip_poly(p0, p1, w0, w1, extend=0):
 # ------------------------------------------------------------- diff overlays
 
 def diff_overlay(base_im, var_im, pad=12, thresh=14, clamp=None):
-    """Return (bbox, crop) covering where var differs from base, or None."""
-    diff = ImageChops.difference(base_im.convert("RGB"), var_im.convert("RGB"))
+    """Return (bbox, crop) covering where var differs from base, or None.
+
+    Build-3 delivery gap G2 (2026-07-08): the build-3 rebuild shipped fresh 4K base
+    plates (3840x1920) but left the state-variant plates at the build-2 dimensions
+    (2560x1280). Both share the identical 2:1 framing (region-edits registered to the
+    same composition), so we resize the variant up to the base's pixel size before
+    diffing — otherwise ImageChops.difference errors / produces garbage full-frame
+    overlays. Flagged to the Producer in implementation-notes (gap G2).
+    """
+    base_rgb = base_im.convert("RGB")
+    var_rgb = var_im.convert("RGB")
+    if var_rgb.size != base_rgb.size:
+        var_rgb = var_rgb.resize(base_rgb.size, Image.LANCZOS)
+    diff = ImageChops.difference(base_rgb, var_rgb)
     gray = diff.convert("L")
     mask = gray.point(lambda v: 255 if v > thresh else 0)
     mask = mask.filter(ImageFilter.MinFilter(5))   # kill speckle
     mask = mask.filter(ImageFilter.MaxFilter(5))
     if clamp is not None:
+        # Clamp rects were authored in 2560x1280 (build-2) space; scale to the base's
+        # actual pixel size so they still clip the right region on 4K build-3 bases (G2).
+        sx, sy = base_rgb.size[0] / 2560.0, base_rgb.size[1] / 1280.0
+        scaled = (clamp[0] * sx, clamp[1] * sy, clamp[2] * sx, clamp[3] * sy)
         clip = Image.new("L", mask.size, 0)
-        ImageDraw.Draw(clip).rectangle(clamp, fill=255)
+        ImageDraw.Draw(clip).rectangle(scaled, fill=255)
         mask = ImageChops.multiply(mask, clip)
     bbox = mask.getbbox()
     if bbox is None:
         return None
-    w, h = base_im.size
+    w, h = base_rgb.size
     x0 = max(0, bbox[0] - pad)
     y0 = max(0, bbox[1] - pad)
     x1 = min(w, bbox[2] + pad)
     y1 = min(h, bbox[3] + pad)
-    return (x0, y0, x1, y1), var_im.convert("RGB").crop((x0, y0, x1, y1))
+    # Crop from the SIZE-MATCHED variant (var_rgb), so the bbox (computed in base pixels)
+    # indexes the right region regardless of the variant's original dimensions (gap G2).
+    return (x0, y0, x1, y1), var_rgb.crop((x0, y0, x1, y1))
 
 
 def ring_gain(base_im, target_im, bbox, ring=40):
@@ -323,6 +370,12 @@ PLAIN_PLATES = [
     "z2/v-cabinet/cu-potion-shelf@3x.png",
     "z2/v-cabinet/cu-astrolabe@3x.png",
     "z2/v-cabinet/cu-window-orion@3x.png",
+    # CLUSTER B (round-2 critical soft-lock fix): the two solved-container OPEN close-up
+    # plates. These are the backgrounds ContainerCloseUp renders behind the tappable
+    # coin/crank (p03) and file/phial (p04); they were MISSING from the bundle, so those
+    # close-ups rendered as the grey-box progression soft-lock (R2-018/019/025/026).
+    "z2/v-cabinet/cu-cabinet-open@3x.png",
+    "z2/v-cabinet/cu-astrolabe-drawer-open@3x.png",
     # z3 (beam matrix = full-plate selection)
     "z3/v-cellar/z3-cellar-base@3x.png",
     "z3/v-cellar/z3-cellar-shelf-slid@3x.png",
@@ -389,6 +442,34 @@ ICONS = [
     "z4/icons/icon-cage-key@3x.png",
 ]
 
+# Build-3 gap G3 (2026-07-08): the wide state-VARIANT plates are region-edits of a
+# SUPERSEDED base generation and do NOT pixel-align with the fresh build-3 4K base plates
+# — a full-frame diff (even at matched size / high threshold) still trips everywhere, so
+# the automatic diff-overlay can't localize them. Instead we crop each state's element by
+# a HAND-SPECIFIED normalized rect (from the known hotspot geometry) out of the size-
+# matched variant and composite that (feathered) over the base. This keeps the multi-state
+# overlay layering the coordinator relies on (slots + cabinet + drawer can co-render),
+# with only the intended element replaced. Flagged to the Producer (gap G3).
+#
+# (view_dir, variant, overlay_name, normalized_rect (x,y,w,h), needs_dim)
+MANUAL_OVERLAYS = [
+    ("z2/v-cabinet", "z2-cabinet-slots-seated", "ov-slots-seated", (0.150, 0.24, 0.22, 0.22), False),
+    ("z2/v-cabinet", "z2-cabinet-open",         "ov-cab-open",      (0.120, 0.20, 0.30, 0.42), False),
+    ("z2/v-cabinet", "z2-cabinet-drawer-open",  "ov-adrawer-open",  (0.500, 0.62, 0.22, 0.26), False),
+    ("z3/v-cellar",  "z3-cellar-barrel-pried",  "ov-barrel-pried",  (0.66, 0.54, 0.21, 0.38), True),
+    ("z3/v-cellar",  "z3-cellar-drawer-open",   "ov-drawer-open",   (0.33, 0.55, 0.17, 0.20), False),
+    ("z3/v-cellar",  "z3-cellar-crank-fitted",  "ov-crank-fitted",  (0.15, 0.18, 0.17, 0.24), False),
+    ("z3/v-cellar",  "z3-cellar-mirror-d2",     "ov-mirror-d2",     (0.55, 0.58, 0.19, 0.38), False),
+    ("z3/v-cellar",  "z3-cellar-mirror-d3",     "ov-mirror-d3",     (0.55, 0.58, 0.19, 0.38), False),
+    ("z4/v-alcove",  "z4-alcove-key-taken",     "ov-key-taken",     (0.48, 0.10, 0.22, 0.34), False),
+]
+
+MANUAL_OVERLAY_BASE = {
+    "z2/v-cabinet": "z2/v-cabinet/z2-cabinet-base@3x.png",
+    "z3/v-cellar":  "z3/v-cellar/z3-cellar-base@3x.png",
+    "z4/v-alcove":  "z4/v-alcove/z4-alcove-base@3x.png",
+}
+
 SPRITE_JSONS = [
     "z1/v-study/sprites/runedoor-tiles.json",
     "z2/v-bench/sprites/rune-ember-rects.json",
@@ -398,28 +479,26 @@ SPRITE_JSONS = [
 # Optional 6th element: clamp rect (x0, y0, x1, y1) restricting the diff, used where
 # a re-rendered variant carries low-level drift outside the intended element
 # (asset-manifest flag: cage re-render brightness shift).
+# Only the state variants that DO pixel-align with the current build-3 base (the poker-
+# taken -nb plate, which is a true region-edit of the same 4K base) still use the automatic
+# diff. Everything else moved to MANUAL_OVERLAYS (gap G3). ov-rug-moved / ov-trapdoor-open
+# are computed from build-3-derived extras in main() (gap G1).
 OVERLAYS = [
     ("z1/v-hearth", "z1-hearth-base", "z1-hearth-poker-taken", "ov-poker-taken", False),
-    ("z1/v-hearth", "z1-hearth-base", "z1-hearth-rug-moved", "ov-rug-moved", False),
-    ("z1/v-hearth", "z1-hearth-rug-moved", "z1-hearth-trapdoor-open", "ov-trapdoor-open", False),
-    ("z1/v-entry", "z1-entry-base", "z1-entry-cage-open", "ov-cage-open", False,
-     (1620, 0, 2560, 1280)),
-    ("z1/v-entry", "z1-entry-base", "z1-entry-crow-lintel", "ov-crow-lintel", False),
-    ("z1/v-entry", "z1-entry-base", "z1-entry-vines-withered", "ov-vines-withered", False),
-    ("z1/v-entry", "z1-entry-base", "z1-entry-vines-gone", "ov-vines-gone", False),
-    ("z2/v-bench", "z2-bench-base", "z2-bench-flame1", "ov-flame1", False),
-    ("z2/v-bench", "z2-bench-base", "z2-bench-flame2", "ov-flame2", False),
-    ("z2/v-bench", "z2-bench-base", "z2-bench-flame3", "ov-flame3", False),
-    ("z2/v-cabinet", "z2-cabinet-base", "z2-cabinet-slots-seated", "ov-slots-seated", False),
-    ("z2/v-cabinet", "z2-cabinet-base", "z2-cabinet-open", "ov-cab-open", False),
-    ("z2/v-cabinet", "z2-cabinet-base", "z2-cabinet-drawer-open", "ov-adrawer-open", False),
-    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-barrel-pried", "ov-barrel-pried", True),
-    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-drawer-open", "ov-drawer-open", False),
-    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-mirror-d2", "ov-mirror-d2", False),
-    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-mirror-d3", "ov-mirror-d3", False),
-    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-crank-fitted", "ov-crank-fitted", False),
-    ("z4/v-alcove", "z4-alcove-base", "z4-alcove-key-taken", "ov-key-taken", False),
 ]
+
+# Additional misaligned wide overlays (gap G3), same hand-rect crop mechanism as
+# MANUAL_OVERLAYS above but for z1-entry / z2-bench. Kept in one place with their bases.
+MANUAL_OVERLAYS += [
+    ("z1/v-entry", "z1-entry-cage-open",       "ov-cage-open",      (0.63, 0.05, 0.22, 0.62), False),
+    ("z1/v-entry", "z1-entry-crow-lintel",     "ov-crow-lintel",    (0.34, 0.02, 0.30, 0.16), False),
+    ("z1/v-entry", "z1-entry-vines-gone",      "ov-vines-gone",     (0.35, 0.16, 0.28, 0.40), False),
+    ("z2/v-bench", "z2-bench-flame1",          "ov-flame1",         (0.13, 0.30, 0.26, 0.34), False),
+    ("z2/v-bench", "z2-bench-flame2",          "ov-flame2",         (0.13, 0.24, 0.26, 0.40), False),
+    ("z2/v-bench", "z2-bench-flame3",          "ov-flame3",         (0.13, 0.18, 0.26, 0.46), False),
+]
+MANUAL_OVERLAY_BASE["z1/v-entry"] = "z1/v-entry/z1-entry-base@3x.png"
+MANUAL_OVERLAY_BASE["z2/v-bench"] = "z2/v-bench/z2-bench-base@3x.png"
 
 
 # ------------------------------------------------------- inpainted variants
@@ -457,6 +536,33 @@ def build_inpainted(report):
     # NOTE (implementation-notes): no emptied-container close-up is generated for the
     # spoon drawer or ingredient cabinet -- inpaint quality was not shippable there.
     # Instead those close-ups become inert once their item is collected.
+
+    # --- z1 hearth rug/trapdoor chain (build-3 gap G1) ---
+    # Build 3 delivered z1-hearth-trapdoor-open (folded rug + OPEN trapdoor) but NO
+    # canonical rug-moved (folded rug + LOCKED trapdoor) intermediate. Derive rug-moved
+    # from the trapdoor-open plate by inpainting the raised lid planks + rising haze into
+    # a dark closed recess. Uses only build-3 art; deterministic. The 3-dial detail lives
+    # in the cu-dial-panel close-up, so the wide state only needs "rug aside, dark locked
+    # square". Region measured on the 2560x1280 trapdoor-open-nb plate.
+    topen = load("z1/v-hearth/z1-hearth-trapdoor-open@3x.png").convert("RGB")
+    # The trapdoor-open plate is 3840x1920; scale the (2560-space) mask coords to it.
+    tw, th = topen.size
+    sxx, syy = tw / 2560.0, th / 1280.0
+    def sc(pts):
+        return [(x * sxx, y * syy) for (x, y) in pts]
+    lid_mask = polygon_mask(
+        topen.size,
+        polys=[sc([(1430, 980), (1830, 980), (1900, 1280), (1360, 1280)])],  # raised lid
+        ellipses=[(1180 * sxx, 1120 * syy, 360 * sxx, 190 * syy)],  # dark hole + haze
+        grow=4,
+    )
+    # NOTE: no recolor (the 141px MaxFilter ring is O(minutes) on a 4K plate — the plain
+    # inpaint is plenty for a dark closed recess). Keeps the build fast.
+    rug_moved = inpaint(topen, lid_mask, blur=4.0, noise=6, seed=21, recolor=False)
+    extras["z1/v-hearth#rug-moved"] = rug_moved
+    # Persist a full plate too, so ov-trapdoor-open can diff trapdoor-open against it.
+    save_plate(rug_moved, "z1/v-hearth/z1-hearth-rug-moved.jpg")
+    report.append("derive rug-moved -> z1/v-hearth/z1-hearth-rug-moved.jpg (build-3 gap G1)")
 
     # --- cu-astrolabe-drawer-open -> empty ---
     im = load("z2/v-cabinet/cu-astrolabe-drawer-open@3x.png")
@@ -786,6 +892,25 @@ def gen_sfx():
                 g += math.exp(-j / (0.035 * SR))
         out.append((ns[i] * 0.5 + tone[i] * 0.5) * g * 0.5)
     write_wav("sfx-wood.wav", out)
+    # themed door opening (R2-015a): a low wooden creak that rises then a soft latch
+    # clunk — distinct from the stone zone-unlock rumble (sfx-unlock).
+    n = int(1.1 * SR)
+    creak_ns = lp_noise(n, 320, 41, 3.0)
+    groan = sine(n, 90, 140, 0.5)
+    out = []
+    for i in range(n):
+        t = i / SR
+        # creak body swells over the first ~0.7s
+        body = math.sin(math.pi * min(1.0, t / 0.7)) if t < 0.7 else max(0.0, 1.0 - (t - 0.7) / 0.4)
+        # wobble gives the "creak" character
+        wob = 0.6 + 0.4 * math.sin(2 * math.pi * 7 * t)
+        val = (creak_ns[i] * 0.5 + groan[i]) * body * wob * 0.5
+        # latch clunk near the end
+        j = i - int(0.82 * SR)
+        if j > 0:
+            val += math.sin(2 * math.pi * 150 * j / SR) * math.exp(-j / (0.03 * SR)) * 0.5
+        out.append(val)
+    write_wav("sfx-door.wav", out)
     # level-entry swell (F-002: the one diegetic weather beat, then near-silence)
     n = int(7.0 * SR)
     ns = lp_noise(n, 250, 30, 4.0)
@@ -924,31 +1049,83 @@ def main():
         overlays.setdefault(view, {})[name] = entry
         print(f"   {name}: bbox={bbox}")
 
-    # overlays from inpainted extras
-    for key, (viewbase, name) in {
-        "z3/v-cellar#drawer-empty": ("z3/v-cellar/z3-cellar-base", "ov-drawer-empty"),
-        "z3/v-cellar#barrel-empty": ("z3/v-cellar/z3-cellar-base", "ov-barrel-empty"),
-        "z2/v-cabinet#cab-open-empty": ("z2/v-cabinet/z2-cabinet-base", "ov-cab-open-empty"),
-    }.items():
-        view = key.split("#")[0]
-        base_im = base_cache.get(viewbase)
-        if base_im is None:
-            base_im = load(viewbase + "@3x.png").convert("RGB")
-        res = diff_overlay(base_im, extras[key])
-        bbox, crop = res
+    # Manual hand-rect overlays (gap G3): crop each state's element region out of the
+    # size-matched variant and composite. The variant differs globally from the base, so
+    # we only take the intended element rect. Overlay texture feathering (SpriteKit side)
+    # softens the crop seam; a small tonal patch may remain (flagged, same class as the
+    # old ov-adrawer note). The rect goes straight into overlays.json.
+    for view, var, name, (nx, ny, nw, nh), dim in MANUAL_OVERLAYS:
+        base_im = load(MANUAL_OVERLAY_BASE[view]).convert("RGB")
+        w, h = base_im.size
+        var_im = load(f"{view}/{var}@3x.png").convert("RGB")
+        if var_im.size != base_im.size:
+            var_im = var_im.resize(base_im.size, Image.LANCZOS)
+        px0, py0 = int(nx * w), int(ny * h)
+        px1, py1 = int((nx + nw) * w), int((ny + nh) * h)
+        crop = var_im.crop((px0, py0, px1, py1))
         rel = f"{view}/overlays/{name}.jpg"
         save_plate(crop, rel)
-        w, h = base_im.size
-        entry = {"file": rel, "rect": [bbox[0] / w, bbox[1] / h,
-                                       (bbox[2] - bbox[0]) / w, (bbox[3] - bbox[1]) / h]}
-        if name == "ov-barrel-empty":
+        entry = {"file": rel, "rect": [nx, ny, nw, nh]}
+        if dim:
             beam = load("z3/v-cellar/z3-cellar-beam-floor@3x.png")
-            gain = ring_gain(base_im, beam, bbox)
+            gain = ring_gain(base_im, beam, (px0, py0, px1, py1))
             drel = f"{view}/overlays/{name}-dim.jpg"
             save_plate(apply_gain(crop, gain), drel)
             entry["dimFile"] = drel
             entry["dimGain"] = round(gain, 3)
         overlays.setdefault(view, {})[name] = entry
+        print(f"   {name} (manual): rect=({nx},{ny},{nw},{nh})")
+
+    # Emptied-container overlays (gap G3): inpainted from the 2560 variants, so crop by the
+    # SAME hand-rect as their filled counterparts (the empty state shows the same element
+    # region, now without the item). rect (view, extras-key, name, filled-rect, dim).
+    for view, ekey, name, (nx, ny, nw, nh), dim in [
+        ("z3/v-cellar", "z3/v-cellar#drawer-empty", "ov-drawer-empty", (0.33, 0.55, 0.17, 0.20), False),
+        ("z3/v-cellar", "z3/v-cellar#barrel-empty", "ov-barrel-empty", (0.66, 0.54, 0.21, 0.38), True),
+        ("z2/v-cabinet", "z2/v-cabinet#cab-open-empty", "ov-cab-open-empty", (0.120, 0.20, 0.30, 0.42), False),
+    ]:
+        base_im = load(MANUAL_OVERLAY_BASE[view]).convert("RGB")
+        w, h = base_im.size
+        ex = extras[ekey].convert("RGB")
+        if ex.size != base_im.size:
+            ex = ex.resize(base_im.size, Image.LANCZOS)
+        px0, py0, px1, py1 = int(nx * w), int(ny * h), int((nx + nw) * w), int((ny + nh) * h)
+        crop = ex.crop((px0, py0, px1, py1))
+        rel = f"{view}/overlays/{name}.jpg"
+        save_plate(crop, rel)
+        entry = {"file": rel, "rect": [nx, ny, nw, nh]}
+        if dim:
+            beam = load("z3/v-cellar/z3-cellar-beam-floor@3x.png")
+            gain = ring_gain(base_im, beam, (px0, py0, px1, py1))
+            drel = f"{view}/overlays/{name}-dim.jpg"
+            save_plate(apply_gain(crop, gain), drel)
+            entry["dimFile"] = drel
+            entry["dimGain"] = round(gain, 3)
+        overlays.setdefault(view, {})[name] = entry
+        print(f"   {name} (manual-empty): rect=({nx},{ny},{nw},{nh})")
+
+    # z1 hearth rug/trapdoor chain overlays (build-3 gap G1): explicit (base_im, var_im)
+    # pairs — rug-moved is a derived extra, so it can't go through the name-based loop.
+    hearth_base = base_cache.get("z1/v-hearth/z1-hearth-base") \
+        or load("z1/v-hearth/z1-hearth-base@3x.png").convert("RGB")
+    rug_moved_im = extras["z1/v-hearth#rug-moved"]
+    trapdoor_open_im = load("z1/v-hearth/z1-hearth-trapdoor-open@3x.png").convert("RGB")
+    for name, base_im, var_im in [
+        ("ov-rug-moved", hearth_base, rug_moved_im),          # base -> rug folded aside
+        ("ov-trapdoor-open", rug_moved_im, trapdoor_open_im), # locked -> lid thrown open
+    ]:
+        res = diff_overlay(base_im, var_im)
+        if res is None:
+            print(f"   !! no diff for {name}")
+            continue
+        bbox, crop = res
+        rel = f"z1/v-hearth/overlays/{name}.jpg"
+        save_plate(crop, rel)
+        w, h = base_im.size
+        overlays.setdefault("z1/v-hearth", {})[name] = {
+            "file": rel,
+            "rect": [bbox[0] / w, bbox[1] / h, (bbox[2] - bbox[0]) / w, (bbox[3] - bbox[1]) / h],
+        }
         print(f"   {name}: bbox={bbox}")
 
     with open(out_path("overlays.json"), "w") as f:
