@@ -558,6 +558,100 @@ re-release, per standard process — nothing in this round ships without that re
 > item from the puzzle graph's `uses` arrays). Persists in build 3. This refines round-1's
 > manual-pickup work into a full place/consume/retain lifecycle.)
 
+### R2-021 — status: logged
+> a new "back" arrow lets me switch between scenes — a bit confusing. maybe show text on the
+> arrows telling what they do (go left / right / back / up...). the text can appear briefly
+> to help, then disappear while the player is locked into solving puzzles in that scene
+> (context: navigation affordance clarity — the view-cycle + zone-exit chevrons (§7-R2) +
+> the R2-008 swipe don't self-explain, esp. the "back" arrow. FEATURE → Developer: TRANSIENT
+> directional hint labels (e.g. on scene entry / first-time, fade out after a few seconds or
+> once the player interacts). DESIGN TENSION to flag: the game is intentionally NEAR-WORDLESS
+> (CLAUDE.md genre decision) — persistent text labels violate that. The user's own framing
+> (brief, auto-hiding, help-then-disappear) is the acceptable compromise: first-time/transient
+> hints or directional glyphs, NOT permanent labels. Producer: confirm the transient/first-run
+> approach at processing so we honor near-wordless. Persists in build 3.)
+
+### R2-022 — status: logged
+> back in the cellar, used the iron stick on the barrel and got the weight. after getting the
+> weight, zooming onto the barrel still shows it CLOSED — should be opened by now. also, once
+> i picked up the weight, why do i even need to zoom into the barrel anymore? i don't think i
+> do
+> (context: z3 p06 barrel-pry. TWO parts: (a) FUNCTIONAL — barrel still shows closed after the
+> weight is taken; the pried/open+empty state isn't applied. SAME systemic state-visual-refresh
+> bug as R2-013 (trapdoor), R2-014 (spoon), R2-015 (door), R2-018 (astrolabe) — add to that
+> single audit; the art states exist (z3-cellar-barrel-pried + ov-barrel-*). (b) DESIGN/UX —
+> a DEPLETED hotspot (barrel after weight taken) shouldn't keep inviting a zoom with nothing
+> to do. Related to but distinct from R2-017 (never-useful red herrings): this is once-useful-
+> now-exhausted. Partly solved just by showing the open+empty state (player sees it's done);
+> fuller version = stop offering the close-up / down-rank the hotspot once depleted. Flag with
+> R2-017 as the "prune dead-end zooms" discussion at processing. → Developer (state refresh) +
+> design call on depleted-hotspot handling. Persists in build 3.)
+
+### R2-023 — status: logged
+> put the weight on the lever [p07], opened the secret door, see the shelf with moonflower +
+> bird-with-key [z4 alcove]. zoomed on the bird, got the key — but the zoomed picture shows
+> the bird HEAD only instead of the full bird like the wider scene. also i don't see the
+> flipping-between-scenes arrows here, i think u missed them. i click anywhere to go back now
+> (context: z4 v-alcove. (a) ART wide↔close-up consistency — cu-statue-key shows head/beak only
+> vs full statue in the wide plate; same family as R2-010/R2-016. A tight beak+key crop may be
+> intentional, but it should still clearly read as the SAME statue; verify/align at z4 review
+> (build 3 regenerated cu-statue-key). (b) NAV — z4 is a SINGLE-VIEW zone (only v-alcove), so
+> there are correctly NO left/right flip arrows; this is by-design, NOT a miss — but the
+> ABSENCE confuses the user (reinforces R2-021: nav must self-explain). Ensure a clear EXIT/
+> back affordance out of the alcove (currently "click anywhere to go back" — undiscoverable).
+> → mostly R2-021 nav-clarity + z4 art verify. Persists in build 3.)
+
+### R2-META-QA — status: logged (process, not a game bug)
+> "quality agent missed a lot this time around"
+> (VALID CRITIQUE — own it. QA's build-2 automated regression PASSED (scripted-coordinate UI
+> tests) yet MANY human-facing bugs shipped: broken state-refresh (R2-013/14/15/18/22), the
+> astrolabe soft-lock (R2-019), hotspot mismap (R2-007), surviving psh sounds (R2-009/12/15).
+> Root: scripted taps hit rects a real player can't see/reach, and the tests asserted logic
+> state, not what's rendered/reachable. PRODUCER ACTION for the post-fix QA pass: require
+> real-play-style verification — screenshot review of each solve's RESULTING wide-view state,
+> assert state-visual changes + hotspot-to-close-up mapping + item-collectibility as a HUMAN
+> sees them, not just engine flags. This meta-note directly shapes how the next QA runs.)
+
+### R2-024 — status: logged
+> clicking anywhere has that psh sound again
+> (context: THE KEY INSIGHT for the sound audit — the psh is essentially the DEFAULT tap/click
+> sound firing on virtually EVERY tap, including empty-space clicks and back-navigation. This
+> explains why it's everywhere (R2-009 page-flip, R2-012 trapdoor, R2-015 door, and now
+> any-click). Root fix: the generic per-tap sound must be REMOVED as the default (tap feedback
+> stays VISUAL per style-guide §7 — the parchment pulse — with NO default sound); only specific
+> EVENTS get their own themed cues (pickup ✓ kept, solve, unlock, door-open, page-flip). This
+> supersedes the piecemeal per-location notes: ONE fix = kill the default tap sound + map
+> event-specific sounds. → Developer, top of the sound audit. Persists in build 3.)
+
+---
+
+### R2-025 — status: logged 🔴 CRITICAL CONFIRMED (soft-lock) + more wide↔close-up bugs
+> now i'm seriously locked and i know why: i need the sun/moon cabinet but can't pick up the
+> drawer items. remember the grey box — i randomly clicked around on the plain grey box and
+> managed to pick up the silver moon coin and some attachment that goes somewhere. serious bug:
+> i only knew to do this because i played build 1 — the items are NOT visible here. picked them
+> up just to keep testing. ALSO images are off: the drawer close-up shows drawer UNDER THE
+> ASTROLABE with a window behind it, but zoomed out the drawer is UNDER THE WINDOW, opened.
+> zooming on the window to see Orion shows the window CLOSED, but zoomed out the window is
+> OPENED. sloppy quality.
+> (context: CONFIRMS R2-018/019 as a HARD PROGRESSION-BLOCKING SOFT-LOCK: the p03-resolved
+> astrolabe/drawer renders as an empty grey box; coin + crank are invisible and only findable
+> by blind-clicking or prior-build knowledge. A NEW PLAYER IS STUCK HERE. TOP-PRIORITY critical
+> — the whole level is uncompletable past p03 for anyone who didn't play build 1. Plus a NEW
+> wide↔close-up inconsistency cluster in z2-cabinet: (i) drawer POSITION differs (under
+> astrolabe+window-behind in close-up vs under-window in wide); (ii) window STATE differs
+> (closed in the Orion close-up vs open in wide). Same consistency family as R2-010/16/23 →
+> z2 art-review verification + likely re-derive the z2-cabinet close-ups to match the wide.
+> Reinforces R2-META-QA (this hard-lock passed automated QA). → Developer (astrolabe resolved-
+> state render + item collectibility, CRITICAL) + build-3 art consistency (z2 window/drawer).)
+
+### R2-context (narration — not routed)
+> "tried to feed the bird with the spoon but i have no food. let me open the cage. cool i got
+> the feather." — p11 solved via the cage key (feather granted) — WORKING. Minor design note:
+> the 'feed the crow' theory-magnet still flickered ("i have no food"), the exact theory D4/R1
+> aimed to defuse — but it resolved fine (user pivoted to the key), so no action; just noting
+> the magnet isn't 100% dead. Reinforces R2-011 (user likes the refusal).
+
 ---
 
 _Say "that's all, process it" (or similar) when ready to process this round._
