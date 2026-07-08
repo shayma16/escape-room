@@ -882,3 +882,70 @@ UI-playthrough staleness in sequence as each earlier failure was cleared.
 ### CI
 Round-2 build-3 CI run: https://github.com/shayma16/escape-room/actions/runs/28965195362
 (branch level1-rebuild-build3). Iterating to green before QA handoff.
+
+---
+
+## Build-3 consistency re-roll integration (2026-07-09, branch level1-rebuild-build3)
+
+Asset agent re-rolled several Level-1 close-ups/plates for wide↔close-up consistency
+(manifest block `build3_consistency_reroll_2026_07_09`; asset-progress "Build-3
+consistency re-roll"). This pass re-staged the corrected drop-in plates into the app
+bundle via the existing deterministic pipeline `tools/build_game_assets.py` (GameAssets
+is a folder reference, so no `.xcodeproj` edits were needed). No game logic changed.
+
+### Re-staged bundle files (14)
+- `z1/v-entry/cu-door-lock.jpg` (+ `cu-door-lock-basin-drained/-basin-filled/-vines-withered/-vines-gone/-bolt-slid.jpg`)
+  — beak-basin now GREY STONE (was warm-wood). **`cu-door-lock-vines-gone.jpg` specifically
+  flagged by the Asset agent as STALE build-2 painterly art in the bundle — now replaced
+  with the corrected grey-stone plate** (verified visually: grey-stone raven beak-basin).
+- `z2/v-cabinet/cu-slots-empty.jpg`, `cu-slots-seated.jpg` — now the TWO-DOOR ARMOIRE
+  (SUN recess left / crescent MOON recess right, ring pulls) instead of drawers. The game
+  loads the empty/seated STATE close-ups (RoomViewState.swift picks by `cabinetSunMoon`
+  solved); there is no standalone `cu-slots.jpg` target, so the re-rolled base
+  `cu-slots-nb` is consumed only through its empty/seated variants — matches Part-1 mapping.
+  (Color-blind-safe: sun vs crescent SHAPE is the primary cue, not colour.)
+- `z4/v-alcove/cu-statue-key.jpg`, `cu-statue-key-taken.jpg` — GOLD 5-pt star key on
+  plain grey stone (was silver + invented runes); taken state shows empty beak, consistent.
+- `z1/v-hearth/z1-hearth-rug-moved.jpg`, `overlays/ov-rug-moved.jpg`,
+  `overlays/ov-trapdoor-open.jpg`, `overlays.json` — see G1 below.
+
+### Pipeline judgment call: canonical-vs-`-nb` resolution order (JUDGMENT)
+The corrected close-up BASES shipped under `-nb` names (`cu-door-lock-nb`,
+`cu-statue-key-nb`, `cu-statue-key-taken-nb`), but STALE build-2 canonical `@3x` files
+(`cu-door-lock@3x`, `cu-statue-key@3x`, `cu-statue-key-taken@3x`) still exist on disk and
+are the ones the game actually loads (`cu-door-lock.jpg` / `cu-statue-key.jpg` /
+`cu-statue-key-taken.jpg`). The pipeline's `resolve_src` previously preferred any existing
+canonical, so it would have silently re-shipped the stale art. Fix: added these three paths
+to `SRC_OVERRIDE` **and** reordered `resolve_src` so an explicit override wins BEFORE the
+on-disk canonical (an override is a deliberate supersede, not a fallback). The other five
+door variants (basin-filled/-drained, vines-withered/-gone, bolt-slid) plus slots
+empty/seated already had FRESH re-rolled canonical `@3x` files, so a plain pipeline re-run
+picked them up automatically.
+
+### G1 rug-moved — no new state wiring needed (already present)
+The rug/trapdoor wide state machine ALREADY existed in `RoomSceneCoordinator.refreshHearth`
+(rug hotspot → `PuzzleEngine.moveRug` sets `rugMoved` flag → `ov-rug-moved` overlay renders
+over the base; trapdoor-dial → dial-panel close-up → on solve `ov-trapdoor-open` renders).
+Part-1 had SYNTHESIZED the rug-moved wide state by inpainting the lid out of the
+trapdoor-open plate (there was no real rug-moved art then). This pass swaps that synthetic
+derivation for the REAL re-rolled plate `z1-hearth-rug-moved-nb` (folded rug + CLOSED
+trapdoor + ring pull). So: the wide state was NOT missing and needed NO logic/state change —
+only the overlay SOURCE improved (synthetic → real art). Verified visually.
+
+Overlay-derivation judgment (JUDGMENT): the three hearth plates (base, rug-moved-nb,
+trapdoor-open-nb) are nano-banana region-edits and carry GLOBAL tonal drift (a full-frame
+diff trips everywhere even at threshold 90 — same class as build-3 gap G3), so the
+automatic diff-overlay cannot localise them. Moved `ov-rug-moved` / `ov-trapdoor-open` to
+the hand-rect crop mechanism (rects 0.14,0.70,0.60,0.30 and 0.30,0.68,0.44,0.32, measured
+from the plates and matching the rug / trapdoor-dial hotspot footprints). The resulting
+rects are within ~2% of the previously derived ones, confirming the geometry is unchanged.
+
+### Security checklist (re-run for this pass)
+- No development-time secrets in the shipped app: re-grepped source + bundled resources
+  for fal/api/key/secret/token/Bearer/sk- — none; fal.ai key remains only in gitignored
+  .env, never bundled. PASS.
+- Minimal entitlements/permissions: unchanged (no code/entitlement changes this pass); no
+  NS*UsageDescription strings, no camera/mic/location/contacts capabilities. PASS.
+
+### CI
+(run link recorded below once green on branch level1-rebuild-build3)

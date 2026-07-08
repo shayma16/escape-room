@@ -46,20 +46,35 @@ JPEG_Q = 87
 SRC_OVERRIDE = {
     "z1/v-hearth/z1-hearth-poker-taken@3x.png": "z1/v-hearth/z1-hearth-poker-taken-nb@3x.png",
     "z1/v-hearth/z1-hearth-trapdoor-open@3x.png": "z1/v-hearth/z1-hearth-trapdoor-open-nb@3x.png",
+    # Build-3 consistency re-roll (2026-07-09, block build3_consistency_reroll_2026_07_09).
+    # The corrected close-up BASE plates (grey-stone beak-basin door lock; gold-key/plain-
+    # stone statue) shipped under their "-nb" names. The old canonical @3x files at these
+    # paths are the STALE build-2 painterly art and are the ones the game actually loads
+    # (cu-door-lock.jpg, cu-statue-key.jpg, cu-statue-key-taken.jpg) — force-resolve them to
+    # the corrected -nb art so the bundle stops shipping stale plates. resolve_src's generic
+    # "-nb" fallback does NOT catch these because the stale canonical still exists on disk
+    # and is preferred; an explicit override is required. Flagged in implementation-notes
+    # (Build-3 consistency re-roll integration).
+    "z1/v-entry/cu-door-lock@3x.png": "z1/v-entry/cu-door-lock-nb@3x.png",
+    "z4/v-alcove/cu-statue-key@3x.png": "z4/v-alcove/cu-statue-key-nb@3x.png",
+    "z4/v-alcove/cu-statue-key-taken@3x.png": "z4/v-alcove/cu-statue-key-taken-nb@3x.png",
 }
 
 
 def resolve_src(path):
     """Map a requested canonical asset path to the file that actually ships in specs/.
 
-    Prefers the canonical name; falls back to a build-3 "-nb" delivery, then to the
-    SRC_OVERRIDE table. Raises if nothing exists so a genuine gap fails loudly rather
-    than silently shipping stale/grey art (the exact class of defect this batch fixes).
+    Order (build-3 consistency re-roll, 2026-07-09): an explicit SRC_OVERRIDE wins FIRST,
+    even when a canonical file exists on disk — some canonical @3x plates are STALE build-2
+    art that must be superseded by the corrected "-nb" re-roll, so the override cannot be a
+    mere fallback. Then the canonical name, then a generic "-nb" delivery. Raises if nothing
+    exists so a genuine gap fails loudly rather than silently shipping stale/grey art (the
+    exact class of defect this batch fixes).
     """
-    if os.path.exists(src(path)):
-        return path
     if path in SRC_OVERRIDE and os.path.exists(src(SRC_OVERRIDE[path])):
         return SRC_OVERRIDE[path]
+    if os.path.exists(src(path)):
+        return path
     nb = path.replace("@3x.png", "-nb@3x.png")
     if os.path.exists(src(nb)):
         return nb
@@ -537,32 +552,18 @@ def build_inpainted(report):
     # spoon drawer or ingredient cabinet -- inpaint quality was not shippable there.
     # Instead those close-ups become inert once their item is collected.
 
-    # --- z1 hearth rug/trapdoor chain (build-3 gap G1) ---
-    # Build 3 delivered z1-hearth-trapdoor-open (folded rug + OPEN trapdoor) but NO
-    # canonical rug-moved (folded rug + LOCKED trapdoor) intermediate. Derive rug-moved
-    # from the trapdoor-open plate by inpainting the raised lid planks + rising haze into
-    # a dark closed recess. Uses only build-3 art; deterministic. The 3-dial detail lives
-    # in the cu-dial-panel close-up, so the wide state only needs "rug aside, dark locked
-    # square". Region measured on the 2560x1280 trapdoor-open-nb plate.
-    topen = load("z1/v-hearth/z1-hearth-trapdoor-open@3x.png").convert("RGB")
-    # The trapdoor-open plate is 3840x1920; scale the (2560-space) mask coords to it.
-    tw, th = topen.size
-    sxx, syy = tw / 2560.0, th / 1280.0
-    def sc(pts):
-        return [(x * sxx, y * syy) for (x, y) in pts]
-    lid_mask = polygon_mask(
-        topen.size,
-        polys=[sc([(1430, 980), (1830, 980), (1900, 1280), (1360, 1280)])],  # raised lid
-        ellipses=[(1180 * sxx, 1120 * syy, 360 * sxx, 190 * syy)],  # dark hole + haze
-        grow=4,
-    )
-    # NOTE: no recolor (the 141px MaxFilter ring is O(minutes) on a 4K plate — the plain
-    # inpaint is plenty for a dark closed recess). Keeps the build fast.
-    rug_moved = inpaint(topen, lid_mask, blur=4.0, noise=6, seed=21, recolor=False)
+    # --- z1 hearth rug/trapdoor chain (build-3 consistency re-roll, 2026-07-09) ---
+    # SUPERSEDES the earlier build-3 gap-G1 synthetic derivation: the Asset agent now ships
+    # a REAL rug-moved wide plate (z1-hearth-rug-moved-nb, folded rug + CLOSED trapdoor +
+    # ring pull), a true 4K region-edit of z1-hearth-base and pixel-aligned with both it and
+    # z1-hearth-trapdoor-open-nb. We no longer inpaint the lid out of trapdoor-open; we load
+    # the real plate directly. The wide state machine (ov-rug-moved -> ov-trapdoor-open)
+    # already exists in RoomSceneCoordinator; only the overlay SOURCE improves.
+    rug_moved = load("z1/v-hearth/z1-hearth-rug-moved@3x.png").convert("RGB")  # resolves -nb
     extras["z1/v-hearth#rug-moved"] = rug_moved
     # Persist a full plate too, so ov-trapdoor-open can diff trapdoor-open against it.
     save_plate(rug_moved, "z1/v-hearth/z1-hearth-rug-moved.jpg")
-    report.append("derive rug-moved -> z1/v-hearth/z1-hearth-rug-moved.jpg (build-3 gap G1)")
+    report.append("stage real rug-moved -> z1/v-hearth/z1-hearth-rug-moved.jpg (re-roll G1)")
 
     # --- cu-astrolabe-drawer-open -> empty ---
     im = load("z2/v-cabinet/cu-astrolabe-drawer-open@3x.png")
@@ -1104,29 +1105,36 @@ def main():
         overlays.setdefault(view, {})[name] = entry
         print(f"   {name} (manual-empty): rect=({nx},{ny},{nw},{nh})")
 
-    # z1 hearth rug/trapdoor chain overlays (build-3 gap G1): explicit (base_im, var_im)
-    # pairs — rug-moved is a derived extra, so it can't go through the name-based loop.
+    # z1 hearth rug/trapdoor chain overlays (build-3 consistency re-roll, 2026-07-09).
+    # The real re-rolled 4K plates (z1-hearth-rug-moved-nb, z1-hearth-trapdoor-open-nb) are
+    # nano-banana region-edits of z1-hearth-base and — like the other build-3 wide variants
+    # (gap G3) — carry global tonal drift, so a full-frame diff trips everywhere (verified:
+    # bbox = whole frame even at threshold 90). We therefore HAND-CROP each state's changed
+    # floor region (measured from the plates: the folded rug + exposed closed trapdoor for
+    # rug-moved; the raised lid + open hole + haze for trapdoor-open) and composite it over
+    # its background, exactly like MANUAL_OVERLAYS. This keeps the two-step wide state chain
+    # (base -> ov-rug-moved -> ov-trapdoor-open) that RoomSceneCoordinator already drives;
+    # only the intended lower-floor region is replaced. Rects cover the rug hotspot
+    # (0.14,0.72,0.56,0.28) / trapdoor-dial hotspot (0.23,0.72,0.39,0.25) footprints.
     hearth_base = base_cache.get("z1/v-hearth/z1-hearth-base") \
         or load("z1/v-hearth/z1-hearth-base@3x.png").convert("RGB")
-    rug_moved_im = extras["z1/v-hearth#rug-moved"]
+    rug_moved_im = extras["z1/v-hearth#rug-moved"]  # real re-rolled plate (see build_inpainted)
     trapdoor_open_im = load("z1/v-hearth/z1-hearth-trapdoor-open@3x.png").convert("RGB")
-    for name, base_im, var_im in [
-        ("ov-rug-moved", hearth_base, rug_moved_im),          # base -> rug folded aside
-        ("ov-trapdoor-open", rug_moved_im, trapdoor_open_im), # locked -> lid thrown open
+    hw, hh = hearth_base.size
+    for name, var_im, (nx, ny, nw, nh) in [
+        # base -> rug folded aside revealing the closed trapdoor + ring pull
+        ("ov-rug-moved",     rug_moved_im,     (0.14, 0.70, 0.60, 0.30)),
+        # locked -> lid thrown open (raised planks + hole + rising haze)
+        ("ov-trapdoor-open", trapdoor_open_im, (0.30, 0.68, 0.44, 0.32)),
     ]:
-        res = diff_overlay(base_im, var_im)
-        if res is None:
-            print(f"   !! no diff for {name}")
-            continue
-        bbox, crop = res
+        vim = var_im if var_im.size == hearth_base.size else var_im.resize(hearth_base.size, Image.LANCZOS)
+        px0, py0 = int(nx * hw), int(ny * hh)
+        px1, py1 = int((nx + nw) * hw), int((ny + nh) * hh)
+        crop = vim.crop((px0, py0, px1, py1))
         rel = f"z1/v-hearth/overlays/{name}.jpg"
         save_plate(crop, rel)
-        w, h = base_im.size
-        overlays.setdefault("z1/v-hearth", {})[name] = {
-            "file": rel,
-            "rect": [bbox[0] / w, bbox[1] / h, (bbox[2] - bbox[0]) / w, (bbox[3] - bbox[1]) / h],
-        }
-        print(f"   {name}: bbox={bbox}")
+        overlays.setdefault("z1/v-hearth", {})[name] = {"file": rel, "rect": [nx, ny, nw, nh]}
+        print(f"   {name} (manual): rect=({nx},{ny},{nw},{nh})")
 
     with open(out_path("overlays.json"), "w") as f:
         json.dump(overlays, f, indent=1, sort_keys=True)

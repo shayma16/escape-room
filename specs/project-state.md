@@ -11,7 +11,26 @@ Level 1 in design. Theme received from user on 2026-07-04.
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
 caged crow, potions/potion-making (user-specified elements).
 
-## ⭐ CURRENT RESUME NOTE (2026-07-08) — READ THIS FIRST
+## ⭐ CURRENT RESUME NOTE (2026-07-09) — READ THIS FIRST
+
+**Build-3 consistency re-roll INTEGRATED (Developer, 2026-07-09, branch
+`level1-rebuild-build3`).** Asset agent re-rolled the flagged Level-1 close-ups/plates for
+wide↔close-up consistency (manifest `build3_consistency_reroll_2026_07_09`); Developer
+re-staged the corrected drop-in plates into `EscapeRoom/Resources/GameAssets` via
+`tools/build_game_assets.py`. 14 bundle files re-staged: door-lock family (grey-stone
+beak-basin; the flagged STALE build-2 `cu-door-lock-vines-gone` replaced), cabinet
+slots empty/seated (two-door sun/moon armoire), alcove statue-key + taken (gold star key,
+plain stone), and the hearth rug/trapdoor chain. **G1 rug-moved needed NO new state
+wiring** — the rug-moved wide state already existed in RoomSceneCoordinator; only the
+overlay SOURCE changed (Part-1 synthetic inpaint → REAL re-rolled `z1-hearth-rug-moved-nb`
+plate). Pipeline judgment: added a `SRC_OVERRIDE` + reordered `resolve_src` so corrected
+`-nb` art wins over stale on-disk canonical `@3x`; the two hearth overlays moved to
+hand-rect crops (global tonal drift, same class as gap G3). No game logic changed.
+Implementation-notes has a "Build-3 consistency re-roll integration" section. **CI on the
+branch iterating to green; NEXT = player-style QA, then user review, then release. DO NOT
+open a PR / ship.**
+
+## RESUME NOTE (2026-07-08)
 
 **State:** Build 2 SHIPPED to TestFlight (Within 1.0 build 6; release fix on PR #7,
 awaiting merge to main — release ran from branch `fix-build-number`). **Build 3 = Level 1
