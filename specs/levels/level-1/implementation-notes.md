@@ -971,13 +971,26 @@ all puzzle values are untouched.
   2:1 plate was cropped into a left-anchored square with a dead black band on the trailing
   edge (iPad ~25%, iPhone SE ~44%, Dynamic Island ~54%). The SCENE math was always correct
   — the defect was purely the SKView frame.
-- **Fix (`SpriteKitContainerView.swift`):** wrap the representable in a `GeometryReader` and
-  drive the `SKView` frame from the full proposed landscape size (the real window rect),
-  plus `autoresizingMask = [.flexibleWidth, .flexibleHeight]` so it tracks host bounds on any
-  rotation / size-class change. The scene KEEPS its fixed 2732×1366 `.aspectFill` size;
-  SpriteKit now scales+centers it to fill the full-window SKView edge-to-edge (cropping
-  top/bottom on wider-than-2:1 aspects), never a square. `RoomScene` is unchanged except a
-  clarifying comment on `scaleMode`.
+- **Fix — two layers (the first alone was insufficient):**
+  1. `SpriteKitContainerView.swift`: wrap the representable in a `GeometryReader`, drive the
+     `SKView` frame from the proposed landscape size + `autoresizingMask`. The scene keeps
+     its fixed 2732×1366 `.aspectFill` size (SpriteKit fills the SKView edge-to-edge).
+  2. **The operative fix — `FullWindowFrame` (in `LevelLoadingView.swift`):** the first CI
+     run after (1) STILL showed the square — measured width fraction 0.5622 on iPhone SE,
+     and screenshot review (pulled from the xcresult) showed the room art in a left square
+     with a dead black band AND the whole CHROME inside that square too. That proves the
+     ENTIRE in-level ZStack (not just the SKView) was proposed a square = screen height by
+     the NavigationStack destination sizing on the CI simulators. SwiftUI
+     `.frame(maxWidth:.infinity)` / `.ignoresSafeArea()` cannot fix that (they fill only
+     WITHIN a squeezed proposal). `FullWindowFrame` reads the TRUE hosting `UIWindow` bounds
+     (proposal-independent ground truth) via a small `UIViewRepresentable`
+     (`WindowBoundsReader`) and pins the level content to exactly that size, re-reading on
+     any bounds change — forcing the full landscape window regardless of the proposal.
+     `GameRoomView`'s root ZStack also gained `.frame(maxWidth:.infinity, maxHeight:.infinity)
+     .ignoresSafeArea()` as reinforcement. `RoomScene` unchanged except a `scaleMode` comment.
+  - Both `FullWindowFrame`/`WindowBoundsReader` live INSIDE the already-project-referenced
+    `LevelLoadingView.swift` (sources use explicit pbxproj references, not a synchronized
+    group), so no `.xcodeproj` surgery was needed.
 - **Why the scene math needed no change:** with the SKView full-window, the app's real
   `.aspectFill` composition is now identical to what the UI test's `sceneCoordinate(_:_:_:)`
   full-frame `.aspectFill(2732×1366)` math already assumed. Before the fix, taps "passed"
