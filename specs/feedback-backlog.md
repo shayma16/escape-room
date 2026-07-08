@@ -341,13 +341,18 @@ re-release, per standard process — nothing in this round ships without that re
 > by R2-005 (user will supply exact music) — but the "ambience must fit the woods/cabin
 > theme, not ocean" note stands regardless. → Developer.)
 
-### R2-005 — status: logged ⚠️ PENDING USER INPUT — REMIND BEFORE ENDING FEEDBACK SESSION
-> "let me share with you the exact background music that you need to use, remind me before
-> we end the feedback session"
-> (ACTION FOR PRODUCER: when the user says "that's all / process it", REMIND them to share
-> the exact background music file/link before processing. Do NOT close round 2 without this.
-> The supplied music replaces the current ocean-like ambience (R2-004). → Developer to
-> integrate once provided, honoring the mute-ambiance toggle R2-006 + licensing rules.)
+### R2-005 — status: RESOLVED (music PROVIDED + staged)
+> "let me share with you the exact background music that you need to use"
+> ✅ PROVIDED 2026-07-08: user gave `C:\Users\shaim\Downloads\hYkbifnMcwxtLyFKpkVGF_output.wav`
+> (RIFF WAVE, 16-bit PCM stereo 48 kHz, 6.29 MB). STAGED into the repo at
+> `EscapeRoom/Resources/Audio/music-level1.wav` (committed on branch level1-rebuild-build3).
+> → Developer: use THIS as the Level-1 background music, REPLACING the ocean-like ambience
+> (R2-004). Integration notes: loop it seamlessly; route it under the "ambiance/music" mute
+> toggle (R2-006, separate from SFX); balance volume so it sits under gameplay (the round-1
+> "quieter scene" direction R2-002/F-002 still applies — music present but unobtrusive). The
+> per-zone amb-z1..z4 loops: Developer decides whether to drop them or keep as subtle texture
+> under the music. It's user-supplied — confirm the user has rights to ship it commercially
+> before it goes in a public release (record in implementation notes per the licensing rule).
 
 ### R2-006 — status: logged
 > in the settings menu, add two toggles: one to mute ambiance, one to mute sound effects
