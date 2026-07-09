@@ -11,7 +11,19 @@ Level 1 in design. Theme received from user on 2026-07-04.
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
 caged crow, potions/potion-making (user-specified elements).
 
-## ⭐ CURRENT RESUME NOTE (2026-07-09, latest) — READ THIS FIRST
+## ⭐ CURRENT RESUME NOTE (2026-07-09c) — READ THIS FIRST
+
+**BUILD 3 SHIPPED TO TESTFLIGHT — Within 1.0 (build 8)**, release run 29020603301 green
+(archive→sign→stamp→scan→upload). Released from branch `level1-rebuild-build3` (added the
+PR-#7 build-number stamp to that branch's release.yml). Build 3 = new engine-style art +
+all round-2 fixes + consistency re-rolls. QA: soft-lock DEAD (screenshot-proven),
+QA-B3-002 chrome clip FIXED, QA-B3-001 "black band" = CI-simulator screenshot artifact
+(NOT an app bug — Developer's 7-build experiment; app renders full-width). **AWAITING USER
+DEVICE SPOT-CHECK** on TestFlight: (1) does it fill the whole iPad screen (settles
+QA-B3-001)? (2) pause menu + completion card fully on-screen? **On GO → merge build 3 to
+main** (level1-rebuild-build3 → main via PR). Build 2 (build 6) also still on TestFlight.
+
+## ⭐ RESUME NOTE (2026-07-09, latest) — build-3 assembly (superseded by ship above)
 
 **QA-B3-001 / QA-B3-002 presentation fix pass COMPLETE + CI GREEN (Developer, 2026-07-09,
 branch `level1-rebuild-build3`, commit `a6e4c3e`).** Build-3 player-style QA returned NO-GO
