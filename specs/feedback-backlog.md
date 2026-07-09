@@ -938,3 +938,35 @@ build 9 where possible.
 > truth). Also VERIFY the grimoire's other content reads coherently in the new art (page A
 > rune↔pictogram pairing correct, recipe page p14, page B sun/moon p04) — the grimoire close-ups
 > were regenerated and must be legible + correct, not just internally consistent.)
+
+---
+## ROUND 3 — PROCESSED 2026-07-09 (all → BUILD 9; user blocked at p01, testing stopped)
+
+**Framing:** the build-3 art *regeneration* introduced a cascade of consistency/integration
+defects that make build 8 unplayable. Build 9 must fix ALL of them to be genuinely playable.
+User stopped at p01 (can't find/match the last rune clue → can't unlock the potion door).
+
+### Routed (all into build 9)
+1. **Stale close-up/variant/icon shadows → build-3 art** (Developer) — DONE/CI-greening (82 files
+   re-staged); +VERIFY icons promoted (R3-006). Root fixed + `assert_no_nb_shadow` guard.
+2. **R3-007 🔴 glyph consistency (unblocks p01)** → Asset Gen: define the 4 canonical element-rune
+   glyphs (fire ▲ / water ▽ / air ▲-bar / earth ▽-bar) and STAMP identically on grimoire page A
+   (the HUB / source of truth), the 4 element marks, and the rune-door tiles; verify all grimoire
+   pages legible+correct. Then Developer stages.
+3. **R3-005 🔴 STRUCTURAL hotspot re-calibration** (Developer) — re-derive EVERY interactive
+   hotspot + close-up trigger to match element positions in the NEW build-3 plates; remove the
+   leftover cuckoo close-up/hotspot (Q3). Subsumes R3-004. Unblocks tap-to-inspect everywhere.
+4. **R3-001 music level-scope + menu SFX** (Developer) — music tied to L1 scene lifecycle (not
+   app-wide); quiet tactile menu click + soft confirm tone; no psh, no level music in menus.
+5. **R3-002 Level-Select thumbnail** → Asset/Developer: regenerate from a build-3 scene; add chrome
+   art to the stale-shadow guard.
+6. **R3-003 Roman→Arabic level numeral** (Developer) — "Level 1" serif, per global-ui-style §3.
+
+### Sequencing (avoid concurrent working-tree writes on the branch)
+shadow fix green → **Asset Gen phase** (R3-007 glyphs + R3-002 thumbnail, art finalized FIRST) →
+**Developer phase** (stage art + R3-005 hotspots against FINAL art + R3-001 + R3-003 + verify
+R3-006 icons) → CI green → **build-9 QA player-style** (tap where a HUMAN sees each element;
+prove p01 solvable by matching grimoire↔marks↔door end-to-end; no stale art incl. icons/thumbnail)
+→ re-release build 9 to TestFlight.
+
+_Round 3 complete; user testing stopped (blocked at p01). No further items expected this round._
