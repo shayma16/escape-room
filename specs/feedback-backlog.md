@@ -896,3 +896,14 @@ build 9 where possible.
 > tap where a HUMAN sees each element, not the internal rect. → Developer, SIGNIFICANT task.
 > Recommend folding into build 9 so it's the first genuinely playable build (correct images AND
 > correct tap targets); otherwise build 9 = right art but still-wrong taps.)
+
+### R3-006 — status: logged (mostly confirms stale-shadow bug; ONE new datapoint = icons)
+> ash close-up stale, iron-stick→ring close-up stale, AND the ring INVENTORY ICON stale
+> (context: user is testing BUILD 8 (pre-shadow-fix) — build 9 not yet released — so the stale
+> ash/ring CLOSE-UPS are the already-known stale-shadow bug, fixed wholesale in build 9; no need
+> to enumerate more stale-image instances. NEW datapoint: the stale RING INVENTORY ICON confirms
+> the stale-shadow bug also hit ICONS (icon-gold-ring etc.), not just scene close-ups. → Verify
+> build 9's shadow fix PROMOTED all build-3 `-nb` ICONS to canonical too (the fix claimed
+> close-ups/variants/icons; confirm icons are actually covered). If any icon `-nb` wasn't
+> promoted, include it. Also confirms the p05 ash→ring flow works functionally (reveal + collect)
+> even on build 8 — just with stale art.)
