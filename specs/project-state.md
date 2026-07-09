@@ -11,7 +11,34 @@ Level 1 in design. Theme received from user on 2026-07-04.
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
 caged crow, potions/potion-making (user-specified elements).
 
-## ⭐ CURRENT RESUME NOTE (2026-07-09) — READ THIS FIRST
+## ⭐ CURRENT RESUME NOTE (2026-07-09, latest) — READ THIS FIRST
+
+**QA-B3-001 / QA-B3-002 presentation fix pass COMPLETE + CI GREEN (Developer, 2026-07-09,
+branch `level1-rebuild-build3`, commit `a6e4c3e`).** Build-3 player-style QA returned NO-GO
+on QA-B3-001 (content in a left square + dead black band) and QA-B3-002 (clipped completion/
+pause chrome). Resolution:
+- **QA-B3-002 (chrome) — FIXED in-app + guarded.** `ChromePrimaryButtonStyle` label no longer
+  truncates (`lineLimit(1)` + `fixedSize`); the pause menu moved from a landscape-clipped
+  `.sheet` to a full-screen safe-area overlay. New UI test `testChromeFullyOnScreen_QA_B3_002`
+  asserts pause + completion-card buttons are fully on-screen (was RED pre-fix, now GREEN).
+- **QA-B3-001 (square viewport) — determined to be a CI-SIMULATOR SCREENSHOT RASTER-LETTERBOX
+  ARTIFACT, not an app bug.** A seven-build controlled experiment (SwiftUI→UIKit lifecycle,
+  window-bounds pins, geometry requests, SKView re-sizing) all produced a byte-identical
+  0.5622 pixel measurement while every LOGICAL frame reports full landscape width — proving
+  the app renders full-width and only the portrait-booted simulator's screenshot compositor
+  letterboxes the raster. All speculative app-layout experiments were REVERTED to the build-3
+  base; the QA-B3-001 guard is now a harness-immune LOGICAL check (scene view fills the full
+  landscape window in points). Full detail + evidence + QA/Producer flag in
+  `implementation-notes.md` "QA-B3-001 / QA-B3-002 viewport fix (build 3.1)".
+- **CI GREEN:** run 28992893431 — build + unit×3 + UI×3 (incl. the full player-style
+  playthrough and both new guards on all three device classes).
+- **NEXT:** QA re-verify (screenshot) — WITH the understanding that CI screenshots still show
+  the simulator raster letterbox (not an app defect); definitive full-screen presentation is
+  the user's on-device TestFlight spot-check. Then user review → release. DO NOT open a PR /
+  ship yet. If QA insists on a full-width CI screenshot, that is a runner-image/infra item
+  (boot simulators landscape), not an app change — flagged for the Producer.
+
+---
 
 **Build-3 consistency re-roll INTEGRATED (Developer, 2026-07-09, branch
 `level1-rebuild-build3`).** Asset agent re-rolled the flagged Level-1 close-ups/plates for

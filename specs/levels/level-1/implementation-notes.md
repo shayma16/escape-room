@@ -963,45 +963,40 @@ Presentation-layer-only fix on branch `level1-rebuild-build3` for the build-3 pl
 NO-GO. No puzzle logic / art / spec change; engine, hotspot rects, close-ups, gating, and
 all puzzle values are untouched.
 
-### QA-B3-001 (CRITICAL) — root cause + fix
-- **Root cause:** `SpriteKitContainerView` handed the bare `SKView` to SwiftUI's
-  `UIViewRepresentable` sizing with no explicit frame. Inside the NavigationStack host
-  chain the proposed size collapsed to a SQUARE (side = screen HEIGHT), pinned to the
-  leading edge. `RoomScene.scaleMode = .aspectFill` then filled that square SKView, so the
-  2:1 plate was cropped into a left-anchored square with a dead black band on the trailing
-  edge (iPad ~25%, iPhone SE ~44%, Dynamic Island ~54%). The SCENE math was always correct
-  — the defect was purely the SKView frame.
-- **Fix — two layers (the first alone was insufficient):**
-  1. `SpriteKitContainerView.swift`: wrap the representable in a `GeometryReader`, drive the
-     `SKView` frame from the proposed landscape size + `autoresizingMask`. The scene keeps
-     its fixed 2732×1366 `.aspectFill` size (SpriteKit fills the SKView edge-to-edge).
-  2. **The operative fix — `FullWindowFrame` (in `LevelLoadingView.swift`):** the first CI
-     run after (1) STILL showed the square — measured width fraction 0.5622 on iPhone SE,
-     and screenshot review (pulled from the xcresult) showed the room art in a left square
-     with a dead black band AND the whole CHROME inside that square too. That proves the
-     ENTIRE in-level ZStack (not just the SKView) was proposed a square = screen height by
-     the NavigationStack destination sizing on the CI simulators. SwiftUI
-     `.frame(maxWidth:.infinity)` / `.ignoresSafeArea()` cannot fix that (they fill only
-     WITHIN a squeezed proposal). `FullWindowFrame` reads the TRUE hosting `UIWindow` bounds
-     (proposal-independent ground truth) via a small `UIViewRepresentable`
-     (`WindowBoundsReader`) and pins the level content to exactly that size, re-reading on
-     any bounds change — forcing the full landscape window regardless of the proposal.
-     `GameRoomView`'s root ZStack also gained `.frame(maxWidth:.infinity, maxHeight:.infinity)
-     .ignoresSafeArea()` as reinforcement. `RoomScene` unchanged except a `scaleMode` comment.
-  - Both `FullWindowFrame`/`WindowBoundsReader` live INSIDE the already-project-referenced
-    `LevelLoadingView.swift` (sources use explicit pbxproj references, not a synchronized
-    group), so no `.xcodeproj` surgery was needed.
-- **Why the scene math needed no change:** with the SKView full-window, the app's real
-  `.aspectFill` composition is now identical to what the UI test's `sceneCoordinate(_:_:_:)`
-  full-frame `.aspectFill(2732×1366)` math already assumed. Before the fix, taps "passed"
-  only because the app and the test shared the SAME (wrong) square geometry; after the fix
-  they agree on the TRUE full-window aspectFill, so the plate-normalized hotspot centers
-  remain correct.
+### QA-B3-001 (CRITICAL) — investigation, root-cause verdict, and resolution
+**Verdict: the "square viewport / dead black band" is a CI-SIMULATOR SCREENSHOT
+RASTER-LETTERBOX ARTIFACT, not an in-app layout bug.** FLAG TO QA/PRODUCER: build-3 QA
+overturned build-2's "screenshot-fidelity limitation" ruling based on the CI screenshots;
+this pass RE-ESTABLISHES that ruling with a controlled multi-build experiment.
 
-### QA-B3-002 (MAJOR) — resolved with its OWN fix (NOT purely downstream of 001)
-The SwiftUI chrome ZStack always filled the full window (only the SKView child was square),
-so the completion-card truncation and the pause-menu clipping were INDEPENDENT layout bugs,
-not artifacts of 001. Two fixes:
+- **Evidence (decisive):** the pixel content-fill measured on the CI screenshot was
+  **byte-identical (0.5622 = 750/1334 on iPhone SE) across SEVEN architecturally different
+  builds** — bare `SKView`; `SKView` sized from a `GeometryReader` full-proposal +
+  `autoresizingMask`; `SKView` re-presented only at non-empty bounds; a `FullWindowFrame`
+  that pins the level content to the true `UIWindow.bounds`; `GameRoomView`
+  `.frame(maxWidth:.infinity).ignoresSafeArea()`; a `requestGeometryUpdate(.landscape)` +
+  AppDelegate landscape lock; and a full UIKit `AppDelegate`/`SceneDelegate` +
+  landscape-locked `UIHostingController`. **Nothing the app code can change moved the
+  number.** In the final diagnostic ALL logical frames — the app window, the `room-scene`
+  SpriteKit element, and the whole screen — report the SAME full landscape width, while
+  only the RASTERISED screenshot is boxed to a 750 px (= screen-height) square. I.e. the
+  app lays out and renders full-width; the portrait-booted CI simulator's screenshot
+  compositor letterboxes the raster. Real devices are landscape-locked at springboard and
+  fill the screen — the user's on-device TestFlight spot-check is the final confirmation.
+- **Why it looked real in build-3 QA:** the CI screenshots genuinely show the boxed raster
+  (room art left, black band right; chrome text rotated). That is faithful to what the
+  simulator RASTERISES, but not to the app's logical composition or to a real device.
+- **Resolution (no app-side "fix" was warranted or possible):** all speculative
+  app-layout/orientation experiments were REVERTED back to the build-3 base. The only app
+  change kept in this pass is the QA-B3-002 chrome fix (below). The QA-B3-001 regression
+  guard was re-targeted to the harness-immune invariant the bug is really about (see "New
+  regression assertions"). A reliable headless simulator-rotate is not available on these
+  runner images, so screenshot-fidelity landscape rotation is deferred to the user's device
+  spot-check rather than a fragile AppleScript CI step.
+
+### QA-B3-002 (MAJOR) — a REAL fix (independent of the 001 raster artifact)
+The completion-card truncation and the pause-menu clipping ARE genuine layout bugs
+(reproducible independent of the 001 raster artifact), and this pass fixes them. Two fixes:
 - **Label truncation ("Main Men" / "Play Agai"):** `ChromePrimaryButtonStyle` had a min-width
   but no line/width handling, so the `Label` truncated in narrow contexts. Added
   `.lineLimit(1)` + `.fixedSize(horizontal: true, vertical: false)` so the capsule grows to
@@ -1013,27 +1008,34 @@ not artifacts of 001. Two fixes:
   button column centers within the safe area on every device.
 
 ### Hotspot / coordinate re-verification (result)
-Re-verified against the NEW full-width composition: hotspot rects are plate-normalized
-against the fixed 2732×1366 scene and are UNCHANGED; under `.aspectFill` on the now-full-
-window SKView they map uniformly onto the window on every device class. The UI-test
-`sceneCoordinate` full-frame `.aspectFill(2732×1366)` math is UNCHANGED and is now the SAME
-composition the app renders (previously both were internally consistent on the square, which
-is why scripted taps passed on a broken frame). The scripted full solve was re-run against
-this composition (shared `solveLevelOne` helper) and completes end-to-end.
+Hotspot rects are plate-normalized against the fixed 2732×1366 scene and are UNCHANGED; the
+UI-test `sceneCoordinate` full-frame `.aspectFill(2732×1366)` math is UNCHANGED. Because the
+app's LOGICAL composition was always full-width (the 001 boxing is a raster artifact, not a
+layout change), the scene/coordinate math needed no change. The scripted full playthrough was
+re-run (shared `solveLevelOne` helper) and completes end-to-end on iPhone SE — every scene
+tap lands on its hotspot and every `assertHolding` milestone passes, empirically confirming
+the hotspot/coordinate geometry is correct under the shipped composition.
 
-### New regression assertions (RED on pre-fix build, GREEN after)
+### New regression assertions
 Both in `EscapeRoomUITests.swift`:
-1. `testSceneContentFillsScreen_QA_B3_001` — enters the level, screenshots it, computes the
-   non-black bounding box of the rendered frame, and asserts content spans >=90% of BOTH
-   screen width and height. FAILS on the square-viewport build (SE ~56% width); passes on
-   the edge-to-edge fill. Added to the iPhone-SE, iPad, and Dynamic-Island UI CI steps
-   (the band was worst on iPad/DI). Closes the gap where the old
-   `assertFullScreenLandscapeComposition` only checked the WINDOW frame, not the CONTENT.
+1. `testSceneContentFillsScreen_QA_B3_001` — asserts the harness-immune invariant QA-B3-001
+   is really about: the SpriteKit `room-scene` view spans the FULL landscape WINDOW (points)
+   on BOTH axes and is landscape (width ≥ height), never a square viewport. This FAILS loudly
+   on a genuine square-viewport / dead-band LAYOUT regression (the scene view collapsing to a
+   square) and PASSES on the correct full-window layout — independent of the CI raster
+   letterbox. The pixel content-fill fractions (whole screen + scene-frame crop) are recorded
+   as a diagnostic attachment (`b3-001-geometry-diagnostic`) documenting the raster artifact.
+   Runs on the iPhone-SE, iPad, and Dynamic-Island UI CI steps. NOTE: this is deliberately a
+   LOGICAL guard, not a raw-pixel screenshot check — a raw-pixel content-fill assertion is
+   unsatisfiable on the portrait-booted CI simulators (see the QA-B3-001 verdict) regardless
+   of app correctness, so it would false-fail forever; the logical guard is the truthful,
+   regression-catching equivalent.
 2. `testChromeFullyOnScreen_QA_B3_002` — asserts the pause-menu buttons and the completion-
    card buttons (`complete-main-menu`, `complete-replay`) have frames fully inside the
    window bounds (catches the clip; buttons resolve by accessibility id regardless of visible
    position, so a frame check is what actually detects it). Runs the full solve, so it stays
-   on the unfiltered iPhone-SE UI step to respect the CI time budget.
+   on the unfiltered iPhone-SE UI step to respect the CI time budget. This guard was RED on
+   the pre-fix build and is GREEN after the QA-B3-002 chrome fix.
 
 ### Security checklist (re-run for this pass)
 - No development-time secrets in the shipped app: re-grepped source + bundled resources for
@@ -1043,4 +1045,26 @@ Both in `EscapeRoomUITests.swift`:
   NS*UsageDescription strings, no camera/mic/location/contacts capabilities. PASS.
 
 ### CI
-(link added after the green run below)
+GREEN: https://github.com/shayma16/escape-room/actions/runs/28992893431 (branch
+`level1-rebuild-build3`, commit `a6e4c3e`, workflow_dispatch). All steps success: Build
+(iOS Simulator); Unit tests x3 (iPad 13", iPhone SE, Dynamic Island iPhone); UI tests x3
+(iPhone-SE full playthrough + smoke + save-resume, iPad smoke + save-resume, Dynamic Island
+safe-area) — including the new `testSceneContentFillsScreen_QA_B3_001` (green on all three
+device classes) and `testChromeFullyOnScreen_QA_B3_002` (green; full solve reaches the
+completion card with both buttons on-screen). The full player-style playthrough completes
+end-to-end. Earlier red runs on this branch were the multi-build QA-B3-001 investigation
+(28981367115 / 28983091256 / 28984448765 / 28985957865 / 28987622587 / 28989178234 /
+28990074749 / 28991002068) — each proved a candidate app-side theory wrong and produced the
+byte-identical 0.5622 raster-letterbox measurement that established the artifact verdict.
+
+### Handoff note (route to QA/Producer)
+QA-B3-002 (chrome clipping) is fixed in-app and guarded. QA-B3-001 (square viewport / dead
+band) was determined to be a CI-simulator screenshot raster-letterbox artifact, NOT an in-app
+bug, by a seven-build controlled experiment (details above); no app fix was warranted, and the
+regression guard is a harness-immune logical check. The QA re-verify (screenshot) should be
+performed with this understanding — the CI screenshots will still show the raster letterbox
+(that is the simulator, not the app); definitive full-screen presentation is the user's
+on-device TestFlight spot-check. If QA still requires a full-width CI SCREENSHOT, that needs a
+runner-image change to boot the simulators in landscape (no reliable headless path found on
+the current `macos-15` image) — flagged for the Producer as a separate infra item, not an app
+change.
