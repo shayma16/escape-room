@@ -98,6 +98,19 @@ creative decisions.
   (door bird-skull, cabinet sun/moon slots, alcove statue, workshop window). When you
   finalize a base plate, note its key visual facts (what sits where, palette, materials)
   so downstream close-ups/variants reproduce them faithfully.
+- **Canonical-filename discipline — ONE asset path = ONE current file (binding, user
+  directive 2026-07-09):** when you (re)generate or correct any plate, the delivered file
+  MUST become THE canonical asset at its path (same final filename the game/bundle loads),
+  and the superseded version MUST move to `_rejects/`. NEVER leave a stale file at the
+  canonical name while shipping the new version under a different suffix (e.g. `-nb`,
+  `-v2`, `-fix`). That creates a "shadow": a stale canonical file sitting next to a newer
+  variant, which downstream staging can silently pick up — shipping OLD art while the
+  correct art sits unused on disk. (This is exactly what shipped 70 stale build-2 close-ups
+  in build 3.) If you use a working suffix DURING generation, before handoff you MUST
+  promote every final asset to its canonical name AND archive the old canonical to
+  `_rejects/`, so the Developer/bundle can trust that the canonical filename IS the current
+  art. Reconcile the manifest to the canonical names. Leaving a stale-canonical/new-suffix
+  pair at the same slot is a DEFECT.
 - **Checkpoint granularity**: bundle outputs per zone for user review — per-zone batches,
   not per-image approvals.
 - **Progress visibility (user requirement, 2026-07-05; revised same day after it failed
