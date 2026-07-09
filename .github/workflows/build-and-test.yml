@@ -144,6 +144,38 @@ jobs:
       # device-independent (plate-normalized, all taps inside the iPad-safe band), so the
       # iPhone-SE full run plus the iPad unit + smoke + save/resume suites cover the iPad
       # completability path; the shared crop was already proven by BUG-004's re-frame.
+      # Best-effort: boot + rotate the simulators to landscape so the CI SCREENSHOTS
+      # faithfully show the full-width composition (QA-OBS-023 / QA-B3-001). The app already
+      # lays out full-width (verified by the harness-immune logical guard in
+      # testSceneContentFillsScreen_QA_B3_001); the pixel raster in CI screenshots is
+      # letterboxed only because the runner boots the simulator portrait. This step is
+      # non-blocking (`|| true`): if the runner's WindowServer/Simulator UI isn't scriptable
+      # the tests still pass on the logical guard.
+      - name: Boot + rotate simulators to landscape (best-effort, QA-B3-001)
+        run: |
+          set -uo pipefail
+          boot() {
+            local UDID
+            UDID=$(xcrun simctl list devices available | grep -F "$1 (" | grep -Eo '[0-9A-F-]{36}' | head -n1)
+            [ -n "${UDID:-}" ] && { xcrun simctl boot "$UDID" 2>/dev/null || true; xcrun simctl bootstatus "$UDID" -b || true; }
+          }
+          boot "${{ steps.sims.outputs.iphone_name }}"
+          boot "${{ steps.sims.outputs.ipad_name }}"
+          boot "${{ steps.sims.outputs.iphone_di_name }}"
+          open -a Simulator || true
+          sleep 6
+          # Rotate every open simulator window right (portrait -> landscape) via the menu.
+          osascript <<'APPLESCRIPT' || true
+          tell application "Simulator" to activate
+          delay 2
+          tell application "System Events" to tell process "Simulator"
+            try
+              click menu item "Rotate Right" of menu "Device" of menu bar 1
+            end try
+          end tell
+APPLESCRIPT
+          echo "best-effort rotation done"
+
       - name: UI tests - smallest supported iPhone (full playthrough + smoke + save-resume)
         run: |
           set -o pipefail
