@@ -907,3 +907,25 @@ build 9 where possible.
 > close-ups/variants/icons; confirm icons are actually covered). If any icon `-nb` wasn't
 > promoted, include it. Also confirms the p05 ash→ring flow works functionally (reveal + collect)
 > even on build 8 — just with stale art.)
+
+### R3-007 — status: logged 🔴 CRITICAL (breaks p01 SOLVABILITY) — element-rune glyphs inconsistent across assets
+> the rune-door lock (potion-room, p01) shows DIFFERENT glyphs than the "arrow" element-rune
+> clues from earlier → the player literally cannot match them → p01 unsolvable. "regenerate this
+> scene with the right arrow clues (easier), or regenerate all other scenes/close-ups to use the
+> grimoire's glyphs — pick the easier. this is why i told you to be specific about asset-gen
+> consistency across scenes and close-ups."
+> (context: the four element-rune glyphs must be IDENTICAL everywhere they appear — the four
+> element MARKS (bellows AIR+I, lintel FIRE+II, flowerpot EARTH+III, windowsill WATER+IV),
+> grimoire PAGE A (rune→pictogram map), and the rune-DOOR lock tiles. The build-3 regen rendered
+> them per-scene → they DRIFTED, so the door glyphs don't match the clues. Puzzle-graph
+> `clu-grimoire-elements` defines the canonical geometry: FIRE = upward triangle; WATER = downward
+> triangle; AIR = upward triangle with bar; EARTH = downward triangle with bar.
+> **PRODUCER FIX CHOICE (user delegated "pick the easier"):** deterministic-stamp approach —
+> define the 4 canonical glyphs as fixed PIL geometry and STAMP them IDENTICALLY onto every asset
+> that shows them: the rune-door tiles (cu-runedoor-tiles + runedoor tile sprites), the 4 element
+> marks (cu-bellows-rune, cu-lintel[FIRE], cu-flowerpot-rune, cu-windowsill-rune), and grimoire
+> page A. This GUARANTEES consistency (identical pixels), is cheap ($0/near-$0), and is effectively
+> the user's easier Option A done robustly — no full scene regens. Grayscale/color-blind distinct.
+> → Asset Gen (glyph re-stamp) + Developer stage; fold into build 9. VERIFY a player can match
+> mark↔grimoire↔door for all four. This is the load-bearing precision-glyph consistency the §2.3
+> and R2-031 checks should enforce — see the strengthened asset-gen rule.)

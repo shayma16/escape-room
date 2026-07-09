@@ -111,6 +111,20 @@ creative decisions.
   `_rejects/`, so the Developer/bundle can trust that the canonical filename IS the current
   art. Reconcile the manifest to the canonical names. Leaving a stale-canonical/new-suffix
   pair at the same slot is a DEFECT.
+- **Puzzle-load-bearing glyphs = ONE canonical source, stamped IDENTICALLY everywhere
+  (binding, user directive 2026-07-09):** any glyph a player must MATCH across assets to
+  solve a puzzle — element runes, Roman numerals, moon-phase silhouettes, star-plate dot
+  patterns, crescent hallmarks, recipe symbols — MUST be defined ONCE as deterministic
+  geometry (a PIL stamp / fixed vector) and composited IDENTICALLY onto EVERY asset that
+  shows it: the clue mark, the reference page, AND the lock/input where the player enters
+  it. NEVER let the generative model re-draw the same glyph separately per scene — it
+  drifts, and drift between a clue glyph and the lock glyph makes the puzzle UNSOLVABLE.
+  (This exact failure broke p01 in build 3: the rune-door tiles didn't match the element
+  marks / grimoire.) Canonical shapes come from the puzzle graph (e.g.
+  `clu-grimoire-elements`: FIRE = upward triangle; WATER = downward triangle; AIR = upward
+  triangle with a horizontal bar; EARTH = downward triangle with a horizontal bar).
+  Acceptance gate: place the clue, the reference, and the input asset side by side and
+  confirm a player can match them by shape.
 - **Checkpoint granularity**: bundle outputs per zone for user review — per-zone batches,
   not per-image approvals.
 - **Progress visibility (user requirement, 2026-07-05; revised same day after it failed
