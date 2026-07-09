@@ -929,3 +929,12 @@ build 9 where possible.
 > → Asset Gen (glyph re-stamp) + Developer stage; fold into build 9. VERIFY a player can match
 > mark↔grimoire↔door for all four. This is the load-bearing precision-glyph consistency the §2.3
 > and R2-031 checks should enforce — see the strengthened asset-gen rule.)
+>
+> **GRIMOIRE EMPHASIS (user, 2026-07-09):** the grimoire is the HUB reference — it carries the
+> rune→element map (page A) the player uses to read the door, AND it orients the player to the
+> puzzle / where clues are. So the grimoire's rune glyphs are the CANONICAL anchor: stamp the
+> canonical glyphs on grimoire page A, and make the marks + door match THE GRIMOIRE (if marks/door
+> disagree with the grimoire, THEY are the ones to fix — the grimoire is the player's source of
+> truth). Also VERIFY the grimoire's other content reads coherently in the new art (page A
+> rune↔pictogram pairing correct, recipe page p14, page B sun/moon p04) — the grimoire close-ups
+> were regenerated and must be legible + correct, not just internally consistent.)
