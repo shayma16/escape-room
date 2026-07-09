@@ -472,15 +472,22 @@ final class EscapeRoomUITests: XCTestCase {
         // Back at the hearth: rug discovery + the now-ungated dial panel (p02).
         // Rug is tapped in its exposed left strip (left of the trapdoor, which wins the
         // smaller-area overlap); the trapdoor-dial is center-floor.
-        tapScene(app, 0.22, 0.76)                   // move rug (exposed left strip, above the bar)
-        tapScene(app, 0.50, 0.74)                   // trapdoor -> dial close-up
+        // Rug: far-left exposed strip (x0.22 is clear of the center inventory pill and of
+        // the trapdoor rect x0.30-0.70, so the rug — not the smaller trapdoor — takes it).
+        tapScene(app, 0.22, 0.80, settle: 0.9)      // move rug
+        // Trapdoor-dial at (0.60,0.70): inside the trapdoor rect (x0.30-0.70, y0.66-0.90)
+        // but OUTSIDE the smaller ash (x0.36-0.52) and rug (y>=0.74) rects, so the trapdoor
+        // — not a smaller-area overlapping hotspot — wins the tap. (The prior (0.50,0.72)
+        // sat inside the ash rect, which won the overlap and opened the ash close-up instead
+        // of the dial — that was the CI "moon-dial-1 must exist" failure.)
+        tapScene(app, 0.60, 0.70, settle: 0.9)      // trapdoor -> dial close-up
         shoot(app, "play-03-dial-panel")
         for _ in 0..<1 { tapID(app, "moon-dial-1") } // waxing crescent
         for _ in 0..<4 { tapID(app, "moon-dial-2") } // full
         for _ in 0..<5 { tapID(app, "moon-dial-3") } // waning gibbous -> unlock
         shoot(app, "play-04-dials-solved")
         dismissCloseUp(app)
-        tapScene(app, 0.50, 0.74, settle: 1.2)      // descend through the trapdoor
+        tapScene(app, 0.60, 0.70, settle: 1.2)      // descend through the trapdoor
         shoot(app, "play-05-cellar")
 
         // z3 cellar (R3-005 re-calibrated to the build-3 cellar plate): barrel right,
@@ -617,7 +624,7 @@ final class EscapeRoomUITests: XCTestCase {
         // entry -> hearth (chevron within z1), then down the trapdoor to the cellar.
         tapID(app, "nav-next")                      // entry -> hearth (wraps within z1)
         Thread.sleep(forTimeInterval: 0.8)
-        tapScene(app, 0.50, 0.74, settle: 1.2)      // trapdoor -> cellar (diegetic)
+        tapScene(app, 0.60, 0.70, settle: 1.2)      // trapdoor -> cellar (diegetic)
         // Select-then-tap: arm the crank, then tap the winch (no auto-fit on bare tap).
         useItem(app, item: "itm-crank", onScene: 0.195, 0.10) // fit crank at the winch drum -> moonbeam
         shoot(app, "play-14-beam")
