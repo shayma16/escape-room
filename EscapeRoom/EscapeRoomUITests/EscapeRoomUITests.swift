@@ -184,7 +184,20 @@ final class EscapeRoomUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 1.5) // scene fade-up settles
         shoot(app, "b3-001-full-width-scene")
 
-        let box = nonBlackBoundingBoxFraction(app.screenshot())
+        // Diagnostic (recorded BEFORE the assert so it survives a failure): the window
+        // frame the app reports, the raw screenshot pixel dimensions, and the measured
+        // content box. Tells us definitively whether the square is the WINDOW (portrait
+        // composition) or the CONTENT inside a landscape window (a real layout bug).
+        let ss = app.screenshot()
+        let imgSize = ss.image.size
+        let box = nonBlackBoundingBoxFraction(ss)
+        let win = app.windows.firstMatch.frame
+        let diag = "window=\(win) screenshotPt=\(imgSize) contentBox=w:\(box.widthFraction) h:\(box.heightFraction)"
+        let att = XCTAttachment(string: diag)
+        att.name = "b3-001-geometry-diagnostic"
+        att.lifetime = .keepAlways
+        add(att)
+        print("QA-B3-001 DIAG: \(diag)")
         // The room art (a lit painterly plate) is overwhelmingly non-black, so a full-
         // window .aspectFill composition fills ~100 % of both axes. The square-viewport
         // bug left >=25 % of the width black. Require >=90 % coverage on BOTH axes: this

@@ -137,14 +137,6 @@ struct GameRoomView: View {
                     .transition(.opacity)
             }
         }
-        // QA-B3-001: force the game screen to occupy the FULL landscape window. On the CI
-        // simulators the NavigationStack destination proposed a SQUARE (side = screen
-        // height) to this screen, collapsing the whole ZStack — SpriteKit scene AND chrome
-        // — into a left-anchored square with a dead black band. Greedily claiming the full
-        // proposed space and ignoring safe area pins the ZStack to the true window bounds,
-        // so the SKView (which fills the ZStack) composes edge-to-edge.
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .ignoresSafeArea()
         .onChange(of: session.currentView) { newView in
             let zoneChanged = coordinatorBox.coordinator.viewID.zoneID != newView.zoneID
             let half = zoneChanged ? 0.3 : 0.15
