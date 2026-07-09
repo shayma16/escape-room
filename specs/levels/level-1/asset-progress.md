@@ -1,3 +1,17 @@
+# Level 1 — Build 9 glyph-consistency + thumbnail (R3-007, R3-002) — deterministic PIL, $0
+
+PROGRESS: 2/2 done | 0 retrying | 0 failed | 0 remaining | $0.00 spent
+
+_Asset Generation Agent live tracker. No fal.ai generation this phase — deterministic PIL only._
+_All paths relative to specs/assets/level-1/. Rasters ship @3x/@2x/@1x; thumbnail is a single JPG._
+
+| # | Item | Method | Status | Cost | Note |
+|---|------|--------|--------|------|------|
+| 1 | R3-007 rune-door glyph consistency | ONE canonical PIL glyph stamp (FIRE/WATER/AIR/EARTH triangles) engraved in place | done | $0.00 | cu-runedoor-tiles + 4 pressed sprites (all scales) re-stamped to match grimoire pageA + 4 element marks; acceptance gate + grayscale PASS; p01 solvable. Grimoire pages A/B/recipe + decoys audited: legible + correct. Futhark originals -> _rejects/R3-007-runedoor-futhark-*. No -nb shadows. |
+| 2 | R3-002 Level-Select thumbnail | PIL 4:3 crop + downscale of z1-hearth-base@3x -> 660x495 JPG | done | $0.00 | chrome/level1-thumb.jpg; reads as new engine-style Level 1 (fireplace+clock+warm lamp) at card size. |
+
+---
+
 # Level 1 — Batch 3 asset progress (zones z3 Hidden Cellar + z4 Walled Alcove + icon cleanup — FINAL batch)
 
 PROGRESS: 39/39 done | 0 retrying | 0 failed | 0 remaining | $1.99 spent

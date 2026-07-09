@@ -397,14 +397,14 @@
       "file": "z1/v-study/cu-runedoor-tiles@3x.png",
       "zone": "z1",
       "view": "v-study",
-      "element": "workshop door brass plate, 4 rune tiles (display top-to-bottom: FIRE, WATER, AIR, EARTH)",
+      "element": "workshop door brass plate, 4 element-rune tiles (display top-to-bottom: FIRE, WATER, AIR, EARTH)",
       "state": "all unpressed",
-      "method": "t2i v3 + PIL 4-tile rebuild + rune stamps",
+      "method": "engine-render brass plate + build9 CANONICAL PIL glyph re-stamp (R3-007): old Elder-Futhark runes removed via brass clean-face; canonical element triangles engraved from ONE glyph_stamp source shared with grimoire + marks + pressed sprites",
       "generation": "t2i",
       "seed": 64444,
       "est_cost_usd": 0.0944,
       "prompt": "pre-rendered point-and-click adventure game close-up plate, painterly realism, moody 1990s Myst-style interior detail, muted warm-and-cool night palette, oil painting texture, highly detailed, no text, no letters, no people. Straight-on frontal close-up of a tall vertical BRASS PLATE mounted on a heavy iron-strapped dark oak door: the plate holds EXACTLY FOUR square brass tiles stacked in ONE vert",
-      "note": "p01 press order AIR,FIRE,EARTH,WATER = tiles 3,1,4,2; per-tile pressed sprites in sprites/"
+      "note": "R3-007 FIXED: tiles show canonical FIRE=up-tri / WATER=down-tri / AIR=up-tri+bar / EARTH=down-tri+bar, IDENTICAL geometry to grimoire pageA + the 4 element marks + the pressed sprites; match-by-shape acceptance gate + grayscale PASS. p01 press order AIR,FIRE,EARTH,WATER = tiles 3,1,4,2. Superseded Futhark version -> _rejects/R3-007-runedoor-futhark-*"
     },
     {
       "file": "z1/v-study/sprites/runedoor-tile1-pressed@3x.png",
@@ -412,7 +412,7 @@
       "view": "v-study",
       "element": "rune tile 1",
       "state": "pressed",
-      "method": "PIL",
+      "method": "PIL (build9 R3-007 canonical glyph re-stamp on existing pressed brass; same glyph_stamp source as base plate + grimoire)",
       "note": "paste rect in sprites/runedoor-tiles.json; any press combo composable"
     },
     {
@@ -421,7 +421,7 @@
       "view": "v-study",
       "element": "rune tile 2",
       "state": "pressed",
-      "method": "PIL",
+      "method": "PIL (build9 R3-007 canonical glyph re-stamp on existing pressed brass; same glyph_stamp source as base plate + grimoire)",
       "note": "paste rect in sprites/runedoor-tiles.json; any press combo composable"
     },
     {
@@ -430,7 +430,7 @@
       "view": "v-study",
       "element": "rune tile 3",
       "state": "pressed",
-      "method": "PIL",
+      "method": "PIL (build9 R3-007 canonical glyph re-stamp on existing pressed brass; same glyph_stamp source as base plate + grimoire)",
       "note": "paste rect in sprites/runedoor-tiles.json; any press combo composable"
     },
     {
@@ -439,7 +439,7 @@
       "view": "v-study",
       "element": "rune tile 4",
       "state": "pressed",
-      "method": "PIL",
+      "method": "PIL (build9 R3-007 canonical glyph re-stamp on existing pressed brass; same glyph_stamp source as base plate + grimoire)",
       "note": "paste rect in sprites/runedoor-tiles.json; any press combo composable"
     },
     {
@@ -1678,7 +1678,7 @@
     }
   },
   "global": {
-    "scope": "one-time app-wide custom art (app icon + launch screen) per specs/global-ui-style.md Section 10 \u2014 theme-independent, never restyled per level",
+    "scope": "one-time app-wide custom art (app icon + launch screen) per specs/global-ui-style.md Section 10 — theme-independent, never restyled per level",
     "generated": "2026-07-05",
     "model": "fal-ai/flux-2-pro (t2i + edit) + PIL derivation pass",
     "asset_root": "specs/assets/global/",
@@ -1693,7 +1693,7 @@
       },
       {
         "file": "launch/emblem-keyhole.png",
-        "role": "flat keyhole emblem \u2014 launch screen mark; Main Menu backdrop reuses at ~8% white (style guide 5.1)",
+        "role": "flat keyhole emblem — launch screen mark; Main Menu backdrop reuses at ~8% white (style guide 5.1)",
         "size": "1024x1024 RGBA, white on transparent, mark 55% of canvas height, centered",
         "method": "flux edit from app-icon-1024 (flat silhouette) + PIL luminance->alpha ramp cleanup + bbox re-center",
         "est_cost_usd": 0.0315
@@ -1712,7 +1712,7 @@
       }
     ],
     "developer_notes": [
-      "iOS icon size set: use asset catalog 'Single Size' with app-icon-1024.png \u2014 Xcode derives all sizes; do NOT hand-export the legacy size matrix.",
+      "iOS icon size set: use asset catalog 'Single Size' with app-icon-1024.png — Xcode derives all sizes; do NOT hand-export the legacy size matrix.",
       "Launch screen: prefer storyboard/launch-configuration with background color #101010 + centered emblem-keyhole.png image over the fixed rasters, so it matches the Main Menu backdrop pixel-for-pixel on every device; the two rasters are reference/fallback renders of the intended result.",
       "Launch must be visually identical to the Main Menu empty backdrop (fade-in effect, style guide 10.2); menu uses the same emblem at 8% white, launch at ~11%."
     ],
@@ -1931,7 +1931,7 @@
   },
   "feedback_round1_fixes": {
     "date": "2026-07-07",
-    "spec": "style-guide.md Rev 2 \u00a77-R 'Feedback round 1 \u2014 art-fix briefs' (AF-1..AF-4)",
+    "spec": "style-guide.md Rev 2 §7-R 'Feedback round 1 — art-fix briefs' (AF-1..AF-4)",
     "budget_cap_usd": 3.0,
     "principle": "inpaint/crop-scoped; approved plates remain style anchors; smallest-change; grayscale acceptance gate; NO full re-renders / NO restyle",
     "technique": "fal flux-2-pro/edit on tight anchored crop, then feathered-mask PIL composite of ONLY the masked region back onto untouched original -> zero drift outside mask",
@@ -2075,5 +2075,40 @@
     "spend_this_pass": 1.65,
     "running_total": 17.25,
     "cap": 18.9
+  },
+  "build9_glyph_consistency_2026_07_09": {
+    "branch": "level1-rebuild-build3",
+    "scope": "R3-007 (element-rune glyph consistency, unblocks p01) + R3-002 (Level-Select thumbnail). Deterministic PIL only; NO fal.ai generation.",
+    "spend_usd": 0.0,
+    "cap": 18.9,
+    "canonical_glyph_geometry": {
+      "source": "puzzle-graph clu-grimoire-elements; defined ONCE as PIL geometry (scratchpad glyph_stamp.glyph_mask), stamped identically everywhere",
+      "FIRE": "upward triangle (plain)",
+      "WATER": "downward triangle (plain)",
+      "AIR": "upward triangle + horizontal bar at mid-height",
+      "EARTH": "downward triangle + horizontal bar at mid-height",
+      "colorblind": "distinguishable by SHAPE alone (apex up/down + bar present/absent); grayscale gate PASS",
+      "anchor": "grimoire cu-grimoire-pageA is the canonical player source of truth; marks + door made to match it by shape"
+    },
+    "R3_007": {
+      "root_cause": "cu-runedoor-tiles base plate (and its pressed sprites) showed Elder-Futhark runes, NOT the element triangles used by the grimoire + the 4 element marks -> door glyphs did not match clues -> p01 unsolvable.",
+      "finding": "grimoire pageA + all four element marks (cu-bellows AIR+I, cu-lintel FIRE+II, cu-flowerpot EARTH+III, cu-windowsill WATER+IV) ALREADY used the correct canonical triangle system; ONLY the door plate + pressed sprites were wrong.",
+      "fix": "removed Futhark runes via brass clean-face inpaint (lighting-gradient preserving); engraved canonical triangles from the single glyph_stamp source. Re-stamped the 4 pressed sprites from the SAME geometry (existing pressed border/inset kept, only glyph corrected).",
+      "files_restamped_in_place": [
+        "z1/v-study/cu-runedoor-tiles@{3x,2x,1x}.png",
+        "z1/v-study/sprites/runedoor-tile{1,2,3,4}-pressed@{3x,2x,1x}.png"
+      ],
+      "tile_map_confirmed": "runedoor-tiles.json unchanged: tile1=FIRE, tile2=WATER, tile3=AIR, tile4=EARTH (top-to-bottom). Press order AIR,FIRE,EARTH,WATER = tiles 3,1,4,2 (numeral I-IV).",
+      "acceptance_gate": "grimoire pageA vs element mark vs door tile placed side by side for all 4 elements: MATCH by shape confirmed. Grayscale check: all 4 mutually distinct.",
+      "grimoire_audit": "pageA rune<->pictogram map CORRECT; pageB sun+ring / crescent+coin (p04) CORRECT; recipe page (p14) CORRECT (blossom+pestle, crescent-metal+file, feather-into-hand, flame+III, CCW 5-dot outward spiral w/ arrowhead, black-feather bookmark); decoys zodiac (full 12-sign wheel, no highlight) + bird study (no callouts) non-systematic. All legible.",
+      "superseded": "_rejects/R3-007-runedoor-futhark-<timestamp>/ (both plate + pressed sprites, all scales)",
+      "shadows": "NONE created; all edits IN PLACE at canonical names."
+    },
+    "R3_002": {
+      "asset": "chrome/level1-thumb.jpg (delivered under specs/assets/level-1/chrome/ for Developer to stage to EscapeRoom/Resources/GameAssets/chrome/level1-thumb.jpg)",
+      "source": "z1/v-hearth/z1-hearth-base@3x (build-3 engine render); PIL 4:3 crop (top-aligned to keep full mantel clock, biased to catch warm right-lamp glow) -> 660x495 JPG q90",
+      "reads": "fireplace + mantel clock + warm lamp glow + leather armchair; recognizable as new engine-style Level 1 at card size (card is 4:3, 220x165pt).",
+      "cost_usd": 0.0
+    }
   }
 }
