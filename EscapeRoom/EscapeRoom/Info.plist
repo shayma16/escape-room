@@ -51,14 +51,5 @@
 	<true/>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
-	<!-- QA-B3-001: UIKit scene lifecycle so the app is hosted in a landscape-locked
-	     UIHostingController (see EscapeRoomApp.swift). The SceneDelegate is wired in code
-	     via AppDelegate.configurationForConnecting; this manifest declares single-scene
-	     support so the code-based configuration is used. -->
-	<key>UIApplicationSceneManifest</key>
-	<dict>
-		<key>UIApplicationSupportsMultipleScenes</key>
-		<false/>
-	</dict>
 </dict>
 </plist>

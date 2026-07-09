@@ -194,24 +194,35 @@ final class EscapeRoomUITests: XCTestCase {
         let ss = app.screenshot()
         let imgSize = ss.image.size                 // pixels
         let win = app.windows.firstMatch.frame      // points
-        let whole = nonBlackBoundingBoxFraction(ss)                 // whole device screenshot
+        let sceneEl = app.descendants(matching: .any)["room-scene"].firstMatch
+        let sceneFrame = sceneEl.exists ? sceneEl.frame : .zero
+        let whole = nonBlackBoundingBoxFraction(ss)                        // whole device screenshot
         let inWindow = nonBlackBoundingBoxFraction(ss, cropToPointRect: win) // app-window crop
+        // The authoritative measure: does the rendered SCENE fill its own SKView (the
+        // "square viewport reaching the SKView" QA-B3-001 hypothesised)? Crop to the
+        // room-scene element frame — immune to any device-level screenshot letterbox.
+        let inScene = sceneFrame.isEmpty ? whole
+            : nonBlackBoundingBoxFraction(ss, cropToPointRect: sceneFrame)
 
-        let diag = "window=\(win) screenshotPt=\(imgSize) whole=w:\(whole.widthFraction),h:\(whole.heightFraction) inWindow=w:\(inWindow.widthFraction),h:\(inWindow.heightFraction)"
+        let diag = "window=\(win) sceneFrame=\(sceneFrame) screenshotPt=\(imgSize) whole=w:\(whole.widthFraction),h:\(whole.heightFraction) inWindow=w:\(inWindow.widthFraction),h:\(inWindow.heightFraction) inScene=w:\(inScene.widthFraction),h:\(inScene.heightFraction)"
         let att = XCTAttachment(string: diag)
         att.name = "b3-001-geometry-diagnostic"
         att.lifetime = .keepAlways
         add(att)
         print("QA-B3-001 DIAG: \(diag)")
 
-        // The room art (a lit painterly plate) is overwhelmingly non-black, so when it fills
-        // the window the in-window content box spans ~100 % of both axes. The square-viewport
-        // bug left a large black margin INSIDE the window. Require >=90 % on BOTH axes: fails
-        // loudly on the in-window dead-band regression, passes on an edge-to-edge fill.
-        XCTAssertGreaterThanOrEqual(inWindow.widthFraction, 0.90,
-            "scene content must fill the app WINDOW width — no in-window dead band (QA-B3-001). measured=\(inWindow.widthFraction); wholeScreen=\(whole.widthFraction)")
-        XCTAssertGreaterThanOrEqual(inWindow.heightFraction, 0.90,
-            "scene content must fill the app WINDOW height (QA-B3-001). measured=\(inWindow.heightFraction)")
+        // The room art (a lit painterly plate) is overwhelmingly non-black, so when the scene
+        // fills its SKView the content box spans ~100 % of the scene frame on both axes. A
+        // square viewport reaching the SKView (QA-B3-001) leaves a large black margin INSIDE
+        // the scene view. Assert >=90 % fill of the SCENE view on BOTH axes: this fails loudly
+        // on a real square-viewport regression and passes when the scene fills its view,
+        // independent of any CI-simulator device-level screenshot letterbox.
+        XCTAssertFalse(sceneFrame.isEmpty,
+            "room-scene element must resolve a real frame to verify scene fill (QA-B3-001)")
+        XCTAssertGreaterThanOrEqual(inScene.widthFraction, 0.90,
+            "scene content must fill its SKView WIDTH — no square viewport (QA-B3-001). inScene=\(inScene.widthFraction) inWindow=\(inWindow.widthFraction) whole=\(whole.widthFraction)")
+        XCTAssertGreaterThanOrEqual(inScene.heightFraction, 0.90,
+            "scene content must fill its SKView HEIGHT (QA-B3-001). inScene=\(inScene.heightFraction)")
     }
 
     /// QA-B3-002 chrome-on-screen guard. Build 3 clipped the completion card ("Main Men",
