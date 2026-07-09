@@ -11,7 +11,28 @@ Level 1 in design. Theme received from user on 2026-07-04.
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
 caged crow, potions/potion-making (user-specified elements).
 
-## ⭐ CURRENT RESUME NOTE (2026-07-09c) — READ THIS FIRST
+## ⭐ CURRENT RESUME NOTE (2026-07-09d) — READ THIS FIRST
+
+**BUILD-3 STALE CLOSE-UP SHADOW FIXED (Developer, branch `level1-rebuild-build3`).**
+Device check on build 3 (build 8) found in-scene close-ups ("inspect" images) were STALE
+build-2 painterly art while wide scenes were correct. Root cause: build-3 delivered
+close-ups/variants/icons under `-nb` filenames while the old build-2 art still sat at the
+canonical names the pipeline loads (only the 7 bases had been promoted). Fix = **Option B**:
+`git mv`-promoted every FINAL intended build-3 `-nb` (per manifest blocks
+`build3_rebuild`/`build3_derived`/`build3_consistency_reroll_2026_07_09`) to its canonical
+name on disk, archived the superseded build-2 canonicals to
+`_rejects/flux-painterly/*-build2@Nx.png`, deleted `SRC_OVERRIDE`, removed `resolve_src`'s
+`-nb` fallback, and added `assert_no_nb_shadow()` (fails the build if a `-nb` shadow ever
+recurs next to a build-loaded canonical). **82 bundle files re-staged stale→build-3**;
+spot-check across all zones = bundle matches build-3 source (0.00%, clock 2.07% inpaint)
+and differs from build-2 by 67–98%. Already-correct re-roll assets (door/slots/statue
+state variants, and the override'd door-lock/statue) did NOT regress. No game logic / no
+code / no secrets / no entitlements changed. Details in implementation-notes
+"Build-3 stale close-up shadow fix (2026-07-09)". **NEXT = CI to green on
+`build-and-test.yml`, then Producer re-releases build 9 (do NOT open a PR / ship from
+here).**
+
+## ⭐ RESUME NOTE (2026-07-09c)
 
 **BUILD 3 SHIPPED TO TESTFLIGHT — Within 1.0 (build 8)**, release run 29020603301 green
 (archive→sign→stamp→scan→upload). Released from branch `level1-rebuild-build3` (added the

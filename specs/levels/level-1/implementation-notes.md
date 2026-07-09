@@ -1068,3 +1068,84 @@ on-device TestFlight spot-check. If QA still requires a full-width CI SCREENSHOT
 runner-image change to boot the simulators in landscape (no reliable headless path found on
 the current `macos-15` image) — flagged for the Producer as a separate infra item, not an app
 change.
+
+---
+
+## Build-3 stale close-up shadow fix (2026-07-09)
+
+**Symptom (build-3 TestFlight device check):** wide scenes rendered the new build-3
+engine-render art, but in-scene close-ups ("inspect" images) rendered the OLD build-2
+painterly art.
+
+**Root cause (verified):** the build-3 render cascade delivered close-ups / state
+variants / icons under raw `-nb` (nano-banana) filenames (e.g. `cu-clock-face-nb@3x.png`,
+`cu-grimoire-A-nb@3x.png`), while the OLD build-2 painterly versions still sat at the
+plain canonical names the staging pipeline loads (`cu-clock-unspent@3x.png`, ...). Only
+the 7 zone BASE plates had been promoted to canonical during the build-3 rebuild; the
+close-ups/variants/icons had not. `resolve_src` preferred the canonical name (and its
+generic same-stem `-nb` fallback did not even match the many RENAMED build-3 deliveries,
+e.g. `cu-clock-unspent` ← `cu-clock-face-nb`), and `SRC_OVERRIDE` only force-mapped 6
+assets. Net: build-loaded close-ups were shadowed by stale build-2 art. Git provenance
+confirmed every non-base canonical close-up/variant/icon last changed in the build-2
+`181392f` "Level 1 complete" commit (or the pre-build-3 BUG-004 re-frame), NOT build-3.
+
+**Approach chosen: Option B (promote to canonical; unambiguous).** Every FINAL intended
+build-3 `-nb` derived asset was `git mv`-promoted to its canonical name on disk under
+`specs/assets/level-1/` (across `@1x/@2x/@3x`), and the superseded build-2 canonical was
+archived to `specs/assets/level-1/_rejects/flux-painterly/<name>-build2@Nx.png`. Chosen
+over Option A (flip `resolve_src` precedence) because A cannot handle the renamed
+deliveries without a per-file map anyway, and B removes the fragile precedence logic and
+the `SRC_OVERRIDE` table entirely. Promotion counts: **81 assets** at `@3x` (243 files
+across the three scales) via the mapping table (`tools`-side scratch script), plus the 3
+hearth wide variants (`z1-hearth-poker-taken`, `-rug-moved`, `-trapdoor-open`) that had no
+canonical and previously resolved via the generic `-nb` fallback — promoted so nothing
+relies on that fallback.
+
+**Manifest as source of truth:** only the FINAL intended `-nb` per
+`asset-manifest.json` blocks `build3_rebuild` / `build3_derived` /
+`build3_consistency_reroll_2026_07_09` were promoted. The already-corrected re-roll
+close-ups that ALREADY lived at canonical names (`cu-door-lock-basin-{filled,drained}`,
+`cu-door-lock-vines-{withered,gone}`, `cu-door-lock-bolt-slid`, `cu-slots-empty`,
+`cu-slots-seated`, `z2-cabinet-slots-seated` from commits `5a9dbde`/`4504a7e`/`35a36b5`)
+were left UNTOUCHED — verified they did not regress. The door-lock/statue assets formerly
+force-mapped by `SRC_OVERRIDE` now live at their canonical names; the bundle output for
+those is byte-identical (they were already staged from the `-nb` via the override), so no
+regression, and `SRC_OVERRIDE` was deleted.
+
+**Deliberately NON-promoted `-nb` (unused by the pipeline, cannot shadow):**
+`astrolabe-plate-1..6-nb`, `cu-rim-rune-nb` (PIL sprites are authoritative for the
+interactive plate ring / rim ember channels), `cu-coin-hallmark-nb`, `z3-cellar-nobeam-nb`,
+`z1-entry-basin-{filled,drained}-nb` (4K wides; the build uses the close-up basin
+variants), and `cu-slots-nb` (content already equals canonical `cu-slots-empty`, verified
+0.00% diff). None are loaded by canonical name, so they cannot re-introduce a shadow.
+
+**Bundle result — count of files changed stale→build-3: 82** image files in
+`EscapeRoom/Resources/GameAssets/level-1/` (58 close-up/plate `.jpg` + 15 icon `.png` +
+9 derived overlay/state `.jpg` whose sources refreshed). Wide bases, PIL sprites, chrome,
+and audio were already correct/unaffected.
+
+**Spot-check (bundle vs promoted build-3 source vs archived build-2), representative
+spread across all zones** — every bundle close-up now matches its build-3 source to
+JPEG-rounding (0.00%, clock states 2.07% due to the synthetic-hands inpaint) and differs
+from the archived build-2 painterly art by 67–98%:
+grimoire pageA/B/recipe/zodiac/bird, triptych 1/2/3, cu-ash-undisturbed/sifted, cu-bellows,
+cu-dial-panel, cu-door-lock, cu-windowsill, cu-star-keyhole, cu-cage-crow, cu-brew-clear,
+cu-mortar-empty, cu-astrolabe, cu-potion-shelf, cu-window-orion, cu-barrel-gap,
+cu-mirror-scratches, cu-winch-socket, cu-spoon-drawer, cu-planter-closed/blooming,
+cu-statue-key — all PASS.
+
+**Anti-recurrence guard:** `tools/build_game_assets.py` now (1) has `resolve_src` return
+the canonical path with NO `-nb` fallback (a missing canonical fails loud at `open()`),
+and (2) runs `assert_no_nb_shadow()` at the start of `main()`, which raises `SystemExit`
+and fails the build if any canonical asset the pipeline loads by name still has a `-nb`
+sibling on disk — the exact stale-shadow signature. Verified: planting a stray
+`cu-bellows-nb@3x.png` makes the build fail with the offender listed; removing it restores
+green. The guard correctly ignores the unused non-promoted `-nb` extras above (their
+canonical names are not in the build's requested set). CI itself consumes the committed
+static bundle (no staging step), so the corrected bundle is what CI/TestFlight build
+against; the guard protects future dev re-stages.
+
+**Security / entitlements:** no code, keys, entitlements, or Info.plist changed — this is
+an art re-staging fix only. Source grep for dev secrets (`fal.ai`/api-key/secret/Bearer)
+across `EscapeRoom/` finds only a provenance COMMENT in `SoundManager.swift`; no secret
+material is bundled. Posture unchanged from prior handoff.

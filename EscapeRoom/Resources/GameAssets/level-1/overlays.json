@@ -127,7 +127,7 @@
  "z3/v-cellar": {
   "ov-barrel-empty": {
    "dimFile": "z3/v-cellar/overlays/ov-barrel-empty-dim.jpg",
-   "dimGain": 1.2,
+   "dimGain": 1.0,
    "file": "z3/v-cellar/overlays/ov-barrel-empty.jpg",
    "rect": [
     0.66,
@@ -138,7 +138,7 @@
   },
   "ov-barrel-pried": {
    "dimFile": "z3/v-cellar/overlays/ov-barrel-pried-dim.jpg",
-   "dimGain": 1.2,
+   "dimGain": 1.0,
    "file": "z3/v-cellar/overlays/ov-barrel-pried.jpg",
    "rect": [
     0.66,

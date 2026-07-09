@@ -37,48 +37,75 @@ XCASSETS = os.path.join(ROOT, "EscapeRoom", "Resources", "Assets.xcassets")
 JPEG_Q = 87
 
 
-# Build-3 delivery gap reconciliation (2026-07-08, round-2 fix batch / build 3):
-# A few state-variant wide plates were regenerated in the build-3 engine-render rebuild
-# but committed only under their raw "-nb" (nano-banana) filename, never promoted to the
-# canonical name the pipeline expects. Rather than hand-rename art in specs/ (Asset Gen's
-# territory) we resolve the source here: canonical path first, then the "-nb" fallback.
-# Flagged to the Producer in implementation-notes.md (build-3 art gap G1).
-SRC_OVERRIDE = {
-    "z1/v-hearth/z1-hearth-poker-taken@3x.png": "z1/v-hearth/z1-hearth-poker-taken-nb@3x.png",
-    "z1/v-hearth/z1-hearth-trapdoor-open@3x.png": "z1/v-hearth/z1-hearth-trapdoor-open-nb@3x.png",
-    # Build-3 consistency re-roll (2026-07-09, block build3_consistency_reroll_2026_07_09).
-    # The corrected close-up BASE plates (grey-stone beak-basin door lock; gold-key/plain-
-    # stone statue) shipped under their "-nb" names. The old canonical @3x files at these
-    # paths are the STALE build-2 painterly art and are the ones the game actually loads
-    # (cu-door-lock.jpg, cu-statue-key.jpg, cu-statue-key-taken.jpg) — force-resolve them to
-    # the corrected -nb art so the bundle stops shipping stale plates. resolve_src's generic
-    # "-nb" fallback does NOT catch these because the stale canonical still exists on disk
-    # and is preferred; an explicit override is required. Flagged in implementation-notes
-    # (Build-3 consistency re-roll integration).
-    "z1/v-entry/cu-door-lock@3x.png": "z1/v-entry/cu-door-lock-nb@3x.png",
-    "z4/v-alcove/cu-statue-key@3x.png": "z4/v-alcove/cu-statue-key-nb@3x.png",
-    "z4/v-alcove/cu-statue-key-taken@3x.png": "z4/v-alcove/cu-statue-key-taken-nb@3x.png",
-}
+# Build-3 stale close-up shadow fix (2026-07-09).
+# ROOT CAUSE (fixed): the build-3 render rebuild delivered close-ups / state variants
+# under raw "-nb" (nano-banana) filenames while the OLD build-2 painterly art still sat
+# at the plain canonical names. resolve_src used to prefer the canonical name (or fall
+# back to a generic same-stem "-nb"), so ~70 build-3 close-ups were SHADOWED by stale
+# build-2 canonical files and the bundle shipped the old painterly art for them.
+#
+# FIX (Option B): every FINAL intended build-3 "-nb" derived asset was PROMOTED to its
+# canonical name on disk (specs/assets/level-1/), and the superseded build-2 canonicals
+# were archived to specs/assets/level-1/_rejects/flux-painterly/*-build2@Nx.png. The tree
+# is now unambiguous: the canonical name IS the shipped build-3 art. That means:
+#   * no SRC_OVERRIDE table is needed (the door-lock/statue re-roll art now lives at its
+#     canonical name — the override was only a workaround for the stale shadow), and
+#   * resolve_src must NOT silently fall back to a "-nb" sibling anymore. A leftover "-nb"
+#     next to a canonical is the exact stale-shadow signature we just eliminated; if one
+#     re-appears we FAIL THE BUILD (assert_no_nb_shadow) instead of silently picking one.
+#
+# NON-PROMOTED "-nb" files remaining in specs/ are deliberately UNUSED by the pipeline
+# (astrolabe-plate-N / cu-rim-rune -> PIL sprites are authoritative; cu-coin-hallmark,
+# z3-cellar-nobeam, z1-entry-basin-* wides, cu-slots-nb whose content already equals the
+# canonical cu-slots-empty). They are not loaded by name here, so they cannot shadow.
 
 
 def resolve_src(path):
-    """Map a requested canonical asset path to the file that actually ships in specs/.
+    """Map a requested canonical asset path to the file that ships in specs/.
 
-    Order (build-3 consistency re-roll, 2026-07-09): an explicit SRC_OVERRIDE wins FIRST,
-    even when a canonical file exists on disk — some canonical @3x plates are STALE build-2
-    art that must be superseded by the corrected "-nb" re-roll, so the override cannot be a
-    mere fallback. Then the canonical name, then a generic "-nb" delivery. Raises if nothing
-    exists so a genuine gap fails loudly rather than silently shipping stale/grey art (the
-    exact class of defect this batch fixes).
+    Build-3 fix: the canonical name is authoritative. We do NOT fall back to a "-nb"
+    sibling — that fallback is what allowed stale build-2 art to shadow build-3 deliveries.
+    A missing canonical now fails loudly at open() with a clear FileNotFoundError instead
+    of silently substituting art.
     """
-    if path in SRC_OVERRIDE and os.path.exists(src(SRC_OVERRIDE[path])):
-        return SRC_OVERRIDE[path]
-    if os.path.exists(src(path)):
-        return path
-    nb = path.replace("@3x.png", "-nb@3x.png")
-    if os.path.exists(src(nb)):
-        return nb
-    return path  # let the caller raise a clear FileNotFoundError on open
+    return path
+
+
+def assert_no_nb_shadow():
+    """Anti-recurrence guard: fail the build if any canonical asset that the pipeline
+    loads by name still has a "-nb" sibling on disk (the stale-shadow signature).
+
+    We check every canonical @3x path the build requests (PLAIN_PLATES, RGBA_SPRITES,
+    ICONS, and the wide/close-up variant plates loaded by build_inpainted / OVERLAYS /
+    MANUAL_OVERLAYS). If a "-nb" sibling exists next to a requested canonical, staging is
+    ambiguous exactly the way build-3 shipped stale close-ups — so we refuse to build.
+    """
+    requested = set(PLAIN_PLATES) | set(RGBA_SPRITES) | set(ICONS)
+    for (view, var, *_rest) in MANUAL_OVERLAYS:
+        requested.add(f"{view}/{var}@3x.png")
+    for (view, base, var, *_rest) in OVERLAYS:
+        requested.add(f"{view}/{base}@3x.png")
+        requested.add(f"{view}/{var}@3x.png")
+    # variant plates loaded directly in build_inpainted() by canonical name
+    requested |= {
+        "z1/v-hearth/cu-clock-unspent@3x.png", "z1/v-hearth/cu-clock-pop@3x.png",
+        "z1/v-hearth/cu-clock-spent@3x.png", "z1/v-hearth/z1-hearth-rug-moved@3x.png",
+        "z1/v-hearth/z1-hearth-trapdoor-open@3x.png",
+        "z2/v-cabinet/cu-astrolabe-drawer-open@3x.png",
+        "z3/v-cellar/z3-cellar-drawer-open@3x.png",
+        "z3/v-cellar/z3-cellar-barrel-pried@3x.png",
+        "z2/v-cabinet/z2-cabinet-open@3x.png",
+    }
+    shadows = []
+    for rel in sorted(requested):
+        nb = rel.replace("@3x.png", "-nb@3x.png")
+        if os.path.exists(src(rel)) and os.path.exists(src(nb)):
+            shadows.append(f"{rel}  <-shadowed-by->  {nb}")
+    if shadows:
+        raise SystemExit(
+            "STALE-SHADOW GUARD FAILED: a build-loaded canonical asset still has a '-nb' "
+            "sibling on disk. Promote the intended art to the canonical name (Option B) or "
+            "delete the stray '-nb'. Offenders:\n  " + "\n  ".join(shadows))
 
 
 def src(path):
@@ -998,6 +1025,7 @@ def gen_ambients():
 
 def main():
     report = []
+    assert_no_nb_shadow()  # build-3 stale-shadow anti-recurrence guard (fails loud)
     if os.path.isdir(OUT):
         shutil.rmtree(OUT)
     ensure(OUT)
