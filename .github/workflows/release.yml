@@ -138,6 +138,26 @@ jobs:
             MARKETING_VERSION="$MARKETING_VERSION" \
             CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
 
+      # The app's Info.plist pins CFBundleVersion to a literal, so the archive-time
+      # override doesn't reach the built app — and exportArchive reads the version from
+      # the .xcarchive's OWN ApplicationProperties too. Stamp the real build number into
+      # BOTH the app binary AND the archive metadata before export (export re-signs,
+      # carrying the edit into the .ipa). Without this, App Store Connect rejects the
+      # upload as a duplicate of build "1". (Same fix merged to main via PR #7.)
+      - name: Stamp build number into the archive
+        run: |
+          set -euo pipefail
+          APP=$(ls -d "$ARCHIVE_PATH"/Products/Applications/*.app | head -n1)
+          PLIST="$APP/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$PLIST"
+          /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $MARKETING_VERSION" "$PLIST"
+          ARCH_PLIST="$ARCHIVE_PATH/Info.plist"
+          /usr/libexec/PlistBuddy -c "Set :ApplicationProperties:CFBundleVersion $BUILD_NUMBER" "$ARCH_PLIST"
+          /usr/libexec/PlistBuddy -c "Set :ApplicationProperties:CFBundleShortVersionString $MARKETING_VERSION" "$ARCH_PLIST"
+          echo "Stamped $(basename "$APP") + archive metadata: version $MARKETING_VERSION, build $BUILD_NUMBER"
+          echo "app:     $(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")"
+          echo "archive: $(/usr/libexec/PlistBuddy -c 'Print :ApplicationProperties:CFBundleVersion' "$ARCH_PLIST")"
+
       - name: Export .ipa
         env:
           ASC_KEY_ID: ${{ secrets.ASC_KEY_ID }}
