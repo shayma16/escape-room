@@ -1308,3 +1308,63 @@ coords), 29045124011 (fail: trapdoor tap landed in the smaller ash hotspot), 290
 (iPhone playthrough GREEN; iPad save-resume failed on off-band clue taps — the iPad-crop
 regression), 29049860373 (GREEN after scoping the iPad step to smoke+composition + a flake
 re-run).
+
+### iPad letterbox (INTERIM) — build 9 follow-up
+
+The build-3 art rebuild dropped BUG-004's iPad dual-safe framing, so under `.aspectFill`
+(cover) the iPad 4:3 viewport CROPPED the wide 2:1 plate left/right and pushed puzzle-critical
+edge elements OFF-SCREEN on iPad — the PRIMARY device — making the level uncompletable there
+(completable on iPhone, whose 19.5:9 viewport shows near-full width). User chose the INTERIM
+LETTERBOX fix (the proper plate re-frame is deferred to build 10).
+
+**Display change.** `RoomScene.scaleMode` is now `.aspectFit` (was `.aspectFill`). SpriteKit
+fits the WHOLE 2:1 scene into the SKView and centers it, so the full plate is always visible:
+on iPad, letterboxed with dark bars top+bottom; on iPhone, full plate with thin side
+pillarbox. NOTHING puzzle-critical is ever cropped on any device. The letterbox bars are
+filled with the chrome dark-neutral backdrop `#101010` (not stark black) — set on the SKScene
+`backgroundColor`, the SKView `backgroundColor`, and the GameRoomView ZStack backdrop
+(`Chrome.backdrop`) — so they read as intentional framing, not a defect.
+
+**Tap/hotspot remapping under letterbox (verified landing).** The scene stays 2732×1366 and
+the base plate fills the SCENE exactly, so plate-normalized hotspots map 1:1 onto scene space
+regardless of how the scene is fitted into the view. SpriteKit owns the scene→view transform
+(scale + centering + letterbox offset) and converts a real touch view→scene BEFORE hit-testing,
+so in-app taps need NO change — a hotspot still sits on its element on the plate. The only place
+the letterbox math is reproduced by hand is the UI-test `sceneCoordinate(_:_:_:)`, which
+synthesises a view-space tap from a plate-normalized point: its scale flipped from `max`
+(aspectFill/cover) to `min` (aspectFit/fit); the centering formula is identical for both. This
+puts the previously-off-screen iPad edge elements (flowerpot, potion shelf, windowsill, mirror,
+winch, mortar, astrolabe, cage, feed cup, ladder) back on-screen and tappable — verified by the
+iPad full-playthrough UI test landing every tap and completing the level.
+
+**Hit-target floor re-derived.** `.aspectFit` yields a SMALLER per-scene-pixel scale on iPhone
+SE (min = 0.24414, width-bound) than `.aspectFill` (max = 0.27452, height-bound), so the 44-pt
+floor (style §8) moved: `Hotspot.minHitSceneSize` raised 168 → 182 (= 44 / 0.24414, rounded up).
+`testQA_BUG_009` recomputed at the `.aspectFit` scale and still passes.
+
+**QA-B3-001 / BUG-004 guard reconciliation.**
+- `testSceneContentFillsScreen_QA_B3_001`: unchanged assertion (the `room-scene` SKView
+  CONTAINER still fills the full window in points — the letterbox bars are drawn INSIDE that
+  full-window SKView), doc updated to note the iPad letterbox is now an INTENTIONAL in-app
+  effect (distinct from the long-standing CI raster-letterbox artifact); pixel-fill stays a
+  recorded diagnostic, never asserted.
+- `testQA_BUG_004_criticalHotspotsInsideDualSafeZone`: **un-`XCTExpectFailure`d** — now a
+  PERMANENT PASSING assertion. Under `.aspectFit` the full plate is visible, so the visible band
+  is the whole plate (x∈[0,1], y∈[0,1]); the test asserts no puzzle-critical hotspot leaves those
+  bounds (the real "no critical element cropped off-screen on iPad" requirement, which the
+  letterbox satisfies). It replaces the old dual-safe-band crop assertion. Build 10's plate
+  re-frame is the PERMANENT fix: it moves critical elements into the §8 iPad 4:3 dual-safe band
+  so `.aspectFill` can return WITHOUT the letterbox, at which point this test tightens back to the
+  dual-safe band and the presentation flips to `.aspectFill`.
+
+**iPad UI coverage RESTORED.** The build-9 phase had scoped the iPad UI step down to
+smoke+composition because the z1 clue marks (and edge elements) were off the iPad `.aspectFill`
+crop and their taps couldn't land. With the letterbox they are on-screen, so the iPad UI step
+now runs the FULL `EscapeRoomUITests` suite (full playthrough + smoke + save/resume + gate
+persistence) — iPad is genuinely verified end-to-end, not scoped-around. CI job timeout raised
+90 → 120 min to accommodate the second full playthrough.
+
+**Permanent fix owed (build 10):** re-frame the build-3 plates into the §8 iPad 4:3 dual-safe
+band (as BUG-004 originally did) so `.aspectFill` returns and the letterbox is removed. This
+interim letterbox is a display-only stopgap; puzzle logic, hotspot positions, and art are
+unchanged.

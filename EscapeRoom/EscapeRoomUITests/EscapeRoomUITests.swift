@@ -6,12 +6,16 @@ import UIKit
 /// REAL app (SwiftUI chrome + SpriteKit scenes + drag gestures), which unit tests
 /// cannot cover.
 ///
-/// Scene taps use plate-normalized coordinates converted through the same .aspectFill
-/// math the scene uses (scene 2732x1366, base plate fills the scene exactly).
+/// Scene taps use plate-normalized coordinates converted through the same `.aspectFit`
+/// (letterbox) math the scene uses (scene 2732x1366, base plate fills the scene exactly);
+/// see `sceneCoordinate(_:_:_:)`.
 ///
-/// BUG-004 art integration (2026-07-06): the re-framed plates put every puzzle-
-/// critical element inside the dual-safe zone, so the full playthrough now runs on
-/// iPad too (coordinates below sit inside the iPad-visible band x in [0.167, 0.833]).
+/// INTERIM iPad LETTERBOX (build 9 follow-up): the room scene is presented `.aspectFit`, so
+/// the FULL 2:1 plate is visible on iPad (letterboxed top+bottom) rather than cropped to the
+/// dual-safe band. Every plate-normalized coordinate below — including the z1 clue marks and
+/// the edge elements the build-3 `.aspectFill` crop hid — is therefore on-screen and tappable
+/// on iPad, so the full playthrough + save/resume run on iPad too (build 10's plate re-frame
+/// will restore `.aspectFill` and remove the letterbox).
 ///
 /// Feedback round 1 / build-2 QA regression (2026-07-08): the full playthrough was
 /// recalibrated to the select-then-tap + diegetic-passage + clue-gating rewrite and
@@ -85,11 +89,23 @@ final class EscapeRoomUITests: XCTestCase {
 
     // MARK: - Coordinate plumbing
 
-    /// Converts a plate-normalized point to a window coordinate under .aspectFill.
+    /// Converts a plate-normalized point (0…1, top-left origin — where a human "sees" an
+    /// element on the 2:1 plate) to a WINDOW coordinate, mirroring the scene's presentation.
+    ///
+    /// INTERIM iPad LETTERBOX (build 9 follow-up): the scene is now `.aspectFit` (RoomScene),
+    /// so the whole 2:1 plate is fitted + centered inside the window with letterbox bars —
+    /// top+bottom on iPad (4:3), thin side pillarbox on iPhone (19.5:9). The scale is
+    /// therefore the MIN ratio (fit), not the max ratio (fill/cover) the previous
+    /// `.aspectFill` presentation used. The centering formula is identical for fit and fill;
+    /// only the scale selection flips. Using `min` here reproduces the letterbox offset, so a
+    /// synthesized tap lands on the SAME on-plate element the app hit-tests — the previously
+    /// off-screen iPad edge elements (flowerpot, potion shelf, windowsill, mirror, winch,
+    /// mortar, astrolabe, cage, feed cup, ladder) are now inside the fitted plate and
+    /// tappable via this math.
     private func sceneCoordinate(_ app: XCUIApplication, _ nx: CGFloat, _ ny: CGFloat) -> XCUICoordinate {
         let window = app.windows.firstMatch
         let frame = window.frame
-        let scale = max(frame.width / sceneSize.width, frame.height / sceneSize.height)
+        let scale = min(frame.width / sceneSize.width, frame.height / sceneSize.height)
         let viewX = frame.width / 2 + (nx * sceneSize.width - sceneSize.width / 2) * scale
         let viewY = frame.height / 2 + (ny * sceneSize.height - sceneSize.height / 2) * scale
         return window.coordinate(withNormalizedOffset: CGVector(dx: viewX / frame.width,
@@ -169,27 +185,32 @@ final class EscapeRoomUITests: XCTestCase {
 
     // MARK: - QA-B3-001 / QA-B3-002 presentation regression guards
 
-    /// QA-B3-001 full-width composition guard.
+    /// QA-B3-001 full-window container guard — RECONCILED with the INTERIM iPad LETTERBOX
+    /// (build 9 follow-up).
     ///
-    /// IMPORTANT FINDING (route to QA/Producer): the "content in a square with a dead black
-    /// band" that build-3 QA measured from CI screenshots is a CI-SIMULATOR SCREENSHOT
-    /// RASTER-LETTERBOX ARTIFACT, not an in-app layout bug. Proof: across SEVEN
-    /// architecturally different builds (SwiftUI `WindowGroup` → UIKit AppDelegate/Scene +
-    /// landscape-locked `UIHostingController`, explicit SKView sizing / re-present, window-
-    /// bounds pins, `requestGeometryUpdate(.landscape)`) the pixel content-fill was
-    /// byte-identical (0.5622 = 750/1334 on iPhone SE), i.e. nothing the app code can change
-    /// moves it — and every LOGICAL frame (window, room-scene, whole screen) reports FULL
-    /// landscape width while only the RASTERISED screenshot is boxed. The app lays out and
-    /// renders full-width; the simulator's screenshot compositor letterboxes the raster.
-    /// Real devices (landscape-locked at springboard) fill the screen — the user's TestFlight
-    /// spot-check is the final confirmation.
+    /// What this guard asserts is the SpriteKit CONTAINER (the `room-scene` SKView) fills the
+    /// FULL landscape WINDOW in POINTS. That invariant is UNCHANGED by the letterbox: the
+    /// SKView is still the full-window `.ignoresSafeArea` container; the interim letterbox
+    /// (`.aspectFit`, build 9) draws its dark bars INSIDE that full-window SKView (SpriteKit
+    /// fits the 2:1 scene into the view), so the SKView's frame still spans the whole window.
+    /// A genuine square-viewport / dead-band CONTAINER regression (the SKView collapsing to a
+    /// square) still fails this loudly.
     ///
-    /// The guard therefore asserts the real, harness-immune invariant QA-B3-001 is about: the
-    /// game's live layout occupies the FULL landscape window (the SpriteKit scene view spans
-    /// essentially the whole window width AND height in POINTS). This FAILS loudly on a
-    /// genuine square-viewport / dead-band layout regression (the scene view collapsing to a
-    /// square) and PASSES on the correct full-window layout, independent of the CI raster
-    /// letterbox. The pixel content-fill fractions are recorded as diagnostics.
+    /// IMPORTANT — the pixel content-fill is NO LONGER a pure artifact on iPad. Two effects
+    /// now overlap in the raster:
+    ///  1. The CI-SIMULATOR SCREENSHOT RASTER-LETTERBOX (documented across SEVEN prior builds:
+    ///     the pixel content-fill was byte-identical at 0.5622 = 750/1334 on iPhone SE
+    ///     regardless of app architecture — the simulator's screenshot compositor boxes the
+    ///     raster while every LOGICAL frame reports full landscape). Harness artifact only.
+    ///  2. The INTENTIONAL app-level iPad letterbox (`.aspectFit`): the live app now renders
+    ///     the 2:1 plate fitted with dark bars top+bottom on iPad's 4:3 window — by design, so
+    ///     no puzzle-critical edge element is cropped (the build-3 crop regression that made
+    ///     the level uncompletable on iPad). This is a REAL, intended in-app letterbox, not an
+    ///     artifact — build 10's plate re-frame removes it.
+    /// Because both are now present, the pixel content-fill fractions are recorded ONLY as
+    /// diagnostics (never asserted); the assertion is purely the harness-immune container
+    /// frame. Real devices fill the window minus the intended iPad top/bottom bars — the
+    /// user's TestFlight spot-check is the final confirmation.
     func testSceneContentFillsScreen_QA_B3_001() {
         let app = launchFreshApp()
         enterLevelOne(app)
@@ -391,19 +412,21 @@ final class EscapeRoomUITests: XCTestCase {
         // QA recalibration method (static, then empirical): every scene tap below was
         // cross-checked against the AUTHORITATIVE hotspot rects in
         // RoomSceneCoordinator.configure*() (the same rects the scene hit-tests). The
-        // scene is 2732x1366 .aspectFill and the base plate fills it exactly
-        // (RoomScene.setBaseTexture), so a plate-normalized hotspot center maps 1:1 onto
-        // the .aspectFill window coordinate `sceneCoordinate(_:_:_:)` produces — i.e. the
+        // scene is 2732x1366 `.aspectFit` (build 9 letterbox) and the base plate fills it
+        // exactly (RoomScene.setBaseTexture), so a plate-normalized hotspot center maps 1:1
+        // onto the fit-scaled window coordinate `sceneCoordinate(_:_:_:)` produces — i.e. the
         // correct tap for a hotspot rect (x,y,w,h) is (x + w/2, y + h/2). Each tap was
         // verified to (a) fall inside its intended hotspot rect, (b) win the smallest-
         // area-wins overlap resolution (RoomScene.hotspotID(at:)) against any nesting
         // hotspot (star-keyhole/feed-cup inside cage; trapdoor inside rug; ladle inside
-        // cauldron; alcove-passage inside cellar), (c) sit inside the iPad-safe band
-        // x in [0.1665, 0.8335], and (d) clear the §7-R1 inventory pill (bottom band,
-        // screen-y >= 0.835 on iPhone SE) — no scene tap here exceeds scene-y 0.78. The
-        // two prior real failure modes this test surfaced (rune-tile modifier order;
-        // rug/trapdoor taps under the bar) are both fixed in build-2 source. CI now
-        // empirically confirms the full end-to-end solve on both device classes.
+        // cauldron; alcove-passage inside cellar), and (c) clear the §7-R1 inventory pill.
+        // BUILD 9 LETTERBOX: under `.aspectFit` the WHOLE plate is visible on iPad, so taps no
+        // longer need to sit inside the old `.aspectFill` iPad-safe band [0.1665, 0.8335] —
+        // the edge elements (flowerpot/potion-shelf/windowsill/mirror/winch/mortar/astrolabe/
+        // cage/feed-cup/ladder) are now on-screen and these same centers reach them on iPad.
+        // The two prior real failure modes this test surfaced (rune-tile modifier order;
+        // rug/trapdoor taps under the bar) remain fixed. CI confirms the full end-to-end
+        // solve on iPhone SE AND iPad.
         let playthroughEnabled = true
         try XCTSkipUnless(playthroughEnabled, "playthrough disabled")
 
@@ -426,15 +449,13 @@ final class EscapeRoomUITests: XCTestCase {
     /// the completion card presented (`complete-main-menu` existing) — it does NOT tap the
     /// card, so callers can assert on the card or continue to Level Select.
     ///
-    /// QA-B3-001 re-verification (2026-07-09): every scene tap below is a plate-normalized
-    /// coordinate fed through `sceneCoordinate(_:_:_:)`, whose full-frame .aspectFill
-    /// (2732x1366) math is now the SAME composition the app actually renders (the SKView
-    /// fills the full landscape window). Before the fix the app rendered into a left-
-    /// anchored square while the test used full-frame math; taps "passed" only because BOTH
-    /// used consistent-but-wrong square geometry (the taps and the hit-tests shared it).
-    /// After the fix, the app composition and this math agree on the TRUE full-window
-    /// .aspectFill, so these same plate-normalized centers remain correct — re-verified
-    /// against the RoomSceneCoordinator hotspot rects (unchanged).
+    /// BUILD 9 LETTERBOX re-verification: every scene tap below is a plate-normalized
+    /// coordinate fed through `sceneCoordinate(_:_:_:)`, whose `.aspectFit` (2732x1366) math
+    /// is the SAME composition the app now renders (RoomScene `.aspectFit`, the SKView filling
+    /// the full landscape window with the fitted plate letterboxed on iPad). The centering
+    /// formula is shared between fit and fill — only the scale flips max→min — so these same
+    /// plate-normalized centers stay correct on BOTH iPhone (near-full-fill) and iPad
+    /// (letterboxed), re-verified against the RoomSceneCoordinator hotspot rects (unchanged).
     private func solveLevelOne(_ app: XCUIApplication) {
         shoot(app, "play-01-hearth")
 

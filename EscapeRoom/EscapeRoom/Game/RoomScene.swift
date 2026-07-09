@@ -30,9 +30,18 @@ enum ViewID: String, CaseIterable {
 /// Geometry note (QA fix pass): the 2:1 master plates (2560x1280) and the scene
 /// (2732x1366) share the same aspect ratio by construction (style guide Section 8), so
 /// the base plate is always rendered at exactly the scene's size. Normalized plate
-/// coordinates therefore map 1:1 onto normalized scene coordinates — no letterboxing,
-/// and hotspot layout never depends on whether a texture actually loaded (QA-BUG-022
-/// follow-up hardening: a missing texture must never kill input).
+/// coordinates therefore map 1:1 onto normalized SCENE coordinates — always, regardless
+/// of how the scene is fitted into the SKView. hotspot layout never depends on whether a
+/// texture actually loaded (QA-BUG-022 follow-up hardening: a missing texture must never
+/// kill input).
+///
+/// Presentation (build 9 follow-up): the scene is `.aspectFit` in the SKView, so on iPad
+/// the full 2:1 plate is LETTERBOXED (dark bars top+bottom) rather than cropped. SpriteKit
+/// owns the scene→view transform (scale + centering + letterbox offset), so scene-space
+/// coordinates — hotspots, overlays, and `touch.location(in: self)` — are unaffected by the
+/// letterbox: a touch is converted view→scene by UIKit/SpriteKit before hit-testing. The
+/// letterbox math only matters OUTSIDE the app (the UI-test `sceneCoordinate` that syntheses
+/// a view-space tap from a plate-normalized point must use the same min-scale fit).
 final class RoomScene: SKScene {
     let viewID: ViewID
     private(set) var hotspots: [Hotspot] = []
@@ -48,13 +57,30 @@ final class RoomScene: SKScene {
     init(viewID: ViewID, size: CGSize) {
         self.viewID = viewID
         super.init(size: size)
-        // `.aspectFill` on the fixed 2732×1366 authoring scene: SpriteKit scales + centers
-        // the scene to FILL the SKView bounds. Once the host SKView is the full landscape
-        // window (QA-B3-001 container fix), the 2:1 plate covers the whole window edge-to-
-        // edge (cropping top/bottom on wider-than-2:1 aspects), NOT a left-pinned square.
-        // The scene size stays 2732×1366 so plate-normalized hotspots and the UI-test
-        // .aspectFill(2732×1366) coordinate math map 1:1 onto the window — unchanged.
-        scaleMode = .aspectFill
+        // INTERIM iPad LETTERBOX (build 9 follow-up): the fixed 2732×1366 authoring scene
+        // is presented `.aspectFit`, so SpriteKit scales + centers the scene to FIT inside
+        // the SKView bounds — the WHOLE 2:1 plate is always visible on every device, never
+        // cropped. On iPad (viewport ~4:3, narrower than 2:1) that means fit-to-width with
+        // dark bars top+bottom (the intentional letterbox). On iPhone (19.5:9, wider than
+        // 2:1) it means the full plate with thin pillarbox at the sides; either way NOTHING
+        // puzzle-critical is ever off-screen.
+        //
+        // Why the switch from `.aspectFill`: the build-3 art rebuild dropped the iPad dual-
+        // safe-zone framing, so `.aspectFill` (cover) cropped puzzle-critical EDGE elements
+        // (flowerpot, potion shelf, windowsill, mirror, winch, mortar, astrolabe, cage, feed
+        // cup, ladder) off-screen on iPad — the primary device — making the level
+        // uncompletable there. `.aspectFit` shows the full plate so every element is
+        // reachable. This is the INTERIM fix; build 10 should re-frame the plates into a 4:3
+        // iPad safe zone so `.aspectFill` can return without a letterbox.
+        //
+        // The scene size stays 2732×1366, so plate-normalized hotspots map 1:1 onto the
+        // scene; the letterbox offset + scale is applied uniformly by SpriteKit (and mirrored
+        // by the UI-test `sceneCoordinate` math, which now uses the SAME min-scale fit).
+        //
+        // The letterbox bars are filled with the chrome dark-neutral backdrop (#101010, the
+        // app background) rather than stark black, so they read as intentional framing.
+        scaleMode = .aspectFit
+        backgroundColor = SKColor(red: 0x10/255.0, green: 0x10/255.0, blue: 0x10/255.0, alpha: 1)
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
         baseNode.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         baseNode.zPosition = 0
@@ -67,8 +93,9 @@ final class RoomScene: SKScene {
         baseNode.texture = Self.texture(named: named)
         // Plates are authored 2:1 to match the 2:1 scene exactly (Section 8); always
         // fill the scene so plate-normalized coordinates == scene-normalized coordinates.
-        // The scene keeps this fixed 2732×1366 size and `.aspectFill` covers the full-
-        // window SKView (QA-B3-001 container fix); nothing here needs a runtime resize.
+        // The scene keeps this fixed 2732×1366 size; `.aspectFit` (build 9 follow-up)
+        // fits the whole scene into the SKView (letterboxed on iPad). Nothing here needs a
+        // runtime resize — the plate always fills the SCENE; the SKView fit is separate.
         baseNode.size = size
     }
 
@@ -181,9 +208,11 @@ final class RoomScene: SKScene {
                             height: rectNormalized.height * baseSize.height)
     }
 
-    /// Hotspots are plate-normalized against the fixed 2732×1366 scene. Under `.aspectFill`
-    /// on the full-window SKView (QA-B3-001), SpriteKit maps scene coordinates onto the
-    /// window uniformly, so these centers stay pixel-accurate to the art on every device.
+    /// Hotspots are plate-normalized against the fixed 2732×1366 scene. Under `.aspectFit`
+    /// (build 9 follow-up letterbox), SpriteKit maps scene coordinates onto the SKView
+    /// uniformly (scale + letterbox offset), and a real touch is converted view→scene before
+    /// hit-testing, so these centers stay pixel-accurate to the art on every device — the
+    /// letterbox does not shift where a hotspot sits ON the plate.
     func configureHotspots(_ hotspots: [Hotspot]) {
         for node in hotspotNodes.values { node.removeFromParent() }
         hotspotNodes.removeAll()

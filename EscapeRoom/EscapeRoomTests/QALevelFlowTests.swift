@@ -570,15 +570,21 @@ final class QALevelFlowTests: XCTestCase {
     }
 
     /// QA-BUG-009 (major): Hotspot.minHitSize (44) is applied in SCENE PIXELS, not
-    /// screen points. Under .aspectFill on the smallest supported iPhone the effective
-    /// on-screen hit target of several puzzle-critical hotspots falls well below the
-    /// style guide Section 8 floor of >= 44 pt (e.g. star-keyhole ~21 pt tall).
+    /// screen points. On the smallest supported iPhone the effective on-screen hit target of
+    /// several puzzle-critical hotspots must still clear the style guide Section 8 floor of
+    /// >= 44 pt (e.g. star-keyhole ~21 pt tall pre-fix).
+    ///
+    /// BUILD 9 LETTERBOX FOLLOW-UP: the scene is now `.aspectFit`, so the iPhone SE scale is
+    /// the MIN ratio (0.24414, width-bound), SMALLER than the old `.aspectFill` MAX (0.27452).
+    /// The floor was re-derived at this smaller scale (Hotspot.minHitSceneSize raised
+    /// 168 -> 182 = 44/0.24414 rounded up), so this asserts every hotspot still clears 44 pt
+    /// under the letterboxed presentation on the tightest device.
     func testQA_BUG_009_hotspotEffectiveHitTargetsMeet44ptOniPhoneSE() {
-        // iPhone SE (3rd gen) landscape: 667 x 375 pt; scene 2732 x 1366, .aspectFill.
+        // iPhone SE (3rd gen) landscape: 667 x 375 pt; scene 2732 x 1366, `.aspectFit` (min).
         // Plate pixel size is a repo-verified constant (all seven base plates are
         // 2560 x 1280) rather than a bundle load, because QA-BUG-022 makes the plates
         // unreachable through GameAssetLoader in the built bundle.
-        let scale = max(667.0 / sceneSize.width, 375.0 / sceneSize.height)
+        let scale = min(667.0 / sceneSize.width, 375.0 / sceneSize.height)
         let plateSize = CGSize(width: 2560, height: 1280)
         var offenders: [String] = []
         for viewID in ViewID.allCases {
@@ -627,32 +633,49 @@ final class QALevelFlowTests: XCTestCase {
                      "the retired generic interaction click must not ship (F-005)")
     }
 
-    /// QA-BUG-004 (critical, iPad): several puzzle-critical hotspots sit outside the
-    /// dual-safe zone (style guide Section 8). Under .aspectFill the iPad 4:3 frame
-    /// crops the 2:1 plate to roughly the central 2/3; hotspots (and the art they
-    /// cover: cage star-keyhole, feed cup, barrel, astrolabe) are partly or wholly
-    /// OFF-SCREEN on the primary device.
+    /// QA-BUG-004 (critical, iPad) — RECONCILED for the INTERIM iPad LETTERBOX (build 9
+    /// follow-up).
+    ///
+    /// ORIGINAL failure: under `.aspectFill` the iPad 4:3 frame cropped the 2:1 plate to
+    /// roughly its central 2/3, pushing edge hotspots (flowerpot, potion shelf, windowsill,
+    /// mirror, winch, mortar, astrolabe, cage, feed cup, ladder, barrel …) OFF-SCREEN on the
+    /// PRIMARY device — the level was uncompletable on iPad. The build-3 art regeneration had
+    /// dropped BUG-004's dual-safe-zone re-framing, so a strict `XCTExpectFailure` tracked
+    /// the owed Asset-Gen re-frame.
+    ///
+    /// NEW invariant (letterbox): the room scene is now presented `.aspectFit` (RoomScene),
+    /// so the WHOLE 2:1 plate is visible on every device — on iPad, letterboxed with dark
+    /// bars top+bottom instead of cropped left/right. There is therefore NO horizontal crop:
+    /// the visible band under `.aspectFit` is the entire plate, x∈[0,1] AND y∈[0,1]. The real
+    /// requirement QA-BUG-004 was always about — "no puzzle-critical element is cropped
+    /// off-screen on iPad" — is now SATISFIED by construction, so this is a PERMANENT passing
+    /// assertion again (no `XCTExpectFailure`).
+    ///
+    /// This asserts every critical hotspot lies fully within the letterboxed-visible plate
+    /// bounds (a tiny epsilon guards against sub-pixel rect maxima at exactly 1.0). NOTE: the
+    /// build-10 permanent fix re-frames the plates into the §8 iPad 4:3 dual-safe band so
+    /// `.aspectFill` can return WITHOUT the letterbox; if/when that lands, this test tightens
+    /// back to the dual-safe band and the presentation flips to `.aspectFill`.
     func testQA_BUG_004_criticalHotspotsInsideDualSafeZone() {
-        // iPad Pro 13" landscape: 1376 x 1032 pt. .aspectFill scale is height-bound
-        // (1032/1366); visible scene width = 1376 / scale ~= 1821 of 2732. Since the
-        // fix pass, the 2:1 base plate fills the scene exactly, so plate-normalized ==
-        // scene-normalized and the visible band is computed over the scene width
-        // (this matches the asset manifest's bug004_reframe safe zone of
-        // x in [427, 2133] on the 2560-wide @3x plates, i.e. [0.1668, 0.8332]).
-        let iPadScale = max(1376.0 / sceneSize.width, 1032.0 / sceneSize.height)
-        let halfVisibleScene = (1376.0 / iPadScale) / 2.0
-        let minVisibleX = (sceneSize.width / 2 - halfVisibleScene) / sceneSize.width // ~0.1666
-        let maxVisibleX = 1 - minVisibleX                                            // ~0.8334
+        // Under `.aspectFit` the full 2:1 plate fits inside the iPad viewport (letterboxed
+        // top+bottom), so the on-screen band is the WHOLE plate in x AND y. A critical
+        // element is "off-screen" only if its rect leaves [0,1] on some axis — which, for a
+        // plate-authored hotspot, it cannot. eps absorbs a rect that reaches exactly the edge.
+        let eps: CGFloat = 0.001
+        let minVisibleX: CGFloat = 0 - eps
+        let maxVisibleX: CGFloat = 1 + eps
+        let minVisibleY: CGFloat = 0 - eps
+        let maxVisibleY: CGFloat = 1 + eps
 
         // (Hotspot inventory updated in the fix pass: per-tile rune hotspots became the
         // single "rune-door" close-up trigger; the bench gained "workbench" for p12.)
         let critical: [ViewID: [String]] = [
             .hearth: ["poker", "ash", "clock", "bellows", "lintel", "trapdoor-dial"],
-            .study: ["grimoire", "triptych", "flowerpot", "rune-door"],
+            .study: ["grimoire", "triptych-1", "triptych-2", "triptych-3", "flowerpot", "rune-door"],
             .entry: ["door-lock", "rusted-key", "windowsill", "cage", "feed-cup", "star-keyhole"],
             .bench: ["cauldron", "floor-bellows", "ladle", "mortar", "workbench"],
             .cabinet: ["sun-slot", "moon-slot", "astrolabe", "window", "potion-shelf"],
-            .cellar: ["barrel", "drawer", "hook", "winch", "mirror"],
+            .cellar: ["barrel", "drawer", "hook", "winch", "mirror", "ladder"],
             .alcove: ["planter", "statue-key"],
         ]
         var offenders: [String] = []
@@ -660,29 +683,17 @@ final class QALevelFlowTests: XCTestCase {
             let coordinator = RoomSceneCoordinator(viewID: viewID, state: makeState(tempDir()), size: sceneSize)
             for hotspot in coordinator.scene.hotspots where ids.contains(hotspot.id) {
                 let r = hotspot.normalizedRect
-                if r.minX < minVisibleX || r.maxX > maxVisibleX {
-                    offenders.append("\(viewID.rawValue)/\(hotspot.id) x:[\(String(format: "%.2f", r.minX)),\(String(format: "%.2f", r.maxX))]")
+                if r.minX < minVisibleX || r.maxX > maxVisibleX
+                    || r.minY < minVisibleY || r.maxY > maxVisibleY {
+                    offenders.append("\(viewID.rawValue)/\(hotspot.id) x:[\(String(format: "%.2f", r.minX)),\(String(format: "%.2f", r.maxX))] y:[\(String(format: "%.2f", r.minY)),\(String(format: "%.2f", r.maxY))]")
                 }
             }
         }
-        // R3-005 REGRESSION (build 9), flagged to the Producer — NOT fixable in Developer
-        // code: the build-3 art REGENERATION did NOT preserve BUG-004's re-framing. On the
-        // new plates the puzzle-critical elements sit where the ART puts them, which for
-        // many is OUTSIDE the iPad dual-safe band [0.1666, 0.8334] (flowerpot/potion-shelf/
-        // windowsill/mirror/winch at the left edge; mortar/workbench/window/astrolabe/cage/
-        // feed-cup/ladder at the right edge). The R3-005 directive is explicit: hotspots
-        // must match where the element VISUALLY sits, so we CANNOT clamp them back inside
-        // the band without reintroducing the "tap misses the visible element" bug. On the
-        // iPhone-SE full playthrough all elements are visible (aspectFill band ~[0.055,
-        // 0.945]) and reachable, so the level is completable there; the residual risk is
-        // the iPad .aspectFill LEFT/RIGHT crop hiding edge elements. FIX BELONGS TO ASSET
-        // GEN: re-frame the build-3 plates to bring puzzle-critical elements back inside the
-        // dual-safe band (as BUG-004 originally did), then this expectation is removed.
-        // Kept as a strict expected-failure so CI stays green while the regression is
-        // tracked (same pattern as the other QA-BUG records here).
-        XCTExpectFailure("R3-005/BUG-004: build-3 art places puzzle-critical elements outside the iPad dual-safe band; Asset-Gen re-frame owed. Hotspots correctly match the visible art (do not clamp).") {
-            XCTAssertTrue(offenders.isEmpty, "outside dual-safe zone: \(offenders.joined(separator: "; "))")
-        }
+        // INTERIM LETTERBOX: with `.aspectFit` the full plate is visible, so NO critical
+        // element is cropped off-screen on iPad — a permanent passing assertion (the earlier
+        // XCTExpectFailure for the build-3 crop regression is removed; letterbox resolves it).
+        XCTAssertTrue(offenders.isEmpty,
+                      "puzzle-critical element cropped off the letterboxed plate on iPad: \(offenders.joined(separator: "; "))")
     }
 
     // MARK: - R3-005 player-style hotspot verification (build 9)

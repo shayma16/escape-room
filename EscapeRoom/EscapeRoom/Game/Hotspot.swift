@@ -11,17 +11,23 @@ struct Hotspot: Identifiable {
     /// plates exactly).
     ///
     /// QA-BUG-009 fix: the style guide's floor is >= 44 SCREEN POINTS on both devices.
-    /// The smallest supported device is the iPhone SE (3rd gen), whose landscape
-    /// .aspectFill scale for this scene is max(667/2732, 375/1366) = 0.2745 pt per
-    /// scene px. 44 pt / 0.2745 = 160.3 scene px, rounded up to 168 for margin. Because
-    /// the scale is strictly LARGER on every other supported device (iPad 13" = 0.7554),
-    /// enforcing the floor at the smallest device's conversion guarantees >= 44 pt
-    /// everywhere, in points, without needing a live view to measure ("small physical
+    /// The smallest supported device is the iPhone SE (3rd gen). The floor is converted at
+    /// the smallest per-scene-pixel scale ANY supported device produces, so a hotspot that
+    /// clears it there clears >= 44 pt everywhere.
+    ///
+    /// BUILD 9 LETTERBOX FOLLOW-UP: the scene is now presented `.aspectFit`, whose scale is
+    /// the MIN ratio, not the `.aspectFill` MAX. On iPhone SE landscape that is
+    /// min(667/2732, 375/1366) = 0.24414 pt per scene px (width-bound), SMALLER than the old
+    /// `.aspectFill` 0.27452 (height-bound). 44 pt / 0.24414 = 180.2 scene px, rounded up to
+    /// 182 for margin. Every other supported device fits at a LARGER scale (iPad 13":
+    /// min(1376/2732, 1032/1366) = 0.50366), so enforcing the floor at iPhone SE's `.aspectFit`
+    /// scale still guarantees >= 44 pt everywhere, without a live view ("small physical
     /// objects get invisible hit-area padding rather than upscaled art").
     let minHitSize: CGFloat
 
-    /// 44 pt at the smallest supported iPhone's .aspectFill scale, in scene pixels.
-    static let minHitSceneSize: CGFloat = 168
+    /// 44 pt at the smallest supported iPhone's `.aspectFit` scale (build 9 letterbox),
+    /// in scene pixels: 44 / 0.24414 = 180.2, rounded up to 182.
+    static let minHitSceneSize: CGFloat = 182
 
     init(id: String, _ x: CGFloat, _ y: CGFloat, _ w: CGFloat, _ h: CGFloat,
          minHitSize: CGFloat = Hotspot.minHitSceneSize) {

@@ -47,7 +47,11 @@ struct GameRoomView: View {
 
     var body: some View {
         ZStack {
-            Color.black.ignoresSafeArea()
+            // INTERIM iPad LETTERBOX (build 9 follow-up): the room scene is now `.aspectFit`
+            // (full 2:1 plate visible, no cropping), so on iPad it does not fill the 4:3
+            // window — bars appear top+bottom. Back the whole screen with the chrome dark-
+            // neutral backdrop (#101010) so those letterbox bars read as intentional framing.
+            Chrome.backdrop.ignoresSafeArea()
 
             SpriteKitContainerView(coordinator: coordinatorBox.coordinator)
                 .ignoresSafeArea()
