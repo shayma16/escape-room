@@ -848,3 +848,22 @@ build 9 where possible.
 > a soft confirm tone for Play/level-enter — NEVER the psh, never the level music in menus.
 > → Developer. Fold into build 9. Note for future levels: each level's music is level-scoped;
 > the global chrome/menu layer has its own small quiet SFX set, no level music.)
+
+### R3-002 — status: logged (fold into build 9)
+> the Level-Select thumbnail is an OLD image — hopefully the stale-assets fix caught it
+> (context: `EscapeRoom/Resources/GameAssets/chrome/level1-thumb.jpg` is a CHROME asset, a
+> DIFFERENT name/path from the level-1 close-ups the shadow fix promoted — so it was likely
+> NOT caught (verify). Fix: regenerate the Level-1 select-card thumbnail from a representative
+> BUILD-3 scene (crop/downscale a new base plate — e.g. z1-hearth-base or z1-entry-base, an
+> atmospheric read), replacing the stale build-2 painterly thumbnail. → Developer (crop from a
+> build-3 base) or Asset if a fresh render is wanted; fold into build 9. Add the chrome
+> thumbnail to whatever the shadow guard covers so chrome art can't go stale silently either.)
+
+### R3-003 — status: logged (fold into build 9)
+> i don't like the Roman "I" indicating the level number — use the normal "Level 1" serif
+> (context: the Level-Select card renders the level number as a Roman numeral "I". This
+> actually VIOLATES the approved `specs/global-ui-style.md` §3, which already says: "plain
+> Arabic numerals in the chrome ('Level 3'). Roman numerals are an in-world glyph language
+> (clock/runes); do not leak them into menus." So the implementation deviated from spec. Fix:
+> render the level number as ARABIC "1" / "Level 1" in the serif accent (New York, per §3),
+> not Roman. → Developer chrome fix, fold into build 9. Confirms the spec; no spec change.)
