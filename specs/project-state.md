@@ -13,8 +13,9 @@ caged crow, potions/potion-making (user-specified elements).
 
 ## ⭐ CURRENT RESUME NOTE (2026-07-09e) — READ THIS FIRST
 
-**BUILD-9 DEVELOPER PHASE DONE (branch `level1-rebuild-build3`, commit `2bb64d4`; CI run
-29043388896 pending green).** Implemented the ROUND-3 changelist:
+**BUILD-9 DEVELOPER PHASE DONE + CI GREEN (branch `level1-rebuild-build3`; green on
+build-and-test.yml run 29049860373 — build + unit×3 + UI×3 incl. the iPhone-SE FULL
+end-to-end playthrough).** Implemented the ROUND-3 changelist:
 - **R3-005 hotspot re-calibration (the playability fix):** re-derived EVERY interactive
   hotspot + close-up trigger across all 7 views to match element positions in the NEW
   build-3 plates (visually measured on the @2x sources). Fixes R3-004 (rune marks now

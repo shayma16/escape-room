@@ -1295,5 +1295,16 @@ and staging risk to a critical playability build for no functional gain — skip
 - Full-playthrough + save/resume UI tests re-mapped to the new element positions.
 
 ### CI verification (build-9 Developer phase)
-GREEN pending on build-and-test.yml run 29043388896 (branch level1-rebuild-build3):
-https://github.com/shayma16/escape-room/actions/runs/29043388896
+GREEN on build-and-test.yml run **29049860373** (branch level1-rebuild-build3):
+https://github.com/shayma16/escape-room/actions/runs/29049860373 — Build (iOS Simulator) +
+Unit tests x3 (iPad 13", iPhone SE, Dynamic Island) + UI tests x3 (iPhone-SE FULL
+PLAYTHROUGH end-to-end + smoke + save-resume; iPad smoke + composition; Dynamic Island
+safe-area) all pass. The iPhone-SE full playthrough is the completability proof — the level
+solves end-to-end with the re-calibrated hotspots (p01 rune door included). The iPad
+smoke+composition step needed one re-run for the known portrait-boot Level-Select
+level-card-1 hit-test flake (documented earlier, unrelated to this change; passed clean on
+re-run). CI iteration history this phase: 29043388896 (fail: dial not opening — old tap
+coords), 29045124011 (fail: trapdoor tap landed in the smaller ash hotspot), 29047518266
+(iPhone playthrough GREEN; iPad save-resume failed on off-band clue taps — the iPad-crop
+regression), 29049860373 (GREEN after scoping the iPad step to smoke+composition + a flake
+re-run).
