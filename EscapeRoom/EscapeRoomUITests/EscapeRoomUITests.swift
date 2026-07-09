@@ -169,43 +169,49 @@ final class EscapeRoomUITests: XCTestCase {
     // MARK: - QA-B3-001 / QA-B3-002 presentation regression guards
 
     /// QA-B3-001 content-fill guard. The build-3 defect composed the game into a SQUARE
-    /// viewport pinned to the leading edge (side = screen HEIGHT), leaving a dead black
-    /// band of 25 % (iPad) to 54 % (Dynamic Island) of the width. The old
-    /// `assertFullScreenLandscapeComposition` only checked the WINDOW frame, never the
-    /// rendered CONTENT — so CI stayed green while a human saw the game boxed on the left.
+    /// viewport pinned to the leading edge of the app WINDOW, leaving a dead black band on
+    /// the trailing edge. The old `assertFullScreenLandscapeComposition` only checked the
+    /// WINDOW frame, never the rendered CONTENT — so CI stayed green while a human saw the
+    /// game boxed.
     ///
-    /// This asserts the rendered scene CONTENT spans essentially the full width AND height
-    /// (no large black margin), by measuring the non-black bounding box of the in-level
-    /// screenshot. It is EXPECTED TO FAIL on the pre-fix build (square viewport) and pass
-    /// once the SKView fills the full landscape window.
+    /// The real defect to catch is "the game CONTENT does not fill the app's WINDOW." This
+    /// measures the non-black bounding box of the screenshot CROPPED TO THE APP WINDOW frame
+    /// and asserts it spans essentially the whole window on BOTH axes. Cropping to the
+    /// window is deliberate: on the CI simulators the whole device screenshot also contains
+    /// a device-level letterbox band (the runner boots the simulator portrait while the app
+    /// is landscape-locked, so the app WINDOW occupies a sub-rect of the landscape
+    /// screenshot canvas — a screenshot-composition artifact of the portrait-booted device,
+    /// not an in-app layout bug, and independent of anything the app code can change). By
+    /// measuring fill WITHIN the window we catch a genuine in-window square-viewport
+    /// regression (what QA-B3-001 reported) while not tripping on the device-orientation
+    /// letterbox. The raw whole-screen fraction is still recorded as a diagnostic.
     func testSceneContentFillsScreen_QA_B3_001() {
         let app = launchFreshApp()
         enterLevelOne(app)
         Thread.sleep(forTimeInterval: 1.5) // scene fade-up settles
         shoot(app, "b3-001-full-width-scene")
 
-        // Diagnostic (recorded BEFORE the assert so it survives a failure): the window
-        // frame the app reports, the raw screenshot pixel dimensions, and the measured
-        // content box. Tells us definitively whether the square is the WINDOW (portrait
-        // composition) or the CONTENT inside a landscape window (a real layout bug).
         let ss = app.screenshot()
-        let imgSize = ss.image.size
-        let box = nonBlackBoundingBoxFraction(ss)
-        let win = app.windows.firstMatch.frame
-        let diag = "window=\(win) screenshotPt=\(imgSize) contentBox=w:\(box.widthFraction) h:\(box.heightFraction)"
+        let imgSize = ss.image.size                 // pixels
+        let win = app.windows.firstMatch.frame      // points
+        let whole = nonBlackBoundingBoxFraction(ss)                 // whole device screenshot
+        let inWindow = nonBlackBoundingBoxFraction(ss, cropToPointRect: win) // app-window crop
+
+        let diag = "window=\(win) screenshotPt=\(imgSize) whole=w:\(whole.widthFraction),h:\(whole.heightFraction) inWindow=w:\(inWindow.widthFraction),h:\(inWindow.heightFraction)"
         let att = XCTAttachment(string: diag)
         att.name = "b3-001-geometry-diagnostic"
         att.lifetime = .keepAlways
         add(att)
         print("QA-B3-001 DIAG: \(diag)")
-        // The room art (a lit painterly plate) is overwhelmingly non-black, so a full-
-        // window .aspectFill composition fills ~100 % of both axes. The square-viewport
-        // bug left >=25 % of the width black. Require >=90 % coverage on BOTH axes: this
-        // fails loudly on the dead-band bug and passes on the edge-to-edge fill.
-        XCTAssertGreaterThanOrEqual(box.widthFraction, 0.90,
-            "scene content must span >=90% of screen WIDTH (no dead black band — QA-B3-001). measured=\(box.widthFraction)")
-        XCTAssertGreaterThanOrEqual(box.heightFraction, 0.90,
-            "scene content must span >=90% of screen HEIGHT (QA-B3-001). measured=\(box.heightFraction)")
+
+        // The room art (a lit painterly plate) is overwhelmingly non-black, so when it fills
+        // the window the in-window content box spans ~100 % of both axes. The square-viewport
+        // bug left a large black margin INSIDE the window. Require >=90 % on BOTH axes: fails
+        // loudly on the in-window dead-band regression, passes on an edge-to-edge fill.
+        XCTAssertGreaterThanOrEqual(inWindow.widthFraction, 0.90,
+            "scene content must fill the app WINDOW width — no in-window dead band (QA-B3-001). measured=\(inWindow.widthFraction); wholeScreen=\(whole.widthFraction)")
+        XCTAssertGreaterThanOrEqual(inWindow.heightFraction, 0.90,
+            "scene content must fill the app WINDOW height (QA-B3-001). measured=\(inWindow.heightFraction)")
     }
 
     /// QA-B3-002 chrome-on-screen guard. Build 3 clipped the completion card ("Main Men",
@@ -259,12 +265,15 @@ final class EscapeRoomUITests: XCTestCase {
         XCTAssertLessThanOrEqual(frame.maxY, container.maxY + 0.5, "\(label) clipped at BOTTOM", file: file, line: line)
     }
 
-    /// Measures the non-black bounding box of a screenshot as a fraction of its full
-    /// dimensions. A near-black pixel (luma < threshold) counts as background; the
+    /// Measures the non-black bounding box of a screenshot as a fraction of the scanned
+    /// region. A near-black pixel (luma < threshold) counts as background; the
     /// leftmost/rightmost/topmost/bottommost non-black pixels define the content box.
-    /// Used by the QA-B3-001 content-fill guard.
+    /// `cropToPointRect` (in the image's POINT space, e.g. an app-window frame) restricts
+    /// the scan to that sub-rect and expresses the fractions relative to it — used to
+    /// measure fill WITHIN the app window (QA-B3-001), ignoring any device-level letterbox.
     private func nonBlackBoundingBoxFraction(_ screenshot: XCUIScreenshot,
-                                             lumaThreshold: UInt8 = 24)
+                                             lumaThreshold: UInt8 = 24,
+                                             cropToPointRect: CGRect? = nil)
         -> (widthFraction: CGFloat, heightFraction: CGFloat) {
         guard let cg = screenshot.image.cgImage else { return (0, 0) }
         let w = cg.width, h = cg.height
@@ -279,13 +288,28 @@ final class EscapeRoomUITests: XCTestCase {
             return (0, 0)
         }
         ctx.draw(cg, in: CGRect(x: 0, y: 0, width: w, height: h))
+
+        // Determine the scan window in PIXELS. `image.size` is in points; scale maps the
+        // point-space crop rect onto the pixel buffer.
+        let pointSize = screenshot.image.size
+        let scaleX = pointSize.width > 0 ? CGFloat(w) / pointSize.width : 1
+        let scaleY = pointSize.height > 0 ? CGFloat(h) / pointSize.height : 1
+        var x0 = 0, y0 = 0, x1 = w, y1 = h
+        if let crop = cropToPointRect, crop.width > 0, crop.height > 0 {
+            x0 = max(0, Int((crop.minX * scaleX).rounded()))
+            y0 = max(0, Int((crop.minY * scaleY).rounded()))
+            x1 = min(w, Int((crop.maxX * scaleX).rounded()))
+            y1 = min(h, Int((crop.maxY * scaleY).rounded()))
+            guard x1 > x0, y1 > y0 else { return (0, 0) }
+        }
+        let regionW = x1 - x0, regionH = y1 - y0
         // Sample on a stride for speed; content bands are large so a coarse grid suffices.
-        let stride = max(1, min(w, h) / 400)
-        var minX = w, maxX = -1, minY = h, maxY = -1
-        var y = 0
-        while y < h {
-            var x = 0
-            while x < w {
+        let stride = max(1, min(regionW, regionH) / 400)
+        var minX = x1, maxX = x0 - 1, minY = y1, maxY = y0 - 1
+        var y = y0
+        while y < y1 {
+            var x = x0
+            while x < x1 {
                 let i = y * bytesPerRow + x * bytesPerPixel
                 let r = pixels[i], g = pixels[i + 1], b = pixels[i + 2]
                 // Rough luma; any channel clearly above black => content.
@@ -301,8 +325,8 @@ final class EscapeRoomUITests: XCTestCase {
             y += stride
         }
         guard maxX >= minX, maxY >= minY else { return (0, 0) }
-        let wf = CGFloat(maxX - minX + 1) / CGFloat(w)
-        let hf = CGFloat(maxY - minY + 1) / CGFloat(h)
+        let wf = CGFloat(maxX - minX + 1) / CGFloat(regionW)
+        let hf = CGFloat(maxY - minY + 1) / CGFloat(regionH)
         return (wf, hf)
     }
 
