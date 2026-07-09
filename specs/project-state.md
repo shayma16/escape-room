@@ -34,13 +34,19 @@ end-to-end playthrough).** Implemented the ROUND-3 changelist:
 - **R3-006:** icons verified build-3 canonical (no shadow); `-nb` normalization SKIPPED
   (unused non-shadows; not worth staging risk).
 
-⚠️ **FLAG TO PRODUCER — Asset-Gen owed (NOT Developer-fixable):** the build-3 art did NOT
-preserve BUG-004's iPad dual-safe-zone re-framing, so many puzzle-critical elements now sit
-OUTSIDE the iPad-visible band. Hotspots correctly match the visible art (must not clamp), so
-the level is completable on iPhone but iPad's .aspectFill crops edge elements off-screen on
-the PRIMARY device. BUG-004 test wrapped in XCTExpectFailure to track this. Fix = re-frame
-the build-3 plates (Asset Gen). **NEXT: CI green -> build-9 player-style QA -> Producer
-re-releases build 9 (do NOT open a PR / ship from here).**
+✅ **iPad crop RESOLVED (INTERIM) — letterbox fix (Developer, branch `level1-rebuild-build3`,
+2026-07-09).** The build-3 art dropped BUG-004's iPad dual-safe framing, so `.aspectFill` was
+cropping puzzle-critical edge elements off-screen on iPad (the PRIMARY device), making the
+level uncompletable there. User chose the INTERIM LETTERBOX fix: `RoomScene` is now
+`.aspectFit`, so the WHOLE 2:1 plate is visible on iPad (dark `#101010` bars top+bottom) — no
+cropping on any device. UI-test `sceneCoordinate` scale flipped max→min to match the fit +
+letterbox offset (taps land on the now-visible iPad edge elements); `Hotspot.minHitSceneSize`
+168→182 (44-pt floor at the smaller fit scale); BUG-004 test un-`XCTExpectFailure`d →
+permanent "no critical element off-screen" assertion; full iPad UI coverage (playthrough +
+save/resume) RESTORED (CI timeout 90→120). **PERMANENT fix still owed to Asset Gen (build 10):
+re-frame the build-3 plates into the §8 iPad 4:3 dual-safe band so `.aspectFill` returns and
+the letterbox is removed.** **NEXT: CI green -> build-9 player-style QA -> Producer re-releases
+build 9 (do NOT open a PR / ship from here).**
 
 ## ⭐ RESUME NOTE (2026-07-09d)
 
