@@ -1149,3 +1149,14 @@ against; the guard protects future dev re-stages.
 an art re-staging fix only. Source grep for dev secrets (`fal.ai`/api-key/secret/Bearer)
 across `EscapeRoom/` finds only a provenance COMMENT in `SoundManager.swift`; no secret
 material is bundled. Posture unchanged from prior handoff.
+
+**CI verification (build-3 stale close-up shadow fix):** GREEN on
+`build-and-test.yml` run **29034693675** (branch `level1-rebuild-build3`) —
+Build (iOS Simulator) + Unit tests ×3 (iPad 13", smallest iPhone, Dynamic Island) +
+UI tests ×3 (iPhone full playthrough + smoke + save-resume, iPad smoke + save-resume,
+Dynamic Island safe-area) all pass. https://github.com/shayma16/escape-room/actions/runs/29034693675
+Note: the FIRST attempt of this run failed only on the iPad `testMenuAndNavigationSmoke`
+("level-card-1 must exist") — a Level-Select hit-test flake on the portrait-booted iPad
+simulator (same QA-B3-001 raster-letterbox harness class; the iPhone full playthrough,
+which exercises the same navigation, passed). It is unrelated to this art re-stage (no
+menu/level-select asset changed) and passed clean on re-run.
