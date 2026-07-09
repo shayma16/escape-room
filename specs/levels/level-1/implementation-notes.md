@@ -1160,3 +1160,140 @@ Note: the FIRST attempt of this run failed only on the iPad `testMenuAndNavigati
 simulator (same QA-B3-001 raster-letterbox harness class; the iPhone full playthrough,
 which exercises the same navigation, passed). It is unrelated to this art re-stage (no
 menu/level-select asset changed) and passed clean on re-run.
+
+---
+
+## Build-9 Developer phase (2026-07-09)
+
+Round-3 changelist folded into build 9 (see feedback-backlog.md "ROUND 3 — PROCESSED").
+Sequencing: art phase finalized first (R3-007 glyph re-stamp + R3-002 thumbnail, committed
+11d9637); this Developer phase stages that art and implements the functional fixes.
+
+### R3-005 — hotspot re-calibration (STRUCTURAL, the playability fix)
+The interactive hotspot rects + close-up triggers were calibrated to the OLD build-2
+element positions. The build-3 plates place elements DIFFERENTLY, so taps landed wrong
+(rune marks not inspectable — R3-004; "left of the clock" hit stale territory). Re-derived
+EVERY interactive hotspot + close-up trigger across all 7 views by VISUALLY inspecting the
+current bundle plates (measured element bounding boxes on the @2x sources, converted to the
+plate-normalized 2732x1366 scene). Updated in RoomSceneCoordinator.configure*(), plus the
+cabinet seated-item overlay rects (refreshCabinet) to track the new sun/moon slot centers.
+Representative re-derived positions (normalized center): hearth clock (0.40,0.10), ash
+(0.44,0.68), poker (0.25,0.50), bellows/AIR (0.61,0.53), lintel/FIRE (0.59,0.28); study
+grimoire (0.46,0.66), triptych 1/2/3 (0.26/0.38/0.47, ~0.30), flowerpot/EARTH (0.10,0.78),
+rune-door (0.76,0.52); entry windowsill/WATER (0.11,0.62), door-lock (0.58,0.31), cage
+(0.88,0.32), feed-cup (0.90,0.48), star-keyhole (0.81,0.39); bench cauldron (0.32,0.54),
+mortar (0.84,0.55); cabinet sun/moon (0.47/0.58,0.48), astrolabe (0.79,0.52), window
+(0.93,0.31), potion-shelf (0.20,0.37); cellar barrel (0.74,0.66), drawer (0.56,0.40), hook
+(0.23,0.33), winch (0.20,0.10), mirror (0.13,0.62), ladder (0.91,0.46); alcove planter
+(0.57,0.76), statue-key (0.61,0.31). Known-broken user reports verified fixed by unit test:
+the four element-rune marks are now tappable to close-up; the rune-door tiles show the
+correct glyphs; tapping left of the clock does NOTHING (no stale cuckoo).
+
+Method: asset-manifest.json records geometry for a few elements; the rest were measured by
+Reading the @2x plates with an overlaid normalized grid and reading off each element's box.
+The full-playthrough + save/resume UI-test tap coordinates were re-mapped to the new element
+centers (they were hardcoded to the old positions and would otherwise miss/fail).
+
+Cuckoo removal confirmed (Q3): the code already had no cuckoo close-up/hotspot/state (only
+the clockCuckooSpent flag survives for save migration). The remaining gap was two STALE
+cuckoo close-up PLATES still staged in the bundle (cu-clock-pop.jpg, cu-clock-spent.jpg) —
+unreferenced by code but present. The build script no longer stages them (only
+cu-clock-unspent ships); both files are DELETED from the bundle. Test
+testTapLeftOfClockHitsNothing_R3_005_cuckooRemoved asserts no cuckoo asset loads and the
+"left of clock" tap is inert.
+
+REGRESSION flagged to the Producer (Asset-Gen owed; NOT Developer-fixable): the build-3 art
+regeneration did NOT preserve BUG-004's re-framing. On the new plates many puzzle-critical
+elements sit OUTSIDE the iPad dual-safe band [0.1666, 0.8334] (flowerpot, potion-shelf,
+windowsill, mirror, winch at the LEFT edge; mortar, workbench, window, astrolabe, cage,
+feed-cup, ladder at the RIGHT edge). The R3-005 directive requires hotspots to match where
+the element VISUALLY sits, so they CANNOT be clamped back inside the band without
+reintroducing the "tap misses the visible element" bug. On the iPhone-SE full playthrough
+every element is visible (aspectFill band ~[0.055,0.945]) and reachable, so the level is
+COMPLETABLE there; the residual risk is the iPad .aspectFill left/right crop hiding edge
+elements on the PRIMARY device. Fix belongs to Asset Gen (re-frame the build-3 plates to
+bring puzzle-critical elements inside the dual-safe band, as BUG-004 originally did). The
+testQA_BUG_004_criticalHotspotsInsideDualSafeZone assertion is wrapped in a strict
+XCTExpectFailure tracking this until the plates are re-framed (CI stays green; the moment
+Asset Gen fixes the frames the expected-failure fails loudly and we unwrap it).
+
+### R3-007 — canonical glyph consistency (staged + verified)
+Re-ran tools/build_game_assets.py to re-stage the art phase's canonical PIL-stamped rune
+glyphs. Spot-checked the staged close-ups: the rune-door tiles (cu-runedoor-tiles), grimoire
+page A (the HUB), and all four element marks (cu-bellows/AIR, cu-lintel/FIRE,
+cu-flowerpot/EARTH, cu-windowsill/WATER) carry IDENTICAL geometry — fire = upward triangle,
+water = downward triangle, air = upward triangle with bar, earth = downward triangle with
+bar. p01 is matchable end-to-end (grimoire to marks to door). New test
+testRuneDoorSolvableByPressingCorrectTiles_p01 proves the press-plate solves p01.
+
+### R3-002 — Level-Select thumbnail + chrome staleness guard
+The app loads level1-thumb via UIImage(named:) from the ASSET CATALOG
+(Assets.xcassets/level1-thumb.imageset), a separate path from the scene close-ups the
+build-3 shadow fix promoted — so it was NOT caught and shipped the stale build-2 image (with
+a baked-in Roman "I", the source of R3-003's complaint). Fix: gen_thumbnail() now stages the
+current build-3 source specs/assets/level-1/chrome/level1-thumb.jpg (an atmospheric hearth
+crop, no baked numeral) into the xcassets imageset (the real load path) AND the chrome
+folder. Added assert_chrome_current() — a build-failing guard that byte-matches every staged
+chrome asset against its manifest-current source (CHROME_STAGED map), so chrome art can never
+silently go stale again (the R3-002 follow-up: chrome now in the staleness guard's coverage).
+
+### R3-003 — level number Roman to Arabic
+The code already rendered Text("\(level.id)") = "1" (Arabic); the Roman "I" the user saw was
+baked into the STALE thumbnail, removed by R3-002's re-stage. Aligned Font.chromeLevelNumber()
+to .title3 serif per global-ui-style 5.2 and documented the Arabic-only rule (3). Chrome-only.
+
+### R3-001 — level-scoped music + menu SFX
+Music is now bound to the LEVEL SCENE lifecycle via an inLevel gate in SoundManager:
+enterLevel() (called when the level scene appears in LevelLoadingView) opens the scope and
+starts the loop; exitLevel() (pause to Main Menu, completion to Main Menu, and on
+level-COMPLETE) closes it and tears down music+ambience. startMusicIfNeeded() no-ops unless
+inLevel, so unmuting ambiance from Settings in the menus can't leak level music. Result: no
+music-level1 in menus/pre-level; music stops on exit-to-menu and on level-complete. Pattern
+for future levels: each level's music is level-scoped; the chrome layer has no level music.
+
+Menu SFX: added menuTap (soft muted wood/paper click) + menuConfirm (subtle rising two-note
+tone for major actions). Wired: Main Menu Play -> confirm, Settings -> tap; Level card ->
+confirm; Pause menu buttons -> tap. They respect the SFX mute toggle.
+
+- SFX source/license: sfx-menu-tap.wav and sfx-menu-confirm.wav are ORIGINAL works
+  synthesized deterministically by tools/build_game_assets.py (gen_sfx(), PCM math — a muted
+  sine pluck + gentle noise transient for the tap; a soft C5-to-G5 sine dyad with warm decay
+  for the confirm). No third-party audio, no license needed (same provenance as the rest of
+  the SFX set — user-preferred quiet/tasteful register, NEVER the removed "psh").
+
+### R3-006 — inventory icon verification + -nb normalization decision
+VERIFIED: the 15 inventory icons stage from clean canonical icon-*@3x.png sources with NO
+-nb sibling anywhere in the icon trees, so no stale shadow can hit them (the build-3 shadow
+fix promoted them; this is a no-op confirmation). -nb-name-normalization decision: SKIP. The
+~13 remaining -nb files (astrolabe-plate-1..6, cu-rim-rune, cu-coin-hallmark, cu-slots,
+z1-entry-basin-drained/filled, z3-cellar-nobeam) are deliberately UNUSED by the pipeline (PIL
+sprites / canonical siblings are authoritative) and are NOT shadows (no canonical of that stem
+is loaded), so they cause zero staleness. Renaming them + editing the manifest would add churn
+and staging risk to a critical playability build for no functional gain — skipped per the
+"skip if it risks staging" guidance. Reported, not done.
+
+### Menu-SFX licensing table addition
+| File | Use | Source / license |
+|---|---|---|
+| sfx-menu-tap.wav | Menu button click (chrome) | Synthesized (build script) — original work, no third-party license |
+| sfx-menu-confirm.wav | Major-action confirm (Play / enter level) | Synthesized (build script) — original work, no third-party license |
+
+### Security / entitlements (re-checked this handoff)
+- Secrets: grep of EscapeRoom/ for fal.ai / api-key / secret / Bearer / key= finds only the
+  provenance COMMENT in SoundManager.swift ("fal.ai-generated, user-owned"); no secret
+  material in code, project, or bundled resources. .env remains gitignored and is never copied
+  into any bundle/build phase. Shipped app contains zero dev-time secrets.
+- Entitlements/permissions: no Info.plist or entitlements changed. No camera/microphone/
+  location/contacts usage strings or capabilities — the app requests none. Posture unchanged.
+
+### Tests
+- testTapsAtVisibleElementPositionsHitTheirHotspots_R3_005 — 32 player-style taps at each
+  element's VISUAL position resolve to its hotspot (drives the real scene hit-test).
+- testTapLeftOfClockHitsNothing_R3_005_cuckooRemoved — left-of-clock inert; no cuckoo asset.
+- testRuneDoorSolvableByPressingCorrectTiles_p01 — p01 solvable via the press-plate.
+- testMusicIsScopedToLevelLifecycle_R3_001 / testMenuSfxShipAndAreDistinctCues_R3_001.
+- Full-playthrough + save/resume UI tests re-mapped to the new element positions.
+
+### CI verification (build-9 Developer phase)
+GREEN pending on build-and-test.yml run 29043388896 (branch level1-rebuild-build3):
+https://github.com/shayma16/escape-room/actions/runs/29043388896

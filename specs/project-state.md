@@ -11,7 +11,37 @@ Level 1 in design. Theme received from user on 2026-07-04.
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
 caged crow, potions/potion-making (user-specified elements).
 
-## ⭐ CURRENT RESUME NOTE (2026-07-09d) — READ THIS FIRST
+## ⭐ CURRENT RESUME NOTE (2026-07-09e) — READ THIS FIRST
+
+**BUILD-9 DEVELOPER PHASE DONE (branch `level1-rebuild-build3`, commit `2bb64d4`; CI run
+29043388896 pending green).** Implemented the ROUND-3 changelist:
+- **R3-005 hotspot re-calibration (the playability fix):** re-derived EVERY interactive
+  hotspot + close-up trigger across all 7 views to match element positions in the NEW
+  build-3 plates (visually measured on the @2x sources). Fixes R3-004 (rune marks now
+  tappable) and the "left of the clock" stale-tap. UI-test tap coords re-mapped to the new
+  centers. New player-style tests: taps at each element's VISUAL position hit its hotspot;
+  left-of-clock inert; p01 solvable via the press-plate.
+- **Cuckoo (Q3):** stopped staging cu-clock-pop/cu-clock-spent (DELETED from bundle); only
+  the inert numeral clock face ships. No cuckoo asset/hotspot/state remains.
+- **R3-007:** re-ran the staging script; verified staged rune-door tiles + grimoire page A
+  (hub) + all four element marks carry IDENTICAL canonical glyphs -> p01 matchable.
+- **R3-002:** staged the build-3 thumbnail into the xcassets imageset (the app's real load
+  path) + chrome; added assert_chrome_current() so chrome art can't ship stale.
+- **R3-003:** level number Arabic "1" serif (the Roman "I" was the stale thumbnail).
+- **R3-001:** music level-scoped (enterLevel/exitLevel gate — no level music in menus, stops
+  on exit + on level-complete); added quiet menu-tap/menu-confirm SFX (synthesized, original).
+- **R3-006:** icons verified build-3 canonical (no shadow); `-nb` normalization SKIPPED
+  (unused non-shadows; not worth staging risk).
+
+⚠️ **FLAG TO PRODUCER — Asset-Gen owed (NOT Developer-fixable):** the build-3 art did NOT
+preserve BUG-004's iPad dual-safe-zone re-framing, so many puzzle-critical elements now sit
+OUTSIDE the iPad-visible band. Hotspots correctly match the visible art (must not clamp), so
+the level is completable on iPhone but iPad's .aspectFill crops edge elements off-screen on
+the PRIMARY device. BUG-004 test wrapped in XCTExpectFailure to track this. Fix = re-frame
+the build-3 plates (Asset Gen). **NEXT: CI green -> build-9 player-style QA -> Producer
+re-releases build 9 (do NOT open a PR / ship from here).**
+
+## ⭐ RESUME NOTE (2026-07-09d)
 
 **BUILD-3 STALE CLOSE-UP SHADOW FIXED (Developer, branch `level1-rebuild-build3`).**
 Device check on build 3 (build 8) found in-scene close-ups ("inspect" images) were STALE
