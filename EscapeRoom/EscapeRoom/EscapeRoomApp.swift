@@ -1,65 +1,72 @@
 import SwiftUI
 import UIKit
 
+/// QA-B3-001 root cause + fix. On the CI simulators the app came up with a PORTRAIT
+/// interface even though the Info.plist declares landscape-only, so the game + chrome
+/// composed into a rotated, min-dimension square with a large dead black band in the
+/// screenshot. SwiftUI's `WindowGroup` + `@UIApplicationDelegateAdaptor` was not reliably
+/// forcing the interface orientation on the (portrait-booted) simulator.
+///
+/// Fix: drive the app from a UIKit `UIApplicationDelegate` + `UIWindowSceneDelegate` and
+/// host the SwiftUI root in a `LandscapeHostingController` whose
+/// `supportedInterfaceOrientations` is `.landscape` — the canonical, reliable way to lock a
+/// SwiftUI app to landscape. The delegate also reports `.landscape` app-wide and requests a
+/// landscape geometry update on connect, so the interface is landscape on every host. This
+/// makes the window landscape-sized and the game fills it edge-to-edge.
 @main
-struct EscapeRoomApp: App {
-    // QA-B3-001: on the CI simulators (and any host that boots portrait) the app window came
-    // up PORTRAIT despite the Info.plist landscape lock, so the game screen was laid out into
-    // a min-dimension square with a large dead black band. The AppDelegate below makes the
-    // landscape lock AUTHORITATIVE at runtime; RootAppView additionally requests a landscape
-    // geometry update on appear (see OrientationLock), forcing the window to true landscape
-    // dimensions so the game fills it edge-to-edge on every host.
-    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
-
-    init() {
-        // UI-test hook: a deterministic fresh save for the scripted full playthrough
-        // (QA test-infrastructure request 1). No effect outside the UITest launch.
+final class AppDelegate: UIResponder, UIApplicationDelegate {
+    func application(_ application: UIApplication,
+                     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
+        // UI-test hook: a deterministic fresh save for the scripted full playthrough.
         if CommandLine.arguments.contains("-resetSave") {
             SaveGameStore.shared.resetAllProgress()
         }
+        return true
     }
 
-    var body: some Scene {
-        WindowGroup {
-            RootAppView()
-                .preferredColorScheme(.dark)
-                .modifier(OrientationLock())
-        }
-    }
-}
-
-/// Landscape lock enforcement (J6 / QA-B3-001). The Info.plist keys declare landscape-only,
-/// but a portrait-booted simulator can still bring the window up portrait; this delegate
-/// makes the lock authoritative at runtime.
-final class AppDelegate: NSObject, UIApplicationDelegate {
+    /// App-wide landscape lock (authoritative at runtime, not just Info.plist).
     func application(_ application: UIApplication,
                      supportedInterfaceOrientationsFor window: UIWindow?)
     -> UIInterfaceOrientationMask {
         .landscape
     }
+
+    func application(_ application: UIApplication,
+                     configurationForConnecting connectingSceneSession: UISceneSession,
+                     options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        let config = UISceneConfiguration(name: "Main", sessionRole: connectingSceneSession.role)
+        config.delegateClass = SceneDelegate.self
+        return config
+    }
 }
 
-/// Actively requests a LANDSCAPE geometry update (iOS 16+ official API) whenever the view
-/// appears / the app becomes active, forcing the window to landscape dimensions even when
-/// the host booted portrait (QA-B3-001). No-op once already landscape.
-private struct OrientationLock: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .onAppear(perform: requestLandscape)
-            .onReceive(NotificationCenter.default.publisher(
-                for: UIApplication.didBecomeActiveNotification)) { _ in
-                requestLandscape()
-            }
-    }
+final class SceneDelegate: UIResponder, UIWindowSceneDelegate {
+    var window: UIWindow?
 
-    private func requestLandscape() {
-        guard let scene = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .first(where: { $0.activationState == .foregroundActive })
-            ?? UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene }).first
-        else { return }
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession,
+               options connectionOptions: UIScene.ConnectionOptions) {
+        guard let windowScene = scene as? UIWindowScene else { return }
+
+        let root = LandscapeHostingController(rootView: RootAppView().preferredColorScheme(.dark))
+        root.overrideUserInterfaceStyle = .dark
+
+        let window = UIWindow(windowScene: windowScene)
+        window.rootViewController = root
+        window.makeKeyAndVisible()
+        self.window = window
+
+        // Force landscape at connect (the interface can come up portrait on a portrait-
+        // booted simulator; this rotates it to landscape immediately — QA-B3-001).
         let pref = UIWindowScene.GeometryPreferences.iOS(interfaceOrientations: .landscape)
-        scene.requestGeometryUpdate(pref) { _ in }
-        scene.keyWindow?.rootViewController?.setNeedsUpdateOfSupportedInterfaceOrientations()
+        windowScene.requestGeometryUpdate(pref) { _ in }
+        root.setNeedsUpdateOfSupportedInterfaceOrientations()
     }
+}
+
+/// SwiftUI-hosting controller locked to landscape (QA-B3-001). Overriding
+/// `supportedInterfaceOrientations` here is the reliable lock the SwiftUI-only path missed.
+final class LandscapeHostingController<Content: View>: UIHostingController<Content> {
+    override var supportedInterfaceOrientations: UIInterfaceOrientationMask { .landscape }
+    override var preferredInterfaceOrientationForPresentation: UIInterfaceOrientation { .landscapeRight }
+    override var shouldAutorotate: Bool { true }
 }
