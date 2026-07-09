@@ -11,7 +11,41 @@ Level 1 in design. Theme received from user on 2026-07-04.
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
 caged crow, potions/potion-making (user-specified elements).
 
-## ⭐ CURRENT RESUME NOTE (2026-07-09e) — READ THIS FIRST
+## ⭐ CURRENT RESUME NOTE (2026-07-10, CROSS-COMPUTER HANDOFF) — READ THIS FIRST
+
+**User is switching computers; new session resumes on a different machine.** Everything
+durable is in THIS repo — take stock from here, not from any prior session's memory.
+
+**Exact position:** build 9 is fully assembled on branch `level1-rebuild-build3`. All
+Round-3 fixes landed (stale art→build-3 everywhere incl. icons; canonical rune glyphs —
+p01 solvable; hotspot re-calibration to the new art; cuckoo plates deleted; music
+level-scoped + menu SFX; "Level 1" Arabic serif; new thumbnail + chrome staleness guard;
+interim iPad LETTERBOX so nothing is cropped on iPad — user-chosen interim, commit
+354ff00). **The letterbox verification CI run 29056248425 was IN PROGRESS at handoff.**
+
+**FIRST ACTIONS on resume:**
+1. `gh run list --branch level1-rebuild-build3 --workflow=build-and-test.yml --limit 1`
+   → if run 29056248425 (or a later one) is GREEN: **dispatch the build-9 release**:
+   `gh workflow run release.yml --ref level1-rebuild-build3`, watch it, confirm upload
+   (expect Within 1.0 build ~10). If CI FAILED: relaunch a developer agent to diagnose
+   (likely letterbox tap-coordinate math on iPad) and iterate to green first.
+2. After build 9 is on TestFlight → user device test on iPad (letterboxed, everything
+   visible/tappable, p01 solvable end-to-end).
+3. On user GO → merge `level1-rebuild-build3` → main (PR), update ledger.
+4. DEFERRED to build 10: proper plate re-frame to remove the iPad letterbox (restore
+   BUG-004-class dual-safe-zone framing in the build-3 art, then back to aspectFill).
+
+**Machine setup on the new computer (if missing):** repo `git pull` (branch
+level1-rebuild-build3); `gh auth login` (needs repo+workflow); `.env` with FAL_KEY at repo
+root (gitignored — copy manually; only needed for future art gen); Python 3.12 + Pillow +
+numpy (winget) for `tools/build_game_assets.py` / `specs/tools/fal_gen.py`; optionally copy
+`~/.claude/projects/C--Users-shaim-escape-room/memory/` for the Producer's memory (repo
+resume notes cover the essentials if not).
+
+**Spend state:** art rebuild $17.25 of $18.90 cap (+$0 build-9 art phase). Feedback
+backlog: rounds 1–2 fully processed/shipped; round 3 processed → build 9 (this).
+
+## ⭐ RESUME NOTE (2026-07-09e)
 
 **BUILD-9 DEVELOPER PHASE DONE + CI GREEN (branch `level1-rebuild-build3`; green on
 build-and-test.yml run 29049860373 — build + unit×3 + UI×3 incl. the iPhone-SE FULL
