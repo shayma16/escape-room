@@ -88,8 +88,8 @@ def assert_no_nb_shadow():
         requested.add(f"{view}/{var}@3x.png")
     # variant plates loaded directly in build_inpainted() by canonical name
     requested |= {
-        "z1/v-hearth/cu-clock-unspent@3x.png", "z1/v-hearth/cu-clock-pop@3x.png",
-        "z1/v-hearth/cu-clock-spent@3x.png", "z1/v-hearth/z1-hearth-rug-moved@3x.png",
+        "z1/v-hearth/cu-clock-unspent@3x.png",  # Q3: cuckoo pop/spent no longer staged
+        "z1/v-hearth/z1-hearth-rug-moved@3x.png",
         "z1/v-hearth/z1-hearth-trapdoor-open@3x.png",
         "z2/v-cabinet/cu-astrolabe-drawer-open@3x.png",
         "z3/v-cellar/z3-cellar-drawer-open@3x.png",
@@ -110,6 +110,42 @@ def assert_no_nb_shadow():
 
 def src(path):
     return os.path.join(SRC, path.replace("/", os.sep))
+
+
+# Chrome assets that must always ship the manifest-current source (R3-002 follow-up).
+# Maps each canonical SOURCE (under specs/assets/level-1/) to every staged DESTINATION
+# that must byte-match it. Unlike the scene plates (which the pipeline transcodes to
+# JPEG), the thumbnail is copied verbatim, so a straight byte-equality check is exact and
+# unambiguous — chrome art can never silently go stale (the build FAILS if it does).
+CHROME_STAGED = {
+    "chrome/level1-thumb.jpg": [
+        os.path.join(XCASSETS, "level1-thumb.imageset", "level1-thumb.jpg"),
+        os.path.join(CHROME_OUT, "level1-thumb.jpg"),
+    ],
+}
+
+
+def assert_chrome_current():
+    """Fail the build if any staged chrome asset does not match its manifest-current
+    source. Runs AFTER staging so it validates what actually shipped. This is the chrome
+    analogue of assert_no_nb_shadow: the load-bearing thumbnail (the app reads the asset
+    catalog copy) can never be a stale build-2 image again (R3-002)."""
+    stale = []
+    for source_rel, dests in CHROME_STAGED.items():
+        s = src(source_rel)
+        if not os.path.exists(s):
+            raise SystemExit(f"CHROME GUARD: missing source {source_rel}")
+        want = open(s, "rb").read()
+        for d in dests:
+            if not os.path.exists(d):
+                stale.append(f"{d}  <-MISSING (source {source_rel})")
+            elif open(d, "rb").read() != want:
+                stale.append(f"{d}  <-STALE, differs from {source_rel}")
+    if stale:
+        raise SystemExit(
+            "CHROME STALENESS GUARD FAILED: a staged chrome asset does not match the "
+            "manifest-current source (would ship stale menu art). Offenders:\n  "
+            + "\n  ".join(stale))
 
 
 def load(path):
@@ -568,7 +604,11 @@ def build_inpainted(report):
         (1290, 655, 85, 80),    # minute shadow remnant upper right
         (1150, 950, 95, 65),    # soft shadow lower right of boss
     ]
-    for name in ("cu-clock-unspent", "cu-clock-pop", "cu-clock-spent"):
+    # Q3 (user decision 2026-07-08): the D5 cuckoo is REMOVED. Only the inert numeral-ring
+    # face (cu-clock-unspent) is staged now; the cuckoo pop/spent states (cu-clock-pop /
+    # cu-clock-spent) are NO LONGER shipped, so no leftover cuckoo close-up can be reached
+    # (R3-005 cleanup: those stale plates sat in the bundle unreferenced by code).
+    for name in ("cu-clock-unspent",):
         im = load(f"z1/v-hearth/{name}@3x.png")
         mask = polygon_mask(im.size, polys, ellipses)
         fixed = inpaint(im, mask, blur=3.5, noise=6, recolor=True)
@@ -732,11 +772,27 @@ def gen_app_icon():
 
 
 def gen_thumbnail():
-    im = load("z1/v-entry/z1-entry-base@3x.png")
-    # 4:3 crop centred on door + cage
-    crop = im.crop((760, 0, 2467, 1280)).resize((660, 495), Image.LANCZOS)
-    p = os.path.join(ensure(CHROME_OUT), "level1-thumb.jpg")
-    crop.convert("RGB").save(p, "JPEG", quality=85)
+    """R3-002 (build 9): stage the CURRENT build-3 Level-Select thumbnail.
+
+    The thumbnail is authored by the Asset agent and shipped at
+    specs/assets/level-1/chrome/level1-thumb.jpg (a build-3 hearth crop, no baked
+    level-number — the Roman "I" the user saw was a stale build-2 image). We stage that
+    exact file, NOT a re-derived crop, so the manifest-current art is authoritative
+    (same canonical-source discipline as the scene plates).
+
+    The app loads the thumbnail via UIImage(named: "level1-thumb") from the ASSET
+    CATALOG, so the load-bearing copy is the xcassets imageset. We also drop a copy in
+    CHROME_OUT so the stale-shadow guard can cover chrome art (R3-002 follow-up).
+    """
+    src_thumb = src("chrome/level1-thumb.jpg")
+    if not os.path.exists(src_thumb):
+        raise SystemExit("R3-002: missing specs/assets/level-1/chrome/level1-thumb.jpg")
+    # 1) the app's real load path — the asset catalog imageset
+    imageset = os.path.join(XCASSETS, "level1-thumb.imageset")
+    ensure(imageset)
+    shutil.copyfile(src_thumb, os.path.join(imageset, "level1-thumb.jpg"))
+    # 2) a chrome copy the staleness guard checks against the source (assert_chrome_current)
+    shutil.copyfile(src_thumb, os.path.join(ensure(CHROME_OUT), "level1-thumb.jpg"))
 
 
 # ------------------------------------------------------------------- audio
@@ -939,6 +995,31 @@ def gen_sfx():
             val += math.sin(2 * math.pi * 150 * j / SR) * math.exp(-j / (0.03 * SR)) * 0.5
         out.append(val)
     write_wav("sfx-door.wav", out)
+    # ---- R3-001 menu / pre-level chrome SFX (quiet, tasteful; NEVER the psh) ----
+    # menu-tap: a soft muted tactile wood/paper click — one short low-mid pluck with a
+    # gentle noise transient, quiet and clean (in the register of the liked pickup blip,
+    # not the removed generic click). ~90 ms.
+    n = int(0.09 * SR)
+    tone = sine(n, 300, 240, 0.5)
+    ns = lp_noise(n, 1600, 61, 1.2)
+    out = []
+    for i in range(n):
+        g = math.exp(-i / (0.020 * SR))
+        out.append((tone[i] * 0.7 + ns[i] * 0.35) * g * 0.35)
+    write_wav("sfx-menu-tap.wav", out)
+    # menu-confirm: a subtle two-note rising confirm for major actions (Play / enter
+    # level) — soft sine dyad (C5 -> G5) with a short warm decay, unobtrusive. ~0.4 s.
+    n = int(0.42 * SR)
+    a = sine(n, 523.25, amp=0.4)
+    b = sine(n, 784.0, amp=0.32)
+    out = []
+    for i in range(n):
+        ga = math.exp(-i / (0.16 * SR))
+        j = i - int(0.09 * SR)
+        gb = math.exp(-j / (0.18 * SR)) if j > 0 else 0.0
+        out.append((a[i] * ga + b[i] * gb) * 0.4)
+    write_wav("sfx-menu-confirm.wav", out)
+
     # level-entry swell (F-002: the one diegetic weather beat, then near-silence)
     n = int(7.0 * SR)
     ns = lp_noise(n, 250, 30, 4.0)
@@ -1177,6 +1258,9 @@ def main():
     print("== 6/6 audio ==", flush=True)
     gen_sfx()
     gen_ambients()
+
+    # R3-002: fail loudly if chrome art (the Level-Select thumbnail) shipped stale.
+    assert_chrome_current()
 
     print("\n".join(report))
     print("DONE")

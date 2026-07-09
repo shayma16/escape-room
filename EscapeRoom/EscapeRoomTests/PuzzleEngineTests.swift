@@ -842,6 +842,43 @@ final class PuzzleEngineTests: XCTestCase {
         sound.stopAmbient()
     }
 
+    // MARK: R3-001 level-scoped music + menu SFX
+
+    /// R3-001: level music is bound to the LEVEL SCENE lifecycle — it may only play while
+    /// a level is active (enterLevel..exitLevel). Outside a level (menus / pre-level) it
+    /// must never start, even if ambiance is on and startMusicIfNeeded fires.
+    func testMusicIsScopedToLevelLifecycle_R3_001() {
+        let sound = SoundManager.shared
+        let priorAmbiance = sound.ambianceEnabled
+        sound.ambianceEnabled = true       // ambiance ON, but we are NOT in a level
+        sound.exitLevel()                  // ensure menu scope (also stops any music)
+        XCTAssertFalse(sound.debugInLevel)
+        sound.startMusicIfNeeded()
+        XCTAssertFalse(sound.isMusicActive, "level music must NOT play in the menus (R3-001)")
+
+        sound.enterLevel()                 // level scene appears
+        XCTAssertTrue(sound.debugInLevel)
+        XCTAssertTrue(sound.isMusicActive, "level music starts inside the level (ambiance on)")
+
+        sound.exitLevel()                  // back to the menu
+        XCTAssertFalse(sound.debugInLevel)
+        XCTAssertFalse(sound.isMusicActive, "exiting a level stops the music (menus are music-free)")
+
+        sound.ambianceEnabled = priorAmbiance
+    }
+
+    /// R3-001: the menu SFX are quiet/tasteful chrome cues, distinct from level audio, and
+    /// ship in the bundle. (The generic "psh" stays gone — see QA-BUG-022 bundle test.)
+    func testMenuSfxShipAndAreDistinctCues_R3_001() {
+        XCTAssertNotNil(SoundManager.Effect.menuTap.rawValue)
+        XCTAssertNotEqual(SoundManager.Effect.menuTap.rawValue, SoundManager.Effect.menuConfirm.rawValue)
+        for effect in ["sfx-menu-tap", "sfx-menu-confirm"] {
+            XCTAssertNotNil(Bundle.main.url(forResource: effect, withExtension: "wav", subdirectory: "Audio")
+                ?? Bundle.main.url(forResource: effect, withExtension: "wav"),
+                            "\(effect).wav must ship in the bundle (R3-001 menu SFX)")
+        }
+    }
+
     // MARK: F-012 clue-view tracking substrate (gating pending puzzle-graph rev 1.3)
 
     func testClueCloseUpViewsAreRecordedAndPersisted() {

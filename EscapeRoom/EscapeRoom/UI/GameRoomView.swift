@@ -118,11 +118,15 @@ struct GameRoomView: View {
             if gameState.isComplete {
                 LevelCompleteOverlay(
                     onMainMenu: {
-                        SoundManager.shared.stopAmbient()
+                        // R3-001: level-complete -> menu closes the level-music scope.
+                        SoundManager.shared.exitLevel()
                         navigator.popToRoot()
                     },
                     onReplay: {
                         session.restartLevel()
+                        // R3-001: re-open the level-music scope and restart the bed.
+                        SoundManager.shared.enterLevel()
+                        SoundManager.shared.setAmbientZone(.z1)
                     }
                 )
             }
@@ -148,6 +152,12 @@ struct GameRoomView: View {
                 coordinatorBox.setView(newView, size: CGSize(width: 2732, height: 1366))
                 withAnimation(.easeOut(duration: half)) { transitionDip = 0 }
             }
+        }
+        .onChange(of: gameState.isComplete) { complete in
+            // R3-001: music stops ON level-complete (not only on the way back to the menu).
+            // exitLevel() closes the level-music scope + stops music/ambience while the
+            // completion card stays up; re-entry via Play Again re-opens the scope.
+            if complete { SoundManager.shared.exitLevel() }
         }
         .statusBarHidden(true)
         .onAppear { maybeShowFirstRunHint() }

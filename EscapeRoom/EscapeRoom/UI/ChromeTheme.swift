@@ -52,7 +52,12 @@ extension Font {
     static func chromeTitle() -> Font {
         .system(.largeTitle, design: .serif).weight(.medium)
     }
+    /// R3-003: the Level-Select card level number is a PLAIN ARABIC numeral in the serif
+    /// accent, per global-ui-style §3 ("Level 1"/"1", never Roman — Roman numerals are an
+    /// in-world glyph language and must not leak into chrome) and §5.2 (`.title3` serif).
+    /// The Roman "I" the user reported was baked into the stale build-2 thumbnail, not
+    /// rendered here; staging the build-3 thumbnail removes it. This stays Arabic.
     static func chromeLevelNumber() -> Font {
-        .system(.title2, design: .serif)
+        .system(.title3, design: .serif)
     }
 }

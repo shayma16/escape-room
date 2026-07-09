@@ -105,6 +105,11 @@ private struct LevelCardView: View {
         }
         .disabled(!isUnlocked)
         .buttonStyle(.plain)
+        // R3-001: entering a level is a MAJOR action -> subtle confirm tone (the level
+        // music itself starts later, when the level scene appears — never in the menu).
+        .simultaneousGesture(TapGesture().onEnded {
+            if isUnlocked { SoundManager.shared.play(.menuConfirm) }
+        })
         .accessibilityLabel(isUnlocked ? (isComplete ? "Level \(level.id), completed." : "Level \(level.id)") : "Level \(level.id), locked.")
         .accessibilityIdentifier(isComplete ? "level-card-\(level.id)-complete" : "level-card-\(level.id)")
     }

@@ -186,14 +186,25 @@ final class RoomSceneCoordinator: ObservableObject {
 
     private func configureHearth() {
         scene.setBaseTexture("z1-hearth-base")
+        // R3-005 re-calibration (build 9): rects re-derived by visual inspection of the
+        // NEW build-3 z1-hearth-base plate (2:1, plate-normalized). The old rects were
+        // calibrated to the build-2 element positions; on the new plate the clock/ash/
+        // poker/bellows/FIRE-mark all sit further right/lower, so a human tapping the
+        // visible element used to miss (and tapping LEFT of the clock hit the stale clock
+        // rect — R3-005). Measurements: clock body x0.35-0.46 y0-0.19; FIRE glyph+II on
+        // the lintel x0.53-0.64 y0.24-0.31; AIR bellows tool x0.585-0.63 y0.42-0.62;
+        // poker rod x0.245 y0.42-0.57; ash mound x0.36-0.48 y0.60-0.75.
         scene.configureHotspots([
-            Hotspot(id: "poker", 0.18, 0.40, 0.07, 0.33),
-            Hotspot(id: "ash", 0.25, 0.57, 0.15, 0.16),
-            Hotspot(id: "clock", 0.26, 0.02, 0.13, 0.24),
-            Hotspot(id: "bellows", 0.615, 0.235, 0.056, 0.335),  // re-framed position
-            Hotspot(id: "lintel", 0.17, 0.24, 0.30, 0.09),   // clamped to the iPad-safe band
-            Hotspot(id: "rug", 0.14, 0.72, 0.56, 0.28),          // ~= ov-rug-moved rect, left edge on art
-            Hotspot(id: "trapdoor-dial", 0.23, 0.72, 0.39, 0.25) // = ov-trapdoor-open rect
+            Hotspot(id: "poker", 0.215, 0.40, 0.065, 0.20),
+            Hotspot(id: "ash", 0.36, 0.60, 0.16, 0.16),
+            Hotspot(id: "clock", 0.35, 0.0, 0.11, 0.19),
+            Hotspot(id: "bellows", 0.575, 0.42, 0.075, 0.22),  // AIR glyph on the hanging bellows
+            Hotspot(id: "lintel", 0.53, 0.22, 0.11, 0.11),     // FIRE glyph + numeral II
+            // The patterned rug carpets the whole lower floor; its upper edge (~y0.80 on
+            // the plate) is tappable above the inventory pill, so the rect starts at 0.74
+            // to keep a reachable band clear of the §7-R1 bottom bar (as the old rug did).
+            Hotspot(id: "rug", 0.14, 0.74, 0.60, 0.26),
+            Hotspot(id: "trapdoor-dial", 0.30, 0.66, 0.40, 0.24) // under the rug once moved
         ])
     }
 
@@ -215,13 +226,20 @@ final class RoomSceneCoordinator: ObservableObject {
         // The old single "triptych" hotspot always opened the pager at panel 1, which is
         // what produced the reported right->left mismap. Panels laid left-to-right across
         // the old triptych rect (x 0.29..0.66).
+        // R3-005 re-calibration (build 9): re-derived from the NEW build-3 z1-study-base.
+        // The three triptych panels sit left-of-center (x0.20-0.51, receding), NOT at the
+        // old x0.29-0.66; the grimoire is on the desk lower-center (x0.30-0.62 y0.55-0.78);
+        // the dead FLOWERPOT with the EARTH glyph+III is bottom-LEFT on the low shelf
+        // (x0.02-0.16 y0.68-0.92) — the old rect pointed at the lamp; and the rune-door
+        // press-plate is right (x0.735-0.79 y0.375-0.665). Panels map left->right to
+        // close-ups 0/1/2 (R2-007: tapping a panel opens THAT panel's close-up).
         scene.configureHotspots([
-            Hotspot(id: "grimoire", 0.36, 0.46, 0.25, 0.18),
-            Hotspot(id: "triptych-1", 0.29, 0.07, 0.123, 0.20),
-            Hotspot(id: "triptych-2", 0.413, 0.07, 0.123, 0.20),
-            Hotspot(id: "triptych-3", 0.536, 0.07, 0.123, 0.20),
-            Hotspot(id: "flowerpot", 0.59, 0.46, 0.09, 0.14),
-            Hotspot(id: "rune-door", 0.75, 0.33, 0.07, 0.26),
+            Hotspot(id: "grimoire", 0.31, 0.55, 0.30, 0.22),
+            Hotspot(id: "triptych-1", 0.20, 0.18, 0.115, 0.22),
+            Hotspot(id: "triptych-2", 0.33, 0.20, 0.095, 0.20),
+            Hotspot(id: "triptych-3", 0.435, 0.23, 0.075, 0.18),
+            Hotspot(id: "flowerpot", 0.02, 0.68, 0.16, 0.26),  // EARTH glyph + numeral III
+            Hotspot(id: "rune-door", 0.72, 0.36, 0.085, 0.32),
         ])
     }
 
@@ -234,13 +252,20 @@ final class RoomSceneCoordinator: ObservableObject {
 
     private func configureEntry() {
         scene.setBaseTexture("z1-entry-base")
+        // R3-005 re-calibration (build 9): re-derived from the NEW build-3 z1-entry-base.
+        // The crow's-beak basin + bolt (door-lock) is center x0.46-0.68 y0.10-0.50; the
+        // WATER-glyph tablet (+numeral IV) sits on the windowsill bottom-LEFT (x0.075-0.135
+        // y0.54-0.69) — the old rect was to its right on the bare sill (R3-004 WATER mark
+        // couldn't be inspected); the rusted key hangs by the bolt (x0.70-0.73 y0.42-0.63);
+        // the birdcage is top-RIGHT (x0.79-0.98), with the padlock keyhole at x0.795-0.83
+        // y0.34-0.42 and the brass feed cup at x0.875-0.93 y0.44-0.52.
         scene.configureHotspots([
-            Hotspot(id: "door-lock", 0.37, 0.20, 0.24, 0.45),
-            Hotspot(id: "rusted-key", 0.615, 0.21, 0.05, 0.13),
-            Hotspot(id: "windowsill", 0.167, 0.52, 0.12, 0.10),
-            Hotspot(id: "cage", 0.675, 0.09, 0.14, 0.55),
-            Hotspot(id: "feed-cup", 0.777, 0.395, 0.034, 0.05),
-            Hotspot(id: "star-keyhole", 0.777, 0.20, 0.035, 0.08),
+            Hotspot(id: "door-lock", 0.46, 0.10, 0.24, 0.42),
+            Hotspot(id: "rusted-key", 0.685, 0.42, 0.06, 0.22),
+            Hotspot(id: "windowsill", 0.06, 0.53, 0.09, 0.18),  // WATER glyph + numeral IV
+            Hotspot(id: "cage", 0.80, 0.10, 0.16, 0.45),
+            Hotspot(id: "feed-cup", 0.86, 0.42, 0.08, 0.11),
+            Hotspot(id: "star-keyhole", 0.78, 0.33, 0.06, 0.11),
         ])
     }
 
@@ -257,12 +282,17 @@ final class RoomSceneCoordinator: ObservableObject {
 
     private func configureBench() {
         scene.setBaseTexture("z2-bench-base")
+        // R3-005 re-calibration (build 9): re-derived from the NEW build-3 z2-bench-base.
+        // Cauldron over the fire x0.22-0.40 y0.42-0.68; ladle out of it x0.36-0.44 y0.40-0.48;
+        // floor bellows bottom-left x0.06-0.30 y0.78-0.95; mortar & pestle on the RIGHT table
+        // x0.80-0.87 y0.42-0.68 (old rect pointed at the doorway); the workbench surface is
+        // the right table foreground x0.80-1.0 y0.68-0.80 (p12 combine secondary path).
         scene.configureHotspots([
-            Hotspot(id: "cauldron", 0.167, 0.32, 0.193, 0.32),
-            Hotspot(id: "ladle", 0.235, 0.315, 0.055, 0.10),
-            Hotspot(id: "floor-bellows", 0.167, 0.77, 0.133, 0.22),
-            Hotspot(id: "mortar", 0.69, 0.30, 0.14, 0.14),
-            Hotspot(id: "workbench", 0.44, 0.41, 0.39, 0.12),
+            Hotspot(id: "cauldron", 0.22, 0.40, 0.19, 0.28),
+            Hotspot(id: "ladle", 0.35, 0.38, 0.10, 0.10),
+            Hotspot(id: "floor-bellows", 0.05, 0.77, 0.28, 0.22),
+            Hotspot(id: "mortar", 0.79, 0.42, 0.10, 0.26),
+            Hotspot(id: "workbench", 0.80, 0.68, 0.20, 0.12),
         ])
     }
 
@@ -280,12 +310,18 @@ final class RoomSceneCoordinator: ObservableObject {
     // MARK: - v-cabinet (z2)
 
     private func configureCabinet() {
+        // R3-005 re-calibration (build 9): re-derived from the NEW build-3 z2-cabinet-base.
+        // The sun/moon slots are the carved medallions on the CABINET DOORS center-frame
+        // (sun x0.435-0.49 y0.42-0.53 on the left door; crescent moon x0.555-0.60 y0.42-0.53
+        // on the right door) — the old rects were far left. The potion shelf is bottom-LEFT
+        // (bottles x0.02-0.36 y0.20-0.52); the astrolabe (armillary sphere) is right
+        // x0.72-0.86 y0.36-0.68; the arched Orion window is top-RIGHT x0.86-1.0 y0.02-0.60.
         scene.configureHotspots([
-            Hotspot(id: "sun-slot", 0.170, 0.28, 0.07, 0.13),
-            Hotspot(id: "moon-slot", 0.285, 0.29, 0.065, 0.13),
-            Hotspot(id: "potion-shelf", 0.415, 0.17, 0.125, 0.155),
-            Hotspot(id: "astrolabe", 0.53, 0.27, 0.14, 0.60),
-            Hotspot(id: "window", 0.66, 0.05, 0.17, 0.50),
+            Hotspot(id: "sun-slot", 0.42, 0.40, 0.09, 0.15),
+            Hotspot(id: "moon-slot", 0.535, 0.40, 0.09, 0.15),
+            Hotspot(id: "potion-shelf", 0.02, 0.20, 0.36, 0.34),
+            Hotspot(id: "astrolabe", 0.71, 0.34, 0.16, 0.36),
+            Hotspot(id: "window", 0.86, 0.02, 0.14, 0.58),
         ])
         scene.setBaseTexture("z2-cabinet-base")
     }
@@ -309,27 +345,35 @@ final class RoomSceneCoordinator: ObservableObject {
         // QA-BUG-017: a single correctly-seated item is rendered (icon art over its
         // recess) until the pair completes; no dedicated single-seat plate exists.
         let solved = state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon)
+        // R3-005: seated-item art sits over its recess, tracking the re-calibrated
+        // sun/moon slot centers (0.462,0.475) / (0.577,0.475) on the new cabinet plate.
         scene.setOverlay("seat-sun", imageNamed: (!solved && pendingSunItem != nil) ? "icon-gold-ring" : nil,
-                          rectNormalized: CGRect(x: 0.183, y: 0.30, width: 0.045, height: 0.08))
+                          rectNormalized: CGRect(x: 0.437, y: 0.43, width: 0.05, height: 0.09))
         scene.setOverlay("seat-moon", imageNamed: (!solved && pendingMoonItem != nil) ? "icon-silver-coin" : nil,
-                          rectNormalized: CGRect(x: 0.295, y: 0.31, width: 0.045, height: 0.08))
+                          rectNormalized: CGRect(x: 0.552, y: 0.43, width: 0.05, height: 0.09))
     }
 
     // MARK: - v-cellar (z3)
 
     private func configureCellar() {
         scene.setBaseTexture("z3-cellar-base")
+        // R3-005 re-calibration (build 9): re-derived from the NEW build-3 z3-cellar-base.
+        // Barrel right x0.66-0.80 y0.50-0.82; the handled spoon DRAWER (small chest on the
+        // shelf) x0.515-0.60 y0.36-0.44 (old rect was lower/left); the iron weight HOOK ring
+        // on the wall x0.20-0.25 y0.28-0.40; the WINCH crank drum at the trapdoor mouth
+        // top-left x0.13-0.26 y0.03-0.17 (old rect pointed at the hook); the standing mirror
+        // bottom-LEFT x0.06-0.20 y0.36-0.90 (old rect was center-right); the ladder up to the
+        // trapdoor is far-RIGHT x0.85-0.96.
         scene.configureHotspots([
-            Hotspot(id: "barrel", 0.70, 0.59, 0.13, 0.28),
-            Hotspot(id: "drawer", 0.37, 0.60, 0.09, 0.09),
-            Hotspot(id: "hook", 0.335, 0.28, 0.05, 0.11),
-            Hotspot(id: "winch", 0.19, 0.22, 0.09, 0.16),
-            Hotspot(id: "mirror", 0.585, 0.63, 0.10, 0.30),
-            // F-024 diegetic passages: the ladder up to the hearth trapdoor (art at
-            // x 0.70-0.90, clamped to the iPad-safe band) and — once the shelf has
-            // slid — the revealed alcove mouth (dark stone doorway, center).
-            Hotspot(id: "ladder", 0.70, 0.06, 0.13, 0.55),
-            Hotspot(id: "alcove-passage", 0.425, 0.28, 0.085, 0.45),
+            Hotspot(id: "barrel", 0.66, 0.50, 0.15, 0.32),
+            Hotspot(id: "drawer", 0.50, 0.34, 0.11, 0.12),
+            Hotspot(id: "hook", 0.185, 0.26, 0.09, 0.14),
+            Hotspot(id: "winch", 0.11, 0.02, 0.17, 0.16),
+            Hotspot(id: "mirror", 0.05, 0.36, 0.16, 0.52),
+            // F-024 diegetic passages: the ladder up to the hearth trapdoor and — once the
+            // shelf has slid — the revealed alcove mouth behind the sliding plank shelf.
+            Hotspot(id: "ladder", 0.84, 0.06, 0.13, 0.80),
+            Hotspot(id: "alcove-passage", 0.42, 0.28, 0.10, 0.45),
         ])
     }
 
@@ -369,12 +413,16 @@ final class RoomSceneCoordinator: ObservableObject {
 
     private func configureAlcove() {
         scene.setBaseTexture("z4-alcove-base")
+        // R3-005 re-calibration (build 9): re-derived from the NEW build-3 z4-alcove-base.
+        // The moonflower PLANTER (stone basin) is center-bottom x0.42-0.72 y0.58-0.95; the
+        // crow STATUE holding the star-topped key is center x0.53-0.68 y0.10-0.52 (the key
+        // hangs from its beak x0.53-0.58 y0.14-0.35); the exit passage back to the cellar is
+        // the right-edge stone gap.
         scene.configureHotspots([
-            Hotspot(id: "planter", 0.36, 0.50, 0.21, 0.46),
-            Hotspot(id: "statue-key", 0.52, 0.13, 0.15, 0.27),
-            // F-024: the shelf gap back out to the cellar (the slid shelf's wooden
-            // flank fills the right frame edge; clamped to the iPad-safe band).
-            Hotspot(id: "cellar-passage", 0.70, 0.10, 0.13, 0.80),
+            Hotspot(id: "planter", 0.42, 0.55, 0.30, 0.42),
+            Hotspot(id: "statue-key", 0.52, 0.10, 0.17, 0.42),
+            // F-024: the shelf gap back out to the cellar (right frame edge).
+            Hotspot(id: "cellar-passage", 0.85, 0.10, 0.13, 0.80),
         ])
     }
 

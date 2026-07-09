@@ -44,6 +44,11 @@ final class SoundManager {
         case wood = "sfx-wood"          // drawer/passage wood slide
         case entry = "sfx-entry"        // one-shot level-entry swell (F-002)
         case door = "sfx-door"          // themed door-opening (R2-015a: rune door / final door)
+        // R3-001 menu/pre-level SFX (chrome layer; quiet/tasteful, NEVER the removed
+        // generic "psh"). These are the ONLY sounds in the menus — there is no level
+        // music before a level starts.
+        case menuTap = "sfx-menu-tap"       // soft tactile wood/paper button click
+        case menuConfirm = "sfx-menu-confirm" // subtle confirm tone for major actions (Play / enter level)
     }
 
     enum Zone: String {
@@ -57,6 +62,14 @@ final class SoundManager {
     private var ambientPlayer: AVAudioPlayer?
     private var musicPlayer: AVAudioPlayer?
     private var currentZone: Zone?
+
+    /// R3-001: level music is SCOPED to an active level scene. This is TRUE only between
+    /// `enterLevel()` (level scene appears) and `exitLevel()` (back to menu / complete).
+    /// Nothing may start `music-level1.wav` while it is false — so the menus / pre-level
+    /// screens carry no level music (only the menu SFX). `startMusicIfNeeded()` and the
+    /// Settings ambiance-unmute both consult this flag. Each level's music follows the
+    /// same pattern; the global chrome layer never has level music.
+    private var inLevel: Bool = false
 
     /// Per-zone texture bed sits WAY under the music now (it's a faint tonal tint, not
     /// the main bed anymore — the music carries the room). Was 0.18 as the sole bed.
@@ -76,7 +89,26 @@ final class SoundManager {
     var isAmbientActive: Bool { ambientPlayer != nil }
     var isMusicActive: Bool { musicPlayer != nil }
     var debugCurrentZone: Zone? { currentZone }
+    var debugInLevel: Bool { inLevel }
     #endif
+
+    // MARK: - R3-001 level-music lifecycle (music is scoped to the level scene)
+
+    /// Called when a Level scene appears (LevelLoadingView). Marks the level active so
+    /// music may play, then starts it. Idempotent.
+    func enterLevel() {
+        inLevel = true
+        startMusicIfNeeded()
+    }
+
+    /// Called on EVERY exit from a level to the menu chrome (pause -> Main Menu,
+    /// completion -> Main Menu, and any teardown). Clears the level scope and tears down
+    /// music + ambience so the menus are music-free (R3-001). `stopAmbient()` remains the
+    /// low-level teardown; this is the semantic entry point the chrome calls.
+    func exitLevel() {
+        inLevel = false
+        stopAmbient()
+    }
 
     // MARK: - R2-006 split toggles (independent, separately persisted)
 
@@ -136,7 +168,10 @@ final class SoundManager {
 
     /// Starts the looping level music if it isn't already playing and ambiance is on.
     /// Idempotent — safe to call on every level entry / ambiance-unmute.
+    /// R3-001: music is level-scoped — it NEVER starts outside an active level scene, so
+    /// unmuting ambiance from Settings while in the menus does not leak level music.
     func startMusicIfNeeded() {
+        guard inLevel else { return }
         guard SaveGameStore.shared.ambianceOn, musicPlayer == nil else { return }
         guard let url = Bundle.main.url(forResource: musicResource, withExtension: "wav", subdirectory: "Audio")
             ?? Bundle.main.url(forResource: musicResource, withExtension: "wav") else { return }

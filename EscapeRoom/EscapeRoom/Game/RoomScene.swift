@@ -223,6 +223,17 @@ final class RoomScene: SKScene {
     }
     #endif
 
+    /// Test seam (R3-005 player-style verification): resolve a NORMALIZED plate point
+    /// (0…1, top-left origin — the coordinate a human "sees") to the hotspot id that a tap
+    /// there would trigger, applying the exact same node hit-test + smallest-area-wins rule
+    /// as a real touch. Lets unit tests assert that tapping where an element VISUALLY sits
+    /// hits the right hotspot (and that empty space hits nothing), without a live SKView.
+    func hotspotIDAtNormalized(_ nx: CGFloat, _ ny: CGFloat) -> String? {
+        let p = CGPoint(x: -size.width / 2 + nx * size.width,
+                        y: size.height / 2 - ny * size.height)
+        return hotspotID(at: p)
+    }
+
     /// Smallest-area hotspot wins where hotspots overlap (e.g. the star keyhole and
     /// feed cup sit inside the larger cage region; the trapdoor sits inside the rug).
     private func hotspotID(at point: CGPoint) -> String? {
