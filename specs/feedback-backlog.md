@@ -867,3 +867,32 @@ build 9 where possible.
 > (clock/runes); do not leak them into menus." So the implementation deviated from spec. Fix:
 > render the level number as ARABIC "1" / "Level 1" in the serif accent (New York, per §3),
 > not Roman. → Developer chrome fix, fold into build 9. Confirms the spec; no spec change.)
+
+### R3-004 — status: logged (likely a symptom of R3-005)
+> the arrow/rune clues used to unlock the potion-room door (p01) — i can't get a close-up on
+> them
+> (context: the four element-rune marks (AIR/FIRE/EARTH/WATER + numerals) can't be inspected —
+> tapping where they visually sit does nothing. Almost certainly a hotspot-misalignment symptom
+> of R3-005: the rune marks are in DIFFERENT positions in the new build-3 art than the old
+> plates the tap rects were calibrated to. → Developer, part of the R3-005 hotspot re-derive.)
+
+### R3-005 — status: logged 🔴 STRUCTURAL (significant) — hotspot positions calibrated to OLD art
+> randomly clicking to the LEFT of the clock opens the old cuckoo-clock stale close-up. "with
+> the new images generated, the positioning of 'clicking' for close-ups needs to change — the
+> developer seems to be using old placement placeholders that fit the OLD images, not the new
+> ones."
+> (context: SHARP + likely correct + WIDESPREAD. The hotspot/tap rects (plate-normalized on the
+> fixed 2732×1366 scene) were calibrated to the OLD build-2 art element positions. The new
+> build-3 plates place objects in DIFFERENT spots, so every tap target can be off: tapping where
+> a clue visually IS does nothing (R3-004 runes), and tapping where the OLD hotspot was opens
+> the wrong/stale close-up (here: a leftover cuckoo close-up — which per Q3 should have been
+> REMOVED entirely, so also a Q3-cleanup gap: the cuckoo close-up asset + its hotspot weren't
+> deleted). THIS IS WHY CI 'passed': the scripted playthrough uses the same plate-normalized
+> coords the code maps, so taps 'land' internally — but a HUMAN clicking where they SEE the
+> element misses (same false-pass class as the astrolabe/viewport). FIX = re-derive EVERY
+> interactive hotspot + close-up trigger rect to match where each element sits in the NEW
+> build-3 plates (use the manifest's build3 element geometry where recorded; visual-verify the
+> rest), AND remove the leftover cuckoo close-up/hotspot (Q3). Player-style verification must
+> tap where a HUMAN sees each element, not the internal rect. → Developer, SIGNIFICANT task.
+> Recommend folding into build 9 so it's the first genuinely playable build (correct images AND
+> correct tap targets); otherwise build 9 = right art but still-wrong taps.)
