@@ -823,3 +823,28 @@ chain, level completable.
 > from its parent scene is a DEFECT. → governs the Cluster-E re-rolls and every future level.)
 
 _Say "that's all, process it" (or similar) when ready to process this round._
+
+---
+
+## Round 3 (in progress — build-3 device testing on iPad, builds 8→9; logging)
+
+**Context:** casual device observations (not thorough — the game was "unplayable with wrong
+images" due to the stale-close-up shadow bug, being fixed in build 9). Log functional/layout/
+sound items now; defer close-up-LOOK critiques to build 9 (correct art). Fold quick fixes into
+build 9 where possible.
+
+### R3-001 — status: logged (fold into build 9)
+> the background music i gave is playing for the ENTIRE game instance (menus / before level
+> start), instead of being limited to Level 1 as intended. before the level starts, the only
+> sounds should be SFX like a click or ping — NOT the psh. "select the most appropriate based
+> on my previous selections."
+> (context: two parts. (a) BUG — `music-level1.wav` is wired app-wide; it must be SCOPED to the
+> Level-1 scene lifecycle (start on entering L1, stop on exit to menu/level-complete). Menus /
+> pre-level = NO level music. (b) DESIGN — menu/pre-level UI needs appropriate SFX (button
+> taps): a soft, clean, quiet CLICK (and a subtle confirm/ping for major actions), consistent
+> with the user's established prefs — they LIKE the quiet add-to-inventory pickup sound, HATE
+> the generic "psh" (removed as default, R2-024), want the quiet/tasteful neutralxe register.
+> Producer selection (delegated by user): a muted tactile wood/paper click for menu buttons +
+> a soft confirm tone for Play/level-enter — NEVER the psh, never the level music in menus.
+> → Developer. Fold into build 9. Note for future levels: each level's music is level-scoped;
+> the global chrome/menu layer has its own small quiet SFX set, no level music.)
