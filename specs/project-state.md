@@ -21,14 +21,15 @@ Round-3 fixes landed (stale art→build-3 everywhere incl. icons; canonical rune
 p01 solvable; hotspot re-calibration to the new art; cuckoo plates deleted; music
 level-scoped + menu SFX; "Level 1" Arabic serif; new thumbnail + chrome staleness guard;
 interim iPad LETTERBOX so nothing is cropped on iPad — user-chosen interim, commit
-354ff00). **The letterbox verification CI run 29056248425 was IN PROGRESS at handoff.**
+354ff00). **The letterbox verification CI run 29056248425 is GREEN** (build + unit×3 +
+UI×3 incl. the iPad FULL playthrough + save-resume — iPad completability CONFIRMED under
+the letterbox): https://github.com/shayma16/escape-room/actions/runs/29056248425
 
 **FIRST ACTIONS on resume:**
-1. `gh run list --branch level1-rebuild-build3 --workflow=build-and-test.yml --limit 1`
-   → if run 29056248425 (or a later one) is GREEN: **dispatch the build-9 release**:
+1. build-and-test.yml run 29056248425 is already GREEN (letterbox verified, iPad full
+   playthrough included) — no need to re-run CI. **Dispatch the build-9 release**:
    `gh workflow run release.yml --ref level1-rebuild-build3`, watch it, confirm upload
-   (expect Within 1.0 build ~10). If CI FAILED: relaunch a developer agent to diagnose
-   (likely letterbox tap-coordinate math on iPad) and iterate to green first.
+   (expect Within 1.0 build ~10).
 2. After build 9 is on TestFlight → user device test on iPad (letterboxed, everything
    visible/tappable, p01 solvable end-to-end).
 3. On user GO → merge `level1-rebuild-build3` → main (PR), update ledger.

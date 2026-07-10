@@ -1368,3 +1368,17 @@ persistence) — iPad is genuinely verified end-to-end, not scoped-around. CI jo
 band (as BUG-004 originally did) so `.aspectFill` returns and the letterbox is removed. This
 interim letterbox is a display-only stopgap; puzzle logic, hotspot positions, and art are
 unchanged.
+
+**CI verification (letterbox phase):** GREEN on build-and-test.yml run **29056248425**
+(branch level1-rebuild-build3):
+https://github.com/shayma16/escape-room/actions/runs/29056248425 — Build (iOS Simulator) +
+Unit tests x3 (iPad 13", iPhone SE, Dynamic Island) + UI tests x3 ALL PASS, now including the
+**iPad FULL playthrough + save/resume** (restored from the build-9 scoped-down smoke-only step).
+The iPad full-playthrough success is the definitive confirmation that under the `.aspectFit`
+letterbox the previously-cropped iPad edge elements (flowerpot, potion shelf, windowsill,
+mirror, winch, mortar, astrolabe, cage, feed cup, ladder) are now VISIBLE and TAPPABLE and the
+level is COMPLETABLE on iPad end-to-end (the `sceneCoordinate` min-scale remap lands every tap;
+save/resume + D7 gate persistence verified on the primary device). iPhone-SE full playthrough
+also green (letterbox keeps it full-width + uncropped). Note: the iPad UI step ran ~46 min
+(the two full-solve tests plus save-resume on the larger simulator); the job timeout was raised
+to 120 min to accommodate it.
