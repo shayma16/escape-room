@@ -26,12 +26,11 @@ UI×3 incl. the iPad FULL playthrough + save-resume — iPad completability CONF
 the letterbox): https://github.com/shayma16/escape-room/actions/runs/29056248425
 
 **FIRST ACTIONS on resume:**
-1. build-and-test.yml run 29056248425 is already GREEN (letterbox verified, iPad full
-   playthrough included) — no need to re-run CI. **Dispatch the build-9 release**:
-   `gh workflow run release.yml --ref level1-rebuild-build3`, watch it, confirm upload
-   (expect Within 1.0 build ~10).
-2. After build 9 is on TestFlight → user device test on iPad (letterboxed, everything
-   visible/tappable, p01 solvable end-to-end).
+1. ✅ DONE before handoff: **build 9 RELEASED to TestFlight — Within 1.0 (build 9)**,
+   release run 29059962959 GREEN (archive→sign→stamp→scan→upload, 3m54s). CI was green
+   on 29056248425 (letterbox verified incl. iPad full playthrough). Nothing to dispatch.
+2. NEXT = user device test on iPad (letterboxed — whole plate visible, everything
+   tappable, p01 solvable end-to-end, music only in-level, quiet menus, "Level 1" serif).
 3. On user GO → merge `level1-rebuild-build3` → main (PR), update ledger.
 4. DEFERRED to build 10: proper plate re-frame to remove the iPad letterbox (restore
    BUG-004-class dual-safe-zone framing in the build-3 art, then back to aspectFill).
