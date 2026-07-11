@@ -1,0 +1,79 @@
+{
+ "z1-hearth": {
+  "scale": 0.955,
+  "ox": 86,
+  "oy": 86,
+  "plates": [
+   "z1-hearth-base",
+   "z1-hearth-poker-taken",
+   "z1-hearth-rug-moved",
+   "z1-hearth-trapdoor-open"
+  ],
+  "rect_map": "new_px = old_px * s + (ox, oy)"
+ },
+ "z1-study": {
+  "scale": 0.86,
+  "ox": 538,
+  "oy": 240,
+  "plates": [
+   "z1-study-base"
+  ],
+  "rect_map": "new_px = old_px * s + (ox, oy)"
+ },
+ "z1-entry": {
+  "scale": 0.74,
+  "ox": 425,
+  "oy": 250,
+  "plates": [
+   "z1-entry-base",
+   "z1-entry-basin-drained-nb",
+   "z1-entry-basin-filled-nb",
+   "z1-entry-cage-open",
+   "z1-entry-crow-lintel",
+   "z1-entry-vines-gone",
+   "z1-entry-vines-withered"
+  ],
+  "rect_map": "new_px = old_px * s + (ox, oy)"
+ },
+ "z2-bench": {
+  "scale": 0.83,
+  "ox": 430,
+  "oy": 163,
+  "plates": [
+   "z2-bench-base"
+  ],
+  "rect_map": "new_px = old_px * s + (ox, oy)"
+ },
+ "z2-cabinet": {
+  "scale": 0.7,
+  "ox": 630,
+  "oy": 288,
+  "plates": [
+   "z2-cabinet-base",
+   "z2-cabinet-drawer-open",
+   "z2-cabinet-open"
+  ],
+  "rect_map": "new_px = old_px * s + (ox, oy)"
+ },
+ "z3-cellar": {
+  "scale": 0.82,
+  "ox": 445,
+  "oy": 173,
+  "plates": [
+   "z3-cellar-base",
+   "z3-cellar-barrel-pried",
+   "z3-cellar-beam-alcove",
+   "z3-cellar-beam-blocked",
+   "z3-cellar-beam-floor-shelf-slid",
+   "z3-cellar-beam-floor",
+   "z3-cellar-crank-fitted",
+   "z3-cellar-drawer-open",
+   "z3-cellar-mirror-d2",
+   "z3-cellar-mirror-d3",
+   "z3-cellar-nobeam-nb",
+   "z3-cellar-shelf-slid",
+   "z3-cellar-weight-hung"
+  ],
+  "rect_map": "new_px = old_px * s + (ox, oy)"
+ }
+}

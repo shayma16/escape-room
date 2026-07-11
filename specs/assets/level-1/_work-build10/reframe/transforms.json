@@ -1,0 +1,80 @@
+{
+ "z1-hearth": {
+  "scale": 0.955,
+  "ox": 86,
+  "oy": 86,
+  "cw": 3667,
+  "ch": 1834,
+  "bands": {
+   "left": 86,
+   "top": 86,
+   "right": 87,
+   "bottom": 0
+  }
+ },
+ "z1-study": {
+  "scale": 0.86,
+  "ox": 538,
+  "oy": 240,
+  "cw": 3302,
+  "ch": 1651,
+  "bands": {
+   "left": 538,
+   "top": 240,
+   "right": 0,
+   "bottom": 29
+  }
+ },
+ "z1-entry": {
+  "scale": 0.74,
+  "ox": 425,
+  "oy": 250,
+  "cw": 2842,
+  "ch": 1421,
+  "bands": {
+   "left": 425,
+   "top": 250,
+   "right": 573,
+   "bottom": 249
+  }
+ },
+ "z2-bench": {
+  "scale": 0.83,
+  "ox": 430,
+  "oy": 163,
+  "cw": 3187,
+  "ch": 1594,
+  "bands": {
+   "left": 430,
+   "top": 163,
+   "right": 223,
+   "bottom": 163
+  }
+ },
+ "z2-cabinet": {
+  "scale": 0.7,
+  "ox": 630,
+  "oy": 288,
+  "cw": 2688,
+  "ch": 1344,
+  "bands": {
+   "left": 630,
+   "top": 288,
+   "right": 522,
+   "bottom": 288
+  }
+ },
+ "z3-cellar": {
+  "scale": 0.82,
+  "ox": 445,
+  "oy": 173,
+  "cw": 3149,
+  "ch": 1574,
+  "bands": {
+   "left": 445,
+   "top": 173,
+   "right": 246,
+   "bottom": 173
+  }
+ }
+}

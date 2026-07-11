@@ -1,0 +1,41 @@
+[
+ {
+  "name": "b10-outpaint-z1-hearth",
+  "out_dir": "_work-build10/reframe",
+  "endpoint": "edit",
+  "prompt": "clearly stylized real-time 3D game render (not painterly/matte-painting, and deliberately NOT photorealistic) - cohesive stylized-PBR like a high-end stylized Unreal Engine 5 environment / modern stylized adventure game; physically based clean materials (wood, brass, parchment, leather, stone), simplified-but-believable with realistic but non-noisy surface detail, pronounced softened bevels and cleaner silhouettes on furniture/objects so they read clearly as interactive game elements, art-directed color, realistic engine-style lighting (Unreal Engine 5 Lumen-comparable), single-point perspective at standing eye level, no painterly brush texture or oil-painting look, no text/letters/people/watermarks. Edit the first image: it is a finished game background of a warm firelit cabin hearth room at night, surrounded by thin black bands on the left, top and right edges. Fill ONLY the black bands by seamlessly continuing the scene outward past its current borders: extend the same walls, floor, ceiling, furniture edges and shadows that already touch the picture border, with perfectly matching perspective, materials, colors and lighting, as if the camera simply saw a little more of the same room. Do NOT add any new objects, props, creatures, markings or symbols in the extended areas - only plain continuation of existing surfaces. Keep every pixel of the existing non-black picture exactly unchanged, same framing and scale.",
+  "width": 3840,
+  "height": 1920,
+  "resolution_tier": "4k",
+  "seed": 71001,
+  "refs": [
+   "C:\\Users\\shaim\\escape-room\\specs\\assets\\level-1\\_work-build10\\reframe\\z1-hearth-canvas.png"
+  ]
+ },
+ {
+  "name": "b10-outpaint-z1-study",
+  "out_dir": "_work-build10/reframe",
+  "endpoint": "edit",
+  "prompt": "clearly stylized real-time 3D game render (not painterly/matte-painting, and deliberately NOT photorealistic) - cohesive stylized-PBR like a high-end stylized Unreal Engine 5 environment / modern stylized adventure game; physically based clean materials (wood, brass, parchment, leather, stone), simplified-but-believable with realistic but non-noisy surface detail, pronounced softened bevels and cleaner silhouettes on furniture/objects so they read clearly as interactive game elements, art-directed color, realistic engine-style lighting (Unreal Engine 5 Lumen-comparable), single-point perspective at standing eye level, no painterly brush texture or oil-painting look, no text/letters/people/watermarks. Edit the first image: it is a finished game background of a candlelit wizard study room at night, surrounded by a wide black band on the left edge, a black band on the top edge and a very thin black strip along the bottom. Fill ONLY the black bands by seamlessly continuing the scene outward past its current borders: extend the same walls, floor, ceiling, furniture edges and shadows that already touch the picture border, with perfectly matching perspective, materials, colors and lighting, as if the camera simply saw a little more of the same room. Do NOT add any new objects, props, creatures, markings or symbols in the extended areas - only plain continuation of existing surfaces. Keep every pixel of the existing non-black picture exactly unchanged, same framing and scale.",
+  "width": 3840,
+  "height": 1920,
+  "resolution_tier": "4k",
+  "seed": 71002,
+  "refs": [
+   "C:\\Users\\shaim\\escape-room\\specs\\assets\\level-1\\_work-build10\\reframe\\z1-study-canvas.png"
+  ]
+ },
+ {
+  "name": "b10-outpaint-z1-entry",
+  "out_dir": "_work-build10/reframe",
+  "endpoint": "edit",
+  "prompt": "clearly stylized real-time 3D game render (not painterly/matte-painting, and deliberately NOT photorealistic) - cohesive stylized-PBR like a high-end stylized Unreal Engine 5 environment / modern stylized adventure game; physically based clean materials (wood, brass, parchment, leather, stone), simplified-but-believable with realistic but non-noisy surface detail, pronounced softened bevels and cleaner silhouettes on furniture/objects so they read clearly as interactive game elements, art-directed color, realistic engine-style lighting (Unreal Engine 5 Lumen-comparable), single-point perspective at standing eye level, no painterly brush texture or oil-painting look, no text/letters/people/watermarks. Edit the first image: it is a finished game background of a moonlit timber cabin entry room at night, surrounded by black bands on all four edges. Fill ONLY the black bands by seamlessly continuing the scene outward past its current borders: extend the same walls, floor, ceiling, furniture edges and shadows that already touch the picture border, with perfectly matching perspective, materials, colors and lighting, as if the camera simply saw a little more of the same room. Do NOT add any new objects, props, creatures, markings or symbols in the extended areas - only plain continuation of existing surfaces. Keep every pixel of the existing non-black picture exactly unchanged, same framing and scale.",
+  "width": 3840,
+  "height": 1920,
+  "resolution_tier": "4k",
+  "seed": 71003,
+  "refs": [
+   "C:\\Users\\shaim\\escape-room\\specs\\assets\\level-1\\_work-build10\\reframe\\z1-entry-canvas.png"
+  ]
+ }
+]

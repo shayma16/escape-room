@@ -52,7 +52,7 @@ Part 1 API spend: $0.45 (3 close-ups) + $0.45 (3 variant edits: slots-seated, ba
 
 # BUILD-10 art batch (round-4: letterbox re-frame + R4-007 dial + R4-008 ghost sweep) [2026-07-11]
 
-PROGRESS: 2/12 done | 0 retrying | 0 failed | 10 remaining | $0.00 spent this batch | project $17.25 of $23.00 HARD CAP
+PROGRESS: 9/12 done | 0 retrying | 0 failed | 3 remaining | $2.10 spent this batch | project $19.35 of $23.00 HARD CAP
 
 _Scope per Producer handoff: (1) re-frame build-3 WIDE plates of all 7 views into style-guide S8
 dual-safe band (iPad 4:3 crop x[640,3200] on 3840x1920 @3x; iPhone 19.5:9 band y[74,1846]) so the
@@ -81,13 +81,23 @@ _Pre-generation estimate: 1 std edit (ghost clean $0.15) + 6 x 4K outpaint ($1.8
 |---|------|--------|--------|------|------|
 | 1 | z1-entry ghost-glyph clean (R4-008) | crop edit + canonical PIL WATER stamp -> propagate 6 variants | done | $0 | reused prior-session _work-build10 edit (tablet-final.png, edge ring byte-identical to base); pasted at (240,900) into base + 6 variants; keeps IV + ONE plain WATER down-triangle |
 | 2 | z2-cabinet moon canon fix | PIL re-stamp from sky-master + arc cleanup -> propagate 3 variants | done | $0 | diffusion-inpaint of arc/blob/banding + old moon; canonical disc re-stamped from sky-master (circle-fit (1014.7,337.0) r145.2 -> (3561,170) r76); gates: lit-RIGHT centroid +5.1, thirds 136/200, corr n/a-rebuilt. Propagated to drawer-open + open (4K). slots-seated is a 2560x1280 LEGACY-ART plate (content != build-3 base, mean diff 45) -> NOT propagatable, flagged; game uses ov-slots-seated overlay, rect remap applies |
-| 3 | re-frame z1-hearth (s .955, ox 86, oy 86) | canvas + 4K outpaint + composite + 3 variants | pending | - | clock crown -> y96 |
-| 4 | re-frame z1-study (s .86, ox 538, oy 240) | canvas + 4K outpaint + composite + 0 variants | pending | - | flowerpot -> 671 |
-| 5 | re-frame z1-entry (s .74, ox 425, oy 250) | canvas + 4K outpaint + composite + 6 variants | pending | - | tablet 666 / cage 3170 |
-| 6 | re-frame z2-bench (s .83, ox 430, oy 163) | canvas + 4K outpaint + composite + 3 variants | pending | - | bellows 654 / mortar 3161 |
-| 7 | re-frame z2-cabinet (s .70, ox 630, oy 288) | canvas + 4K outpaint + composite + 3 variants | pending | - | bottles 662 / moon 3175 |
-| 8 | re-frame z3-cellar (s .82, ox 445, oy 173) | canvas + 4K outpaint + composite + 12 variants | pending | - | mirror 675 / ladder 3159 |
+| 3 | re-frame z1-hearth (s .955, ox 86, oy 86) | PIL edge-extend band (outpaint REJECTED, see note) + 3 variants | done | $0.30* | clock crown -> y96 PASS; variants pixel-aligned (poker 1.2%, trapdoor 10.9% local; rug-moved 52% PRE-EXISTING global tone diff of the G1 edit plate, unchanged by re-frame) |
+| 4 | re-frame z1-study (s .86, ox 538, oy 240) | PIL edge-extend band + 0 variants | done | $0.30* | flowerpot -> 671 PASS |
+| 5 | re-frame z1-entry (s .74, ox 425, oy 250) | PIL edge-extend band + 6 variants | done | $0.30* | tablet 666 / cage 3170 PASS; variants local-diff only (2.6-3.0%) |
+| 6 | re-frame z2-bench (s .83, ox 430, oy 163) | PIL edge-extend band + 0 of 3 variants | done | $0.30* | bellows 654 / mortar 3161 PASS; flame1/2/3 are 2560x1280 LEGACY-ART plates (content != base, outside-region diff 40) -> NOT re-framed, flagged; game uses ov-flame overlays, rect remap applies |
+| 7 | re-frame z2-cabinet (s .70, ox 630, oy 288) | PIL edge-extend band + 2 of 3 variants | done | $0.60* | bottles 662 / moon 3174 PASS; drawer-open + open re-framed (local diff 0.2%/6.0%); slots-seated legacy flagged (see item 2) |
+| 8 | re-frame z3-cellar (s .82, ox 445, oy 173) | PIL edge-extend band + 12 variants | done | $0.30* | mirror 675 / winch 896 / ladder 3159 PASS; spot-checked variants local-diff only (0.6-2.3%) |
 | 9 | z4-alcove safe-zone verification (no edit) | measurement only | pending | - | record PASS bounds |
 | 10 | R4-007 dial-face pre-rotated rebuild | PIL, $0 + staged copy update | pending | - | 8 phases; detent-simulation gate |
 | 11 | R4-007 triptych-3 waning-gibbous verify | inspect (fix only if flipped) | pending | - | dark-bite-RIGHT required |
 | 12 | Gates: safe-zone + grayscale on all re-framed plates; manifest build10_reframe; rejects archive | PIL | pending | - | BUG-004-class verification |
+
+_*Outpaint post-mortem (items 3-8): the planned nano-banana-pro border outpaint was run ($1.80, 6 x 4K)
+plus one prompt-variant retest on z2-cabinet ($0.30): ALL outputs re-rendered the scene full-bleed
+(registration >= 13.5 mean-abs after +-24px shift search; content redrawn/restyled/moved) - violates the
+binding content-IDENTICAL constraint, so all 7 outputs were REJECTED (archived in _work-build10/reframe/).
+Bands were instead produced with the deterministic $0 PIL fallback (specs/tools/reframe_b10.py):
+edge-replicate smear + progressive blur/darken vignette + grain; seam C0-continuous by construction;
+mirror-pad variant was also tested and rejected (duplicated the window moon). Interior content = single
+LANCZOS resample, identical transform for base + every variant -> state swaps pixel-aligned by construction.
+Overscan bands carry atmosphere only, per style-guide S8._
