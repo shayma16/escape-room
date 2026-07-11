@@ -47,3 +47,47 @@ Part 1 API spend: $0.45 (3 close-ups) + $0.45 (3 variant edits: slots-seated, ba
 - Part 1: $0.90 (3 close-ups @ $0.45 + 3 variant edits @ $0.45).
 - Part 2: $0.30 (G1 rug-moved 4K; G2/G3 = $0 verified no-op).
 - Pass total: $1.20 API. Running project total: $16.05 (build-3 baseline) + $1.20 = **$17.25 of $18.90 cap** (UNDER by $1.65). No items deferred for budget.
+
+---
+
+# BUILD-10 art batch (round-4: letterbox re-frame + R4-007 dial + R4-008 ghost sweep) [2026-07-11]
+
+PROGRESS: 2/12 done | 0 retrying | 0 failed | 10 remaining | $0.00 spent this batch | project $17.25 of $23.00 HARD CAP
+
+_Scope per Producer handoff: (1) re-frame build-3 WIDE plates of all 7 views into style-guide S8
+dual-safe band (iPad 4:3 crop x[640,3200] on 3840x1920 @3x; iPhone 19.5:9 band y[74,1846]) so the
+Developer restores .aspectFill; crop/outpaint only - content IDENTICAL, only framing changes;
+(2) R4-007 moon-dial waning-gibbous presentation fix; (3) R4-008 v-entry ghost-glyph sweep._
+_Technique: per view, uniform scale s + offset (ox,oy) -> content canvas; border band outpainted via
+nano-banana-pro edit 4K; registered feathered composite keeps interior pixels ORIGINAL (byte-identical);
+identical transform propagated to ALL wide state variants of the view (PIL $0, pixel-aligned by
+construction); @2x/@1x re-export; superseded plates -> _rejects/build10-pre-reframe/._
+_Measured violations (@3x): study flowerpot L155; entry sill-tablet L325 + cage R3710; bench
+floor-bellows L270 + mortar R3290; cabinet bottles L45 + window moon R3635; cellar mirror L280 +
+winch L550 + ladder R3310; hearth clock crown/cuckoo-door top y10 (iPhone band). z4-alcove PASSES
+as-is (statue 2070-2670, planter core central) - verification recorded, no edit._
+_Found defects (this batch, fixed at $0 unless noted): cabinet window moon MIRROR-FLIPPED vs canonical
+sky-master (corr 0.57 flipped vs 0.08; breaks F1 no-mirror-adjacency intent) -> PIL re-stamp from
+sky-master; cabinet second-moon arc artifact at top edge (3550-3840, 0-100) -> PIL clean._
+_R4-007 root cause CONFIRMED by simulation: dial-face sprite marks are drawn upright + canonically
+correct (wanG dark-bite-RIGHT), but MoonDialControlView rotates the disc -45deg*p, tilting the
+at-detent mark; detent p=5 presents dark centroid at (-39,+52) = dark bite LEFT (user report). Fix:
+rebuild sprite with each mark PRE-ROTATED +45deg*k so the mark under the top notch presents upright
+canonical. PIL, $0; acceptance = simulated-rotation centroid test + waxG/wanG distinctness + grayscale._
+_Pre-generation estimate: 1 std edit (ghost clean $0.15) + 6 x 4K outpaint ($1.80) = $1.95 base,
+~$2.95 with retries -> projected $20.20 of $23.00 -> PROCEED. fal 403 balance-exhausted = STOP+report._
+
+| # | Item | Method | Status | Cost | Note |
+|---|------|--------|--------|------|------|
+| 1 | z1-entry ghost-glyph clean (R4-008) | crop edit + canonical PIL WATER stamp -> propagate 6 variants | done | $0 | reused prior-session _work-build10 edit (tablet-final.png, edge ring byte-identical to base); pasted at (240,900) into base + 6 variants; keeps IV + ONE plain WATER down-triangle |
+| 2 | z2-cabinet moon canon fix | PIL re-stamp from sky-master + arc cleanup -> propagate 3 variants | done | $0 | diffusion-inpaint of arc/blob/banding + old moon; canonical disc re-stamped from sky-master (circle-fit (1014.7,337.0) r145.2 -> (3561,170) r76); gates: lit-RIGHT centroid +5.1, thirds 136/200, corr n/a-rebuilt. Propagated to drawer-open + open (4K). slots-seated is a 2560x1280 LEGACY-ART plate (content != build-3 base, mean diff 45) -> NOT propagatable, flagged; game uses ov-slots-seated overlay, rect remap applies |
+| 3 | re-frame z1-hearth (s .955, ox 86, oy 86) | canvas + 4K outpaint + composite + 3 variants | pending | - | clock crown -> y96 |
+| 4 | re-frame z1-study (s .86, ox 538, oy 240) | canvas + 4K outpaint + composite + 0 variants | pending | - | flowerpot -> 671 |
+| 5 | re-frame z1-entry (s .74, ox 425, oy 250) | canvas + 4K outpaint + composite + 6 variants | pending | - | tablet 666 / cage 3170 |
+| 6 | re-frame z2-bench (s .83, ox 430, oy 163) | canvas + 4K outpaint + composite + 3 variants | pending | - | bellows 654 / mortar 3161 |
+| 7 | re-frame z2-cabinet (s .70, ox 630, oy 288) | canvas + 4K outpaint + composite + 3 variants | pending | - | bottles 662 / moon 3175 |
+| 8 | re-frame z3-cellar (s .82, ox 445, oy 173) | canvas + 4K outpaint + composite + 12 variants | pending | - | mirror 675 / ladder 3159 |
+| 9 | z4-alcove safe-zone verification (no edit) | measurement only | pending | - | record PASS bounds |
+| 10 | R4-007 dial-face pre-rotated rebuild | PIL, $0 + staged copy update | pending | - | 8 phases; detent-simulation gate |
+| 11 | R4-007 triptych-3 waning-gibbous verify | inspect (fix only if flipped) | pending | - | dark-bite-RIGHT required |
+| 12 | Gates: safe-zone + grayscale on all re-framed plates; manifest build10_reframe; rejects archive | PIL | pending | - | BUG-004-class verification |
