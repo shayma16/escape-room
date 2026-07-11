@@ -242,8 +242,9 @@ enum PuzzleEngine {
     /// longer auto-grants it — the player taps the visible weight to collect it, the
     /// same manual-pickup convention as the ash ring and the containers.
     static func pryBarrel(state: GameState) -> Bool {
-        guard state.hasItem(PuzzleGraph.ItemID.poker), state.isZoneUnlocked(PuzzleGraph.ZoneID.z3Cellar) else { return false }
+        // Idempotency guard first (see unlockCage): the poker may be consumed later.
         guard !state.hasSolved(PuzzleGraph.PuzzleID.barrelPry) else { return true }
+        guard state.hasItem(PuzzleGraph.ItemID.poker), state.isZoneUnlocked(PuzzleGraph.ZoneID.z3Cellar) else { return false }
         state.markSolved(PuzzleGraph.PuzzleID.barrelPry)
         return true
     }
@@ -270,8 +271,9 @@ enum PuzzleEngine {
     // MARK: - p07 counterweight shelf
 
     static func hangWeight(state: GameState) -> Bool {
-        guard state.hasItem(PuzzleGraph.ItemID.weight), state.isZoneUnlocked(PuzzleGraph.ZoneID.z3Cellar) else { return false }
+        // Idempotency guard first (see unlockCage): the weight is consumed at the hang.
         guard !state.hasSolved(PuzzleGraph.PuzzleID.shelfCounterweight) else { return true }
+        guard state.hasItem(PuzzleGraph.ItemID.weight), state.isZoneUnlocked(PuzzleGraph.ZoneID.z3Cellar) else { return false }
         state.markSolved(PuzzleGraph.PuzzleID.shelfCounterweight)
         state.unlockZone(PuzzleGraph.ZoneID.z4Alcove)
         return true
@@ -343,8 +345,11 @@ enum PuzzleEngine {
     // MARK: - p11 cage unlock ("freely given" beat)
 
     static func unlockCage(state: GameState) -> Bool {
-        guard state.hasItem(PuzzleGraph.ItemID.cageKey) else { return false }
+        // Build 10: the idempotency guard comes FIRST — the key is CONSUMED at the
+        // unlock (uses-driven lifecycle), so a repeat call must still read as the
+        // already-done success it is, not fail on the now-absent key.
         guard !state.hasFlag(PuzzleGraph.StateFlag.crowFreed) else { return true }
+        guard state.hasItem(PuzzleGraph.ItemID.cageKey) else { return false }
         state.markSolved(PuzzleGraph.PuzzleID.cageUnlock)
         state.setFlag(PuzzleGraph.StateFlag.crowFreed)
         state.addItem(PuzzleGraph.ItemID.feather)

@@ -1351,6 +1351,7 @@ final class Build10LifecycleAndInteractionTests: XCTestCase {
     func testConsumedItemsNeverReappearCollectable() {
         let state = makeState(tempDir())
         state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        state.unlockZone(PuzzleGraph.ZoneID.z3Cellar) // fitCrankAndTurn requires z3 (CI run 29164191154 fix)
         satisfyAllGates(state)
         XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state))
         XCTAssertTrue(PuzzleEngine.collectItem(PuzzleGraph.ItemID.crank, from: .astrolabeDrawer, state: state))
