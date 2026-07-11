@@ -164,11 +164,17 @@ enum PuzzleEngine {
                 && !state.hasItem(PuzzleGraph.ItemID.silverCoin)
                 && !state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon) // coin's only sink
         case PuzzleGraph.ItemID.crank:
+            // Build 10: the crank IS consumed once its only use (p08) is done
+            // (uses-driven lifecycle) — a consumed crank must not re-appear
+            // collectable in the drawer.
             return state.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion)
-                && !state.hasItem(PuzzleGraph.ItemID.crank) // crank is never consumed
+                && !state.hasItem(PuzzleGraph.ItemID.crank)
+                && !state.hasFlag(PuzzleGraph.StateFlag.moonbeamOn) // crank's only sink (p08)
         case PuzzleGraph.ItemID.file:
+            // Build 10: the file is consumed once p12 is done — same guard.
             return state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon)
-                && !state.hasItem(PuzzleGraph.ItemID.file) // file is never consumed
+                && !state.hasItem(PuzzleGraph.ItemID.file)
+                && !state.hasSolved(PuzzleGraph.PuzzleID.fileShavings) // file's only sink (p12)
         case PuzzleGraph.ItemID.phial:
             return state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon)
                 && !state.hasItem(PuzzleGraph.ItemID.phial)
@@ -230,12 +236,33 @@ enum PuzzleEngine {
         return true
     }
 
-    // MARK: - p06 barrel pry (tool-on-hotspot)
+    // MARK: - p06 barrel pry (tool-on-hotspot, manual weight pickup — R4-013(1))
 
+    /// Build 10: prying REVEALS the weight inside the barrel (marks p06 solved) but no
+    /// longer auto-grants it — the player taps the visible weight to collect it, the
+    /// same manual-pickup convention as the ash ring and the containers.
     static func pryBarrel(state: GameState) -> Bool {
         guard state.hasItem(PuzzleGraph.ItemID.poker), state.isZoneUnlocked(PuzzleGraph.ZoneID.z3Cellar) else { return false }
         guard !state.hasSolved(PuzzleGraph.PuzzleID.barrelPry) else { return true }
         state.markSolved(PuzzleGraph.PuzzleID.barrelPry)
+        return true
+    }
+
+    /// The weight sits visible-and-pickable in the pried barrel iff p06 is solved and
+    /// the weight hasn't been taken. Derived, not stored (same pattern as the ash
+    /// ring): the weight's only sink is p07 (hung on the hook), so a taken-and-spent
+    /// weight never re-appears.
+    static func isWeightUncollectedInBarrel(_ state: GameState) -> Bool {
+        state.hasSolved(PuzzleGraph.PuzzleID.barrelPry)
+            && !state.hasItem(PuzzleGraph.ItemID.weight)
+            && !state.hasSolved(PuzzleGraph.PuzzleID.shelfCounterweight) // weight's only sink
+    }
+
+    /// Explicit pickup tap on the visible barrel weight. Returns false if not
+    /// collectable right now (no state churn).
+    @discardableResult
+    static func collectBarrelWeight(_ state: GameState) -> Bool {
+        guard isWeightUncollectedInBarrel(state) else { return false }
         state.addItem(PuzzleGraph.ItemID.weight)
         return true
     }
@@ -293,6 +320,26 @@ enum PuzzleEngine {
         return true
     }
 
+    // MARK: - Statue key (manual pickup from the close-up — R4-026)
+
+    /// The star-bit key hangs from the crow statue's beak until explicitly collected
+    /// (build 10: was an auto-grant on the statue hotspot tap). Derived, not stored:
+    /// the key's only sink is p11 (spent unlocking the cage), so once the crow is
+    /// freed the key never re-appears.
+    static func isStatueKeyUncollected(_ state: GameState) -> Bool {
+        state.isZoneUnlocked(PuzzleGraph.ZoneID.z4Alcove)
+            && !state.hasItem(PuzzleGraph.ItemID.cageKey)
+            && !state.hasFlag(PuzzleGraph.StateFlag.crowFreed) // key's only sink (p11)
+    }
+
+    /// Explicit pickup tap on the key in the statue close-up.
+    @discardableResult
+    static func collectStatueKey(_ state: GameState) -> Bool {
+        guard isStatueKeyUncollected(state) else { return false }
+        state.addItem(PuzzleGraph.ItemID.cageKey)
+        return true
+    }
+
     // MARK: - p11 cage unlock ("freely given" beat)
 
     static func unlockCage(state: GameState) -> Bool {
@@ -323,7 +370,8 @@ enum PuzzleEngine {
         guard !state.hasSolved(PuzzleGraph.PuzzleID.fileShavings) else { return true }
         state.markSolved(PuzzleGraph.PuzzleID.fileShavings)
         state.addItem(PuzzleGraph.ItemID.shavings)
-        // Spoon is not consumed (per notes: "not consumed until a successful brew completes").
+        // Build 10 (R4-030): p12 is the ONLY graph use of BOTH the file and the spoon,
+        // so the markSolved lifecycle hook consumes them both here (uses-driven rule).
         return true
     }
 

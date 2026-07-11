@@ -23,22 +23,22 @@ struct PauseMenuView: View {
 
             VStack(spacing: 16) {
                 // R3-001: quiet tactile menu click on each pause-menu button.
-                Button(action: { SoundManager.shared.play(.menuTap); isPresented = false }) {
+                Button(action: { SoundManager.shared.play(.menuConfirm); isPresented = false }) {
                     Label("Resume", systemImage: "play.fill")
                 }
                 .buttonStyle(.chromePrimary)
 
-                Button(action: { SoundManager.shared.play(.menuTap); showRestartConfirm = true }) {
+                Button(action: { SoundManager.shared.play(.menuConfirm); showRestartConfirm = true }) {
                     Label("Restart Level", systemImage: "arrow.counterclockwise")
                 }
                 .buttonStyle(.chromePrimary)
 
-                Button(action: { SoundManager.shared.play(.menuTap); presentSettings = true }) {
+                Button(action: { SoundManager.shared.play(.menuConfirm); presentSettings = true }) {
                     Label("Settings", systemImage: "gearshape")
                 }
                 .buttonStyle(.chromePrimary)
 
-                Button(action: { SoundManager.shared.play(.menuTap); exitToMainMenu() }) {
+                Button(action: { SoundManager.shared.play(.menuConfirm); exitToMainMenu() }) {
                     Label("Main Menu", systemImage: "house")
                 }
                 .buttonStyle(.chromePrimary)

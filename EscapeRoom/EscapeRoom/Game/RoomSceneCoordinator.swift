@@ -10,7 +10,8 @@ import Combine
 ///   Merely holding an item in inventory never auto-applies it to anything.
 /// - To use an item, the player arms it in the inventory bar, then taps the target
 ///   hotspot (or the plate of a close-up opened from that hotspot). `useItem(_:on:)`
-///   is the single entry point; every use attempt — success or failure — disarms.
+///   is the single entry point; a SUCCESSFUL use disarms, a failed one keeps the item
+///   armed (R2-030) and falls through to the normal look (cluster F, R4-005).
 /// - Drag-to-use is REMOVED entirely.
 /// Also in this pass: per-object sounds (generic click removed everywhere), dead
 /// hotspots are silent (F-006/F-014), manual container pickup (F-023/F-018), neutral
@@ -63,6 +64,9 @@ final class RoomSceneCoordinator: ObservableObject {
         self.scene = RoomScene(viewID: viewID, size: size)
         configure()
         scene.onHotspotTap = { [weak self] id in self?.handleTap(id) }
+        // Cluster F (R4-005, build 10): tapping empty scene space disarms the armed
+        // item — the "tap away to deselect" affordance. Silent (visual pulse only).
+        scene.onEmptyTap = { [weak self] in self?.interaction?.disarm() }
         cancellable = state.objectWillChange.sink { [weak self] _ in
             DispatchQueue.main.async { self?.refresh() }
         }
@@ -174,6 +178,7 @@ final class RoomSceneCoordinator: ObservableObject {
         case "plain-cu-grimoire-pageB":     return [ClueID.slotShapes]
         case "plain-cu-grimoire-recipe":    return [ClueID.recipePage]
         case "plain-cu-slots-empty":        return [ClueID.slotShapes]
+        case "cabinet-slots":               return [ClueID.slotShapes] // build 10: state-aware slots view (R4-020(1))
         case "plain-cu-window-orion":       return [ClueID.windowOrion]
         case "triptych",
              "plain-cu-triptych-1", "plain-cu-triptych-2", "plain-cu-triptych-3":
@@ -449,15 +454,21 @@ final class RoomSceneCoordinator: ObservableObject {
     // MARK: - Tap routing (select-then-tap)
 
     private func handleTap(_ hotspotID: String) {
-        // An armed inventory item makes this tap a USE, never a look.
-        // R2-030: keep the item ARMED on a FAILED use so the player can immediately try
-        // another target; disarm ONLY on a successful use (or explicit tap-away/re-tap,
-        // handled in the inventory bar). "Successful" = the use meaningfully progressed
-        // OR triggered its intended in-world reaction (e.g. the crow refusal, a fairness
-        // reject) — anything that isn't a silent no-op on the wrong target.
+        // An armed inventory item first tries this tap as a USE.
+        // R2-030: keep the item ARMED on a failed use; disarm ONLY on a successful use
+        // (or explicit tap-away / re-tap / ✕, handled elsewhere). "Successful" = the use
+        // meaningfully progressed OR triggered its intended in-world reaction (crow
+        // refusal, fairness reject) — anything that isn't a no-op on the wrong target.
+        //
+        // Cluster F (R4-005, build 10): an armed item must NEVER block inspection — if
+        // the use did not engage this target, the tap FALLS THROUGH to the normal look
+        // (close-up / free action) with the item still armed, so the player can keep
+        // examining clues and experimenting without deselecting first.
         if let armed = interaction?.armedItem {
             if useItem(armed, on: hotspotID) {
                 interaction?.disarm()
+            } else {
+                lookTap(hotspotID) // armed state never walls off looks (R4-005)
             }
             return
         }
@@ -558,7 +569,9 @@ final class RoomSceneCoordinator: ObservableObject {
             if state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon) {
                 present(.container(.sunMoonCabinet), from: hotspotID)
             } else {
-                present(.plain(image: "cu-slots-empty"), from: hotspotID)
+                // Build 10 (R4-020(1)): state-aware slots view — a correctly-seated item
+                // renders IN its recess, so partial placements read as progress.
+                present(.cabinetSlots, from: hotspotID)
             }
         case (.cabinet, "potion-shelf"):
             present(.plain(image: "cu-potion-shelf"), from: "potion-shelf")
@@ -575,25 +588,29 @@ final class RoomSceneCoordinator: ObservableObject {
         case (.cellar, "drawer"):
             // Manual pickup, two beats: opening the drawer is a latched free action;
             // the visible spoon is then taken with its own tap (feedback round 1).
+            // Build 10 (cluster D, R4-012(1)): the drawer-open sfx-wood was the SAME
+            // disliked "psh" asset as the nav beat — removed; the slide is visual only.
             if !RoomVisuals.cellarDrawerOpened(state) {
                 PuzzleEngine.openCellarDrawer(state: state)
-                SoundManager.shared.play(.wood)
-            } else if !state.hasItem(PuzzleGraph.ItemID.spoon) {
+            } else if !RoomVisuals.spoonTaken(state) {
                 state.addItem(PuzzleGraph.ItemID.spoon)
                 SoundManager.shared.play(.pickup)
             } else {
-                present(.plain(image: "cu-spoon-drawer"), from: "drawer")
+                // Depleted (Q1/R2-022 class): the emptied drawer's state renders in the
+                // wide view (ov-drawer-empty); no pointless spoon-still-there zoom
+                // (R4-012(2) — the stale close-up plate showed the taken spoon).
+                break
             }
         case (.cellar, "barrel"):
             // Q1 (depleted-hotspot pruning): once the barrel is pried AND the weight is
-            // collected, it's spent — stop offering the pry-gap zoom (R2-022). Before
-            // that, a bare look at the pry gap (the poker sift itself needs the armed
-            // poker). The pried/empty state renders in the wide view (barrelOverlay).
-            if state.hasSolved(PuzzleGraph.PuzzleID.barrelPry), state.hasItem(PuzzleGraph.ItemID.weight)
-                || state.hasSolved(PuzzleGraph.PuzzleID.shelfCounterweight) {
+            // collected, it's spent — stop offering the pry-gap zoom (R2-022). While the
+            // pried barrel still holds the uncollected weight, the close-up presents it
+            // as a tap-to-collect target (build 10, R4-013 manual pickup).
+            if state.hasSolved(PuzzleGraph.PuzzleID.barrelPry),
+               !PuzzleEngine.isWeightUncollectedInBarrel(state) {
                 break // depleted: no pointless zoom
             }
-            present(.plain(image: "cu-barrel-gap"), from: "barrel")
+            present(.barrel, from: "barrel")
         case (.cellar, "winch"):
             // No auto-fit with the crank merely held: look at the socket/crank.
             present(.plain(image: state.hasFlag(PuzzleGraph.StateFlag.moonbeamOn)
@@ -629,12 +646,10 @@ final class RoomSceneCoordinator: ObservableObject {
             // Q1: after the single blossom is picked the planter is spent — no more zoom
             // (R2-027). The picked state renders in the wide view.
         case (.alcove, "statue-key"):
-            if !RoomVisuals.cageKeyTaken(state) {
-                state.addItem(PuzzleGraph.ItemID.cageKey)
-                SoundManager.shared.play(.pickup)
-            } else {
-                present(.plain(image: "cu-statue-key-taken"), from: "statue-key")
-            }
+            // Build 10 (R4-026): manual pickup from the close-up — the statue look
+            // shows the key in the beak; the player taps the KEY to collect it. After
+            // the key is taken the close-up shows the key-taken state.
+            present(.statueKey, from: "statue-key")
         case (.alcove, "cellar-passage"):
             onNavigate?(.cellar) // back out through the shelf gap (F-024)
 
@@ -684,11 +699,17 @@ final class RoomSceneCoordinator: ObservableObject {
     /// what makes every tool-on-hotspot puzzle solvable from inside its close-up —
     /// the exact flow the user could not perform in F-020.
     func useArmedItemInCloseUp() {
-        guard let armed = interaction?.armedItem else { return }
         guard let origin = closeUpOrigin else { return }
-        // R2-030: disarm only on a successful/engaged use; a wrong-target no-op keeps the
-        // item armed so the player can try elsewhere without re-selecting.
-        if useItem(armed, on: origin) {
+        useArmedItem(onHotspot: origin)
+    }
+
+    /// Build 10 (R4-020(1)): a close-up can route an armed use to a SPECIFIC hotspot
+    /// (e.g. the slots close-up's per-recess targets), not only its originating one.
+    /// R2-030: disarm only on a successful/engaged use; a wrong-target no-op keeps the
+    /// item armed so the player can try elsewhere without re-selecting.
+    func useArmedItem(onHotspot hotspotID: String) {
+        guard let armed = interaction?.armedItem else { return }
+        if useItem(armed, on: hotspotID) {
             interaction?.disarm()
         }
     }
@@ -809,8 +830,13 @@ final class RoomSceneCoordinator: ObservableObject {
             if itemID == PuzzleGraph.ItemID.poker {
                 let newly = !state.hasSolved(PuzzleGraph.PuzzleID.barrelPry)
                 if PuzzleEngine.pryBarrel(state: state) {
-                    if newly { SoundManager.shared.play(.solve) }
-                    dropItemIfDepleted(PuzzleGraph.ItemID.poker)
+                    // Item lifecycle (cluster A): retain/consume is handled by the
+                    // GameState markSolved hook — the poker survives here unless BOTH
+                    // its graph uses (p05 + p06) are now satisfied (R4-019 fix).
+                    if newly {
+                        SoundManager.shared.play(.solve)
+                        present(.barrel, from: "barrel") // weight revealed + pickable (R4-013)
+                    }
                     return true
                 }
             }
@@ -823,8 +849,7 @@ final class RoomSceneCoordinator: ObservableObject {
                         SoundManager.shared.play(.unlock)
                         playWeightHungBeat()
                     }
-                    dropItemIfDepleted(PuzzleGraph.ItemID.weight)
-                    return true
+                    return true // weight placed on the hook; consumed by the lifecycle hook
                 }
             }
             return false
@@ -833,8 +858,7 @@ final class RoomSceneCoordinator: ObservableObject {
                 let newly = !state.hasFlag(PuzzleGraph.StateFlag.moonbeamOn)
                 if PuzzleEngine.fitCrankAndTurn(state: state) {
                     if newly { SoundManager.shared.play(.unlock) }
-                    dropItemIfDepleted(PuzzleGraph.ItemID.crank)
-                    return true
+                    return true // crank fitted; consumed by the lifecycle hook (its only use)
                 }
             }
             return false
@@ -854,13 +878,13 @@ final class RoomSceneCoordinator: ObservableObject {
         case (.bench, "cauldron"), (.bench, "ladle"):
             return cauldronUse(itemID)
         case (.bench, "workbench"):
-            // p12 secondary path: the workbench accepts the combination.
+            // p12 secondary path: the workbench accepts the combination. The file and
+            // spoon (both single-use, p12 only) are consumed by the lifecycle hook.
             if itemID == PuzzleGraph.ItemID.file || itemID == PuzzleGraph.ItemID.spoon {
                 let other = itemID == PuzzleGraph.ItemID.file ? PuzzleGraph.ItemID.spoon : PuzzleGraph.ItemID.file
                 let newly = !state.hasSolved(PuzzleGraph.PuzzleID.fileShavings)
                 if ItemCombinations.combine(itemID, other, state: state), newly {
                     SoundManager.shared.play(.solve)
-                    dropItemIfDepleted(PuzzleGraph.ItemID.file)
                     return true
                 }
             }
@@ -871,35 +895,12 @@ final class RoomSceneCoordinator: ObservableObject {
         }
     }
 
-    // MARK: - Item lifecycle (R2-020 place/consume/retain)
-
-    /// Remaining-uses table (from the puzzle graph's tool `uses`): a TOOL is retained
-    /// while it still has an unsatisfied use and dropped from inventory once EVERY use is
-    /// done. Placed/consumed items are removed at their placement by the engine already
-    /// (cabinet coin, ground blossom, filled phial, poured draught). This covers the
-    /// multi-use / single-use TOOLS the graph never consumes, so a finished tool doesn't
-    /// linger. Anti-softlock: a tool is dropped ONLY when all its uses are provably done.
-    private static let toolUseGates: [String: (GameState) -> Bool] = [
-        // Poker: p05 ash sift AND p06 barrel pry.
-        PuzzleGraph.ItemID.poker: { s in
-            s.hasSolved(PuzzleGraph.PuzzleID.ashSift) && s.hasSolved(PuzzleGraph.PuzzleID.barrelPry)
-        },
-        // Crank: p08 winch only.
-        PuzzleGraph.ItemID.crank: { s in s.hasFlag(PuzzleGraph.StateFlag.moonbeamOn) },
-        // Weight: p07 counterweight only (placed on the hook — consumed).
-        PuzzleGraph.ItemID.weight: { s in s.hasSolved(PuzzleGraph.PuzzleID.shelfCounterweight) },
-        // File: p12 shavings only (its shavings persist; the file itself is spent after).
-        PuzzleGraph.ItemID.file: { s in s.hasSolved(PuzzleGraph.PuzzleID.fileShavings) },
-        // Cage key: p11 only (placed/spent in the cage lock).
-        PuzzleGraph.ItemID.cageKey: { s in s.hasFlag(PuzzleGraph.StateFlag.crowFreed) },
-    ]
-
-    /// Drops a tool from inventory iff ALL its graph uses are satisfied (R2-020). No-op if
-    /// the item still has a pending use, keeping the anti-softlock invariant intact.
-    private func dropItemIfDepleted(_ itemID: String) {
-        guard let gate = Self.toolUseGates[itemID], gate(state), state.hasItem(itemID) else { return }
-        state.removeItem(itemID)
-    }
+    // MARK: - Item lifecycle (build 10, cluster A)
+    //
+    // The old hand-maintained `toolUseGates` closures + scattered `dropItemIfDepleted`
+    // call sites are RETIRED. Retain/consume is now the single graph-driven rule in
+    // `ItemLifecycle` (PuzzleGraphModel.swift), reconciled from the GameState
+    // markSolved/setFlag hooks — no interaction path can bypass it (R4-019/R4-030).
 
     /// p05 via the armed poker (the ONLY way to sift — no passive auto-apply). R2-003a:
     /// sifting reveals the ring in the ash (no auto-grant); the ash close-up now shows it
@@ -910,7 +911,6 @@ final class RoomSceneCoordinator: ObservableObject {
         if PuzzleEngine.siftAsh(state: state) {
             SoundManager.shared.play(.solve)
             present(.ashPile, from: "ash") // ring now visible + pickable
-            dropItemIfDepleted(PuzzleGraph.ItemID.poker) // no-op unless barrel also done
             return true
         }
         return false
@@ -919,6 +919,22 @@ final class RoomSceneCoordinator: ObservableObject {
     /// R2-003a: explicit pickup tap on the revealed ash ring.
     func collectAshRing() {
         if PuzzleEngine.collectAshRing(state) {
+            SoundManager.shared.play(.pickup)
+            objectWillChange.send()
+        }
+    }
+
+    /// Build 10 (R4-013): explicit pickup tap on the weight revealed in the pried barrel.
+    func collectBarrelWeight() {
+        if PuzzleEngine.collectBarrelWeight(state) {
+            SoundManager.shared.play(.pickup)
+            objectWillChange.send()
+        }
+    }
+
+    /// Build 10 (R4-026): explicit pickup tap on the key in the statue's beak.
+    func collectStatueKey() {
+        if PuzzleEngine.collectStatueKey(state) {
             SoundManager.shared.play(.pickup)
             objectWillChange.send()
         }
@@ -934,7 +950,7 @@ final class RoomSceneCoordinator: ObservableObject {
             if PuzzleEngine.unlockCage(state: state) {
                 SoundManager.shared.play(.solve)
                 present(.plain(image: "cu-crow-rafters"), from: hotspotID)
-                dropItemIfDepleted(PuzzleGraph.ItemID.cageKey)
+                // key spent in the lock — consumed by the lifecycle hook (its only use)
                 return true
             }
             return false
@@ -976,9 +992,24 @@ final class RoomSceneCoordinator: ObservableObject {
     }
 
     /// QA-BUG-017 fix: per-slot validation. A wrong item never becomes "pending" — it
-    /// pops back audibly. Only the correct item seats (rendered by refreshCabinet);
-    /// the pair completing hands over to the engine, which consumes both. On the pair
-    /// completing, the cabinet opens with its contents visible for manual pickup.
+    /// pops back audibly. Only the correct item seats (rendered by refreshCabinet and,
+    /// build 10, by the state-aware `.cabinetSlots` close-up); the pair completing
+    /// hands over to the engine, which consumes both. On the pair completing, the
+    /// cabinet opens with its contents visible for manual pickup.
+    ///
+    /// Build 10 (R4-020(1)): a CORRECT partial placement now gives clearly POSITIVE
+    /// per-slot feedback — the item seats visibly (wide overlay + close-up seat art)
+    /// with a warm "seat" cue, never the tick that read as "not working". Judgment
+    /// call (implementation notes): the seated item stays in inventory until the pair
+    /// completes — pending placements are coordinator-local by design (QA-BUG-017
+    /// anti-softlock: leaving the view can never strand a half-placed item).
+    ///
+    /// Clue-gating note (R4-020(1) verification): p04's gate (clu-slot-shapes) is
+    /// "self-satisfying" per the graph — but under select-then-tap a player CAN reach a
+    /// slot without ever opening the slots close-up. Physically seating an item in a
+    /// recess is equivalent exposure to the slot-shapes clue, so it records the clue
+    /// viewed — otherwise a fully correct pair would silently never open (worse than
+    /// the confusion this item reports). Flagged in implementation notes.
     @discardableResult
     private func attemptCabinetPlacement(_ itemID: String, slot: String) -> Bool {
         guard !state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon) else { return false }
@@ -986,11 +1017,12 @@ final class RoomSceneCoordinator: ObservableObject {
         guard itemID == correctItem, state.hasItem(itemID) else {
             SoundManager.shared.play(.wrong) // "item pops back out" (failure_behavior)
             // R2-030: a wrong item at a slot pops back — keep it armed to try the other
-            // slot immediately. (Returns false = no disarm.)
+            // slot immediately. (Returns false = no disarm; falls through to the look.)
             return false
         }
         if slot == "sun-slot" { pendingSunItem = itemID } else { pendingMoonItem = itemID }
-        SoundManager.shared.play(.tick) // the seat catching — object-relevant, not generic
+        state.markClueViewed(ClueID.slotShapes) // seating IS seeing the slot shapes (see doc)
+        SoundManager.shared.play(.seat) // warm positive seat cue (R4-020(1); replaces .tick)
         if PuzzleEngine.placeCabinetItems(sun: pendingSunItem, moon: pendingMoonItem, state: state) {
             SoundManager.shared.play(.solve)
             pendingSunItem = nil
@@ -998,6 +1030,7 @@ final class RoomSceneCoordinator: ObservableObject {
             present(.container(.sunMoonCabinet), from: slot) // F-023 manual pickup
         }
         refreshCabinet()
+        objectWillChange.send() // live-update an open .cabinetSlots close-up
         return true // correct item seated (placed) — disarm
     }
 

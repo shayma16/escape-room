@@ -1382,3 +1382,160 @@ save/resume + D7 gate persistence verified on the primary device). iPhone-SE ful
 also green (letterbox keeps it full-width + uncropped). Note: the iPad UI step ran ~46 min
 (the two full-solve tests plus save-resume on the larger simulator); the job timeout was raised
 to 120 min to accommodate it.
+
+---
+
+## Build 10 — Phase 1 (round-4 fix batch, code-only; Developer, 2026-07-11)
+
+Authority: `specs/feedback-backlog.md` "ROUND 4 — PROCESSED 2026-07-11" (checkpoint-1
+approved). Phase 1 is CODE-ONLY per the Producer's phase order — the Asset Gen wide-plate
+re-frame runs in parallel; nothing under `specs/assets/`, the manifest, staging, overlay
+derivation, or hotspot coordinates was touched. Cluster B (per-element overlay rendering)
+and cluster E (hotspot recalibration) are PHASE 2, after the Producer signals the
+re-framed plates have landed.
+
+### Cluster A — item-lifecycle engine (R4-019 critical / R4-030 / R4-013(1) / R4-026)
+
+- **New `ItemLifecycle`** (PuzzleGraphModel.swift): the graph's `uses` arrays transcribed
+  verbatim for EVERY itm-* node; rule = *retain while ANY use unsatisfied, consume once
+  ALL satisfied; items with `uses: []` (rusted key) are never auto-consumed*. Replaces the
+  build-9 ad-hoc `toolUseGates` closures + scattered `dropItemIfDepleted` call sites.
+- **Unbypassable reconcile point:** `ItemLifecycle.reconcile` runs from the
+  `GameState.markSolved` and `GameState.setFlag` hooks — every way a use can become
+  satisfied passes through one of those two mutators, so no interaction path (including
+  the inventory-bar combine, which build 9 missed → R4-030) can skip consumption. Also
+  runs once at `GameState` init so a stale build-9 save (lingering spoon/file) migrates
+  clean.
+- **Manual pickups added:** barrel weight (R4-013 — pry reveals the weight; new `.barrel`
+  close-up with tap-to-collect; `PuzzleEngine.isWeightUncollectedInBarrel`/
+  `collectBarrelWeight`, derived-not-stored like the ash ring) and statue key (R4-026 —
+  new `.statueKey` close-up; `isStatueKeyUncollected`/`collectStatueKey`). Ash ring
+  unchanged (already manual).
+- **Sink-aware "uncollected" predicates:** with real consumption, the derived
+  container-item predicates had to exclude every sink or consumed items would re-appear
+  collectable: crank now excludes `moonbeam-on` (p08), file excludes p12. Same class:
+  `RoomVisuals.pokerTaken` / `spoonTaken` / `cageKeyTaken` are now LATCHED facts
+  (held OR a use satisfied), so consumed items never re-appear on the hearth hook / in
+  the drawer / in the statue's beak.
+- **Spec-note conflict (recorded, not escalated):** puzzle-graph
+  `anti_softlock_invariants` says poker/file/crank are "reusable and never consumed."
+  The user-approved round-4 changelist supersedes that at the INVENTORY level (R4-030
+  explicitly demands consumption); the invariant's purpose — never remove an item with a
+  remaining use — is preserved by construction. Validator should re-confirm (routed item
+  1 pairs Developer + Validator).
+- **Unit tests:** `Build10LifecycleAndInteractionTests` — the invariant "an item that
+  ever entered play and is now in neither inventory nor cauldron has ALL uses satisfied"
+  is asserted after EVERY step of three full engine-level orderings (A includes
+  p06-BEFORE-p05 — the exact R4-019 soft-lock path; C is mirror-first + cellar-first),
+  each also asserting completability; plus a coordinator-level R4-019 reproduction
+  (poker survives barrel-first, ring not stranded, poker consumed only after both uses),
+  relaunch-mid-pickup anti-softlock, consumed-items-never-reappear, and the red-herring
+  never-consumed rule. Existing tests updated: file+spoon are now asserted CONSUMED
+  after p12 (was "spoon is not consumed per spec note" — superseded by R4-030).
+
+### Cluster F — armed-item model (R4-005 game-wide)
+
+- **Armed never blocks looks:** `handleTap` now FALLS THROUGH to `lookTap` when a use
+  does not engage the target — close-ups/clue views open normally with the item still
+  armed (R2-030 retained).
+- **Deselect, three ways:** (1) tapping the armed inventory cell again now DISARMS
+  (was: opened inspect — inspect moved to a magnifier badge on the armed cell +
+  long-press, both keeping F-016); (2) an explicit X badge on the armed cell;
+  (3) tap-away — empty scene space (`RoomScene.onEmptyTap`) and the close-up scrim
+  outside the plate both disarm. All silent per F-019.
+- Judgment call: the close-up PLATE remains the armed-use surface (routes to the
+  originating hotspot); only the scrim outside it is "empty space."
+
+### Cluster D — sound audit completion + regression finding (lost-vs-never-shipped)
+
+- **Trigger-map diagnosis:** all four reported psh instances (nav/back chevrons R4-027,
+  cellar entry R4-010, drawer R4-012(1), workshop entry R4-017) were ONE asset —
+  `sfx-wood` — fired from (a) `GameRoomView.onChange(currentView)` as a blanket
+  "diegetic passage beat" on EVERY zone change, and (b) the drawer-open tap.
+- **Regression verdict: NEVER FULLY SHIPPED, not lost.** Git history (`git log -S`)
+  shows the generic `sfx-click` was removed in the round-1 batch (commit 5d90803), but
+  that SAME commit introduced the `sfx-wood` zone-transition beat — i.e., the round-2
+  R2-024 "no default tap/nav sound" root fix was never fully applied to navigation
+  triggers; the trigger survived every build since. Not a build-3 rebuild loss.
+- **Resolution of the R4-010/012 conditionals:** both traced to the same `sfx-wood`
+  asset the user hates, so both were removed rather than kept as "deliberately distinct
+  cues" (the drawer-open slide was nominally themed, but it IS the reported psh — the
+  drawer now opens silently; the spoon pickup keeps the liked pickup chime).
+- **Deleted from playback AND the bundle** (so it cannot silently return; guarded by
+  `testRetiredPshAndOceanAssetsDoNotShip_build10`): `sfx-wood`, `sfx-entry`, `amb-z1..z4`,
+  `sfx-menu-tap`. Zone changes are now visually announced only (transition dip); event
+  cues (door-open, unlock, solve, pickup, page, seat) are unchanged/kept.
+
+### Singles
+
+- **R4-001:** Level Select card label now renders "Level 1" (word + serif Arabic
+  numeral, `.chromeLevelNumber`), per the standing instruction.
+- **R4-002:** the "ocean waves at level entry" was the 7-second `sfx-entry` noise swell
+  (played by LevelLoadingView before the music) layered over the amb-z1 bed. Both
+  removed; level audio is `music-level1.wav` only, level-scoped (R3-001 scope kept;
+  exit/re-enter restart verified by test). The agent-definition "one ambient loop per
+  zone" requirement is superseded by the user's explicit R2-005/R4-002 direction —
+  recorded here as a deliberate deviation.
+- **R4-003:** all menu chrome (Main Menu, Pause — all four buttons, Settings Reset/About,
+  the in-game pause button, Level Select) now plays the ONE liked ping
+  (`sfx-menu-confirm`); the "ugly tick" `sfx-menu-tap` is retired+deleted. Settings
+  toggles stay silent (judgment call — a cue on a mute-toggle is self-defeating).
+- **R4-020(1):** correct partial placements now seat VISIBLY in both the wide view
+  (existing seat overlays) and a new state-aware `.cabinetSlots` close-up (seated icon
+  cutouts in the recesses + per-recess use targets so both placements work inside the
+  zoom), with a new warm POSITIVE `sfx-seat` cue (synthesized in the established
+  pipeline; the old `.tick` read as "not working"). Clue-gating verification: under
+  select-then-tap a player can seat items without ever opening the slots close-up, which
+  would have made a fully-correct pair silently refuse (gate unsatisfied) — physically
+  seating an item now records `clu-slot-shapes` (equivalent exposure; judgment call,
+  flag to Producer if the Designer disagrees). Judgment call: a lone seated item stays
+  in inventory until the pair completes (QA-BUG-017 anti-softlock — pending placements
+  are coordinator-local and must not be lossy across view changes).
+- **R4-029 (option a):** combine affordance is now loud — larger link badge with a
+  continuous pulse + breathing amber backing on the combinable cell; plus a ONE-TIME
+  first-combine hint (armed-item icon + link glyph + partner icon in a capsule above the
+  pill, auto-fades ~3 s, near-wordless, `combine-hint-shown-v1` UserDefaults latch —
+  same pattern as the R2-021 nav hint).
+
+### Interim-art judgment calls (for the Phase-2 art alignment)
+
+- The pried-barrel close-up renders the weight as its RGBA icon cutout seated in the
+  cu-barrel-gap pry gap (no dedicated pried-with-weight close-up plate exists).
+  `CloseUpLayout.barrelWeightRect` measured against current art; re-derive in Phase 2.
+- Seated slot items in `.cabinetSlots` are icon cutouts over the recesses
+  (`CloseUpLayout.slotSeatRects`); Phase 2 may replace with dedicated seated-state art.
+- Wide-view weight-taken / barrel-emptied rendering is a cluster-B (Phase 2) item.
+
+### Test-suite changes QA should know about
+
+- `EscapeRoomUITests.solveLevelOne`: barrel weight + statue key are now two-step
+  (collect from close-up); the refusal detour arms the SPOON (the poker is consumed by
+  then under the new lifecycle).
+- `QALevelFlowTests` orderings A/B/C now collect the weight explicitly and assert the
+  R4-019 poker retention; `testQA_BUG_022` audio list updated for the deleted/added
+  wavs (deletions are asserted-absent in the new Developer guard test).
+- Replaced: `testAmbientRestartsAfterStop_F004` -> music-lifecycle equivalent;
+  `testMenuSfxShipAndAreDistinctCues_R3_001` -> ping-ships/tick-retired.
+
+### Security checklist (pre-QA handoff, 2026-07-11)
+
+- **No development-time secrets:** grep across `EscapeRoom/` sources, plists, pbxproj,
+  and bundled resource JSONs for key/secret/token/credential patterns — zero hits; the
+  fal.ai key exists only in the gitignored `.env` (never referenced from app code or
+  build phases). Bundled resources are art (jpg/png/json sprite metadata) + audio wavs
+  only.
+- **Minimal entitlements/permissions:** Info.plist contains NO `*UsageDescription`
+  permission strings and no capability entitlements; the app requests none of camera /
+  microphone / location / contacts.
+
+### Licensing (audio delta)
+
+- `sfx-seat.wav`: synthesized in-house this build (same in-repo synth pipeline as all
+  other SFX; no third-party material). All other shipped audio unchanged:
+  in-house synthesized SFX + the user-supplied fal.ai-generated `music-level1.wav`
+  (commercial use OK, per R2-005 ruling). Deleted files removed from the licensing
+  surface: amb-z1..z4, sfx-entry, sfx-wood, sfx-menu-tap.
+
+### CI
+
+- (to be filled after the run) — build-and-test.yml on branch level1-rebuild-build3.

@@ -101,6 +101,10 @@ final class GameState: ObservableObject {
             data.unlockedZones.insert(PuzzleGraph.startZoneID)
             persist()
         }
+        // Build 10 cluster A migration: a save written by the build-9 lifecycle
+        // (which under-consumed — R4-030's lingering spoon/file) may still hold
+        // fully-depleted items; reconcile once on load so old saves come clean.
+        ItemLifecycle.reconcile(self)
     }
 
     // MARK: - Read helpers
@@ -153,6 +157,10 @@ final class GameState: ObservableObject {
         guard !data.flags.contains(id) else { return }
         data.flags.insert(id)
         persist()
+        // Build 10 cluster A: every way an item use can become satisfied passes
+        // through setFlag or markSolved, so reconciling here (and only here) makes
+        // the uses-driven retain/consume rule impossible to bypass (R4-019/R4-030).
+        ItemLifecycle.reconcile(self)
     }
 
     func clearFlag(_ id: String) {
@@ -165,6 +173,8 @@ final class GameState: ObservableObject {
         guard !data.solvedPuzzles.contains(puzzleID) else { return }
         data.solvedPuzzles.insert(puzzleID)
         persist()
+        // Build 10 cluster A: see setFlag — the single, unbypassable reconcile point.
+        ItemLifecycle.reconcile(self)
     }
 
     func setRuneDoorProgress(_ progress: [String]) {

@@ -116,6 +116,11 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertTrue(PuzzleEngine.evaluateMoonDials(state: state))                  // p02
         state.addItem(PuzzleGraph.ItemID.poker)                                      // take poker
         XCTAssertTrue(PuzzleEngine.pryBarrel(state: state))                          // p06
+        // Ordering A pries the barrel BEFORE sifting the ash (p05 comes later) — the
+        // R4-019 soft-lock ordering. The poker MUST survive p06 (p05 still pending).
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.poker),
+                      "R4-019: poker retained after p06 while p05 is unsatisfied")
+        XCTAssertTrue(PuzzleEngine.collectBarrelWeight(state))                       // manual pickup (R4-013)
         XCTAssertTrue(PuzzleEngine.hangWeight(state: state))                         // p07
         XCTAssertTrue(state.isZoneUnlocked(PuzzleGraph.ZoneID.z4Alcove))
         state.addItem(PuzzleGraph.ItemID.cageKey)                                    // take cage key
@@ -153,6 +158,7 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertTrue(PuzzleEngine.evaluateMoonDials(state: state))                  // p02
         state.addItem(PuzzleGraph.ItemID.spoon)
         XCTAssertTrue(PuzzleEngine.pryBarrel(state: state))                          // p06
+        XCTAssertTrue(PuzzleEngine.collectBarrelWeight(state))                       // manual pickup (R4-013)
         XCTAssertTrue(PuzzleEngine.hangWeight(state: state))                         // p07
         state.addItem(PuzzleGraph.ItemID.cageKey)
         XCTAssertTrue(PuzzleEngine.fitCrankAndTurn(state: state))                    // p08
@@ -175,6 +181,7 @@ final class QALevelFlowTests: XCTestCase {
         PuzzleEngine.rotateMirror(toDetent: MirrorSolution.solutionDetent, state: state) // p09 FIRST
         XCTAssertFalse(state.evaluateCondition("cond-beam-at-alcove"), "condition must not hold before the shutter opens")
         XCTAssertTrue(PuzzleEngine.pryBarrel(state: state))                          // p06
+        XCTAssertTrue(PuzzleEngine.collectBarrelWeight(state))                       // manual pickup (R4-013)
         XCTAssertTrue(PuzzleEngine.hangWeight(state: state))                         // p07
         state.addItem(PuzzleGraph.ItemID.cageKey)
         state.addItem(PuzzleGraph.ItemID.spoon)
@@ -342,7 +349,14 @@ final class QALevelFlowTests: XCTestCase {
         state.addItem(PuzzleGraph.ItemID.crank)
         let coordinator = RoomSceneCoordinator(viewID: .cellar, state: state, size: sceneSize)
         coordinator.useItem(PuzzleGraph.ItemID.poker, on: "barrel")                 // p06
+        // Build 10 (R4-013): the weight is REVEALED in the pried barrel (close-up
+        // presented) and collected with its own explicit tap — no auto-grant.
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.weight), "weight revealed, not auto-granted")
+        XCTAssertEqual(coordinator.activeCloseUp, .barrel)
+        XCTAssertTrue(PuzzleEngine.isWeightUncollectedInBarrel(state))
+        coordinator.collectBarrelWeight()
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.weight))
+        coordinator.dismissCloseUp()
         coordinator.useItem(PuzzleGraph.ItemID.weight, on: "hook")                  // p07
         XCTAssertTrue(state.isZoneUnlocked(PuzzleGraph.ZoneID.z4Alcove))
         coordinator.useItem(PuzzleGraph.ItemID.crank, on: "winch")                  // p08
@@ -391,6 +405,7 @@ final class QALevelFlowTests: XCTestCase {
         _ = PuzzleEngine.evaluateMoonDials(state: state)
         PuzzleEngine.rotateMirror(toDetent: MirrorSolution.solutionDetent, state: state)
         _ = PuzzleEngine.pryBarrel(state: state)
+        _ = PuzzleEngine.collectBarrelWeight(state) // manual pickup (R4-013)
         _ = PuzzleEngine.hangWeight(state: state)
         state.addItem(PuzzleGraph.ItemID.cageKey)
         state.setCauldronFlameStage(2)
@@ -618,13 +633,16 @@ final class QALevelFlowTests: XCTestCase {
             XCTAssertNotNil(GameAssetLoader.shared.image(named: plate),
                             "\(plate) must be loadable from the app bundle at runtime")
         }
-        // Audio must ship the same way (SoundManager subdirectory lookup). Every
-        // Effect case must resolve, including the round-1 per-object cues; the
-        // retired generic click must be GONE from the bundle (F-005).
+        // Audio must ship the same way (SoundManager subdirectory lookup). Every LIVE
+        // Effect case must resolve. Build 10 (cluster D + R4-002/003) REMOVED from the
+        // bundle: sfx-wood (surviving default-nav "psh"), sfx-entry ("ocean waves"
+        // swell), amb-z1..z4 (per-zone beds — level audio is music only), sfx-menu-tap
+        // (disliked tick); sfx-seat (positive placement cue) was ADDED. Their absence
+        // is asserted by the build-10 regression guard in PuzzleEngineTests.
         for effect in ["sfx-pickup", "sfx-wrong", "sfx-solve", "sfx-unlock", "sfx-refusal",
                        "sfx-clack", "sfx-fizzle", "sfx-page", "sfx-stone", "sfx-tick",
-                       "sfx-grind", "sfx-bellows", "sfx-stir", "sfx-cloth", "sfx-wood",
-                       "sfx-entry", "amb-z1", "amb-z2", "amb-z3", "amb-z4"] {
+                       "sfx-seat", "sfx-grind", "sfx-bellows", "sfx-stir", "sfx-cloth",
+                       "sfx-door", "sfx-menu-confirm", "music-level1"] {
             XCTAssertNotNil(Bundle.main.url(forResource: effect, withExtension: "wav", subdirectory: "Audio")
                 ?? Bundle.main.url(forResource: effect, withExtension: "wav"),
                             "\(effect).wav must be loadable from the app bundle at runtime")

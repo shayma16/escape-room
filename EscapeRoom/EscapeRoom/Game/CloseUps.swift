@@ -16,6 +16,16 @@ enum CloseUpRequest: Equatable, Identifiable {
     /// The hearth ash pile (R2-003a): undisturbed / sifted-with-ring (tap to collect) /
     /// cleared. A state-resolved plate plus a tap-to-collect ring target when revealed.
     case ashPile
+    /// The cellar barrel (build 10, R4-013): nailed-shut look / pried-with-weight
+    /// (tap to collect) — the same manual-pickup grammar as the ash pile.
+    case barrel
+    /// The alcove crow statue (build 10, R4-026): key-in-beak (tap the key to collect)
+    /// / key-taken. Manual pickup from the close-up, per the R2-020 lifecycle model.
+    case statueKey
+    /// The sun/moon cabinet slot recesses (build 10, R4-020(1)): a state-aware view
+    /// that renders each correctly-seated item IN its recess (per-slot positive visual
+    /// feedback), replacing the static cu-slots-empty plain zoom.
+    case cabinetSlots
     /// Grimoire: browsable spreads, opens at the feather-bookmarked recipe page.
     case grimoire
     /// Triptych: the three night paintings, browsable, opened at the tapped panel
@@ -41,6 +51,9 @@ enum CloseUpRequest: Equatable, Identifiable {
         case .plain(let image): return "plain-\(image)"
         case .container(let container): return "container-\(container.rawValue)"
         case .ashPile: return "ash-pile"
+        case .barrel: return "barrel"
+        case .statueKey: return "statue-key"
+        case .cabinetSlots: return "cabinet-slots"
         case .grimoire: return "grimoire"
         case .triptych: return "triptych"  // shared clue id across panels (F-012 gate)
         case .clock: return "clock"
@@ -91,6 +104,27 @@ enum CloseUpLayout {
     /// The revealed ring's tap target within the cu-ash-sifted plate (R2-003a), measured
     /// against the shipped art: the ring sits between the rake furrows, lower-center.
     static let ashRingRect = CGRect(x: 0.40, y: 0.52, width: 0.20, height: 0.20)
+
+    /// Build 10 (R4-013): the revealed weight's position within the cu-barrel-gap plate
+    /// — centered in the dark pry gap between the loosened lid planks (measured against
+    /// the shipped art: gap spans x 0.42–0.64, y 0.37–0.64). Until the phase-2 art pass
+    /// delivers a dedicated pried-with-weight close-up plate, the weight renders as its
+    /// RGBA icon cutout seated in the gap (flagged in implementation notes).
+    static let barrelWeightRect = CGRect(x: 0.455, y: 0.40, width: 0.15, height: 0.20)
+
+    /// Build 10 (R4-026): the star-bit key hanging from the statue's beak within the
+    /// cu-statue-key plate (key + star bow + hanging ring, measured against the art).
+    static let statueKeyRect = CGRect(x: 0.13, y: 0.09, width: 0.16, height: 0.52)
+
+    /// Build 10 (R4-020(1)): the sun / crescent recesses within the cu-slots-empty
+    /// plate (measured against the art: sun recess centered ~(0.31,0.60), moon recess
+    /// ~(0.76,0.59)). Seated items render as their RGBA icon cutouts inside these.
+    static let slotSeatRects: [SlotID: CGRect] = [
+        .sun: CGRect(x: 0.235, y: 0.475, width: 0.15, height: 0.25),
+        .moon: CGRect(x: 0.685, y: 0.465, width: 0.15, height: 0.25),
+    ]
+
+    enum SlotID { case sun, moon }
 
     // MARK: Container close-ups (manual pickup, feedback round 1)
 

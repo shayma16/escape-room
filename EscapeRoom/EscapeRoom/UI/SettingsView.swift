@@ -51,6 +51,8 @@ struct SettingsView: View {
                         .accessibilityIdentifier("settings-sfx-toggle")
 
                         Button(role: .destructive) {
+                            // R4-003: consistent soft ping across all menu chrome.
+                            SoundManager.shared.play(.menuConfirm)
                             showResetConfirm = true
                         } label: {
                             HStack {
@@ -62,6 +64,7 @@ struct SettingsView: View {
                         .frame(minHeight: 52)
 
                         Button {
+                            SoundManager.shared.play(.menuConfirm) // R4-003
                             showAbout = true
                         } label: {
                             HStack {

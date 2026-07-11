@@ -47,7 +47,12 @@ enum RoomVisuals {
     }
 
     static func pokerTaken(_ s: GameState) -> Bool {
+        // Build 10: "taken" is a latched fact, not "currently held" — once the poker's
+        // uses are depleted it leaves inventory (cluster A), but it must NOT re-appear
+        // on the hearth hook. Either poker use implies it was picked up.
         s.hasItem(PuzzleGraph.ItemID.poker)
+            || s.hasSolved(PuzzleGraph.PuzzleID.ashSift)
+            || s.hasSolved(PuzzleGraph.PuzzleID.barrelPry)
     }
 
     // MARK: z1 v-entry
@@ -140,13 +145,19 @@ enum RoomVisuals {
     /// open-empty. The previous mapping was inverted AND always overlaid an open
     /// drawer from the first frame. `nil` = shut (the base plate's own art).
     /// Saves from older builds (spoon held, no opened flag) migrate by implication.
+    /// Build 10: "spoon taken" is latched — the consumed spoon (post-p12, cluster A)
+    /// must not re-appear in the drawer (the exact R4-012(2)/R2-014 recurrence class).
+    static func spoonTaken(_ s: GameState) -> Bool {
+        s.hasItem(PuzzleGraph.ItemID.spoon) || s.hasSolved(PuzzleGraph.PuzzleID.fileShavings)
+    }
+
     static func cellarDrawerOpened(_ s: GameState) -> Bool {
-        s.hasFlag(PuzzleGraph.StateFlag.cellarDrawerOpened) || s.hasItem(PuzzleGraph.ItemID.spoon)
+        s.hasFlag(PuzzleGraph.StateFlag.cellarDrawerOpened) || spoonTaken(s)
     }
 
     static func drawerOverlay(_ s: GameState) -> String? {
         guard cellarDrawerOpened(s) else { return nil }
-        return s.hasItem(PuzzleGraph.ItemID.spoon) ? "ov-drawer-empty" : "ov-drawer-open"
+        return spoonTaken(s) ? "ov-drawer-empty" : "ov-drawer-open"
     }
 
     static func shelfSlid(_ s: GameState) -> Bool {
@@ -180,6 +191,8 @@ enum RoomVisuals {
     }
 
     static func cageKeyTaken(_ s: GameState) -> Bool {
-        s.hasItem(PuzzleGraph.ItemID.cageKey)
+        // Build 10: latched — the key is consumed at p11 (cluster A), and a consumed
+        // key must not re-appear in the statue's beak.
+        s.hasItem(PuzzleGraph.ItemID.cageKey) || s.hasFlag(PuzzleGraph.StateFlag.crowFreed)
     }
 }

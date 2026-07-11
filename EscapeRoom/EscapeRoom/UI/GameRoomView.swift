@@ -130,7 +130,6 @@ struct GameRoomView: View {
                         session.restartLevel()
                         // R3-001: re-open the level-music scope and restart the bed.
                         SoundManager.shared.enterLevel()
-                        SoundManager.shared.setAmbientZone(.z1)
                     }
                 )
             }
@@ -148,9 +147,10 @@ struct GameRoomView: View {
         .onChange(of: session.currentView) { newView in
             let zoneChanged = coordinatorBox.coordinator.viewID.zoneID != newView.zoneID
             let half = zoneChanged ? 0.3 : 0.15
-            if zoneChanged {
-                SoundManager.shared.play(.wood) // diegetic passage beat (Section 7)
-            }
+            // Build 10 (cluster D, R4-010/017/027): the zone-change `sfx-wood` beat was
+            // the surviving default nav "psh" the user kept reporting — REMOVED. The
+            // transition dip is the (visual-only) passage feedback; event sounds (door
+            // opening, unlock rumble) still play at the event that OPENED the passage.
             withAnimation(.easeIn(duration: half)) { transitionDip = 1 }
             DispatchQueue.main.asyncAfter(deadline: .now() + half) {
                 coordinatorBox.setView(newView, size: CGSize(width: 2732, height: 1366))
@@ -195,7 +195,8 @@ struct GameRoomView: View {
     }
 
     private var pauseButton: some View {
-        Button(action: { showPause = true }) {
+        // R4-003: game-control chrome uses the same liked ping as the rest of the menus.
+        Button(action: { SoundManager.shared.play(.menuConfirm); showPause = true }) {
             Image("pause-rune")
                 .resizable()
                 .frame(width: 40, height: 40)

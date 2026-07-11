@@ -49,7 +49,7 @@ struct MainMenuView: View {
                         .accessibilityIdentifier("menu-settings")
                         // R3-001: soft tactile menu click for a plain navigation button.
                         .simultaneousGesture(TapGesture().onEnded {
-                            SoundManager.shared.play(.menuTap)
+                            SoundManager.shared.play(.menuConfirm)
                         })
                     }
 

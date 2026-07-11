@@ -26,13 +26,11 @@ struct LevelLoadingView: View {
                 withAnimation(.easeIn(duration: dipDuration)) {
                     opacity = 1
                 }
-                // F-002: one soft diegetic entry swell, then the whisper-level zone
-                // bed (near-silence with sparse texture — see SoundManager notes).
-                // R3-001: enterLevel() opens the level-music scope (music is bound to the
-                // level scene lifecycle; the menus that preceded this carried no music).
-                SoundManager.shared.play(.entry)
+                // Build 10 (R4-002): level entry starts the looping music and NOTHING
+                // else — the sfx-entry swell (the reported "ocean waves") and the
+                // per-zone ambient beds are removed. R3-001: enterLevel() opens the
+                // level-music scope (music is bound to the level scene lifecycle).
                 SoundManager.shared.enterLevel()
-                SoundManager.shared.setAmbientZone(.z1)
             }
         }
     }

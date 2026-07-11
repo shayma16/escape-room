@@ -515,8 +515,12 @@ final class EscapeRoomUITests: XCTestCase {
         // spoon drawer (handled chest on the shelf), weight hook on the wall, winch drum
         // top-left, standing mirror bottom-left, ladder far-right.
         // Select-then-tap: arm the poker, then tap the barrel (no auto-apply on bare tap).
-        useItem(app, item: "itm-poker", onScene: 0.735, 0.66) // pry barrel -> weight
+        useItem(app, item: "itm-poker", onScene: 0.735, 0.66) // pry barrel -> weight REVEALED
+        // Build 10 (R4-013): the weight is revealed in the pried-barrel close-up and
+        // collected with its own explicit tap (manual-pickup model), not auto-granted.
+        tapID(app, "collect-itm-weight")
         assertHolding(app, "itm-weight")
+        dismissCloseUp(app)
         useItem(app, item: "itm-weight", onScene: 0.23, 0.33) // hang weight on the wall hook -> z4
         Thread.sleep(forTimeInterval: 1.2)          // weight-hung beat + shelf slide
         shoot(app, "play-06-shelf-slid")
@@ -529,8 +533,11 @@ final class EscapeRoomUITests: XCTestCase {
         // (cellar `alcove-passage` hotspot ~center) leads into the alcove.
         tapScene(app, 0.47, 0.505, settle: 1.2)     // cellar -> alcove via the shelf gap
         shoot(app, "play-07-alcove")
-        tapScene(app, 0.605, 0.31)                  // take star-topped cage key (crow statue)
+        tapScene(app, 0.605, 0.31)                  // crow statue close-up (key in beak)
+        // Build 10 (R4-026): the key is a manual pickup FROM the close-up — tap the key.
+        tapID(app, "collect-itm-cage-key")
         assertHolding(app, "itm-cage-key")
+        dismissCloseUp(app)
 
         // Back out to the cellar, then up the ladder to the hearth, then round to study.
         tapScene(app, 0.915, 0.50, settle: 1.2)     // alcove -> cellar via the right-edge shelf gap
@@ -603,11 +610,13 @@ final class EscapeRoomUITests: XCTestCase {
         // capture the pose for the screenshot record; because of the 1.4 s auto-dismiss it
         // is inherently timing-sensitive, so it is BEST-EFFORT: it must never fail the
         // load-bearing playthrough (the actual crow-freeing below carries the D3/F-011
-        // regression weight). Arm the poker (the rusted key gets the mechanical-reject
-        // path, not the refusal), reach into the cage, and grab whatever is on screen.
-        let pokerCell = app.descendants(matching: .any)["inventory-itm-poker"]
-        if pokerCell.waitForExistence(timeout: 3) {
-            pokerCell.tap()                                         // arm the (held) poker
+        // regression weight). BUILD 10: the poker is CONSUMED once both its uses are
+        // done (cluster A), so it is long gone here — arm the SPOON instead (any
+        // non-key item gets the same D3 refusal; the spoon's own p12 use comes later
+        // and the refusal returns it unspent).
+        let reachCell = app.descendants(matching: .any)["inventory-itm-spoon"]
+        if reachCell.waitForExistence(timeout: 3) {
+            reachCell.tap()                                         // arm the (held) spoon
             Thread.sleep(forTimeInterval: 0.2)
             sceneCoordinate(app, 0.88, 0.325).tap()                // armed reach into the cage (top-right)
             // Poll briefly for the pose, but do NOT assert — the beat may auto-dismiss

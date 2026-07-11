@@ -54,6 +54,11 @@ final class RoomScene: SKScene {
     /// armed inventory item is applied by tapping its target hotspot like any look.
     var onHotspotTap: ((String) -> Void)?
 
+    /// Build 10 (cluster F, R4-005): a tap on EMPTY scene space (no hotspot). The
+    /// coordinator uses it to disarm the armed inventory item — "tap away to deselect"
+    /// — one of the three always-available disarm affordances.
+    var onEmptyTap: (() -> Void)?
+
     init(viewID: ViewID, size: CGSize) {
         self.viewID = viewID
         super.init(size: size)
@@ -248,6 +253,7 @@ final class RoomScene: SKScene {
             onHotspotTap?(hotspotID)
         } else {
             flashTapFeedback(at: point)
+            onEmptyTap?() // cluster F: tap-away disarms (no sound — visual pulse only)
         }
     }
     #endif

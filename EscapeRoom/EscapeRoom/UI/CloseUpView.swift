@@ -22,8 +22,11 @@ struct CloseUpView: View {
 
     var body: some View {
         ZStack {
+            // Build 10 (cluster F): the scrim OUTSIDE the plate is "empty space" — with
+            // an item armed, tapping it DISARMS (tap-away deselect, same grammar as the
+            // wide scene). The plate itself remains the armed-use surface.
             Color.black.opacity(0.92).ignoresSafeArea()
-                .onTapGesture { armedUseOrNothing() }
+                .onTapGesture { disarmOrNothing() }
 
             Group {
                 switch request {
@@ -35,6 +38,12 @@ struct CloseUpView: View {
                     ContainerCloseUp(coordinator: coordinator, container: container)
                 case .ashPile:
                     AshPileCloseUp(coordinator: coordinator)
+                case .barrel:
+                    BarrelCloseUp(coordinator: coordinator)
+                case .statueKey:
+                    StatueKeyCloseUp(coordinator: coordinator)
+                case .cabinetSlots:
+                    CabinetSlotsCloseUp(coordinator: coordinator)
                 case .grimoire:
                     PagerCloseUp(coordinator: coordinator,
                                  pages: CloseUpLayout.grimoirePages,
@@ -78,6 +87,12 @@ struct CloseUpView: View {
     /// over generic noise (F-005).
     private func armedUseOrNothing() {
         coordinator.useArmedItemInCloseUp()
+    }
+
+    /// Build 10 (cluster F): a tap on the scrim (empty space around the plate)
+    /// disarms the armed item; with nothing armed it does nothing.
+    private func disarmOrNothing() {
+        coordinator.interaction?.disarm()
     }
 
     /// §7-R2.4 close-up back affordance: bone-white down-chevron on a soft radial backing
@@ -221,6 +236,119 @@ private struct AshPileCloseUp: View {
             }
         }
         // Armed poker used on the plate sifts the ash (routes to the "ash" hotspot).
+        .contentShape(Rectangle())
+        .onTapGesture { coordinator.useArmedItemInCloseUp() }
+        .padding(24)
+    }
+}
+
+// MARK: - Barrel manual weight pickup (build 10, R4-013)
+
+/// The cellar barrel close-up. Before p06: the nailed pry gap (armed poker on the plate
+/// pries it). After p06 with the weight uncollected: the weight sits visible in the gap
+/// as a tap-to-collect target. INTERIM ART (flagged): no dedicated pried-with-weight
+/// close-up plate exists yet, so the weight renders as its RGBA icon cutout seated in
+/// the gap over the cu-barrel-gap plate; the phase-2 art pass aligns this with the
+/// re-framed plates.
+private struct BarrelCloseUp: View {
+    @ObservedObject var coordinator: RoomSceneCoordinator
+
+    var body: some View {
+        let weightVisible = PuzzleEngine.isWeightUncollectedInBarrel(coordinator.state)
+        FittedPlateLayout(imageName: "cu-barrel-gap") { fitted in
+            if weightVisible {
+                let rect = fitted.subRect(CloseUpLayout.barrelWeightRect)
+                GameImage(name: "icon-weight")
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: rect.width, height: rect.height)
+                    .allowsHitTesting(false)
+                    .position(x: rect.midX, y: rect.midY)
+                Color.white.opacity(0.001)
+                    .frame(width: max(rect.width, 44), height: max(rect.height, 44))
+                    .contentShape(Rectangle())
+                    .onTapGesture { coordinator.collectBarrelWeight() }
+                    .accessibilityLabel(ItemCatalog.definition(for: PuzzleGraph.ItemID.weight)?.name ?? "Weight")
+                    .accessibilityIdentifier("collect-\(PuzzleGraph.ItemID.weight)")
+                    .position(x: rect.midX, y: rect.midY)
+            }
+        }
+        // Armed poker used on the plate pries the barrel (routes to the "barrel" hotspot).
+        .contentShape(Rectangle())
+        .onTapGesture { coordinator.useArmedItemInCloseUp() }
+        .padding(24)
+    }
+}
+
+// MARK: - Statue key manual pickup (build 10, R4-026)
+
+/// The alcove crow-statue close-up. While the key hangs from the beak it is a
+/// tap-to-collect target; once taken the key-taken plate renders.
+private struct StatueKeyCloseUp: View {
+    @ObservedObject var coordinator: RoomSceneCoordinator
+
+    var body: some View {
+        let keyVisible = PuzzleEngine.isStatueKeyUncollected(coordinator.state)
+        FittedPlateLayout(imageName: keyVisible ? "cu-statue-key" : "cu-statue-key-taken") { fitted in
+            if keyVisible {
+                let rect = fitted.subRect(CloseUpLayout.statueKeyRect)
+                Color.white.opacity(0.001)
+                    .frame(width: max(rect.width, 44), height: max(rect.height, 44))
+                    .contentShape(Rectangle())
+                    .onTapGesture { coordinator.collectStatueKey() }
+                    .accessibilityLabel(ItemCatalog.definition(for: PuzzleGraph.ItemID.cageKey)?.name ?? "Key")
+                    .accessibilityIdentifier("collect-\(PuzzleGraph.ItemID.cageKey)")
+                    .position(x: rect.midX, y: rect.midY)
+            }
+        }
+        .padding(24)
+    }
+}
+
+// MARK: - Cabinet slot recesses (build 10, R4-020(1) per-slot placement feedback)
+
+/// State-aware sun/moon slots close-up: each correctly-seated item renders IN its
+/// recess (RGBA icon cutout over the carved recess), so a correct partial placement
+/// reads as visible progress, not a silent nothing. Armed-item taps on the plate route
+/// to the originating slot hotspot as usual (select-then-tap inside close-ups).
+private struct CabinetSlotsCloseUp: View {
+    @ObservedObject var coordinator: RoomSceneCoordinator
+
+    var body: some View {
+        FittedPlateLayout(imageName: "cu-slots-empty") { fitted in
+            // Per-recess use targets: an armed item tapped ON a recess routes to THAT
+            // slot (not just the close-up's originating slot), so both placements can
+            // be made without leaving the zoom.
+            ForEach([CloseUpLayout.SlotID.sun, .moon], id: \.self) { slot in
+                let rect = fitted.subRect(CloseUpLayout.slotSeatRects[slot] ?? .zero)
+                Color.white.opacity(0.001)
+                    .frame(width: max(rect.width, 44), height: max(rect.height, 44))
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        coordinator.useArmedItem(onHotspot: slot == .sun ? "sun-slot" : "moon-slot")
+                    }
+                    .accessibilityLabel(slot == .sun ? "Sun recess" : "Moon recess")
+                    .accessibilityIdentifier(slot == .sun ? "slot-sun" : "slot-moon")
+                    .position(x: rect.midX, y: rect.midY)
+            }
+            if coordinator.pendingSunItem != nil {
+                let rect = fitted.subRect(CloseUpLayout.slotSeatRects[.sun] ?? .zero)
+                GameImage(name: "icon-gold-ring")
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: rect.width, height: rect.height)
+                    .allowsHitTesting(false)
+                    .position(x: rect.midX, y: rect.midY)
+                    .accessibilityIdentifier("seated-sun-item")
+            }
+            if coordinator.pendingMoonItem != nil {
+                let rect = fitted.subRect(CloseUpLayout.slotSeatRects[.moon] ?? .zero)
+                GameImage(name: "icon-silver-coin")
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: rect.width, height: rect.height)
+                    .allowsHitTesting(false)
+                    .position(x: rect.midX, y: rect.midY)
+                    .accessibilityIdentifier("seated-moon-item")
+            }
+        }
         .contentShape(Rectangle())
         .onTapGesture { coordinator.useArmedItemInCloseUp() }
         .padding(24)
