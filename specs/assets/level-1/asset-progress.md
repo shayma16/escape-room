@@ -52,7 +52,7 @@ Part 1 API spend: $0.45 (3 close-ups) + $0.45 (3 variant edits: slots-seated, ba
 
 # BUILD-10 art batch (round-4: letterbox re-frame + R4-007 dial + R4-008 ghost sweep) [2026-07-11]
 
-PROGRESS: 9/12 done | 0 retrying | 0 failed | 3 remaining | $2.10 spent this batch | project $19.35 of $23.00 HARD CAP
+PROGRESS: 12/12 done | 0 retrying | 0 failed | 0 remaining | $2.10 spent this batch | project $19.35 of $23.00 HARD CAP (UNDER projection $20.20)
 
 _Scope per Producer handoff: (1) re-frame build-3 WIDE plates of all 7 views into style-guide S8
 dual-safe band (iPad 4:3 crop x[640,3200] on 3840x1920 @3x; iPhone 19.5:9 band y[74,1846]) so the
@@ -87,10 +87,10 @@ _Pre-generation estimate: 1 std edit (ghost clean $0.15) + 6 x 4K outpaint ($1.8
 | 6 | re-frame z2-bench (s .83, ox 430, oy 163) | PIL edge-extend band + 0 of 3 variants | done | $0.30* | bellows 654 / mortar 3161 PASS; flame1/2/3 are 2560x1280 LEGACY-ART plates (content != base, outside-region diff 40) -> NOT re-framed, flagged; game uses ov-flame overlays, rect remap applies |
 | 7 | re-frame z2-cabinet (s .70, ox 630, oy 288) | PIL edge-extend band + 2 of 3 variants | done | $0.60* | bottles 662 / moon 3174 PASS; drawer-open + open re-framed (local diff 0.2%/6.0%); slots-seated legacy flagged (see item 2) |
 | 8 | re-frame z3-cellar (s .82, ox 445, oy 173) | PIL edge-extend band + 12 variants | done | $0.30* | mirror 675 / winch 896 / ladder 3159 PASS; spot-checked variants local-diff only (0.6-2.3%) |
-| 9 | z4-alcove safe-zone verification (no edit) | measurement only | pending | - | record PASS bounds |
-| 10 | R4-007 dial-face pre-rotated rebuild | PIL, $0 + staged copy update | pending | - | 8 phases; detent-simulation gate |
-| 11 | R4-007 triptych-3 waning-gibbous verify | inspect (fix only if flipped) | pending | - | dark-bite-RIGHT required |
-| 12 | Gates: safe-zone + grayscale on all re-framed plates; manifest build10_reframe; rejects archive | PIL | pending | - | BUG-004-class verification |
+| 9 | z4-alcove safe-zone verification (no edit) | measurement only | done | $0 | PASS: statue+key x~[2070,2670], planter core central, shelf inside; dual-safe band overlay verified visually |
+| 10 | R4-007 dial-face pre-rotated rebuild | PIL, $0 + staged copy update | done | $0 | root cause confirmed (old sprite p=5 dark centroid (-44.7,+50.5) = bite LEFT); marks pre-rotated +45deg*k cw; ALL 8 detents present upright canonical (sim gate PASS, waxG/wanG asym +30.4/-56.2 distinct, grayscale native); specs @1x/2x/3x + staged Resources dial-face.png updated; old sprite -> _rejects |
+| 11 | R4-007 triptych-3 waning-gibbous verify | inspect (fix only if flipped) | done | $0 | PASS: cu-triptych-3 moon lit-LEFT 107.9 vs dark-RIGHT 50.9 = dark-bite-RIGHT canonical; no fix needed |
+| 12 | Gates: safe-zone + grayscale on all re-framed plates; manifest build10_reframe; rejects archive | PIL | done | $0 | 10/10 safe-zone element checks PASS; grayscale PASS on all 6 bases; manifest build10_reframe block written (transforms, rect-remap formula, R4-007 sprite/view contract, legacy-plate flags); 90 files archived _rejects/build10-pre-reframe/; shadow-scan clean |
 
 _*Outpaint post-mortem (items 3-8): the planned nano-banana-pro border outpaint was run ($1.80, 6 x 4K)
 plus one prompt-variant retest on z2-cabinet ($0.30): ALL outputs re-rendered the scene full-bleed
@@ -101,3 +101,11 @@ edge-replicate smear + progressive blur/darken vignette + grain; seam C0-continu
 mirror-pad variant was also tested and rejected (duplicated the window moon). Interior content = single
 LANCZOS resample, identical transform for base + every variant -> state swaps pixel-aligned by construction.
 Overscan bands carry atmosphere only, per style-guide S8._
+
+## FINAL - BUILD-10 batch
+- Spend: $2.10 API this batch (6 planned 4K outpaints $1.80 + 1 retest $0.30; all 7 outputs REJECTED for
+  content non-identity and archived; bands delivered via $0 PIL fallback specs/tools/reframe_b10.py).
+  Items 1,2,9,10,11,12 all $0 PIL. Under the $2.95-with-retries estimate.
+- Project total: $17.25 + $2.10 = **$19.35 of $23.00 HARD CAP** (under the $20.20 projection by $0.85).
+- All 12 items done, none deferred. Legacy-art plates z2-bench-flame1/2/3 + z2-cabinet-slots-seated
+  flagged to Producer (NOT re-framed; overlay rect-remap keeps current behavior).

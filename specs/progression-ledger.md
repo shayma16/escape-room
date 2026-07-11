@@ -62,6 +62,17 @@ level's, to prevent cross-level style drift._
 | global (one-time): app icon + launch screens | $2 cap | $0.41 (4/4 ok, zero retries; launch screens $0 PIL) | $8.52 |
 | 1 — BUG-004 re-frame batch (QA fix: dual-safe-zone violations; 4 views re-framed) | ~$0.35 proj / $4 cap | $0.11 (11 crop-edits; all moves/verification $0 PIL; safe-zone + grayscale + orion-canonical checks PASS) | **$8.63** |
 
+**Post-release feedback round 4 (build 9, processed 2026-07-11).** No difficulty rescore —
+no balance changes requested or made; Level 1 holds 6.0. Mechanics touched by the routed
+fixes: item-lifecycle engine (uses-driven retain/consume — fixes the poker soft-lock
+R4-019 and non-consumption R4-030; preserves anti_softlock_invariants), manual-pickup
+uniformity (weight, statue key), armed-item interaction model (deselect +
+inspect-while-armed), scene-state rendering (full-plate swaps → per-element overlay
+compositing), p02 waning-gibbous dial art corrected to spec (dark-bite-RIGHT, matches
+triptych). Solvability: build 9 verified completable end-to-end (standard order) by the
+user; alternate-order completability restored by the lifecycle fix (Validator to
+re-confirm).
+
 _Report the running total to the user after each level completes._
 
 ## Reusable production tooling (Level 2+)

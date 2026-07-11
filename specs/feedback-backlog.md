@@ -970,3 +970,803 @@ prove p01 solvable by matching grimoire↔marks↔door end-to-end; no stale art 
 → re-release build 9 to TestFlight.
 
 _Round 3 complete; user testing stopped (blocked at p01). No further items expected this round._
+
+---
+
+## Round 4 (in progress — build-9 device testing on iPad; logging)
+
+**Device/context:** iPad, TestFlight, **build 9** (Within 1.0 build 9) — the build that
+shipped to fix the round-3 p01 block + added the interim iPad letterbox. Logging only;
+not yet processed. More items expected one at a time via the Producer.
+
+### R4-001 — status: logged
+> ok starting the game from scratch and resetting progress, once i click play i can see the updated thumbnail and it replaced the roman I with 1, but missed to write "Level". it's supposed to say Level 1 as i previously instructed.
+> (context: Level Select / play screen. POSITIVE note embedded — the updated build-3
+> thumbnail now shows correctly. DEFECT: the level label renders just "1" instead of
+> "Level 1". Likely ties to round-3 R3-003 (which changed the stale Roman "I" thumbnail
+> to Arabic "1" serif) — that fix dropped/omitted the word "Level". User is re-confirming
+> a prior standing instruction that the label must read "Level 1". Factual capture only —
+> not classified/routed.)
+
+### R4-002 — status: logged
+> selecting the thumbnail stars off with the ocean waves sound then goes into the soundclip i shared with you. you should have removed the oceanwaves altogether
+> (context: on starting Level 1 from the Level Select thumbnail, the OLD ocean-waves
+> ambient loop plays briefly at level entry BEFORE the user-supplied music clip takes
+> over. Carry-over of round-2 R2-004 (z1 ambient read as ocean, wrong for a woods/cabin
+> theme) + R2-005 (user provided replacement music `music-level1.wav`) — the ocean
+> ambience was supposed to be REMOVED entirely and replaced by the supplied music, but a
+> residual ocean-waves sound still fires at the start of the level before the music.
+> Audio/functional. Factual capture only — not classified/routed.)
+
+### R4-003 — status: logged
+> hitting the pause button up left gives me options to restart level or open settings etc. selecting settings uses that ugly tick sound. can u make sure you're only using pings and soft sound effects for selections all across main menu, from main page to level collection (i like the ping u used there) and to overall game controls
+> (context: the Pause menu (top-left pause button → Resume/Restart Level/Settings/Main
+> Menu) plays an unpleasant "tick" sound on selection (e.g. opening Settings). User wants
+> a CONSISTENT soft "ping"/gentle SFX for ALL menu-chrome selections across the whole
+> menu layer — Main Menu → Level Select ("level collection") → Pause menu / game
+> controls. POSITIVE reference embedded: user LIKES the ping already used on the Level
+> Select screen — make that the standard everywhere. Ties to round-3 R3-001 (menu-tap/
+> menu-confirm SFX were synthesized/added) — the pause-menu confirm cue is the wrong/
+> harsh one and menu SFX aren't consistent. Audio/polish, menu-chrome-wide (global-ui
+> layer), not level-specific. Factual capture only — not classified/routed.)
+
+### R4-004 — status: logged
+> ok so i picked up the iron stick and it seems there is a glitch there. let me try to explain it to the best of my ability and let me know if it is still unclear. basically, as soon as i pick up the iron stick, the scene should stay intact with only the iron stick removed because it is now in my inventory. however, the place where the iron stick used to be gets replaced with a portion of the fireplace image from the original scene, but it is misaligned with the background scene, so the fireplace looks like it's broken
+> (context: z1 v-hearth, picking up the iron poker (itm-poker). EXPECTED: base scene
+> unchanged, only the poker gone. ACTUAL: the "poker-taken" state patch/overlay (the
+> `ov-poker-taken` overlay or the `z1-hearth-poker-taken` variant covering the hearth
+> region where the poker was) is MISALIGNED with the base plate — a mismatched portion of
+> fireplace art is composited over that spot, so the fireplace reads as broken/torn. This
+> is a state-variant/overlay pixel-ALIGNMENT defect (the pickup overlay doesn't register
+> with the base scene). Could be art (overlay plate not pixel-aligned to base) and/or
+> developer (overlay positioning/compositing). Same "state-variant alignment / resolved-
+> state rendering" family touched in round 2 (e.g. R2-014 drawer patchy) but this is
+> specifically a MISREGISTERED overlay on poker pickup. Build 9, iPad. Factual capture
+> only — not classified/routed.)
+>
+> SCREENSHOT RECEIVED (described; image pasted in chat). Wide z1-hearth view (pause button,
+> L/R nav chevrons, inventory bar showing the star-bit key). In front of the ash pile, what
+> should be the fireguard/grate reads as a FLAT, slightly-offset panel — a cropped 'portion
+> of the fireplace image' standing where the poker was, not integrated into the hearth
+> (matches the user's 'hearth looks broken'). Same overlay appears clearly skewed in the
+> R4-006 screenshot.
+
+### R4-005 — status: logged
+> another bug i noticed is basically when selecting an item in my inventory (in this case the poker), and trying to use it to interact with other things in the scene (which is normal player behavior to try to use things together to see if something else going to unlock, i can't get close ups to other clues or unselect item from inventory, hence hindering progress. a good example is that i selected the poker, tried to unselect it didn't work, so i tried to use it on the clock on the wall to see if i can "reach" it, it didn't give me a close up which i was expecting, tried to use it on both the arrow clues which also didn't give me a close up i was expecting, the only way i could "unselect" the poker was when i went to the scene with the bird, and clicking on the bird and then it would unselect. i know there are other ways to unselect because at some point i was also randomly clicking places and was able to get a close up on the fireplace which also allows to unselect, but i think the hotspot is not easily findable cuz i couldn't reproduce that. i need you to find the issue and fix it. let me know if it's not clear
+> (context: z1, interaction model with an ARMED inventory item (poker). Two coupled
+> defects: (1) NO EASY DESELECT — with the poker armed, tapping to unselect doesn't work;
+> the user only managed to disarm it by tapping the crow in the entry scene, or by
+> randomly hitting the fireplace close-up hotspot (which they couldn't reliably reproduce
+> — hotspot hard to find). (2) ARMED ITEM BLOCKS INSPECTION — while an item is armed,
+> tapping other objects/clues (the wall clock, the rune/"arrow" element marks) does NOT
+> open their expected close-up; so the player can't inspect other things or experiment
+> with using the item, hindering progress. Expected player behavior: freely try an armed
+> item on things AND still be able to open close-ups / examine clues, with an obvious way
+> to deselect. Ties to round-2 R2-030 (on failed use keep item armed, deselect only on
+> explicit action) and the select-then-tap interaction model (round-1) + the "inventory/
+> close-up access" family — but this is a distinct, stronger report: armed state traps
+> the player with no discoverable deselect and blocks all other close-ups. User
+> explicitly requests: find the root issue and fix it. Interaction-model/UX, functional →
+> Developer (at processing). Build 9, iPad. Factual capture only — not classified/routed.)
+>
+> SCOPE (user directive): the fix must apply to ALL inventory items game-wide — not just
+> the poker. The poker is only the example; the deselect affordance and the ability to
+> still open close-ups / inspect other objects while an item is armed must hold for EVERY
+> armed inventory item (file, crank, coin, ring, keys, spoon, blossom, feather, phial,
+> etc.). Route/implement as a general interaction-model fix, not a per-item patch.
+
+### R4-006 — status: logged
+> again another bug related to my earlier image placement.. when clicking the rug i can see the misplaced image of the fireplace overlaying in front of the rug, obvious image glitch, i'll show it to u on a screenshot later
+> (context: z1 v-hearth, interacting with the rug (the floor rug over the trapdoor). A
+> misplaced/misaligned FIREPLACE image is compositing IN FRONT OF the rug — an obvious
+> overlay glitch. Same overlay-misregistration/wrong-overlay family as R4-004 (poker-taken
+> patch misaligned) — likely a hearth state-overlay rendering with wrong position and/or
+> wrong z-order (drawing on top of the rug region). SCREENSHOT PENDING — user will share a
+> screenshot of this glitch later (at end of round); attach to R4-006 for the art/dev fix
+> pass. Art/overlay-compositing, functional. Build 9, iPad. Factual capture only — not
+> classified/routed.)
+>
+> SCREENSHOT RECEIVED (described; image pasted in chat). Same hearth view with the rug folded
+> back (trapdoor floorboards revealed) and the gold ring now in inventory. A large DARK,
+> FLAT, TILTED quadrilateral — a detached 'portion of the fireplace/hearth' overlay — floats
+> at an angle in front of the fire, overlapping the folded rug and floorboards. Unmistakable
+> misregistered-overlay glitch. The upright panel seen in R4-004 is now clearly skewed after
+> the rug-move state change. STRONGLY supports the R4-024 root-cause: state overlays/plates
+> are being composited at the WRONG transform/position. Likely the SAME bug as R4-004 and the
+> R4-024 overlay-transform cluster — group them for one fix.
+
+### R4-007 — status: logged
+> ok i see the issue, the under the rug puzzle with the moon phases has an arrow indicator on top, telling me that the moon phase should look correct when the arrow is pointing to the right moonphase. but because it's a dial, it looks a bit wrong visually (i need you to confirm if it's right or wrong). the way i see it, the waxing crescent looks correct, the full moon looks correct, but the waning gibbous looks wrong as when it's in the "correct" unlock position, the dark bite is showing on the left side, not the right as u mentioned
+> (context: z1 v-hearth, p02-moon-trapdoor three-dial moon-phase lock (under the rug).
+> PRODUCER CONFIRMED WRONG vs spec: per puzzle-graph clu-triptych + p02 (solution
+> `waxing-crescent, full, waning-gibbous`; "waxing vs waning are mirrored shapes, exact
+> orientation matters"), a WANING GIBBOUS must show the dark bite on the RIGHT (lit on the
+> left). The dial in its correct/unlock position renders the dark bite on the LEFT — i.e.
+> it is mirror-flipped and reads as a WAXING gibbous. Waxing-crescent and full-moon dial
+> shapes look correct; only the waning-gibbous shape is flipped. This is the p02 value for
+> the 3-crow painting.
+> TWO fix requirements to carry: (a) the dial's waning-gibbous shape must MATCH the
+> triptych 3-crow painting AND be astronomically correct (dark-bite-RIGHT), per the
+> design's orientation rule (also the color-blind-safety mechanism). VERIFY the triptych
+> painting's 3-crow moon too — if the painting is correct but the dial is flipped they're
+> inconsistent; if BOTH are flipped the puzzle is still shape-matchable but astronomically
+> wrong; either way fix to correct+consistent. (b) AMBIGUITY GUARD: an 8-phase dial should
+> carry BOTH a waxing gibbous and a waning gibbous — if the waning one is drawn as a waxing
+> gibbous, two dial positions may look identical and the "correct" answer becomes
+> ambiguous. Keep them distinct. Art (dial moon-phase silhouette) + verify against
+> triptych; possible logic if the solution detent points at the wrong phase. Build 9,
+> iPad. Factual capture only — not classified/routed.)
+>
+> SCREENSHOT RECEIVED (moon-phase dial puzzle at unlock position; pasted in chat). Three
+> 8-phase dials, each with a ▼ indicator marking the top/answer position, on a dark
+> studded-metal backdrop; inventory = key + gold ring. The MIDDLE dial clearly reads a FULL
+> (bright) moon at the arrow — matches the expected middle=full. The LEFT (should be waxing
+> crescent) and RIGHT (should be waning gibbous) dials' exact lit-side orientation can't be
+> resolved to the pixel from the screenshot; the user's on-device read stands (right dial's
+> dark bite on the LEFT = mirrored waning gibbous). FIX ACTION: compare each dial's
+> under-arrow shape at full resolution against the triptych paintings AND astronomical
+> correctness (waxing crescent lit-on-RIGHT; waning gibbous dark-bite-on-RIGHT); verify the
+> outer dials aren't themselves mirrored.
+
+### R4-008 — status: logged
+> anyway, i unlocked the cellar, but before going there, i saw the arrow clue on the pot on the desk scene, then i went another right to see the window and the bird and the arrow clue on the window.. there seems to be a transparent weird arrow down watermark atop the tablet that has the arrow down clue, i'll take a screenshot
+> (context: a semi-transparent/ghosted "down-arrow" WATERMARK is rendering on top of a
+> clue surface that already bears a down-arrow (downward-triangle rune) clue. The
+> "down-arrow clues" are the EARTH rune (▽ + numeral III) on the z1 v-study dead flowerpot
+> and the WATER rune (▽ + numeral IV) on the z1 v-entry windowsill — user was moving
+> between the study (pot) and entry (window+bird) scenes, so it's on one/both of those
+> downward-triangle rune surfaces ("tablet"/plaque/sill). Looks like a stray transparent
+> duplicate glyph / leftover watermark overlaid on the rune plate. Possibly related to
+> canonical rune-glyph stamping (round-3 R3-007) leaving a ghost, or a semi-transparent
+> overlay artifact. Screenshot will disambiguate which surface. SCREENSHOT PENDING — user
+> will share at end of round; attach to R4-008. Art/overlay-render artifact. Build 9,
+> iPad. Factual capture only — not classified/routed.)
+>
+> SCREENSHOT RECEIVED (z1 v-entry; pasted in chat). Shows the moonlit window (full moon), the
+> thorn-door with the carved crow's-beak/skull motif + hanging rusted key, and the caged crow
+> on its stand (brass feed cup visible); inventory = key. The WATER rune tablet (downward
+> triangle ▽ + numeral IV) sits on the left windowsill. A faint TRANSLUCENT down-pointing
+> triangle/arrow watermark is ghosted onto the scene (Producer reads it in the upper-central
+> wall area between window and door). LOCATION RESOLUTION (Producer audit): the user's
+> verbatim report is authoritative — the ghost ▽ sits "atop the tablet that has the arrow
+> down clue" (the windowsill WATER-rune tablet in z1 v-entry). The Producer's screenshot read
+> also spotted a possible second faint ▽ in the upper-central wall area. FIX SCOPE: sweep the
+> ENTIRE z1 v-entry scene (and its close-ups) for stray semi-transparent ▽/glyph overlays and
+> remove them all, rather than fixing one spot — covers both readings without needing further
+> user confirmation.
+
+### R4-009 — status: logged
+> close up of the bird works fine, but something that could be related to the earlier bug, when selecting the poker from inventory, i can't get a close up of the arrow tablet by the window or the bird head on the door, but using it on the bird cage brings up the wrong close up from the first build, not the stylized 3d one. but at least it allows me to deselect the item from inventory
+> (context: z1 v-entry. THREE threads:
+> (1) POSITIVE — the normal crow/cage close-up (cu-cage-crow) works fine and shows correct
+> build-3 art.
+> (2) REINFORCES R4-005 — with the poker armed, tapping the "arrow tablet" (windowsill
+> WATER rune ▽+IV clue) and the "bird head on the door" (the crow's-beak/skull motif on
+> the thorn-door) does NOT open their close-ups; armed-item state blocks inspection again
+> (cross-link to R4-005 game-wide armed-item fix).
+> (3) NEW — STALE-ASSET / SHADOW BUG: using the poker ON the bird cage brings up the WRONG
+> close-up — an OLD BUILD-1 PAINTERLY image, NOT the stylized-3D (Nano Banana Pro /
+> build-3) art. So a stale/shadow cage close-up (likely a distinct "item-used-on-cage" or
+> refusal-state close-up asset) is still being loaded instead of the build-3 canonical.
+> This is exactly the stale-canonical/shadow class from R2-META-QA / the round-3
+> stale-shadow fixes (assert_no_nb_shadow) — apparently one cage close-up variant escaped
+> promotion. → Developer (asset staging/shadow audit) + Asset/manifest verify the build-3
+> cage-interaction close-up is canonical.
+> (4) MINOR — using the poker on the cage DID let the user deselect the poker (another
+> ad-hoc deselect path; reinforces R4-005 that deselect is only reachable via certain
+> hotspots, not a clear affordance).
+> Build 9, iPad. Factual capture only — not classified/routed.)
+
+### R4-010 — status: logged
+> now let me get into the cellar, i hear the ugly psh sound, is it the same one i hated from before? if yes, change it, if not, keep it
+> (context: entering z3 cellar, user hears the "ugly psh" sound and asks whether it's the
+> same hated generic sound from before. PRODUCER NOTE: cannot verify by ear from here. The
+> generic "psh" was diagnosed in round 2 as the DEFAULT per-tap sound firing on nearly
+> every tap (R2-024) and was slated for game-wide REMOVAL (kill default tap sound; only
+> specific events get themed cues; tap feedback stays visual). So a psh still firing on
+> cellar entry/taps is very likely the leftover generic sound that escaped removal, OR a
+> regression — NOT an intended cue. User's conditional: if same → change it; if genuinely
+> a different/intended cue → keep. FIX-PASS ACTION: (a) verify whether the round-2
+> default-tap-sound removal actually shipped in build 9; (b) sweep the z3 cellar tap/entry
+> sounds; if it's the generic psh, remove it (visual tap feedback only) per the round-2
+> sound-audit direction. Audio/functional → Developer. Build 9, iPad. Factual capture
+> only — not classified/routed.)
+
+### R4-011 — status: logged
+> clicking the mirror in the cellar, i hear a sound. from earlier builds, i know that is supposed to make the mirror reposition so that the moonlight can shine into the hidden place, but i don't see that visually. the mirror stays in place
+> (context: z3 v-cellar, p09-mirror-aim (rotate the tilting mirror through its 3 detents to
+> route the moonbeam toward the alcove). A sound fires on clicking the mirror, but the
+> mirror does NOT visually reposition — it stays in place, so the player gets no visual
+> feedback that it moved/aimed (and no way to see it's at detent-3). The art states exist
+> (z3-cellar-mirror-d2 / mirror-d3 plates in the beam matrix), so the DEFECT is the game
+> not APPLYING/rendering the mirror's detent state on interaction. Same systemic
+> "state-visual not refreshed after interaction" family as round-2 R2-013 (trapdoor),
+> R2-014 (spoon), R2-018 (astrolabe), R2-022 (barrel) — audio success but no visual state
+> change. Functional (state→visual wiring) → Developer; add to the systemic state-refresh
+> audit. NOTE it's puzzle-relevant: without visible mirror movement the player can't
+> confirm detent-3 for the beam-at-alcove condition (moonbeam-on AND mirror-at-detent-3).
+> User relied on prior-build knowledge to know the mirror should move. Build 9, iPad.
+> Factual capture only — not classified/routed.)
+
+### R4-012 — status: logged
+> there is a drawer in the cellar, when i click it i hear a psh sound, please check if it's the same as before, if it is the psh one i hate, change it, if it's not keep it. clicking the drawer again gives me the spoon. then clicking the drawer one more time gives me a close up of the drawer with the spoon in it, isn't that wrong since i already picked up the spoon and it's in my inventory already?
+> (context: z3 v-cellar, root-shelf drawer (itm-spoon). TWO threads:
+> (1) PSH SOUND on clicking the drawer — same as R4-010: producer can't verify by ear; per
+> round-2 R2-024 the generic "psh" default tap sound was slated for game-wide removal, so a
+> psh here is very likely the leftover/regression rather than an intended cue. User's
+> conditional: if same → change; if genuinely different/intended → keep. Fix-pass: verify
+> the round-2 default-tap-sound removal shipped in build 9 + sweep this drawer's tap sound.
+> Cross-ref R4-010.
+> (2) STALE "SPOON-IN-DRAWER" STATE — after picking up the spoon (it's now in inventory),
+> re-opening the drawer close-up STILL shows the spoon sitting in the drawer. The
+> "spoon-taken / empty drawer" state isn't applied. This is the EXACT recurrence of round-2
+> R2-014 (spoon persists in drawer after pickup) and the systemic state-visual-not-refreshed
+> family (R2-013/15/18/22, and R4-011 mirror) — the art states exist; the game isn't
+> rendering the post-pickup state. Functional (state→visual) → Developer; add to the
+> systemic state-refresh audit. Build 9, iPad. Factual capture only — not classified/routed.)
+
+### R4-013 — status: logged
+> used the poker on the barrel, i got the weight immediately in my inventory, but visually i see it inside the barrel. shouldn't i "pick it up" to add it to my inventory? clicking it again does not pick it up by the way
+> (context: z3 v-cellar, p06-barrel-pry (poker on nailed barrel → itm-weight). THREE coupled
+> threads:
+> (1) AUTO-GRANT vs MANUAL PICKUP — the weight goes straight into inventory on prying, with
+> no explicit "pick it up" step. This is the manual-pickup model the user has repeatedly
+> asked for (round-2 R2-003 ash ring, R2-020 item lifecycle, R2-023) — items should be
+> unveiled, then tapped to collect. Recurs here for the weight. → Developer (manual-pickup/
+> lifecycle model, game-wide).
+> (2) STALE STATE — after the weight is taken (it's in inventory), the barrel close-up STILL
+> shows the weight sitting inside. Same systemic state-visual-not-refreshed family as R2-022
+> (barrel showed closed after weight), R2-014 (spoon), R4-011 (mirror), R4-012 (spoon
+> drawer). The post-pry "weight-taken / empty barrel" state isn't rendered. → Developer
+> state-refresh audit.
+> (3) DEAD STALE IMAGE — clicking the still-visible weight again does NOT pick it up; it's a
+> non-interactive leftover image (consistent with it already being auto-granted + the state
+> not refreshing). Reinforces (1)+(2).
+> Build 9, iPad. Factual capture only — not classified/routed.)
+
+### R4-014 — status: logged
+> i'm trying to use the weight on the lever, it didn't work, and since i have the weight selected, i was kind of locked in, so i used the bottom arrow to go back to the first scene, i still have the weight selected, let me touch the caged bird to unselect it
+> (context: z3 v-cellar, p07-shelf-counterweight (hang itm-weight on the pulley hook to
+> slide the shelf and reveal the z4 alcove). TWO threads:
+> (1) POSSIBLE FUNCTIONAL BUG / POSSIBLE PROGRESSION-BLOCKER — using the weight on the
+> lever/hook "didn't work" (the interaction didn't register / p07 didn't trigger) on this
+> attempt. p07 unlocks z4-alcove (moonflower + cage key), so if weight-on-hook genuinely
+> fails a player is BLOCKED from the alcove. NEEDS INVESTIGATION: is this a real p07 failure
+> in build 9, or a symptom of the armed-item interaction bug (R4-005) / a hotspot-hit-target
+> miss on the hook? User hadn't retried yet at time of report. → Developer, verify p07
+> weight-on-hook works end-to-end; treat as candidate-critical until confirmed.
+> (2) REINFORCES R4-005 (armed-item traps player) with a DIFFERENT item (the weight) —
+> validates the "applies to ALL inventory items" scope note: with the weight armed the user
+> was "locked in," couldn't easily deselect, navigated back to z1 still holding it, and had
+> to touch the caged crow (the known ad-hoc deselect path) to disarm. Same
+> no-discoverable-deselect problem. Cross-ref R4-005, R4-009.
+> Build 9, iPad. Factual capture only — not classified/routed.)
+>
+> RESOLVED-AS-HOTSPOT by R4-023: p07 weight-on-hook is functional; the earlier "didn't work"
+> was a mis-calibrated hotspot, not a p07 logic failure or hard block. Downgrade from
+> candidate-critical to a hotspot-calibration bug (still needs fixing).
+
+### R4-015 — status: logged
+> ok after doing that i thought i'll just open the arrow glyph door. i entered the right pattern and could hear that the door unlocked, but i don't see visually that it got unlocked.
+> (context: z1 v-study, p01-rune-door (the "arrow glyph"/element-rune press-lock that
+> unlocks the z2 workshop). POSITIVE embedded: p01 is now SOLVABLE (correct pattern
+> accepted, unlock sound fires) — this confirms the build-9 canonical-rune-glyph fix
+> (round-3 R3-007) worked; the round-3 p01 block is cleared. DEFECT: after solving, the
+> door does NOT visually show as unlocked/open — audio success but no visual state change.
+> Exact recurrence of round-2 R2-015 (rune-door open not shown after solve) and the
+> systemic state-visual-not-refreshed family (R2-013 trapdoor, R4-011 mirror, R4-012 spoon,
+> R4-013 barrel). May also need an "open/ajar rune-door" art state if one wasn't generated
+> (R2-015 flagged verifying/adding it). Functional (state→visual) → Developer state-refresh
+> audit; verify the open-door plate exists in build-3 art. Build 9, iPad. Factual capture
+> only — not classified/routed.)
+
+### R4-016 — status: logged
+> now, i tried to go into the potion door by clicking the door but that doesn't work, it seems the hotspot for that is limited to the arrow puzzle  itself. i need to click the arrow puzzle again to go into the potion room. u need to fix that to cover the entire door
+> (context: z1 v-study, the workshop ("potion") door that p01-rune-door unlocks (entry to
+> z2 workshop). After solving p01, the ENTER-WORKSHOP transition hotspot is limited to the
+> small rune/"arrow" press-plate panel only — clicking the door itself does nothing; the
+> user must tap the arrow-puzzle panel AGAIN to go through. User directive: the entry
+> hotspot must cover the ENTIRE door once unlocked, not just the puzzle panel. Functional/
+> hotspot-geometry + navigation → Developer: after p01 is solved, make the whole door a
+> "go to z2" hotspot (and it should read as an open/enterable door — ties to R4-015 where
+> the door doesn't visually show unlocked). Build 9, iPad. Factual capture only — not
+> classified/routed.)
+
+### R4-017 — status: logged
+> also clicking the puzzle itself to get into the potion room has that psh sound
+> (context: z1 v-study → z2 workshop transition. Tapping the rune-puzzle panel to ENTER the
+> potion/workshop room plays the generic "psh" sound. Same class as R4-010/R4-012 and
+> round-2 R2-024 (the generic default tap/navigation sound that was slated for game-wide
+> removal — visual tap feedback only, no default sound; specific events get themed cues).
+> This is another surviving instance, here on a scene-transition/entry tap. Fix-pass: part
+> of the same sound audit — remove the default psh on this entry tap; if a transition cue
+> is wanted it should be a themed one, not the generic psh. Cross-ref R4-010, R4-012,
+> R4-016. Audio/functional → Developer. Build 9, iPad. Factual capture only — not
+> classified/routed.)
+
+### R4-018 — status: logged
+> i could get a close up of the mortar and the bowl on the table, let me go right to see the orion's belt puzzle. i see the potion shelf, the window with the star placement, the cabinet and the astrolobe. i solved the astrolobe using orion's belt clue, but upon unlock i see it's using the older build none-stylized 3d image. i could pick up the tool and the crescent coin from it, but the close up is definately wrong
+> (context: z2 v-cabinet, p03-astrolabe-orion. Threads:
+> (1) POSITIVE — mortar/bowl close-ups work; p03 solved correctly via the Orion's-belt clue;
+> AND the drawer items (itm-crank "tool" + itm-silver-coin "crescent coin") ARE now
+> collectible. This is a MAJOR improvement over round-2 R2-018/019/025 where the
+> p03-resolved close-up rendered as an empty grey box and items were invisible/uncollectible
+> (the critical soft-lock) — that soft-lock appears RESOLVED in build 9 (verify).
+> (2) DEFECT — STALE close-up art: the p03-RESOLVED astrolabe/drawer close-up shows the
+> OLDER build (non-stylized, painterly build-1/2) image, not the build-3 stylized-3D art.
+> Same stale-asset/shadow class as R4-009 (poker-on-cage stale close-up) and the round-3
+> stale-shadow sweep (assert_no_nb_shadow) — another resolved-state/interaction close-up
+> that escaped build-3 promotion. → Developer asset-staging/shadow audit + Asset/manifest:
+> confirm the build-3 p03-resolved astrolabe/drawer close-up is the canonical staged file.
+> PATTERN NOTE: two stale interaction/resolved close-ups now found (cage R4-009 + astrolabe
+> R4-018) — the shadow sweep likely missed a whole class of resolved-state close-ups; audit
+> ALL of them. Build 9, iPad. Factual capture only — not classified/routed.)
+
+### R4-019 — status: logged 🔴 CRITICAL (soft-lock / progression-blocker)
+> oh i found a major bug. as i kept restarting the game to reproduce issues, this time i forgot to use the poker on the ash pile to get the ring.. i simply used the poker on the barrel in the cellar, and it got depleted and removed from inventory. now i can't solve the cabinet puzzle with the gold ring.. i'll have to reset progress and start over to continue testing, but in its current state the game is unsolvable
+> (context: 🔴 CRITICAL SOFT-LOCK. The iron poker (itm-poker) has TWO uses per puzzle-graph:
+> p05-ash-sift (→ itm-gold-ring) AND p06-barrel-pry (→ itm-weight). The user used the poker
+> on the BARREL (p06) FIRST, without having sifted the ash (p05); the poker was then
+> DEPLETED and REMOVED from inventory after that single use. With the poker gone, p05 can no
+> longer be done → no gold ring → p04-cabinet-sun-moon cannot be solved → the level is
+> UNSOLVABLE from that save. User must reset progress to continue.
+> ROOT CAUSE: botched item-lifecycle logic (round-2 R2-020). R2-020's rule was: a PLACED/
+> consumed item is removed, but a multi-use TOOL is RETAINED until ALL its uses are depleted
+> (explicitly: "poker = p05 ash + p06 barrel"). The build removes the poker after its FIRST
+> use instead of after ALL `uses` are satisfied. This directly VIOLATES the puzzle-graph
+> anti_softlock_invariants ("itm-poker ... reusable and never consumed"; "never remove an
+> item before every one of its uses is done").
+> REACHABILITY: normal play — the design allows multiple valid solve orders (poker-on-barrel-
+> before-ash is a legal path, e.g. cellar-first orderings), so a real player hits this
+> without doing anything unusual. Not an edge case.
+> FIX: retain any multi-use tool until EVERY entry in its graph `uses` array is satisfied
+> (general fix, driven by the graph). Poker must survive until BOTH p05 and p06 are done.
+> Audit all multi-use items for the same. → Developer (implement) + Puzzle Logic Validator
+> (confirm no softlock reintroduced) + QA regression: add alternate-ordering tests, incl.
+> p06-before-p05, that assert the level stays completable (ties to R2-META-QA — automated
+> tests missed this because scripted playthroughs used one order). Build 9, iPad. Factual
+> capture only — not classified/routed.)
+
+### R4-020 — status: logged
+> after restarting, i tried to put the crescent coin in the right place in the cabinet close up, i heard a sound that sounded like it wasn't working. i tried a few times... the coin stayed in my inventory. i decided that it could be a bug and tried to put the gold ring in its place, this time the cabinet unlocked, both items got depleted and removed from my inventory, and i could see the none stylized 3d close up of the open cabinet with an empty bottle and a knife/shaver thing. picking up those
+> (context: z2 v-cabinet, p04-cabinet-sun-moon (place itm-gold-ring in the sun slot +
+> itm-silver-coin "crescent coin" in the moon slot → cabinet opens → yields itm-file
+> "knife/shaver" + itm-phial "empty bottle"). FOUR threads:
+> (1) CONFUSING/MISLEADING PLACEMENT FEEDBACK — placing the crescent coin in its (correct)
+> moon slot first produced a sound "like it wasn't working" and the coin appeared to STAY in
+> inventory (no visible seated-coin feedback), so the user thought it failed and retried
+> several times. Only after placing the gold ring did the cabinet unlock and BOTH items get
+> consumed together. NEEDS INVESTIGATION: was the coin actually seating with NO positive
+> visual/audio feedback (state-visual/audio feedback bug on a correct partial placement),
+> and/or is a NEGATIVE-sounding cue playing on a correct placement? Also possible
+> clue-gating (rev 1.3, p04 requires slot/page-B clue viewed) interacting confusingly.
+> Either way: placing a correct item into a two-slot puzzle must give clear positive
+> per-slot feedback (item visibly seats + correct sound), not a "not working" sound + item
+> apparently still in inventory. → Developer (per-slot placement feedback + verify
+> partial-placement state) + verify against clue-gating.
+> (2) STALE CLOSE-UP — the resolved OPEN-cabinet close-up shows non-stylized-3D (old build)
+> art, NOT build-3 stylized. THIRD stale resolved/interaction close-up this round (cage
+> R4-009, astrolabe R4-018, now cabinet R4-020) — confirms a whole class of resolved-state
+> close-ups escaped build-3 shadow-promotion. → Developer asset-staging/shadow audit +
+> manifest verify.
+> (3) POSITIVE + LIFECYCLE-CORRECT — file+phial ARE collectible from the open cabinet
+> (improvement over round-2 R2-026 grey-box soft-lock; verify resolved). And ring+coin being
+> CONSUMED on placement here is the CORRECT lifecycle (they're single-use PLACED items now
+> sitting in the slots) — do NOT confuse with the R4-019 poker bug (that was a multi-use
+> TOOL wrongly consumed after one of two uses). Preserve this distinction for processing.
+> (4) POST-PICKUP STATE NOT REFRESHED — after collecting the file + phial from the open
+> cabinet, they are NOT removed from the cabinet close-up visual; they stay shown even though
+> they're now in inventory. Same systemic state-visual-not-refreshed family as R4-012 (spoon
+> drawer), R4-013 (barrel weight), R2-014. User expects: once picked up, the item disappears
+> from the scene and the cabinet shows an emptied state — and expects this handled together
+> with swapping in the correct build-3 stylized close-up (thread 2). → Developer state-refresh
+> audit, in the same fix as the stale-art swap for this close-up.
+> Build 9, iPad. Factual capture only — not classified/routed.)
+
+### R4-021 — intentionally not used
+> R4-021 intentionally not used — that observation (file/phial remain in the cabinet visual
+> after pickup) was folded into R4-020 as thread (4). No item was dropped; numbering resumes
+> at R4-022.
+
+### R4-022 — status: logged
+> going back to the scene, the visual shows the cabinet door closed although i just unlocked it. it also shows a weird additional part of the sun door, i'll show u a screenshot
+> (context: z2 v-cabinet WIDE scene, after solving p04 (cabinet opened in the close-up). TWO
+> threads:
+> (1) STATE-VISUAL NOT REFRESHED (wide view) — returning to the wide cabinet scene shows the
+> cabinet door still CLOSED even though it was just unlocked/opened. Same systemic
+> state-visual-not-refreshed family as R4-015 (rune door), R2-013 (trapdoor), etc.,
+> specifically the WIDE-view state not reflecting a solved puzzle. → Developer state-refresh
+> audit (ensure solves update the wide view, not just the close-up).
+> (2) OVERLAY ARTIFACT — a "weird additional part of the sun door" is visible in the wide
+> scene: a misplaced/duplicated overlay fragment around the sun-slot door. Same
+> overlay-misregistration/wrong-overlay family as R4-004 (poker patch) and R4-006 (rug/
+> fireplace). Likely a seated-item or open-state overlay compositing at the wrong position/
+> z-order over the sun slot. SCREENSHOT PENDING — user will share at end of round; attach to
+> R4-022. → Developer/Art overlay-compositing.
+> Build 9, iPad. (Screenshot-pending tally now: R4-004, R4-006, R4-007, R4-008, R4-022.)
+> Factual capture only — not classified/routed.)
+>
+> SCREENSHOT RECEIVED (z2 v-cabinet wide; pasted in chat). CONFIRMS BOTH THREADS. (1) The
+> sun/moon cabinet shows its doors CLOSED (left door = sun carving, right door = crescent-moon
+> carving) although p04 is SOLVED — inventory shows the file + phial (p04 yield) plus crank/
+> spoon/weight — so the wide view isn't reflecting the opened state (wide-view state-refresh).
+> (2) EXTRA SUN-DOOR ARTIFACT: an additional wooden door panel bearing a SUN carving juts out,
+> MISALIGNED, on the LEFT edge of the cabinet — a duplicated/misplaced door overlay offset
+> from the cabinet body. Clear overlay-misregistration, same transform/position class as
+> R4-004/R4-006/R4-024 — group with the overlay-transform cluster.
+
+### R4-023 — status: logged
+> i'll go back to the cellar. i guess i get to use the crank on the lever and could see the moonlight. i know i need to use the weight on the hook, but the hotspot is wrong again. i randomly clicked on the scene and was able to fight the hotspot to proceed, but u need to fix that
+> (context: z3 v-cellar. TWO threads:
+> (1) POSITIVE — using the crank on the winch (p08-shutter-winch) worked and the moonlight/
+> beam appeared.
+> (2) HOTSPOT BUG — the weight-on-hook interaction (p07-shelf-counterweight) has a WRONG/
+> mispositioned hotspot: the user couldn't hit it normally and had to randomly click around
+> ("fight the hotspot") to trigger it, then it proceeded. So p07 IS functional — the
+> item-on-hook works once the correct spot is hit — but the hook hotspot is mis-calibrated /
+> hard to find. This RESOLVES the R4-014 ambiguity: R4-014's "weight on the lever didn't
+> work" was this same hotspot problem, NOT a p07 logic failure or a hard progression-block.
+> → Developer: re-calibrate the p07 hook hotspot to the visible hook position/size (proper
+> hit-target). Ties to R3-005 hotspot re-calibration (a gap remained in build 9) and R4-016
+> (workshop-door hotspot too small) — recurring hotspot-geometry issue; worth a general
+> hit-target audit across interactive elements.
+> Build 9, iPad. Factual capture only — not classified/routed.)
+
+### R4-024 — status: logged
+> as i said earlier, clicking the mirror i hear a sound so i know it does something, albeit the visual must be fixed. in addition. i'll  share three screenshots showing how clicking the mirror changes how the barrel appears (sometiemes with weight in, sometimes without)
+> (context: z3 v-cellar. TWO threads:
+> (1) Reconfirms R4-011 — clicking the mirror (p09) plays a sound (something happens) but the
+> mirror's own visual state doesn't update; visual must be fixed. Cross-ref R4-011.
+> (2) NEW — CROSS-STATE CONTAMINATION: clicking the mirror ALSO changes how the BARREL
+> appears, flipping it between weight-in and weight-out states. So a mirror interaction is
+> altering an unrelated element's (barrel's) rendered state. LIKELY ROOT CAUSE (producer
+> analysis, for the fix pass): the cellar is a single wide view rendered via
+> MUTUALLY-EXCLUSIVE FULL-PLATE variants (mirror-d2/d3, barrel-pried, beam, etc.), where each
+> full plate bakes in a fixed snapshot of every other element — so swapping to a "mirror"
+> plate also reverts the barrel to whatever state that plate was rendered with. This is the
+> architectural driver behind the whole round-4 state-refresh cluster (R4-011/12/13/15/22):
+> full-plate swaps can't hold independent per-element states. FIX DIRECTION: render each
+> element's state as an INDEPENDENT overlay composited on ONE base (the manifest already has
+> per-element overlays: ov-barrel-*, ov-mirror-*, ov-drawer-*, etc.), rather than
+> mutually-exclusive full plates — so changing one element never resets another. → Developer
+> (state/overlay architecture) — flag as the probable common root of the state-refresh
+> cluster. THREE SCREENSHOTS PENDING (mirror-click changing barrel appearance) — user shares
+> at end of round; attach to R4-024.
+> Build 9, iPad. (Screenshot-pending tally now: R4-004, R4-006, R4-007, R4-008, R4-022,
+> R4-024[x3].) Factual capture only — not classified/routed.)
+>
+> SCREENSHOT RECEIVED — 3 images (pasted in chat), z3 cellar wide, inventory = file + phial +
+> spoon. Sequence = successive mirror clicks. KEY OBSERVATIONS: (a) the MIRROR (left) is
+> IDENTICAL in position/appearance across all 3 shots — it never visually rotates despite the
+> click/sound (confirms R4-011). (b) the BARREL (right) TOGGLES state with each mirror click:
+> shot 1 = open with the iron WEIGHT sitting inside; shot 2 = open but EMPTY; shot 3 = WEIGHT
+> back inside. The user already took that weight earlier (R4-013), so the barrel should stay
+> empty — instead it flip-flops as an unrelated element (the mirror) is clicked. (c) the
+> MOONBEAM glow-blob also JUMPS position between shots — low on the floor by the mirror in
+> shots 1 & 2, then up onto the sliding-shelf panel in shot 3. DIAGNOSIS (strongly supported):
+> the cellar wide view is rendered via MUTUALLY-EXCLUSIVE WHOLE-SCENE PLATE SWAPS, and each
+> mirror-state plate was baked with a DIFFERENT barrel state and beam position — so a mirror
+> click swaps the entire plate, dragging the barrel + beam along, while the mirror sprite
+> itself is never updated. This is the common root of the round-4 state-refresh cluster
+> (R4-011/12/13/15/22) AND the overlay-transform cluster (R4-004/06/22). FIX: composite
+> INDEPENDENT per-element overlays (ov-mirror-*, ov-barrel-*, ov-beam/moonbeam, etc.) on ONE
+> stable base, driven by each element's own state — never full-plate swaps that co-mingle
+> unrelated element states. Group R4-024 as the anchor item for this architectural fix.
+
+### R4-025 — status: logged
+> the hotspot to go into the alcove is also wrong. i clicked randomly to get in
+> (context: z3 v-cellar → z4 alcove entry (after p07 slides the shelf aside, revealing the
+> alcove passage). The ENTER-ALCOVE hotspot is mispositioned/hard to hit — the user had to
+> click randomly to trigger the transition. THIRD hotspot-geometry miss this round: R4-016
+> (workshop-door entry hotspot too small), R4-023 (p07 weight-on-hook hotspot), and now
+> R4-025 (alcove entry). Confirms a recurring hit-target calibration problem in build 9
+> despite R3-005's hotspot re-calibration — the transition/entry hotspots especially seem
+> off. → Developer: fix the alcove-entry hotspot to cover the visible passage, AND do a
+> GENERAL hit-target audit across all interactive elements + scene-entry hotspots (elevate
+> from per-item fixes to a systematic pass). Cross-ref R4-016, R4-023. Build 9, iPad. Factual
+> capture only — not classified/routed.)
+
+### R4-026 — status: logged
+> got the key from the bird's mouth, but i don't see the value of the close up now. shouldn't i be able to pick up the key from the close up?
+> (context: z4 v-alcove, the carved crow statue holding itm-cage-key (star-bit key) in its
+> beak; cu-statue-key close-up. The key appears to have been AUTO-GRANTED (obtained without
+> an explicit pickup from the close-up), so the statue close-up now feels valueless. User
+> expectation: open the statue close-up → see the key in the beak → TAP the key to pick it up
+> (manual pickup from the close-up). Same manual-pickup model the user keeps asking for
+> (R2-003 ash ring, R2-020 lifecycle, R4-013 barrel weight) — items should be collected via
+> an explicit tap, ideally from their close-up. Also ties to the depleted/pointless-close-up
+> concern (R2-022 spent barrel, R2-027 spent flowerpot) — once the key is taken the statue
+> close-up shouldn't keep inviting a zoom with nothing to do; it should show key-taken
+> (state-refresh). → Developer: make the statue key a manual pickup from the close-up, and
+> reflect key-taken afterward. Build 9, iPad. Factual capture only — not classified/routed.)
+
+### R4-027 — status: logged
+> i took the moonflower, hitting the bottom arrow to go back nto the cellar i hear the psh sound. hitting the down arrow to go back upstairs also i hear the psh sound
+> (context: z4 alcove. POSITIVE: took the moonflower (p10-moonflower-bloom → itm-blossom
+> worked). DEFECT: the navigation "back/down" chevrons play the generic "psh" sound — both
+> the arrow back to the cellar and the down arrow back upstairs. Another surviving instance
+> of the default tap/navigation sound (round-2 R2-024: the generic psh fires on nav/back
+> chevrons; slated for game-wide removal — visual feedback only, no default sound).
+> Reinforces that the psh is still firing on NAVIGATION specifically. Part of the same sound
+> audit as R4-010, R4-012, R4-017. → Developer sound audit (remove default psh on nav
+> chevrons; themed cue only if desired). Build 9, iPad. Factual capture only — not
+> classified/routed.)
+
+### R4-028 — status: logged
+> i put the moonflower in the bowl in the potion room. and i used the key on the caged bird to free it, the close up shows the none stylized free bird again
+> (context: TWO threads:
+> (1) POSITIVE — put the moonflower in the mortar/bowl in the workshop (p13-grind-paste,
+> blossom → paste) worked; and freed the caged crow with the star-bit key (p11-cage-unlock)
+> worked.
+> (2) DEFECT — STALE close-up art: the freed-bird / cage-open (crow-on-rafters) close-up
+> shows the OLD non-stylized (build-1/2 painterly) art, NOT build-3 stylized-3D. FOURTH stale
+> interaction/resolved close-up this round — after cage/poker-on-cage (R4-009), astrolabe
+> (R4-018), cabinet (R4-020). Strongly confirms a whole CLASS of resolved-state/interaction
+> close-ups escaped build-3 shadow-promotion. → Developer asset-staging/shadow audit +
+> Asset/manifest: sweep and verify EVERY resolved-state / post-interaction close-up
+> (cage-open, astrolabe-resolved, cabinet-open, freed-bird, etc.) is the build-3 canonical,
+> not a stale shadow. Build 9, iPad. Factual capture only — not classified/routed.)
+
+### R4-029 — status: logged
+> i used to the shaver on the spoon from my inventory. that was a hard one by the way, my clue was the little "link" icon that shows on top the spoon in inventory when clicking the shaver. is that the best way to do it?
+> (context: p12-file-shavings (combine itm-file "shaver" + itm-spoon → itm-shavings). The
+> combine WORKED but was hard to discover. Current implemented affordance: selecting/clicking
+> the shaver (file) shows a small "link" icon over the combinable inventory item (the spoon);
+> tapping it performs the combine. User found this undiscoverable ("that was a hard one") and
+> asks whether it's the best approach — inviting a better/clearer combine UX. Directly
+> continues round-2 R2-028 (item-combining isn't intuitive; user explicitly invited a
+> solution). It works, so this is UX/polish (feature-refinement), not a bug. → Developer/UX;
+> Producer to weigh combine-UX options at processing (e.g. clearer affordance, a combine tray
+> in the enlarged inventory, a first-time hint) and surface to the user rather than deciding
+> unilaterally. Keep consistent with the select-then-tap model. Build 9, iPad. Factual
+> capture only — not classified/routed.)
+
+### R4-030 — status: logged
+> ok i put the feather, moonflower paste and the shaved silver into the bowl, pumped to 3 and stirred 5 times, released laddle, and used the empty bottle to get the moonwater. i noticed that spoon and shaver are still in my inventory, not depleted
+> (context: POSITIVE — the brew worked: feather + moonflower paste + silver shavings into the
+> cauldron, flame stage 3, 5 stirs, release ladle (p14-brew), then bottled the moonwater with
+> the empty phial (p15-fill-phial). Level is near-complete.
+> BUG — item lifecycle: itm-spoon and itm-file ("shaver") are STILL in inventory though both
+> are single-use (graph `uses`: both only p12-file-shavings) and p12 is long done (the
+> draught now exists). Per the user's R2-020 lifecycle rule, an item with no remaining uses
+> should be REMOVED (consumed). They aren't. This is the FLIP SIDE of the R4-019 poker
+> soft-lock: R4-019 = a multi-use tool removed TOO EARLY (after 1 of 2 uses); R4-030 =
+> single-use items NOT removed after their only use. So the lifecycle logic is wrong in BOTH
+> directions and the SAME unified fix resolves both — "retain an item while ANY entry in its
+> graph `uses` array is still unsatisfied; remove it once ALL are satisfied." → Developer
+> (same item-lifecycle fix as R4-019); cross-ref R4-019, R2-020. Build 9, iPad. Factual
+> capture only — not classified/routed.)
+
+_(Note: items R4-026 through R4-030 were briefly mis-ordered in this file — inserted between
+R4-019 and R4-020 due to an editing-anchor slip — and have been moved here to restore
+received-order. Content unchanged.)_
+
+### R4-completion — status: logged (LEVEL COMPLETED end-to-end on build 9)
+> "i'm free now" — user completed Level 1 end-to-end on build 9: after R4-030 (brew +
+> bottling), they poured the moonwater at the thorn-door basin, the door unlocked, and they
+> escaped. (context: build 9 is FULLY SOLVABLE end-to-end when played in the standard order —
+> p01 through p17 all function, including the previously-blocking p01 glyphs (R4-015
+> positive) and the previously soft-locking p03 drawer items (R4-018 positive). The round's
+> defects are overwhelmingly PRESENTATION/LIFECYCLE layer (plate-swap state contamination,
+> stale close-up art, default psh sound, hotspot geometry, item lifecycle) — with ONE
+> critical logic exception: the R4-019 poker-lifecycle soft-lock, which strands
+> alternate-order playthroughs. No door-pour/endgame issues were reported this round, unlike
+> round 2. This mirrors the R2-completion pattern: solid puzzle logic, presentation debt.)
+
+---
+## ROUND 4 — PROCESSED 2026-07-11 (routed changelist — pending user CHECKPOINT-1 approval + 1 design call + merge confirmations)
+
+**Framing:** build 9 is completable end-to-end in the standard order (R4-completion); puzzle
+LOGIC is sound with ONE critical exception (R4-019 lifecycle soft-lock on alternate
+orderings). Everything else is presentation/lifecycle-layer debt that consolidates into six
+root clusters + singles. Several round-2 fixes have RE-APPEARED (psh sound, state refresh,
+manual pickup) — see the standing Regression-Verification Directive below.
+
+### Classification (every item, one-line rationale)
+
+| Item | Class | Sev | Rationale | Cluster |
+|---|---|---|---|---|
+| R4-001 | bug | minor | Level Select label renders "1" not "Level 1" — violates explicit prior instruction (R3-003 fix incomplete); cosmetic, no progression impact | single |
+| R4-002 | bug | minor | Residual ocean-waves loop fires at level entry before music — R2-004/005 removal incomplete; audio-only | audio (rides with D) |
+| R4-003 | polish | — | Harsh "tick" on pause-menu selection; user wants the liked Level-Select ping standardized across all menu chrome — refinement of working sounds | D (menu) |
+| R4-004 | bug | major | Poker-taken hearth overlay composited misaligned — scene visibly broken on the critical path; screenshot confirms misregistered overlay | B |
+| R4-005 | bug | major | Armed inventory item has no discoverable deselect AND blocks all other close-ups — game-wide interaction-model defect that traps and hinders the player | F (anchor) |
+| R4-006 | bug | major | Detached, tilted hearth-overlay fragment floats over the folded rug — screenshot-confirmed misregistered overlay, same class as R4-004 | B |
+| R4-007 | bug | major | p02 waning-gibbous dial silhouette mirror-flipped vs spec (dark bite LEFT, must be RIGHT) — corrupts a puzzle clue's correctness; solvable but misleading + ambiguity risk | single (art+verify) |
+| R4-008 | bug | minor | Stray semi-transparent ▽ ghost overlay on/near the windowsill WATER-rune clue tablet — cosmetic but clue-adjacent; sweep whole v-entry scene | B (verify if baked art) |
+| R4-009 | bug | minor | (net new thread) poker-on-cage opens an OLD build-1 close-up — stale/shadow asset escaped build-3 promotion; threads (2)+(4) reinforce R4-005 | C; (2),(4)→merge F |
+| R4-010 | bug | minor | Generic psh on cellar entry — near-certain survivor of the R2-024 default-tap-sound removal; conditional resolved by code check (see flags) | D (anchor) |
+| R4-011 | bug | major | Mirror (p09) never visually moves across detents — puzzle-relevant feedback missing; player can't confirm detent-3; screenshots confirm | B |
+| R4-012 | bug | major | (2) drawer close-up still shows spoon after pickup — exact R2-014 recurrence, state not re-rendered; (1) psh → cluster D | B; (1)→D |
+| R4-013 | bug | major | (1) weight auto-granted, no manual pickup (violates agreed R2-020 model); (2)+(3) barrel still shows dead, untappable weight — state not re-rendered | A(1); B(2,3) |
+| R4-014 | bug | major | Weight-on-hook read as broken — RESOLVED-AS-HOTSPOT by R4-023 (mis-calibrated hit-target, not p07 logic); (2) armed-weight trap reinforces R4-005 | (1)→merge E; (2)→merge F |
+| R4-015 | bug | major | p01 door gives audio-only unlock, no visual state change — R2-015 recurrence on the critical path; wayfinding-load-bearing | B |
+| R4-016 | bug | major | Enter-workshop hotspot covers only the small puzzle panel, not the unlocked door — navigation friction on the critical path | E |
+| R4-017 | bug | minor | Generic psh on the workshop-entry tap — another default-tap-sound survivor | D |
+| R4-018 | bug | minor | p03-resolved astrolabe close-up is stale build-1/2 art (items ARE collectible — round-2 soft-lock resolved); style-consistency defect | C |
+| R4-019 | bug | **critical** | Poker (multi-use: p05+p06) consumed after FIRST use → barrel-before-ash strands the gold ring → level unsolvable; violates anti_softlock_invariants; reachable in normal play | A (anchor) |
+| R4-020 | bug | major | (1) correct coin placement gives failure-sounding cue + no seated visual → user believes it failed; (2) stale open-cabinet close-up → C; (4) file/phial persist in visual after pickup → B; (3) positive | single(1); C(2); B(4) |
+| R4-022 | bug | major | (1) wide view shows cabinet closed after p04 solve — wide-view state refresh; (2) duplicated, misaligned sun-door overlay — screenshot-confirmed | B (both) |
+| R4-023 | bug | major | p07 hook hotspot mispositioned — user had to "fight the hotspot"; nearly read as a progression block (see R4-014) | E |
+| R4-024 | bug | **major (systemic root)** | Mirror clicks flip the BARREL's state and jump the moonbeam — screenshot-proven cross-state contamination from mutually-exclusive full-plate swaps; common root of cluster B's symptoms | B (ANCHOR) |
+| R4-025 | bug | major | Alcove-entry hotspot mispositioned — third hit-target miss this round; systemic calibration problem | E |
+| R4-026 | bug | minor | Statue key auto-granted instead of tapped from close-up — inconsistent application of the agreed manual-pickup/lifecycle model (R2-020); no design conflict (confirmed below) | A (manual-pickup) |
+| R4-027 | bug | minor | Generic psh on nav/back chevrons (two instances) — default-tap-sound survivor on navigation | D |
+| R4-028 | bug | minor | Freed-bird close-up is stale build-1/2 art — FOURTH stale resolved-state close-up; confirms a missed asset class | C |
+| R4-029 | polish (feature-refinement) | — | Combine works but the "link"-icon affordance is undiscoverable; user asks for a better way — needs a USER OPTION PICK, not a unilateral call | flag → user |
+| R4-030 | bug | major | Spoon+file (single-use, p12 done) never consumed — lifecycle engine wrong in the OPPOSITE direction from R4-019; same unified fix | A |
+| R4-completion | informational | — | Level completed end-to-end on build 9; positive confirmations for p01 glyphs, p03 collectibility, p08–p17 chain | — |
+
+### Root-cause clusters (validated against the Producer's audit — adopted with corrections)
+
+The Producer's seven-cluster read is broadly CORRECT. My corrections: (i) the
+"overlay-transform" artifacts (R4-004/006/008/022(2)) and the "state-refresh" failures
+(R4-011/012(2)/013(2,3)/015/020(4)/022(1)) are ONE cluster (B) under the R4-024 plate-swap
+root — the 3-screenshot sequence proves both symptom families come from whole-scene plates/
+overlays being selected or composited wrongly; (ii) the manual-pickup items (R4-013(1),
+R4-026) belong WITH the lifecycle engine (A) as one Developer work package — same
+inventory-engine code; (iii) R4-002 is NOT part of the psh cluster (it's a lingering
+ambient loop, not the default tap sound) — batched with the audio work but tracked
+separately; (iv) R4-008 stays in B provisionally — if the ghost ▽ turns out to be baked
+into the plate art (not an overlay), it re-routes to Asset Generation for re-stamp/inpaint.
+
+- **A — Inventory lifecycle & pickup engine** (R4-019 🔴 anchor, R4-030, R4-013(1),
+  R4-026): ONE rule fixes both directions — *retain an item while ANY entry in its graph
+  `uses` array is unsatisfied; remove it once ALL are satisfied* — plus the manual-pickup
+  step (reveal → tap to collect) applied uniformly (weight, statue key; ash-ring already
+  has it).
+- **B — Scene-state rendering architecture** (R4-024 anchor; R4-004, R4-006, R4-008?,
+  R4-011, R4-012(2), R4-013(2,3), R4-015, R4-020(4), R4-022): replace mutually-exclusive
+  full-plate swaps with INDEPENDENT per-element overlays (ov-mirror-*, ov-barrel-*,
+  ov-poker-taken, ov-trapdoor-*, ov-beam, door-open, cabinet-open, ...) composited on ONE
+  stable base per view, each driven solely by its element's own state. **Art scoping:**
+  the manifest already carries per-element ov-* overlays for barrel/mirror/drawer/trapdoor
+  states — Developer INVENTORIES coverage first; only genuinely missing overlays (e.g. an
+  open rune-door state, seated-slot fragments, beam positions if plate-baked) go to Asset
+  Generation as derived crops from EXISTING build-3 plates (cheap; no new scene
+  generations expected). The misregistration half of the bug = fix overlay TRANSFORMS
+  (position/scale/z-order) in the same compositor work.
+- **C — Stale resolved-state close-ups** (R4-009(3), R4-018, R4-020(2), R4-028): a whole
+  CLASS of post-interaction/resolved close-ups still loads build-1/2 art. Developer
+  staging audit + asset-manifest verification; EXTEND the `assert_no_nb_shadow` CI guard
+  to interaction-triggered and resolved-state close-ups (the round-3 guard demonstrably
+  didn't reach this class).
+- **D — Default-tap "psh" completion audit** (R4-010 anchor, R4-012(1), R4-017, R4-027;
+  + R4-003 menu-ping polish; R4-002 rides along): the R2-024 root fix (kill the default
+  tap sound; event-specific themed cues only) either regressed or never fully shipped —
+  verify at code level, then sweep ALL triggers. Menu chrome: standardize the liked
+  Level-Select ping across Main Menu / Level Select / Pause / Settings.
+- **E — Hotspot / hit-target calibration** (R4-016, R4-023 [absorbs R4-014(1)], R4-025):
+  systematic hit-target audit of ALL interactive elements AND scene-entry/transition
+  hotspots against the build-3 plates (R3-005 left gaps); entry hotspots must cover the
+  full visible affordance (whole door, whole passage, visible hook).
+- **F — Armed-item interaction model** (R4-005 anchor [absorbs R4-009(2), R4-014(2)]):
+  game-wide per the user's scope directive — (1) always-available, obvious deselect (tap
+  armed item again / tap empty space / explicit ✕); (2) an armed item must NOT block
+  close-ups — a tap on a non-target opens its close-up as normal, item stays armed (per
+  R2-030); failed uses keep the item armed.
+- **Singles:** R4-001 (Level-1 label), R4-002 (ocean residue), R4-007 (moon-dial
+  mirror-flip + triptych verify + 8-phase waxing/waning distinctness), R4-020(1)
+  (per-slot placement feedback), R4-029 (combine UX — user decision).
+
+### Merge proposals — CONFIRM AT CHECKPOINT, not silently applied
+
+| Proposal | Keep | Merge in | Basis |
+|---|---|---|---|
+| M-1 | R4-005 | R4-009 thread (2), R4-014 thread (2) | same armed-item defect, different items/scenes |
+| M-2 | R4-023 | R4-014 thread (1) | R4-023 proved the "failure" was the hook hotspot |
+| M-3 | R4-019 | R4-030 (as flip-side evidence) | one lifecycle engine, one unified fix |
+| M-4 | R4-024 | R4-004, R4-006, R4-011, R4-012(2), R4-013(2,3), R4-015, R4-022 as symptoms | screenshot-proven common plate-swap root |
+| M-5 | R4-010 | R4-012(1), R4-017, R4-027 | identical default-psh survivor class |
+
+No opposing-direction conflicts detected this round.
+
+### Flags for the user (blocking only their own items)
+
+1. **R4-029 — combine-UX (status: needs-clarification).** Options — pick one (or propose
+   your own): **(a)** keep the link icon but make it LOUD — pulse/glow the combinable item
+   + brief first-time tooltip ("combine?") when a combinable item is armed (smallest
+   change); **(b)** a two-slot combine tray inside the enlarged-inventory view — drop two
+   items in, tap combine (most discoverable, more UI); **(c)** armed item A + tap item B →
+   inline confirm chip ("combine file + spoon?") before combining (middle ground, stays
+   pure select-then-tap). All three preserve the near-wordless direction ((a)/(c) use one
+   transient word or none).
+2. **R4-010 / R4-012 psh conditionals — resolution method (FYI, no action needed):** the
+   Developer resolves "is it the same psh?" at CODE level — inspect the audio trigger map;
+   if the cellar-entry/drawer taps reference the same default-tap asset slated for removal
+   in R2-024, it is removed (your standing instruction). Only if it turns out to be a
+   DISTINCT, intentionally-themed cue will we come back and ask keep-or-change.
+3. **R4-026 — no design conflict (FYI):** manual pickup of the statue key is consistent
+   with your R2-020 lifecycle rule and the R2-003 manual-pickup direction; folded into
+   cluster A. The related "depleted close-up shouldn't invite a zoom" point stays parked
+   with the round-2 R2-017/R2-022 "prune dead-end zooms" design discussion.
+4. **Merge confirmations M-1…M-5 above.**
+
+### ROUND 4 — ROUTED CHANGELIST (prioritized; ⛔ CHECKPOINT 1 — user reviews/approves BEFORE any execution)
+
+| # | Cluster/Item | Class | Sev | Routing | Regression scope (proposed — QA has final say) |
+|---|---|---|---|---|---|
+| 1 | **A** — lifecycle engine + manual pickup (R4-019🔴, R4-030, R4-013(1), R4-026) | bug | **critical** | **Developer** (uses-driven retain/consume + manual-pickup step) + **Puzzle Logic Validator** (re-validate: no soft-lock reintroduced, all orderings) | **FULL** + NEW alternate-ordering suite (incl. p06-before-p05, cellar-first) asserting completability |
+| 2 | **B** — per-element overlay architecture (R4-024 anchor + symptoms) | bug | major (systemic) | **Developer** (compositor: one base + independent ov-* overlays, correct transforms/z-order); **Asset Generation** ONLY for overlays found missing in the manifest inventory (derived crops from existing build-3 plates); flag to **Art Director** only if a state needs new art direction | **FULL** — touches every view's rendering; player-style screenshot verification of EVERY state change (per R2-META-QA) |
+| 3 | **F** — armed-item interaction model (R4-005 + merged) | bug | major | **Developer** (deselect affordance + close-ups reachable while armed, ALL items game-wide) | **FULL** — core interaction system; test armed-state against every hotspot class |
+| 4 | **E** — hotspot/hit-target audit (R4-016, R4-023, R4-025) | bug | major | **Developer** (systematic re-calibration vs build-3 plates; entry hotspots cover full affordance) | Broad-targeted: tap-audit every hotspot + transition in all 4 zones at human-visible coordinates |
+| 5 | R4-007 — moon-dial waning-gibbous mirror-flip | bug | major | **Asset Generation** (correct dial silhouette: dark-bite-RIGHT; keep waxing/waning gibbous distinct on the 8-phase ring) + verify triptych 3-crow moon matches + **Developer** if the solve detent indexes the wrong phase | Targeted: p02 dial + triptych close-ups + p02 solve verify |
+| 6 | R4-020(1) — per-slot placement feedback (p04) | bug | major | **Developer** (correct partial placement: item seats visibly + positive cue; audit other multi-slot puzzles; verify no confusing clue-gating interaction) | Targeted: p04 both orders (coin-first / ring-first) |
+| 7 | **C** — stale resolved-state close-ups (R4-009(3), R4-018, R4-020(2), R4-028) | bug | minor (class-level major) | **Developer** (staging audit + manifest verify + extend `assert_no_nb_shadow` to resolved/interaction close-ups); **Asset Generation** only if a build-3 file is genuinely absent | Targeted: visual review of every resolved-state close-up in all zones |
+| 8 | **D** — psh completion audit (R4-010 + merged) | bug | minor | **Developer** (verify whether the R2-024 fix shipped; kill default tap sound at the trigger map; themed event cues only) | Targeted: audio triggers, all tap classes incl. nav/entry |
+| 9 | R4-002 — residual ocean-waves at entry | bug | minor | **Developer** (remove leftover amb loop from level-entry sequence; music only, per R2-005) | Targeted: level start/restart/resume audio |
+| 10 | R4-001 — "Level 1" label | bug | minor | **Developer** (label = "Level 1", serif, per global-ui-style §3 + standing instruction) | Targeted: Level Select chrome |
+| 11 | R4-003 — menu-chrome sound consistency | polish | — | **Developer** (standardize the Level-Select ping across Main Menu / Level Select / Pause / Settings) | Targeted: menu layer |
+| 12 | R4-029 — combine-UX | polish | — | ⏸ BLOCKED on user option pick (flag 1) → then **Developer** | Targeted: p12 combine + inventory interplay |
+| 13 | **STANDING — Regression-Verification Directive** (per R2-META-QA): for EACH recurring round-2 fix (psh removal, state-visual refresh, manual pickup) the Developer must determine whether it was LOST in the build-3 rebuild or NEVER FULLY SHIPPED, record the answer in implementation notes, and add a guard (test or CI assert) against silent loss; **QA must re-verify ALL round-2 closures** — not just round-4 items — in the build-10 pass | process | — | **Developer + QA** | FULL (it IS the regression-pass definition) |
+
+**Sequencing note (for the Producer):** items 1–4 are interdependent at the engine layer
+(lifecycle, compositor, interaction, hotspots) — one Developer batch, with the Validator
+gating item 1 before staging; any item-5/7 art is finalized BEFORE the Developer stages,
+per the round-3 sequencing lesson (no concurrent working-tree writes).
+
+**⛔ CHECKPOINT 1 (now):** user reviews this changelist + resolves flag 1 and merges
+M-1…M-5 before ANY execution.
+**⛔ CHECKPOINT 2 (after fixes land):** user reviews QA's build-10 regression results
+(including the round-2 closure re-verification) BEFORE re-release to TestFlight.
+
+### Item statuses
+All round-4 items → `status: routed (pending checkpoint-1)` per the table above, EXCEPT:
+R4-029 → `needs-clarification` (user option pick); R4-014(1) → `duplicate-of-R4-023`
+(pending M-2); R4-009(2)/R4-014(2) → `duplicate-of-R4-005` (pending M-1); R4-030 →
+`merged-with-R4-019` (pending M-3); R4-021 → unused; R4-completion + embedded positives →
+informational, not routed.
+
+### Post-release delta — HANDOFF TEXT for the Producer (single-writer: Producer applies these; Intake does not write those two files)
+
+**For `specs/progression-ledger.md`** (append under Level 1):
+> **Post-release feedback round 4 (build 9, processed 2026-07-11).** No difficulty rescore —
+> no balance changes requested or made; Level 1 holds 6.0. Mechanics touched by the routed
+> fixes: item-lifecycle engine (uses-driven retain/consume — fixes the poker soft-lock
+> R4-019 and non-consumption R4-030; preserves anti_softlock_invariants), manual-pickup
+> uniformity (weight, statue key), armed-item interaction model (deselect +
+> inspect-while-armed), scene-state rendering (full-plate swaps → per-element overlay
+> compositing), p02 waning-gibbous dial art corrected to spec (dark-bite-RIGHT, matches
+> triptych). Solvability: build 9 verified completable end-to-end (standard order) by the
+> user; alternate-order completability restored by the lifecycle fix (Validator to
+> re-confirm).
+
+**For `specs/project-state.md`** (new entry):
+> **Post-release feedback round 4 — processed 2026-07-11.** Build 9 device testing (iPad,
+> TestFlight): 30 items + completion logged; level completed end-to-end. 1 critical
+> (R4-019 poker-lifecycle soft-lock on alternate orderings). Six root clusters routed:
+> (A) inventory lifecycle/manual pickup [Dev+Validator], (B) per-element overlay rendering
+> architecture [Dev, anchor R4-024], (C) stale resolved-state close-ups [Dev staging +
+> assert_no_nb_shadow extension], (D) default-psh audit completion [Dev], (E) hotspot
+> re-calibration [Dev], (F) armed-item interaction model [Dev]; singles: Level-1 label,
+> ocean-residue audio, moon-dial mirror-flip [AssetGen], p04 placement feedback, menu-ping
+> consistency; R4-029 combine-UX awaiting user option pick. Standing directive: determine
+> lost-vs-never-shipped for each recurring round-2 fix + add guards; QA re-verifies ALL
+> round-2 closures in the build-10 pass. Status: ⛔ awaiting user CHECKPOINT-1 on the
+> changelist; target build 10.
+
+### ✅ CHECKPOINT 1 PASSED (user, 2026-07-11) — round routed for execution
+
+- **Changelist APPROVED as routed** — all six clusters (A–F) + singles + the standing
+  Regression-Verification Directive. **Merges M-1…M-5 CONFIRMED.**
+- **R4-029 combine-UX RESOLVED: option (a)** — clearer link affordance (pulse/highlight,
+  larger badge) + a one-time first-combine hint; interaction stays select-then-tap.
+  R4-029 status → `routed` (Developer).
+- **Execution shape (user-approved): ONE build — build 10** = round-4 fixes + the
+  deferred letterbox plate re-frame, internally ordered: lifecycle → re-frame → overlay
+  architecture on the RE-FRAMED bases → hotspot recalibration → armed-item/sound/singles
+  → QA full pass including the round-2 closure re-verification.
+- **Budget ruling:** art cap raised to **$23.00 HARD STOP** (was $18.90; $17.25 spent) to
+  cover the re-frame + dial fix + overlay gap-fills; Asset Generation stops and reports
+  if projecting past it.
+- **⛔ CHECKPOINT 2 remains:** user reviews QA's build-10 regression results before any
+  re-release to TestFlight.
+
+**Item statuses (final for this round):** all round-4 items → `status: routed`, EXCEPT:
+R4-014(1) → `duplicate-of-R4-023`; R4-009(2)/R4-014(2) → `duplicate-of-R4-005`; R4-030 →
+`merged-with-R4-019`; R4-021 → unused; R4-completion + embedded positives → informational,
+not routed. R4-029 → `routed` per the option-(a) resolution above (was
+needs-clarification). No items remain blocked.
+
+_Round 4 processing complete; checkpoint 1 passed. Producer routes execution from here.
+Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._

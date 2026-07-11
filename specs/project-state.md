@@ -11,7 +11,39 @@ Level 1 in design. Theme received from user on 2026-07-04.
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
 caged crow, potions/potion-making (user-specified elements).
 
-## ⭐ CURRENT RESUME NOTE (2026-07-10, CROSS-COMPUTER HANDOFF) — READ THIS FIRST
+## ⭐ CURRENT POSITION (2026-07-11) — Round 4 feedback PROCESSING
+
+Cross-computer handoff complete: this machine is synced to `level1-rebuild-build3`
+(build 9), gh authenticated, FAL_KEY present and live-verified against nano-banana-pro.
+
+**The user device-tested build 9 on iPad and completed Level 1 END-TO-END ("i'm free
+now") — the iPad test that gated the build-9 GO. However, the run surfaced a large
+feedback round: Round 4, 29 items + completion record, all logged in
+`specs/feedback-backlog.md` with 8 screenshots attached across 6 items.** Producer
+audit verified the round complete/faithful. Headlines: 🔴 R4-019 poker item-lifecycle
+soft-lock (multi-use tool consumed after first use — level unsolvable on legal
+alternate orderings, reachable in normal play); R4-024 root-cause diagnosis (cellar
+rendered as mutually-exclusive whole-plate swaps → cross-state contamination; fix =
+per-element overlay compositing); a class of stale resolved-state close-ups that
+escaped the build-3 shadow sweep; surviving default-psh sound; hotspot-geometry gaps;
+armed-item interaction traps. Several round-2 fixes have REGRESSED or never fully
+shipped — regression-verification directive queued for Developer + QA.
+
+**Post-release feedback round 4 — processed 2026-07-11.** Build 9 device testing (iPad,
+TestFlight): 30 items + completion logged; level completed end-to-end. 1 critical
+(R4-019 poker-lifecycle soft-lock on alternate orderings). Six root clusters routed:
+(A) inventory lifecycle/manual pickup [Dev+Validator], (B) per-element overlay rendering
+architecture [Dev, anchor R4-024], (C) stale resolved-state close-ups [Dev staging +
+assert_no_nb_shadow extension], (D) default-psh audit completion [Dev], (E) hotspot
+re-calibration [Dev], (F) armed-item interaction model [Dev]; singles: Level-1 label,
+ocean-residue audio, moon-dial mirror-flip [AssetGen], p04 placement feedback, menu-ping
+consistency; R4-029 combine-UX awaiting user option pick. Standing directive: determine
+lost-vs-never-shipped for each recurring round-2 fix + add guards; QA re-verifies ALL
+round-2 closures in the build-10 pass. **Status: ⛔ awaiting user CHECKPOINT-1 on the
+changelist; target build 10 (round-4 fixes + deferred letterbox re-frame). The
+`level1-rebuild-build3` → main merge stays gated until the fix pass + QA re-verify.**
+
+## ⭐ PRIOR RESUME NOTE (2026-07-10, CROSS-COMPUTER HANDOFF)
 
 **User is switching computers; new session resumes on a different machine.** Everything
 durable is in THIS repo — take stock from here, not from any prior session's memory.
