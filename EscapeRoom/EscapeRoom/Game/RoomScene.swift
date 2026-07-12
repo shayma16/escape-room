@@ -62,29 +62,19 @@ final class RoomScene: SKScene {
     init(viewID: ViewID, size: CGSize) {
         self.viewID = viewID
         super.init(size: size)
-        // INTERIM iPad LETTERBOX (build 9 follow-up): the fixed 2732×1366 authoring scene
-        // is presented `.aspectFit`, so SpriteKit scales + centers the scene to FIT inside
-        // the SKView bounds — the WHOLE 2:1 plate is always visible on every device, never
-        // cropped. On iPad (viewport ~4:3, narrower than 2:1) that means fit-to-width with
-        // dark bars top+bottom (the intentional letterbox). On iPhone (19.5:9, wider than
-        // 2:1) it means the full plate with thin pillarbox at the sides; either way NOTHING
-        // puzzle-critical is ever off-screen.
+        // BUILD 10 — `.aspectFill` RESTORED (the interim build-9 letterbox is removed).
+        // The Asset agent re-framed every wide plate into the §8 iPad-4:3 ∩ iPhone-19.5:9
+        // dual-safe band (asset-manifest build10_reframe), so under `.aspectFill` (cover)
+        // every puzzle-critical element is inside both devices' crops — nothing is cut off,
+        // and the scene fills the whole screen edge-to-edge with no dark bars. Hotspot rects
+        // are remapped by the same re-frame transform (see Reframe / RoomSceneCoordinator).
         //
-        // Why the switch from `.aspectFill`: the build-3 art rebuild dropped the iPad dual-
-        // safe-zone framing, so `.aspectFill` (cover) cropped puzzle-critical EDGE elements
-        // (flowerpot, potion shelf, windowsill, mirror, winch, mortar, astrolabe, cage, feed
-        // cup, ladder) off-screen on iPad — the primary device — making the level
-        // uncompletable there. `.aspectFit` shows the full plate so every element is
-        // reachable. This is the INTERIM fix; build 10 should re-frame the plates into a 4:3
-        // iPad safe zone so `.aspectFill` can return without a letterbox.
-        //
-        // The scene size stays 2732×1366, so plate-normalized hotspots map 1:1 onto the
-        // scene; the letterbox offset + scale is applied uniformly by SpriteKit (and mirrored
-        // by the UI-test `sceneCoordinate` math, which now uses the SAME min-scale fit).
-        //
-        // The letterbox bars are filled with the chrome dark-neutral backdrop (#101010, the
-        // app background) rather than stark black, so they read as intentional framing.
-        scaleMode = .aspectFit
+        // The scene size stays 2732×1366 (2:1); `.aspectFill` scales it to COVER the SKView
+        // (max ratio), cropping the overscan band that lies outside the dual-safe zone. The
+        // UI-test `sceneCoordinate` mirror uses the SAME max-scale cover math. The BUG-004
+        // guard (`testCriticalHotspotsInsideDualSafeZone`) asserts no critical element leaves
+        // the dual-safe band, so a future framing regression fails loudly.
+        scaleMode = .aspectFill
         backgroundColor = SKColor(red: 0x10/255.0, green: 0x10/255.0, blue: 0x10/255.0, alpha: 1)
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
         baseNode.anchorPoint = CGPoint(x: 0.5, y: 0.5)

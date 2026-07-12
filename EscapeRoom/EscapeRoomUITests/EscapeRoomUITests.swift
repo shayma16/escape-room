@@ -105,7 +105,12 @@ final class EscapeRoomUITests: XCTestCase {
     private func sceneCoordinate(_ app: XCUIApplication, _ nx: CGFloat, _ ny: CGFloat) -> XCUICoordinate {
         let window = app.windows.firstMatch
         let frame = window.frame
-        let scale = min(frame.width / sceneSize.width, frame.height / sceneSize.height)
+        // BUILD 10: `.aspectFill` restored (letterbox removed) — the scene COVERS the window,
+        // so the scale is the MAX ratio (cover), mirroring RoomScene. A synthesized tap at a
+        // plate-normalized point lands on the same on-plate element the app hit-tests; points
+        // in the overscan band (outside the dual-safe zone) fall off-screen, which is exactly
+        // where no puzzle-critical element sits after the re-frame.
+        let scale = max(frame.width / sceneSize.width, frame.height / sceneSize.height)
         let viewX = frame.width / 2 + (nx * sceneSize.width - sceneSize.width / 2) * scale
         let viewY = frame.height / 2 + (ny * sceneSize.height - sceneSize.height / 2) * scale
         return window.coordinate(withNormalizedOffset: CGVector(dx: viewX / frame.width,
@@ -117,16 +122,44 @@ final class EscapeRoomUITests: XCTestCase {
         Thread.sleep(forTimeInterval: settle)
     }
 
+    // BUILD 10 re-frame: every scene tap below is authored in OLD (pre-re-frame) plate-
+    // normalized coordinates. The Asset agent re-framed each wide plate by a per-view
+    // scale+offset (asset-manifest build10_reframe), so a point p now sits at p*s+off.
+    // `rf` applies that transform (mirroring Swift's Reframe) and the view-aware `tapScene` /
+    // `useItem` overloads reframe before tapping, so the existing coordinates keep working.
+    private static let reframeT: [String: (CGFloat, CGFloat, CGFloat)] = [
+        "hearth": (0.955, 86 / 3840, 86 / 1920),
+        "study":  (0.86, 538 / 3840, 240 / 1920),
+        "entry":  (0.74, 425 / 3840, 250 / 1920),
+        "bench":  (0.83, 430 / 3840, 163 / 1920),
+        "cabinet": (0.70, 630 / 3840, 288 / 1920),
+        "cellar": (0.82, 445 / 3840, 173 / 1920),
+        "alcove": (1.0, 0, 0),
+    ]
+
+    private func rf(_ view: String, _ nx: CGFloat, _ ny: CGFloat) -> (CGFloat, CGFloat) {
+        let (s, ox, oy) = Self.reframeT[view]!
+        return (nx * s + ox, ny * s + oy)
+    }
+
+    private func tapScene(_ app: XCUIApplication, _ view: String, _ nx: CGFloat, _ ny: CGFloat,
+                          settle: TimeInterval = 0.6) {
+        let (x, y) = rf(view, nx, ny)
+        sceneCoordinate(app, x, y).tap()
+        Thread.sleep(forTimeInterval: settle)
+    }
+
     /// Select-then-tap USE (feedback round 1): drag-to-use was REMOVED. To use an item on
     /// a target the player ARMS it in the inventory pill (tap its cell) then TAPS the target
     /// scene point. This helper replaces the old `dragItem` drag gesture across the suite.
-    private func useItem(_ app: XCUIApplication, item: String, onScene nx: CGFloat, _ ny: CGFloat,
-                         settle: TimeInterval = 0.8) {
+    private func useItem(_ app: XCUIApplication, item: String, view: String,
+                         onScene nx: CGFloat, _ ny: CGFloat, settle: TimeInterval = 0.8) {
         let cell = app.descendants(matching: .any)["inventory-\(item)"]
         XCTAssertTrue(cell.waitForExistence(timeout: 5), "inventory item \(item) must exist to arm it")
         cell.tap()                                  // arm
         Thread.sleep(forTimeInterval: 0.2)
-        sceneCoordinate(app, nx, ny).tap()          // use on target
+        let (x, y) = rf(view, nx, ny)               // build-10 re-frame
+        sceneCoordinate(app, x, y).tap()            // use on target
         Thread.sleep(forTimeInterval: settle)
     }
 
@@ -137,9 +170,9 @@ final class EscapeRoomUITests: XCTestCase {
     private func viewZ1GatingClues(_ app: XCUIApplication) {
         // v-study: flowerpot (EARTH mark), triptych, grimoire pages (elements A + recipe).
         // R3-005 re-calibrated centers on the build-3 study plate.
-        tapScene(app, 0.10, 0.76); dismissCloseUp(app)    // flowerpot (bottom-left) -> clu-mark-earth
-        tapScene(app, 0.377, 0.30); dismissCloseUp(app)   // triptych (middle panel) -> clu-triptych
-        tapScene(app, 0.46, 0.66)                         // grimoire (opens at recipe spread)
+        tapScene(app, "study", 0.10, 0.76); dismissCloseUp(app)    // flowerpot (bottom-left) -> clu-mark-earth
+        tapScene(app, "study", 0.377, 0.30); dismissCloseUp(app)   // triptych (middle panel) -> clu-triptych
+        tapScene(app, "study", 0.46, 0.66)                         // grimoire (opens at recipe spread)
         // Page back to page A, then forward, so both element + recipe spreads are viewed.
         if app.descendants(matching: .any)["Previous page"].firstMatch.waitForExistence(timeout: 3) {
             for _ in 0..<2 { app.descendants(matching: .any)["Previous page"].firstMatch.tap(); Thread.sleep(forTimeInterval: 0.2) }
@@ -467,12 +500,12 @@ final class EscapeRoomUITests: XCTestCase {
         // hotspot rect (RoomSceneCoordinator.configure*), which now matches where each
         // element visually sits in the build-3 plates. A human tapping the visible element
         // hits it; tapping the old placeholder position no longer does anything.
-        tapScene(app, 0.248, 0.50)                  // take poker (rod hangs left of the hearth)
+        tapScene(app, "hearth", 0.248, 0.50)                  // take poker (rod hangs left of the hearth)
         assertHolding(app, "itm-poker")
         // Select-then-tap (F-007/F-020/F-021): arm the poker, then tap the ash pile.
         // A bare tap on ash is now only a look (no passive auto-apply), so the sift MUST
         // go through the armed-item path or the ring is never yielded.
-        useItem(app, item: "itm-poker", onScene: 0.44, 0.68)    // sift ash mound (center hearth)
+        useItem(app, item: "itm-poker", view: "hearth", onScene: 0.44, 0.68)    // sift ash mound (center hearth)
         shoot(app, "play-02-ash-glint")
         // R2-003a two-step: sifting REVEALS the ring in the (now-open) ash close-up; it is
         // NOT auto-granted. Collect it with an explicit tap on the revealed-ring target.
@@ -482,12 +515,12 @@ final class EscapeRoomUITests: XCTestCase {
 
         // Clue-gating (rev 1.3): a thorough player views the clue close-ups before the
         // gated code-entry puzzles will accept their answers. Gather z1's gate clues now.
-        tapScene(app, 0.613, 0.53); dismissCloseUp(app)   // hearth bellows -> AIR mark
-        tapScene(app, 0.585, 0.275); dismissCloseUp(app)  // hearth lintel -> FIRE mark
+        tapScene(app, "hearth", 0.613, 0.53); dismissCloseUp(app)   // hearth bellows -> AIR mark
+        tapScene(app, "hearth", 0.585, 0.275); dismissCloseUp(app)  // hearth lintel -> FIRE mark
         tapID(app, "nav-next"); Thread.sleep(forTimeInterval: 0.8) // hearth -> study
         viewZ1GatingClues(app)                             // EARTH mark, triptych, grimoire A + recipe
         tapID(app, "nav-next"); Thread.sleep(forTimeInterval: 0.8) // study -> entry
-        tapScene(app, 0.105, 0.62); dismissCloseUp(app)   // windowsill tablet -> WATER mark
+        tapScene(app, "entry", 0.105, 0.62); dismissCloseUp(app)   // windowsill tablet -> WATER mark
         tapID(app, "nav-next"); Thread.sleep(forTimeInterval: 0.8) // entry -> hearth (wraps)
 
         // Back at the hearth: rug discovery + the now-ungated dial panel (p02).
@@ -495,69 +528,69 @@ final class EscapeRoomUITests: XCTestCase {
         // smaller-area overlap); the trapdoor-dial is center-floor.
         // Rug: far-left exposed strip (x0.22 is clear of the center inventory pill and of
         // the trapdoor rect x0.30-0.70, so the rug — not the smaller trapdoor — takes it).
-        tapScene(app, 0.22, 0.80, settle: 0.9)      // move rug
+        tapScene(app, "hearth", 0.22, 0.80, settle: 0.9)      // move rug
         // Trapdoor-dial at (0.60,0.70): inside the trapdoor rect (x0.30-0.70, y0.66-0.90)
         // but OUTSIDE the smaller ash (x0.36-0.52) and rug (y>=0.74) rects, so the trapdoor
         // — not a smaller-area overlapping hotspot — wins the tap. (The prior (0.50,0.72)
         // sat inside the ash rect, which won the overlap and opened the ash close-up instead
         // of the dial — that was the CI "moon-dial-1 must exist" failure.)
-        tapScene(app, 0.60, 0.70, settle: 0.9)      // trapdoor -> dial close-up
+        tapScene(app, "hearth", 0.60, 0.70, settle: 0.9)      // trapdoor -> dial close-up
         shoot(app, "play-03-dial-panel")
         for _ in 0..<1 { tapID(app, "moon-dial-1") } // waxing crescent
         for _ in 0..<4 { tapID(app, "moon-dial-2") } // full
         for _ in 0..<5 { tapID(app, "moon-dial-3") } // waning gibbous -> unlock
         shoot(app, "play-04-dials-solved")
         dismissCloseUp(app)
-        tapScene(app, 0.60, 0.70, settle: 1.2)      // descend through the trapdoor
+        tapScene(app, "hearth", 0.60, 0.70, settle: 1.2)      // descend through the trapdoor
         shoot(app, "play-05-cellar")
 
         // z3 cellar (R3-005 re-calibrated to the build-3 cellar plate): barrel right,
         // spoon drawer (handled chest on the shelf), weight hook on the wall, winch drum
         // top-left, standing mirror bottom-left, ladder far-right.
         // Select-then-tap: arm the poker, then tap the barrel (no auto-apply on bare tap).
-        useItem(app, item: "itm-poker", onScene: 0.735, 0.66) // pry barrel -> weight REVEALED
+        useItem(app, item: "itm-poker", view: "cellar", onScene: 0.735, 0.66) // pry barrel -> weight REVEALED
         // Build 10 (R4-013): the weight is revealed in the pried-barrel close-up and
         // collected with its own explicit tap (manual-pickup model), not auto-granted.
         tapID(app, "collect-itm-weight")
         assertHolding(app, "itm-weight")
         dismissCloseUp(app)
-        useItem(app, item: "itm-weight", onScene: 0.23, 0.33) // hang weight on the wall hook -> z4
+        useItem(app, item: "itm-weight", view: "cellar", onScene: 0.23, 0.33) // hang weight on the wall hook -> z4
         Thread.sleep(forTimeInterval: 1.2)          // weight-hung beat + shelf slide
         shoot(app, "play-06-shelf-slid")
-        tapScene(app, 0.555, 0.40)                  // open drawer (handled chest)
-        tapScene(app, 0.555, 0.40)                  // take spoon (manual pickup, F-018)
+        tapScene(app, "cellar", 0.555, 0.40)                  // open drawer (handled chest)
+        tapScene(app, "cellar", 0.555, 0.40)                  // take spoon (manual pickup, F-018)
         assertHolding(app, "itm-spoon")
-        tapScene(app, 0.13, 0.62)                   // mirror detent 2 (bottom-left stand)
-        tapScene(app, 0.13, 0.62)                   // mirror detent 3
+        tapScene(app, "cellar", 0.13, 0.62)                   // mirror detent 2 (bottom-left stand)
+        tapScene(app, "cellar", 0.13, 0.62)                   // mirror detent 3
         // F-024: zone changes are DIEGETIC PASSAGES, not chevrons. The slid-shelf gap
         // (cellar `alcove-passage` hotspot ~center) leads into the alcove.
-        tapScene(app, 0.47, 0.505, settle: 1.2)     // cellar -> alcove via the shelf gap
+        tapScene(app, "cellar", 0.47, 0.505, settle: 1.2)     // cellar -> alcove via the shelf gap
         shoot(app, "play-07-alcove")
-        tapScene(app, 0.605, 0.31)                  // crow statue close-up (key in beak)
+        tapScene(app, "alcove", 0.605, 0.31)                  // crow statue close-up (key in beak)
         // Build 10 (R4-026): the key is a manual pickup FROM the close-up — tap the key.
         tapID(app, "collect-itm-cage-key")
         assertHolding(app, "itm-cage-key")
         dismissCloseUp(app)
 
         // Back out to the cellar, then up the ladder to the hearth, then round to study.
-        tapScene(app, 0.915, 0.50, settle: 1.2)     // alcove -> cellar via the right-edge shelf gap
-        tapScene(app, 0.905, 0.46, settle: 1.2)     // cellar -> hearth up the far-right ladder
+        tapID(app, "zone-exit"); Thread.sleep(forTimeInterval: 1.2) // alcove->cellar via chevron (edge gap is off the iPad aspectFill crop)     // alcove -> cellar via the right-edge shelf gap
+        tapID(app, "zone-exit"); Thread.sleep(forTimeInterval: 1.2) // cellar->hearth via chevron (edge ladder is off the iPad aspectFill crop)     // cellar -> hearth up the far-right ladder
         tapID(app, "nav-next")                      // hearth -> study (chevron, same zone)
         Thread.sleep(forTimeInterval: 0.8)
         shoot(app, "play-08-study")
         // Screenshot-coverage detours (QA re-QA gap list): the grimoire opens at the
         // feather-bookmarked recipe spread; the triptych is the three night paintings.
-        tapScene(app, 0.46, 0.66)                   // grimoire close-up (open book on the desk)
+        tapScene(app, "study", 0.46, 0.66)                   // grimoire close-up (open book on the desk)
         XCTAssertTrue(app.descendants(matching: .any)["closeup-dismiss"].waitForExistence(timeout: 5),
                       "grimoire close-up must present")
         shoot(app, "play-08b-grimoire-recipe")
         dismissCloseUp(app)
-        tapScene(app, 0.377, 0.30)                  // triptych close-up (middle panel)
+        tapScene(app, "study", 0.377, 0.30)                  // triptych close-up (middle panel)
         XCTAssertTrue(app.descendants(matching: .any)["closeup-dismiss"].waitForExistence(timeout: 5),
                       "triptych close-up must present")
         shoot(app, "play-08c-triptych")
         dismissCloseUp(app)
-        tapScene(app, 0.762, 0.52)                  // rune door close-up (right press-plate)
+        tapScene(app, "study", 0.762, 0.52)                  // rune door close-up (right press-plate)
         // p01 fixed solution: AIR, FIRE, EARTH, WATER (RuneDoorSolution.solutionOrder).
         // The canonical PIL-stamped door glyphs now match the grimoire + element marks
         // (R3-007), so a human can read this off the grimoire hub.
@@ -566,7 +599,7 @@ final class EscapeRoomUITests: XCTestCase {
         }
         Thread.sleep(forTimeInterval: 0.6)          // close-up closes on solve
         shoot(app, "play-09-runedoor-solved")
-        tapScene(app, 0.762, 0.52, settle: 1.2)     // through the inner door -> bench
+        tapScene(app, "study", 0.762, 0.52, settle: 1.2)     // through the inner door -> bench
 
         // z2: astrolabe, cabinet.
         tapID(app, "nav-next")                      // bench -> cabinet
@@ -574,9 +607,9 @@ final class EscapeRoomUITests: XCTestCase {
         shoot(app, "play-10-cabinet")
         // Clue-gating (rev 1.3): view the Orion window (p03 gate) and the slot-shape
         // close-up (p04 gate) before the code-entry acts.
-        tapScene(app, 0.93, 0.31); dismissCloseUp(app)   // Orion window (top-right) -> clu-window-orion
-        tapScene(app, 0.465, 0.475); dismissCloseUp(app) // sun slot close-up -> clu-slot-shapes
-        tapScene(app, 0.79, 0.52)                   // astrolabe close-up (armillary sphere, right)
+        tapScene(app, "cabinet", 0.93, 0.31); dismissCloseUp(app)   // Orion window (top-right) -> clu-window-orion
+        tapScene(app, "cabinet", 0.465, 0.475); dismissCloseUp(app) // sun slot close-up -> clu-slot-shapes
+        tapScene(app, "cabinet", 0.79, 0.52)                   // astrolabe close-up (armillary sphere, right)
         shoot(app, "play-11-astrolabe")
         tapID(app, "astrolabe-plate-2")             // Orion -> drawer springs open
         // F-023 manual pickup: coin + crank are VISIBLE in the drawer; tap each to collect.
@@ -585,8 +618,8 @@ final class EscapeRoomUITests: XCTestCase {
         assertHolding(app, "itm-crank")
         assertHolding(app, "itm-silver-coin")
         dismissCloseUp(app)
-        useItem(app, item: "itm-gold-ring", onScene: 0.465, 0.475)   // sun recess (left door)
-        useItem(app, item: "itm-silver-coin", onScene: 0.58, 0.475)  // moon recess (right door) -> cabinet opens
+        useItem(app, item: "itm-gold-ring", view: "cabinet", onScene: 0.465, 0.475)   // sun recess (left door)
+        useItem(app, item: "itm-silver-coin", view: "cabinet", onScene: 0.58, 0.475)  // moon recess (right door) -> cabinet opens
         // F-023 manual pickup: file + phial visible in the opened cabinet; tap each.
         tapID(app, "collect-itm-file")
         tapID(app, "collect-itm-phial")
@@ -618,7 +651,7 @@ final class EscapeRoomUITests: XCTestCase {
         if reachCell.waitForExistence(timeout: 3) {
             reachCell.tap()                                         // arm the (held) spoon
             Thread.sleep(forTimeInterval: 0.2)
-            sceneCoordinate(app, 0.88, 0.325).tap()                // armed reach into the cage (top-right)
+            { let p = rf("entry", 0.88, 0.325); sceneCoordinate(app, p.0, p.1).tap() }                // armed reach into the cage (top-right)
             // Poll briefly for the pose, but do NOT assert — the beat may auto-dismiss
             // before the first poll returns on a slow runner. Capture regardless.
             _ = app.descendants(matching: .any)["refusal-pose"].waitForExistence(timeout: 1.0)
@@ -627,13 +660,13 @@ final class EscapeRoomUITests: XCTestCase {
             // If the refusal close-up is still up, dismiss defensively so the next scene
             // tap reaches the entry, not the (dismiss-on-any-tap) refusal overlay.
             if app.descendants(matching: .any)["refusal-pose"].exists {
-                sceneCoordinate(app, 0.5, 0.5).tap()
+                { let p = rf("entry", 0.5, 0.5); sceneCoordinate(app, p.0, p.1).tap() }
                 Thread.sleep(forTimeInterval: 0.4)
             }
         }
         // Free the crow (LOAD-BEARING, carries D3/F-011): arm the cage key, then tap the
         // star keyhole (select-then-tap). The feather yield proves p11 solved.
-        useItem(app, item: "itm-cage-key", onScene: 0.81, 0.385) // cage keyhole -> crow freed
+        useItem(app, item: "itm-cage-key", view: "entry", onScene: 0.81, 0.385) // cage keyhole -> crow freed
         assertHolding(app, "itm-feather")
         shoot(app, "play-13-crow-freed")
         dismissCloseUp(app)
@@ -654,36 +687,36 @@ final class EscapeRoomUITests: XCTestCase {
         // entry -> hearth (chevron within z1), then down the trapdoor to the cellar.
         tapID(app, "nav-next")                      // entry -> hearth (wraps within z1)
         Thread.sleep(forTimeInterval: 0.8)
-        tapScene(app, 0.60, 0.70, settle: 1.2)      // trapdoor -> cellar (diegetic)
+        tapScene(app, "hearth", 0.60, 0.70, settle: 1.2)      // trapdoor -> cellar (diegetic)
         // Select-then-tap: arm the crank, then tap the winch (no auto-fit on bare tap).
-        useItem(app, item: "itm-crank", onScene: 0.195, 0.10) // fit crank at the winch drum -> moonbeam
+        useItem(app, item: "itm-crank", view: "cellar", onScene: 0.195, 0.10) // fit crank at the winch drum -> moonbeam
         shoot(app, "play-14-beam")
-        tapScene(app, 0.47, 0.505, settle: 1.2)     // cellar -> alcove via the shelf gap
+        tapScene(app, "cellar", 0.47, 0.505, settle: 1.2)     // cellar -> alcove via the shelf gap
         shoot(app, "play-15-blooming")
-        tapScene(app, 0.57, 0.76)                   // pick blossom (planter basin, center-bottom)
+        tapScene(app, "alcove", 0.57, 0.76)                   // pick blossom (planter basin, center-bottom)
         assertHolding(app, "itm-blossom")
 
         // Brew: back to the cellar, up to the hearth, round to the study, through the
         // rune door to the workshop bench.
-        tapScene(app, 0.915, 0.50, settle: 1.2)     // alcove -> cellar via the right-edge gap
-        tapScene(app, 0.905, 0.46, settle: 1.2)     // cellar -> hearth up the far-right ladder
+        tapID(app, "zone-exit"); Thread.sleep(forTimeInterval: 1.2) // alcove->cellar via chevron (edge gap is off the iPad aspectFill crop)     // alcove -> cellar via the right-edge gap
+        tapID(app, "zone-exit"); Thread.sleep(forTimeInterval: 1.2) // cellar->hearth via chevron (edge ladder is off the iPad aspectFill crop)     // cellar -> hearth up the far-right ladder
         tapID(app, "nav-next")                      // hearth -> study
         Thread.sleep(forTimeInterval: 0.8)
-        tapScene(app, 0.762, 0.52, settle: 1.2)     // through the (solved) rune door -> bench
+        tapScene(app, "study", 0.762, 0.52, settle: 1.2)     // through the (solved) rune door -> bench
         Thread.sleep(forTimeInterval: 0.8)
-        useItem(app, item: "itm-blossom", onScene: 0.84, 0.55) // mortar (right table) -> paste
+        useItem(app, item: "itm-blossom", view: "bench", onScene: 0.84, 0.55) // mortar (right table) -> paste
         assertHolding(app, "itm-paste")
         dismissCloseUp(app)
-        useItem(app, item: "itm-paste", onScene: 0.315, 0.54)    // cauldron (over the fire)
-        useItem(app, item: "itm-shavings", onScene: 0.315, 0.54)
-        useItem(app, item: "itm-feather", onScene: 0.315, 0.54)
-        tapScene(app, 0.315, 0.54)                  // brew close-up
+        useItem(app, item: "itm-paste", view: "bench", onScene: 0.315, 0.54)    // cauldron (over the fire)
+        useItem(app, item: "itm-shavings", view: "bench", onScene: 0.315, 0.54)
+        useItem(app, item: "itm-feather", view: "bench", onScene: 0.315, 0.54)
+        tapScene(app, "bench", 0.315, 0.54)                  // brew close-up
         for _ in 0..<3 { tapID(app, "brew-pump") }  // flame stage 3
         for _ in 0..<5 { tapID(app, "brew-stir-ccw") }
         tapID(app, "brew-release")                  // -> draught-ready (spiral cue)
         shoot(app, "play-16-draught")
         dismissCloseUp(app)
-        useItem(app, item: "itm-phial", onScene: 0.315, 0.54) // bottle the draught
+        useItem(app, item: "itm-phial", view: "bench", onScene: 0.315, 0.54) // bottle the draught
         assertHolding(app, "itm-phial-draught")
         dismissCloseUp(app)
 
@@ -694,10 +727,10 @@ final class EscapeRoomUITests: XCTestCase {
         Thread.sleep(forTimeInterval: 0.8)
         tapID(app, "nav-next")                      // study -> entry
         Thread.sleep(forTimeInterval: 0.8)
-        useItem(app, item: "itm-phial-draught", onScene: 0.58, 0.31) // pour into the crow's-beak basin
+        useItem(app, item: "itm-phial-draught", view: "entry", onScene: 0.58, 0.31) // pour into the crow's-beak basin
         shoot(app, "play-17-unsealed")
         dismissCloseUp(app)
-        tapScene(app, 0.58, 0.31)                   // slide the bolt and leave (p17)
+        tapScene(app, "entry", 0.58, 0.31)                   // slide the bolt and leave (p17)
         // The Main Menu button doubles as the completion-card existence assert.
         XCTAssertTrue(app.descendants(matching: .any)["complete-main-menu"].waitForExistence(timeout: 6),
                       "completing p17 must present the completion card")
@@ -721,19 +754,19 @@ final class EscapeRoomUITests: XCTestCase {
         enterLevelOne(app)
 
         // Progress + p01 clue-gathering on the z1 views.
-        tapScene(app, 0.248, 0.50)                  // take poker (R3-005 re-calibrated)
+        tapScene(app, "hearth", 0.248, 0.50)                  // take poker (R3-005 re-calibrated)
         assertHolding(app, "itm-poker")
-        useItem(app, item: "itm-poker", onScene: 0.44, 0.68) // sift ash -> reveals ring
+        useItem(app, item: "itm-poker", view: "hearth", onScene: 0.44, 0.68) // sift ash -> reveals ring
         // R2-003a two-step: explicitly collect the revealed ring from the ash close-up.
         tapID(app, "collect-itm-gold-ring")
         assertHolding(app, "itm-gold-ring")
         dismissCloseUp(app)
-        tapScene(app, 0.613, 0.53); dismissCloseUp(app)   // AIR mark (bellows)
-        tapScene(app, 0.585, 0.275); dismissCloseUp(app)  // FIRE mark (lintel)
+        tapScene(app, "hearth", 0.613, 0.53); dismissCloseUp(app)   // AIR mark (bellows)
+        tapScene(app, "hearth", 0.585, 0.275); dismissCloseUp(app)  // FIRE mark (lintel)
         tapID(app, "nav-next"); Thread.sleep(forTimeInterval: 0.8) // -> study
         viewZ1GatingClues(app)                            // EARTH + grimoire page A (+ triptych/recipe)
         tapID(app, "nav-next"); Thread.sleep(forTimeInterval: 0.8) // -> entry
-        tapScene(app, 0.105, 0.62); dismissCloseUp(app)   // WATER mark (windowsill)
+        tapScene(app, "entry", 0.105, 0.62); dismissCloseUp(app)   // WATER mark (windowsill)
 
         // Quit to Main Menu (persistence is synchronous per every GameState mutator).
         tapID(app, "pause-button")
@@ -758,16 +791,16 @@ final class EscapeRoomUITests: XCTestCase {
         // v-bench (a z2 view) is only possible once p01 has actually solved and opened
         // the inner door.
         tapID(app2, "nav-next"); Thread.sleep(forTimeInterval: 0.8) // hearth -> study
-        tapScene(app2, 0.762, 0.52)                 // rune door close-up (R3-005 re-calibrated)
+        tapScene(app2, "study", 0.762, 0.52)                 // rune door close-up (R3-005 re-calibrated)
         for tile in [3, 1, 4, 2] {                  // AIR, FIRE, EARTH, WATER
             tapID(app2, "rune-tile-\(tile)")
         }
         Thread.sleep(forTimeInterval: 0.6)          // close-up closes on solve
         shoot(app2, "resume-02-runedoor-solved-postresume")
-        tapScene(app2, 0.762, 0.52, settle: 1.2)    // through the now-open inner door -> z2 bench
+        tapScene(app2, "study", 0.762, 0.52, settle: 1.2)    // through the now-open inner door -> z2 bench
         // Reaching z2 confirms the gate accepted the answer post-relaunch (D7). The z2
         // bench has a mortar hotspot whose close-up we can open as a reachability proof.
-        tapScene(app2, 0.84, 0.55)                  // mortar look (z2 v-bench only)
+        tapScene(app2, "bench", 0.84, 0.55)                  // mortar look (z2 v-bench only)
         XCTAssertTrue(app2.descendants(matching: .any)["closeup-dismiss"].waitForExistence(timeout: 5),
                       "must have entered z2 (rune gate did NOT re-lock across relaunch — D7)")
         shoot(app2, "resume-03-in-z2-gate-held")

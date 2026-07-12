@@ -49,8 +49,8 @@ final class RoomSceneCoordinator: ObservableObject {
     /// (it was never removed from inventory), so no soft-lock is possible (QA-BUG-017).
     @Published private(set) var pendingSunItem: String?
     @Published private(set) var pendingMoonItem: String?
-    /// True briefly after hanging the weight so the z3-cellar-weight-hung plate renders
-    /// before the shelf slides (QA-BUG-016).
+    /// True briefly after hanging the weight so the ov-weight-hung overlay renders
+    /// before the shelf slides (QA-BUG-016; build 10: overlay, not a base swap).
     private var showingWeightHungBeat: Bool = false
 
     /// Diegetic zone passages (trapdoor -> cellar, rune door -> workshop, cellar
@@ -199,7 +199,7 @@ final class RoomSceneCoordinator: ObservableObject {
         // rect — R3-005). Measurements: clock body x0.35-0.46 y0-0.19; FIRE glyph+II on
         // the lintel x0.53-0.64 y0.24-0.31; AIR bellows tool x0.585-0.63 y0.42-0.62;
         // poker rod x0.245 y0.42-0.57; ash mound x0.36-0.48 y0.60-0.75.
-        scene.configureHotspots([
+        scene.configureHotspots(Reframe.map([
             Hotspot(id: "poker", 0.215, 0.40, 0.065, 0.20),
             Hotspot(id: "ash", 0.36, 0.60, 0.16, 0.16),
             Hotspot(id: "clock", 0.35, 0.0, 0.11, 0.19),
@@ -210,7 +210,7 @@ final class RoomSceneCoordinator: ObservableObject {
             // to keep a reachable band clear of the §7-R1 bottom bar (as the old rug did).
             Hotspot(id: "rug", 0.14, 0.74, 0.60, 0.26),
             Hotspot(id: "trapdoor-dial", 0.30, 0.66, 0.40, 0.24) // under the rug once moved
-        ])
+        ], view: .hearth))
     }
 
     private func refreshHearth() {
@@ -238,14 +238,14 @@ final class RoomSceneCoordinator: ObservableObject {
         // (x0.02-0.16 y0.68-0.92) — the old rect pointed at the lamp; and the rune-door
         // press-plate is right (x0.735-0.79 y0.375-0.665). Panels map left->right to
         // close-ups 0/1/2 (R2-007: tapping a panel opens THAT panel's close-up).
-        scene.configureHotspots([
+        scene.configureHotspots(Reframe.map([
             Hotspot(id: "grimoire", 0.31, 0.55, 0.30, 0.22),
             Hotspot(id: "triptych-1", 0.20, 0.18, 0.115, 0.22),
             Hotspot(id: "triptych-2", 0.33, 0.20, 0.095, 0.20),
             Hotspot(id: "triptych-3", 0.435, 0.23, 0.075, 0.18),
             Hotspot(id: "flowerpot", 0.02, 0.68, 0.16, 0.26),  // EARTH glyph + numeral III
             Hotspot(id: "rune-door", 0.72, 0.36, 0.085, 0.32),
-        ])
+        ], view: .study))
     }
 
     private func refreshStudy() {
@@ -264,14 +264,14 @@ final class RoomSceneCoordinator: ObservableObject {
         // couldn't be inspected); the rusted key hangs by the bolt (x0.70-0.73 y0.42-0.63);
         // the birdcage is top-RIGHT (x0.79-0.98), with the padlock keyhole at x0.795-0.83
         // y0.34-0.42 and the brass feed cup at x0.875-0.93 y0.44-0.52.
-        scene.configureHotspots([
+        scene.configureHotspots(Reframe.map([
             Hotspot(id: "door-lock", 0.46, 0.10, 0.24, 0.42),
             Hotspot(id: "rusted-key", 0.685, 0.42, 0.06, 0.22),
             Hotspot(id: "windowsill", 0.06, 0.53, 0.09, 0.18),  // WATER glyph + numeral IV
             Hotspot(id: "cage", 0.80, 0.10, 0.16, 0.45),
             Hotspot(id: "feed-cup", 0.86, 0.42, 0.08, 0.11),
             Hotspot(id: "star-keyhole", 0.78, 0.33, 0.06, 0.11),
-        ])
+        ], view: .entry))
     }
 
     private func refreshEntry() {
@@ -292,13 +292,13 @@ final class RoomSceneCoordinator: ObservableObject {
         // floor bellows bottom-left x0.06-0.30 y0.78-0.95; mortar & pestle on the RIGHT table
         // x0.80-0.87 y0.42-0.68 (old rect pointed at the doorway); the workbench surface is
         // the right table foreground x0.80-1.0 y0.68-0.80 (p12 combine secondary path).
-        scene.configureHotspots([
+        scene.configureHotspots(Reframe.map([
             Hotspot(id: "cauldron", 0.22, 0.40, 0.19, 0.28),
             Hotspot(id: "ladle", 0.35, 0.38, 0.10, 0.10),
             Hotspot(id: "floor-bellows", 0.05, 0.77, 0.28, 0.22),
             Hotspot(id: "mortar", 0.79, 0.42, 0.10, 0.26),
             Hotspot(id: "workbench", 0.80, 0.68, 0.20, 0.12),
-        ])
+        ], view: .bench))
     }
 
     private func refreshBench() {
@@ -321,13 +321,13 @@ final class RoomSceneCoordinator: ObservableObject {
         // on the right door) — the old rects were far left. The potion shelf is bottom-LEFT
         // (bottles x0.02-0.36 y0.20-0.52); the astrolabe (armillary sphere) is right
         // x0.72-0.86 y0.36-0.68; the arched Orion window is top-RIGHT x0.86-1.0 y0.02-0.60.
-        scene.configureHotspots([
+        scene.configureHotspots(Reframe.map([
             Hotspot(id: "sun-slot", 0.42, 0.40, 0.09, 0.15),
             Hotspot(id: "moon-slot", 0.535, 0.40, 0.09, 0.15),
             Hotspot(id: "potion-shelf", 0.02, 0.20, 0.36, 0.34),
             Hotspot(id: "astrolabe", 0.71, 0.34, 0.16, 0.36),
             Hotspot(id: "window", 0.86, 0.02, 0.14, 0.58),
-        ])
+        ], view: .cabinet))
         scene.setBaseTexture("z2-cabinet-base")
     }
 
@@ -350,12 +350,13 @@ final class RoomSceneCoordinator: ObservableObject {
         // QA-BUG-017: a single correctly-seated item is rendered (icon art over its
         // recess) until the pair completes; no dedicated single-seat plate exists.
         let solved = state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon)
-        // R3-005: seated-item art sits over its recess, tracking the re-calibrated
-        // sun/moon slot centers (0.462,0.475) / (0.577,0.475) on the new cabinet plate.
+        // R3-005 seated-item art over its recess, remapped by the build-10 cabinet
+        // re-frame transform (these two rects were authored in the OLD framing).
+        let cabT = Reframe.transform(for: .cabinet)
         scene.setOverlay("seat-sun", imageNamed: (!solved && pendingSunItem != nil) ? "icon-gold-ring" : nil,
-                          rectNormalized: CGRect(x: 0.437, y: 0.43, width: 0.05, height: 0.09))
+                          rectNormalized: cabT.map(CGRect(x: 0.437, y: 0.43, width: 0.05, height: 0.09)))
         scene.setOverlay("seat-moon", imageNamed: (!solved && pendingMoonItem != nil) ? "icon-silver-coin" : nil,
-                          rectNormalized: CGRect(x: 0.552, y: 0.43, width: 0.05, height: 0.09))
+                          rectNormalized: cabT.map(CGRect(x: 0.552, y: 0.43, width: 0.05, height: 0.09)))
     }
 
     // MARK: - v-cellar (z3)
@@ -369,7 +370,7 @@ final class RoomSceneCoordinator: ObservableObject {
         // top-left x0.13-0.26 y0.03-0.17 (old rect pointed at the hook); the standing mirror
         // bottom-LEFT x0.06-0.20 y0.36-0.90 (old rect was center-right); the ladder up to the
         // trapdoor is far-RIGHT x0.85-0.96.
-        scene.configureHotspots([
+        scene.configureHotspots(Reframe.map([
             Hotspot(id: "barrel", 0.66, 0.50, 0.15, 0.32),
             Hotspot(id: "drawer", 0.50, 0.34, 0.11, 0.12),
             Hotspot(id: "hook", 0.185, 0.26, 0.09, 0.14),
@@ -379,39 +380,55 @@ final class RoomSceneCoordinator: ObservableObject {
             // shelf has slid — the revealed alcove mouth behind the sliding plank shelf.
             Hotspot(id: "ladder", 0.84, 0.06, 0.13, 0.80),
             Hotspot(id: "alcove-passage", 0.42, 0.28, 0.10, 0.45),
-        ])
+        ], view: .cellar))
     }
 
+    /// Build 10, cluster B (R4-024 anchor): the cellar is now ONE stable base plus fully
+    /// INDEPENDENT per-element overlays — barrel / drawer / crank / mirror / shelf / beam /
+    /// weight-hung — each driven solely by its own state. The build-9 full-plate base swaps
+    /// (beam matrix + shelf-slid + weight-hung) baked several elements' states into one
+    /// image, so changing one (e.g. rotating the mirror → new beam base) visibly flipped
+    /// another (the barrel) and the moonbeam jumped. Eliminating the swaps removes that
+    /// cross-contamination by construction. The overlay rects come from the re-framed
+    /// overlays.json (self-located by auto-diff — this also fixes R4-011: the mirror overlay
+    /// was previously cropped from the wrong region and never appeared to move).
     private func refreshCellar() {
+        scene.setBaseTexture("z3-cellar-base") // the single, never-swapped cellar base
+
+        // Beam: a light overlay that is a pure function of (moonbeam-on, mirror-detent-3,
+        // shelf-slid) — one element, independently composited (never a base swap).
+        let beamImage: String?
+        switch RoomVisuals.beamVisual(state) {
+        case .none:           beamImage = nil
+        case .floorBeam:      beamImage = "ov-beam-floor"
+        case .blockedOnShelf: beamImage = "ov-beam-blocked"
+        case .intoAlcove:     beamImage = "ov-beam-alcove"
+        }
+        scene.setOverlay("beam", imageNamed: beamImage,
+                          rectNormalized: beamImage.map { overlayRect("z3/v-cellar", $0) } ?? .zero)
+
+        // Shelf slid open (reveals the alcove mouth) — independent of the beam.
+        scene.setOverlay("shelf", imageNamed: RoomVisuals.shelfSlid(state) ? "ov-shelf-slid" : nil,
+                          rectNormalized: overlayRect("z3/v-cellar", "ov-shelf-slid"))
+
         let barrelOverlay = RoomVisuals.barrelOverlay(state)
         scene.setOverlay("barrel", imageNamed: barrelOverlay,
                           rectNormalized: barrelOverlay.map { overlayRect("z3/v-cellar", $0) } ?? .zero)
-        // Feedback round 1: drawer states are shut (base art) / open-with-spoon /
-        // open-empty — see RoomVisuals.drawerOverlay (the old mapping was inverted).
+        // Drawer: shut (base art) / open-with-spoon / open-empty (R4-012(2) state refresh).
         let drawerOverlay = RoomVisuals.drawerOverlay(state)
         scene.setOverlay("drawer", imageNamed: drawerOverlay,
                           rectNormalized: drawerOverlay.map { overlayRect("z3/v-cellar", $0) } ?? .zero)
-        if RoomVisuals.crankFitted(state) {
-            scene.setOverlay("crank", imageNamed: "ov-crank-fitted", rectNormalized: overlayRect("z3/v-cellar", "ov-crank-fitted"))
-        } else {
-            scene.setOverlay("crank", imageNamed: nil, rectNormalized: .zero)
-        }
-        let mirrorOverlay = state.data.mirrorDetent == 3 ? "ov-mirror-d3" : (state.data.mirrorDetent == 2 ? "ov-mirror-d2" : nil)
-        scene.setOverlay("mirror", imageNamed: mirrorOverlay, rectNormalized: mirrorOverlay.map { overlayRect("z3/v-cellar", $0) } ?? .zero)
-        if showingWeightHungBeat {
-            scene.setBaseTexture("z3-cellar-weight-hung")
-            return
-        }
-        switch RoomVisuals.beamVisual(state) {
-        case .none:
-            scene.setBaseTexture(RoomVisuals.shelfSlid(state) ? "z3-cellar-shelf-slid" : "z3-cellar-base")
-        case .floorBeam:
-            scene.setBaseTexture(RoomVisuals.shelfSlid(state) ? "z3-cellar-beam-floor-shelf-slid" : "z3-cellar-beam-floor")
-        case .blockedOnShelf:
-            scene.setBaseTexture("z3-cellar-beam-blocked")
-        case .intoAlcove:
-            scene.setBaseTexture("z3-cellar-beam-alcove")
-        }
+        scene.setOverlay("crank", imageNamed: RoomVisuals.crankFitted(state) ? "ov-crank-fitted" : nil,
+                          rectNormalized: overlayRect("z3/v-cellar", "ov-crank-fitted"))
+        // Mirror at detent 2 / 3 — its own overlay; rotating it now visibly moves the
+        // mirror and touches nothing else (R4-011 / R4-024).
+        let mirrorOverlay = state.data.mirrorDetent == 3 ? "ov-mirror-d3"
+            : (state.data.mirrorDetent == 2 ? "ov-mirror-d2" : nil)
+        scene.setOverlay("mirror", imageNamed: mirrorOverlay,
+                          rectNormalized: mirrorOverlay.map { overlayRect("z3/v-cellar", $0) } ?? .zero)
+        // Transient weight-hung beat — now an overlay (was a full base swap).
+        scene.setOverlay("weight-hung", imageNamed: showingWeightHungBeat ? "ov-weight-hung" : nil,
+                          rectNormalized: overlayRect("z3/v-cellar", "ov-weight-hung"))
     }
 
     // MARK: - v-alcove (z4)
@@ -423,12 +440,12 @@ final class RoomSceneCoordinator: ObservableObject {
         // crow STATUE holding the star-topped key is center x0.53-0.68 y0.10-0.52 (the key
         // hangs from its beak x0.53-0.58 y0.14-0.35); the exit passage back to the cellar is
         // the right-edge stone gap.
-        scene.configureHotspots([
+        scene.configureHotspots(Reframe.map([
             Hotspot(id: "planter", 0.42, 0.55, 0.30, 0.42),
             Hotspot(id: "statue-key", 0.52, 0.10, 0.17, 0.42),
             // F-024: the shelf gap back out to the cellar (right frame edge).
             Hotspot(id: "cellar-passage", 0.85, 0.10, 0.13, 0.80),
-        ])
+        ], view: .alcove))
     }
 
     private func refreshAlcove() {

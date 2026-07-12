@@ -3,28 +3,28 @@
   "ov-cage-open": {
    "file": "z1/v-entry/overlays/ov-cage-open.jpg",
    "rect": [
-    0.63,
-    0.05,
-    0.22,
-    0.62
+    0.6796875,
+    0.19322916666666667,
+    0.15104166666666666,
+    0.4703125
    ]
   },
   "ov-crow-lintel": {
    "file": "z1/v-entry/overlays/ov-crow-lintel.jpg",
    "rect": [
-    0.34,
-    0.02,
-    0.3,
-    0.16
+    0.440625,
+    0.1515625,
+    0.18307291666666667,
+    0.24322916666666666
    ]
   },
   "ov-vines-gone": {
    "file": "z1/v-entry/overlays/ov-vines-gone.jpg",
    "rect": [
-    0.35,
-    0.16,
-    0.28,
-    0.4
+    0.43723958333333335,
+    0.23958333333333334,
+    0.15208333333333332,
+    0.49270833333333336
    ]
   }
  },
@@ -32,28 +32,28 @@
   "ov-poker-taken": {
    "file": "z1/v-hearth/overlays/ov-poker-taken.jpg",
    "rect": [
-    0.2559895833333333,
-    0.41041666666666665,
-    0.07526041666666666,
-    0.41354166666666664
+    0.26666666666666666,
+    0.43645833333333334,
+    0.07239583333333334,
+    0.3958333333333333
    ]
   },
   "ov-rug-moved": {
    "file": "z1/v-hearth/overlays/ov-rug-moved.jpg",
    "rect": [
-    0.14,
-    0.7,
-    0.6,
-    0.3
+    0.15609583333333335,
+    0.7132916666666667,
+    0.573,
+    0.2865
    ]
   },
   "ov-trapdoor-open": {
    "file": "z1/v-hearth/overlays/ov-trapdoor-open.jpg",
    "rect": [
-    0.3,
-    0.68,
-    0.44,
-    0.32
+    0.3088958333333333,
+    0.6941916666666667,
+    0.42019999999999996,
+    0.3056
    ]
   }
  },
@@ -61,28 +61,28 @@
   "ov-flame1": {
    "file": "z2/v-bench/overlays/ov-flame1.jpg",
    "rect": [
-    0.13,
-    0.3,
-    0.26,
-    0.34
+    0.21987916666666668,
+    0.3338958333333333,
+    0.2158,
+    0.2822
    ]
   },
   "ov-flame2": {
    "file": "z2/v-bench/overlays/ov-flame2.jpg",
    "rect": [
-    0.13,
-    0.24,
-    0.26,
-    0.4
+    0.21987916666666668,
+    0.2840958333333333,
+    0.2158,
+    0.332
    ]
   },
   "ov-flame3": {
    "file": "z2/v-bench/overlays/ov-flame3.jpg",
    "rect": [
-    0.13,
-    0.18,
-    0.26,
-    0.46
+    0.21987916666666668,
+    0.23429583333333331,
+    0.2158,
+    0.3818
    ]
   }
  },
@@ -90,106 +90,138 @@
   "ov-adrawer-open": {
    "file": "z2/v-cabinet/overlays/ov-adrawer-open.jpg",
    "rect": [
-    0.5,
-    0.62,
-    0.22,
-    0.26
+    0.6658854166666667,
+    0.7536458333333333,
+    0.09713541666666667,
+    0.0546875
    ]
   },
   "ov-cab-open": {
    "file": "z2/v-cabinet/overlays/ov-cab-open.jpg",
    "rect": [
-    0.12,
-    0.2,
-    0.3,
-    0.42
+    0.3927083333333333,
+    0.18333333333333332,
+    0.20729166666666668,
+    0.58125
    ]
   },
   "ov-cab-open-empty": {
    "file": "z2/v-cabinet/overlays/ov-cab-open-empty.jpg",
    "rect": [
-    0.12,
-    0.2,
-    0.3,
-    0.42
+    0.3927083333333333,
+    0.18333333333333332,
+    0.20729166666666668,
+    0.58125
    ]
   },
   "ov-slots-seated": {
    "file": "z2/v-cabinet/overlays/ov-slots-seated.jpg",
    "rect": [
-    0.15,
-    0.24,
-    0.22,
-    0.22
+    0.2690625,
+    0.31799999999999995,
+    0.154,
+    0.154
    ]
   }
  },
  "z3/v-cellar": {
-  "ov-barrel-empty": {
-   "dimFile": "z3/v-cellar/overlays/ov-barrel-empty-dim.jpg",
-   "dimGain": 1.0,
-   "file": "z3/v-cellar/overlays/ov-barrel-empty.jpg",
-   "rect": [
-    0.66,
-    0.54,
-    0.21,
-    0.38
-   ]
-  },
   "ov-barrel-pried": {
-   "dimFile": "z3/v-cellar/overlays/ov-barrel-pried-dim.jpg",
-   "dimGain": 1.0,
    "file": "z3/v-cellar/overlays/ov-barrel-pried.jpg",
    "rect": [
-    0.66,
-    0.54,
-    0.21,
-    0.38
+    0.6606770833333333,
+    0.5385416666666667,
+    0.10078125,
+    0.225
+   ]
+  },
+  "ov-beam-alcove": {
+   "file": "z3/v-cellar/overlays/ov-beam-alcove.jpg",
+   "rect": [
+    0.24140625,
+    0.13333333333333333,
+    0.24713541666666666,
+    0.5807291666666666
+   ]
+  },
+  "ov-beam-blocked": {
+   "file": "z3/v-cellar/overlays/ov-beam-blocked.jpg",
+   "rect": [
+    0.24114583333333334,
+    0.13333333333333333,
+    0.246875,
+    0.5463541666666667
+   ]
+  },
+  "ov-beam-floor": {
+   "file": "z3/v-cellar/overlays/ov-beam-floor.jpg",
+   "rect": [
+    0.24192708333333332,
+    0.13541666666666666,
+    0.14192708333333334,
+    0.671875
    ]
   },
   "ov-crank-fitted": {
    "file": "z3/v-cellar/overlays/ov-crank-fitted.jpg",
    "rect": [
-    0.15,
-    0.18,
-    0.17,
-    0.24
+    0.21041666666666667,
+    0.1109375,
+    0.11744791666666667,
+    0.140625
    ]
   },
   "ov-drawer-empty": {
    "file": "z3/v-cellar/overlays/ov-drawer-empty.jpg",
    "rect": [
-    0.33,
-    0.55,
-    0.17,
-    0.2
+    0.5294270833333333,
+    0.39166666666666666,
+    0.11380208333333333,
+    0.103125
    ]
   },
   "ov-drawer-open": {
    "file": "z3/v-cellar/overlays/ov-drawer-open.jpg",
    "rect": [
-    0.33,
-    0.55,
-    0.17,
-    0.2
+    0.5294270833333333,
+    0.39166666666666666,
+    0.11380208333333333,
+    0.103125
    ]
   },
   "ov-mirror-d2": {
    "file": "z3/v-cellar/overlays/ov-mirror-d2.jpg",
    "rect": [
-    0.55,
-    0.58,
-    0.19,
-    0.38
+    0.16276041666666666,
+    0.36875,
+    0.10364583333333334,
+    0.4765625
    ]
   },
   "ov-mirror-d3": {
    "file": "z3/v-cellar/overlays/ov-mirror-d3.jpg",
    "rect": [
-    0.55,
-    0.58,
-    0.19,
-    0.38
+    0.165625,
+    0.36770833333333336,
+    0.10364583333333334,
+    0.47604166666666664
+   ]
+  },
+  "ov-shelf-slid": {
+   "file": "z3/v-cellar/overlays/ov-shelf-slid.jpg",
+   "rect": [
+    0.32916666666666666,
+    0.35520833333333335,
+    0.159375,
+    0.35885416666666664
+   ]
+  },
+  "ov-weight-hung": {
+   "file": "z3/v-cellar/overlays/ov-weight-hung.jpg",
+   "rect": [
+    0.32890625,
+    0.3541666666666667,
+    0.1609375,
+    0.3609375
    ]
   }
  },

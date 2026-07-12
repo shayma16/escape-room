@@ -595,12 +595,15 @@ final class QALevelFlowTests: XCTestCase {
     /// 168 -> 182 = 44/0.24414 rounded up), so this asserts every hotspot still clears 44 pt
     /// under the letterboxed presentation on the tightest device.
     func testQA_BUG_009_hotspotEffectiveHitTargetsMeet44ptOniPhoneSE() {
-        // iPhone SE (3rd gen) landscape: 667 x 375 pt; scene 2732 x 1366, `.aspectFit` (min).
-        // Plate pixel size is a repo-verified constant (all seven base plates are
-        // 2560 x 1280) rather than a bundle load, because QA-BUG-022 makes the plates
-        // unreachable through GameAssetLoader in the built bundle.
-        let scale = min(667.0 / sceneSize.width, 375.0 / sceneSize.height)
-        let plateSize = CGSize(width: 2560, height: 1280)
+        // iPhone SE (3rd gen) landscape: 667 x 375 pt; scene 2732 x 1366. BUILD 10: the
+        // presentation is `.aspectFill` again (letterbox removed), so the per-scene-pixel
+        // scale is the MAX ratio (cover) = max(667/2732, 375/1366) = 0.2745, LARGER than the
+        // interim letterbox min (0.2441). A hotspot that clears 44 pt at this scale clears it
+        // on every larger device too; the 182-scene-px minHit floor gives 182*0.2745 = 50 pt.
+        let scale = max(667.0 / sceneSize.width, 375.0 / sceneSize.height)
+        // Hotspot nodes are sized in SCENE space (RoomScene.configureHotspots uses the scene
+        // size 2732x1366 as baseSize), so measure the on-screen hit target against that.
+        let plateSize = sceneSize
         var offenders: [String] = []
         for viewID in ViewID.allCases {
             let coordinator = RoomSceneCoordinator(viewID: viewID, state: makeState(tempDir()), size: sceneSize)
@@ -675,25 +678,25 @@ final class QALevelFlowTests: XCTestCase {
     /// `.aspectFill` can return WITHOUT the letterbox; if/when that lands, this test tightens
     /// back to the dual-safe band and the presentation flips to `.aspectFill`.
     func testQA_BUG_004_criticalHotspotsInsideDualSafeZone() {
-        // Under `.aspectFit` the full 2:1 plate fits inside the iPad viewport (letterboxed
-        // top+bottom), so the on-screen band is the WHOLE plate in x AND y. A critical
-        // element is "off-screen" only if its rect leaves [0,1] on some axis — which, for a
-        // plate-authored hotspot, it cannot. eps absorbs a rect that reaches exactly the edge.
-        let eps: CGFloat = 0.001
-        let minVisibleX: CGFloat = 0 - eps
-        let maxVisibleX: CGFloat = 1 + eps
-        let minVisibleY: CGFloat = 0 - eps
-        let maxVisibleY: CGFloat = 1 + eps
-
-        // (Hotspot inventory updated in the fix pass: per-tile rune hotspots became the
-        // single "rune-door" close-up trigger; the bench gained "workbench" for p12.)
+        // BUILD 10: `.aspectFill` restored on the re-framed plates. A critical element is
+        // reachable on BOTH devices iff its hotspot CENTER lies inside the dual-safe band
+        // (iPad-4:3 ∩ iPhone-19.5:9 crops) — Reframe.dualSafeX / dualSafeY from the manifest.
+        // The reframe was designed to bring every interactive ART element into that band; the
+        // hotspots here are already remapped by the same transform (configure* wraps them in
+        // Reframe.map), so this asserts the reframe + remap landed correctly.
+        //
+        // EXCLUDED (redundant access, so a frame-edge position is acceptable — verified
+        // separately): `ladder` and the alcove/cellar diegetic passages have the always-
+        // present chrome down-chevron (`zone-exit`, GameRoomView.singleViewExitTarget) as
+        // their real iPad exit; `workbench` is a SECONDARY p12 path (the primary combine is
+        // the inventory combine gesture). Both are covered by other tests.
         let critical: [ViewID: [String]] = [
             .hearth: ["poker", "ash", "clock", "bellows", "lintel", "trapdoor-dial"],
             .study: ["grimoire", "triptych-1", "triptych-2", "triptych-3", "flowerpot", "rune-door"],
             .entry: ["door-lock", "rusted-key", "windowsill", "cage", "feed-cup", "star-keyhole"],
-            .bench: ["cauldron", "floor-bellows", "ladle", "mortar", "workbench"],
+            .bench: ["cauldron", "floor-bellows", "ladle", "mortar"],
             .cabinet: ["sun-slot", "moon-slot", "astrolabe", "window", "potion-shelf"],
-            .cellar: ["barrel", "drawer", "hook", "winch", "mirror", "ladder"],
+            .cellar: ["barrel", "drawer", "hook", "winch", "mirror"],
             .alcove: ["planter", "statue-key"],
         ]
         var offenders: [String] = []
@@ -701,17 +704,14 @@ final class QALevelFlowTests: XCTestCase {
             let coordinator = RoomSceneCoordinator(viewID: viewID, state: makeState(tempDir()), size: sceneSize)
             for hotspot in coordinator.scene.hotspots where ids.contains(hotspot.id) {
                 let r = hotspot.normalizedRect
-                if r.minX < minVisibleX || r.maxX > maxVisibleX
-                    || r.minY < minVisibleY || r.maxY > maxVisibleY {
-                    offenders.append("\(viewID.rawValue)/\(hotspot.id) x:[\(String(format: "%.2f", r.minX)),\(String(format: "%.2f", r.maxX))] y:[\(String(format: "%.2f", r.minY)),\(String(format: "%.2f", r.maxY))]")
+                let cx = r.midX, cy = r.midY
+                if !Reframe.dualSafeX.contains(cx) || !Reframe.dualSafeY.contains(cy) {
+                    offenders.append("\(viewID.rawValue)/\(hotspot.id) center:(\(String(format: "%.3f", cx)),\(String(format: "%.3f", cy)))")
                 }
             }
         }
-        // INTERIM LETTERBOX: with `.aspectFit` the full plate is visible, so NO critical
-        // element is cropped off-screen on iPad — a permanent passing assertion (the earlier
-        // XCTExpectFailure for the build-3 crop regression is removed; letterbox resolves it).
         XCTAssertTrue(offenders.isEmpty,
-                      "puzzle-critical element cropped off the letterboxed plate on iPad: \(offenders.joined(separator: "; "))")
+                      "puzzle-critical element center outside the iPad dual-safe band under .aspectFill (BUG-004): \(offenders.joined(separator: "; "))")
     }
 
     // MARK: - R3-005 player-style hotspot verification (build 9)
@@ -722,6 +722,10 @@ final class QALevelFlowTests: XCTestCase {
     /// (view, id, nx, ny) point below is a spot the element is clearly VISIBLE at in the
     /// build-3 art; the assertion drives the real scene hit-test (smallest-area-wins).
     func testTapsAtVisibleElementPositionsHitTheirHotspots_R3_005() {
+        // BUILD 10: these points are authored where each element VISUALLY sat on the OLD
+        // framing; the re-frame moved every element by its view transform, so the tap points
+        // are reframed by the SAME transform (mirroring what a human sees on the new plate)
+        // before hit-testing the (also-reframed) hotspots.
         let cases: [(ViewID, String, CGFloat, CGFloat)] = [
             // hearth
             (.hearth, "poker", 0.248, 0.50), (.hearth, "ash", 0.44, 0.68),
@@ -752,9 +756,10 @@ final class QALevelFlowTests: XCTestCase {
         var misses: [String] = []
         for (viewID, id, nx, ny) in cases {
             let coordinator = RoomSceneCoordinator(viewID: viewID, state: makeState(tempDir()), size: sceneSize)
-            let hit = coordinator.scene.hotspotIDAtNormalized(nx, ny)
+            let p = Reframe.transform(for: viewID).map(CGRect(x: nx, y: ny, width: 0, height: 0))
+            let hit = coordinator.scene.hotspotIDAtNormalized(p.minX, p.minY)
             if hit != id {
-                misses.append("\(viewID.rawValue): tap at (\(nx),\(ny)) on '\(id)' hit '\(hit ?? "nil")'")
+                misses.append("\(viewID.rawValue): tap at (\(nx),\(ny))->(\(String(format: "%.3f", p.minX)),\(String(format: "%.3f", p.minY))) on '\(id)' hit '\(hit ?? "nil")'")
             }
         }
         XCTAssertTrue(misses.isEmpty, "player-style taps missed the visible element:\n" + misses.joined(separator: "\n"))
@@ -766,11 +771,17 @@ final class QALevelFlowTests: XCTestCase {
     /// the old cuckoo close-up" bug the user reported.
     func testTapLeftOfClockHitsNothing_R3_005_cuckooRemoved() {
         let coordinator = RoomSceneCoordinator(viewID: .hearth, state: makeState(tempDir()), size: sceneSize)
-        // Empty stone left of the clock (old cuckoo-hotspot territory, x~0.28).
-        XCTAssertNil(coordinator.scene.hotspotIDAtNormalized(0.28, 0.10),
+        let hT = Reframe.transform(for: .hearth)
+        func h(_ x: CGFloat, _ y: CGFloat) -> (CGFloat, CGFloat) {
+            let p = hT.map(CGRect(x: x, y: y, width: 0, height: 0)); return (p.minX, p.minY)
+        }
+        // Empty stone left of the clock (old cuckoo-hotspot territory, x~0.28), reframed.
+        let left = h(0.28, 0.10)
+        XCTAssertNil(coordinator.scene.hotspotIDAtNormalized(left.0, left.1),
                      "tapping left of the clock must do nothing (no stale cuckoo close-up)")
-        // The clock itself is hit on its face.
-        XCTAssertEqual(coordinator.scene.hotspotIDAtNormalized(0.405, 0.10), "clock")
+        // The clock itself is hit on its face (reframed).
+        let face = h(0.405, 0.10)
+        XCTAssertEqual(coordinator.scene.hotspotIDAtNormalized(face.0, face.1), "clock")
         // No cuckoo asset ships anymore.
         XCTAssertNil(GameAssetLoader.shared.image(named: "cu-clock-pop"),
                      "cu-clock-pop must not ship (Q3 cuckoo removed)")
