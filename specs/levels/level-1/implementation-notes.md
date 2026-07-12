@@ -1539,3 +1539,107 @@ re-framed plates have landed.
 ### CI
 
 - (to be filled after the run) — build-and-test.yml on branch level1-rebuild-build3.
+
+---
+
+## Build 10 — Phase 2 (per-element overlays + hotspot re-frame; Developer, 2026-07-11)
+
+Started after the Producer signalled the re-frame batch landed (commits b215016, ff9299d,
+0440c74, 2c7ae60): all 6 wide views re-framed into the §8 iPad-4:3 ∩ iPhone-19.5:9
+dual-safe band, z4 verified in-band as-is, entry ghost glyph cleaned (R4-008), cabinet
+moon canon-fixed, dial-face pre-rotated (R4-007).
+
+### Cluster B — per-element overlay rendering (R4-024 anchor + symptoms)
+
+- **Cellar = ONE stable base + independent overlays.** `refreshCellar` no longer swaps the
+  base texture at all — `z3-cellar-base` is the single base, and barrel / drawer / crank /
+  mirror / shelf / beam / weight-hung are each an independent overlay driven solely by its
+  own state. The build-9 full-plate beam/shelf/weight base swaps baked several elements'
+  states into one image, so rotating the mirror (→ a different beam base) visibly flipped
+  the barrel and jumped the moonbeam — the screenshot-proven R4-024. Eliminating the swaps
+  removes that by construction. Beam path (floor / blocked / alcove) and shelf-open are
+  composed as two independent overlays rather than the old combinatorial beam-floor-shelf-
+  slid plate.
+- **Overlay regeneration = auto-diff on the re-framed plates.** Because the re-frame applied
+  the SAME transform to every state variant of a view, the variants now pixel-align with the
+  re-framed base, so `diff_overlay(base, variant)` self-locates each element's rect. This
+  ALSO fixes two build-9 miscalibrations that the old hand-authored rects caused: R4-011
+  (the `ov-mirror-d2/d3` rect pointed at the scene CENTER, so the mirror overlay cropped an
+  unchanged region and never appeared to move — it now crops the actual left-stand mirror
+  and visibly tilts) and R4-022(2) (the misaligned sun-door / cabinet-open overlay). Entry
+  (cage/crow-lintel/vines), cabinet (cab-open/adrawer), and all cellar overlays moved to
+  auto-diff. The two emptied-container overlays (drawer-empty, cab-open-empty) are auto-diff
+  of the inpainted-empty extra vs base (corrected re-framed inpaint coords).
+- **Legacy plates (per the manifest `legacy_plates_flagged` contract):** `z2-bench-flame1/2/3`
+  and `z2-cabinet-slots-seated` are build-2-era 2560×1280 plates that were NOT re-framed, so
+  they are cropped at their OLD rect (old-framing content) but stored at the REMAPPED rect —
+  SpriteKit scales the old crop onto the re-framed base. **Flag to Producer:** in a hard
+  (unfeathered) compose the flame overlay shows a visible rectangular boundary; in-game the
+  overlay-texture 12 px alpha feather + the flame's own glow soften it, and this is the
+  pre-existing legacy state (not a regression). Regenerate flame/slots-seated from 4K bases
+  in a future batch if QA flags it.
+- **z1-hearth-rug-moved global tone diff (Producer-flagged):** the rug-moved plate has a
+  pre-existing ~53% global tone drift vs its base (a build-3 full-frame edit), so auto-diff
+  can't localize it. Kept as a hand-cropped floor-region overlay at the remapped rect
+  (rug-moved + trapdoor-open). This REDUCES but does not fully remove the R4-004/006 tonal
+  seam — a faint rectangular tonal patch remains around the folded-rug/trapdoor floor
+  region (softened in-game by feathering). **Flag to Producer:** if QA finds it objectionable,
+  it needs a derived-crop re-roll of the rug-moved floor region (Asset Gen), not code.
+- **z4-alcove kept as base-swaps (deliberate scope call):** the alcove's bloom×keytaken
+  states are already correctly combined into explicit plates that don't cross-contaminate,
+  it's not in the R4-024 symptom set, and its transform is identity (verified in-band), so
+  converting it to overlays would add risk with no bug to fix. Noted rather than changed.
+- **Seam/registration check (mandatory):** added `assert_overlay_registration` invariants —
+  see the new Phase-2 unit test `testOverlayRectsWithinPlateAndPlausible` (every overlays.json
+  rect is inside [0,1] and non-degenerate) plus the developer's compose spot-check of the
+  cellar/cabinet/bench/hearth overlays on the re-framed bases (recorded in the batch).
+
+### Cluster E — hotspot / hit-target re-frame remap + .aspectFill
+
+- **Single-source remap:** `Reframe` (Hotspot.swift) holds the per-view transforms from the
+  manifest `build10_reframe.transforms`; every `configure*` wraps its hotspot list in
+  `Reframe.map(_, view:)`, and the two hard-coded seated-slot overlay rects use the cabinet
+  transform. overlays.json rects are already emitted in re-framed space by the build tool, so
+  they are NOT remapped again in Swift. Close-up plates were not re-framed, so CloseUpLayout
+  rects are untouched.
+- **.aspectFill restored, letterbox removed:** RoomScene `scaleMode = .aspectFill`; the
+  UI-test `sceneCoordinate` scale flipped from `min` (fit) to `max` (cover) to mirror it; all
+  ~45 UI-test scene taps are reframed via a view-aware `tapScene`/`useItem` overload.
+- **Frame-edge nav on iPad:** after the reframe, three hotspot CENTERS sit just outside the
+  iPad dual-safe band — `ladder` (cellar→hearth, 0.858), the alcove `cellar-passage`
+  (0.915), and `workbench` (0.859). All three have redundant access: the single-view zones
+  expose the always-present chrome down-chevron (`zone-exit`) as the real iPad exit, and
+  `workbench` is a SECONDARY p12 path (primary is the inventory combine). The UI test now
+  exits the cellar/alcove via the `zone-exit` chevron (how an iPad player does it), and
+  BUG-004 excludes those three (documented) while asserting every interactive ART element's
+  center is inside the dual-safe band.
+- **BUG-004 guard rewritten:** was "hotspot rect within the letterboxed [0,1]"; now
+  "critical element center within the iPad dual-safe band under .aspectFill". BUG-009
+  (44 pt floor) flipped to the .aspectFill max scale; R3-005 player-tap tests reframe both
+  the tap point and the (already-reframed) hotspots (affine invariance preserves every hit —
+  verified in a pre-CI simulation: 0 R3-005 misses, 0 BUG-009 offenders).
+
+### R4-007 dial contract — HONORED
+
+`MoonDialControlView` line 44 `rotationEffect(.degrees(Double(phaseRaw) * -45))` is
+UNCHANGED. The staged `dial-face.png` is the pre-rotated sprite; the view rotation
+compensates it so the mark under the top notch reads upright-canonical. Not touched — a
+change would double-apply the fix.
+
+### Regression-verification (lost-vs-never-shipped) — Phase 2 additions
+
+- **R4-024 / R4-011 (state-refresh + mirror-doesn't-move):** ROOT was a build-9 overlay-rect
+  MISCALIBRATION (mirror overlay cropped from scene center) + full-plate base swaps. NEVER
+  correctly shipped for the cellar — the mirror overlay literally never showed the mirror.
+  Fixed structurally by auto-diff self-location + the one-base architecture. Guarded by the
+  overlay-rect sanity test + the compose spot-check.
+
+### Assets / staging note
+
+The re-frame committed re-framed plates to `specs/assets/` but did NOT re-transcode the
+staged `EscapeRoom/Resources/GameAssets` JPGs (they were still old-framing pixels). Phase 2
+re-ran `tools/build_game_assets.py` (deterministic PIL, no fal.ai) to re-stage all plates +
+regenerate overlays + overlays.json in re-framed space. The tool's stale-shadow and chrome
+guards ran clean. The tool now also reproduces the Phase-1 audio state (sfx-wood /
+gen_ambients / sfx-entry removed, sfx-seat added), so `python build_game_assets.py` yields
+the exact shipped bundle.
