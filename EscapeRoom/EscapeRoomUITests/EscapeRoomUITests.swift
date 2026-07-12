@@ -651,7 +651,8 @@ final class EscapeRoomUITests: XCTestCase {
         if reachCell.waitForExistence(timeout: 3) {
             reachCell.tap()                                         // arm the (held) spoon
             Thread.sleep(forTimeInterval: 0.2)
-            { let p = rf("entry", 0.88, 0.325); sceneCoordinate(app, p.0, p.1).tap() }                // armed reach into the cage (top-right)
+            let reachP = rf("entry", 0.88, 0.325)
+            sceneCoordinate(app, reachP.0, reachP.1).tap()          // armed reach into the cage (top-right)
             // Poll briefly for the pose, but do NOT assert — the beat may auto-dismiss
             // before the first poll returns on a slow runner. Capture regardless.
             _ = app.descendants(matching: .any)["refusal-pose"].waitForExistence(timeout: 1.0)
@@ -660,7 +661,8 @@ final class EscapeRoomUITests: XCTestCase {
             // If the refusal close-up is still up, dismiss defensively so the next scene
             // tap reaches the entry, not the (dismiss-on-any-tap) refusal overlay.
             if app.descendants(matching: .any)["refusal-pose"].exists {
-                { let p = rf("entry", 0.5, 0.5); sceneCoordinate(app, p.0, p.1).tap() }
+                let dismissP = rf("entry", 0.5, 0.5)
+                sceneCoordinate(app, dismissP.0, dismissP.1).tap()
                 Thread.sleep(forTimeInterval: 0.4)
             }
         }
