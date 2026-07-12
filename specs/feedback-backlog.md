@@ -1770,3 +1770,33 @@ needs-clarification). No items remain blocked.
 
 _Round 4 processing complete; checkpoint 1 passed. Producer routes execution from here.
 Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
+
+---
+
+## Round 5 (build-10 device testing on iPad — CONFIRMED build "1.0 (10)" via Settings footer)
+
+### R5-001 — status: logged 🔴 MAJOR (build-10 runtime defect, critical-path visual)
+> picked up the poker on BUILD 10 and still see the misplaced fireplace fragment
+> (context: R4-004 recurrence ON build 10 — the overlay ARCHITECTURE shipped (ov-poker-taken
+> rebuilt in 342d858) and QA "verified" it — but via an OFFLINE COMPOSITE of the staged overlay
+> at overlays.json rects, NOT a live rendered frame. Device shows the runtime still
+> misregisters. So the defect is in the RUNTIME compositing path (coordinate space/anchor/
+> scale mismatch vs the offline math, wrong overlay chosen, or z/transform bug in the
+> SpriteKit compositor). QA-method lesson: offline composite ≠ rendered frame — overlay
+> verification MUST use real rendered frames. → Developer, HIGH: reproduce via an in-app
+> rendered frame (simulator screenshot after poker pickup), root-cause runtime-vs-composite
+> divergence, fix, and add a rendered-frame registration assertion so this can't pass falsely
+> again.)
+
+### R5-002 — status: logged (minor, rides with build 11)
+> the About screen says "Art generated with Flux 2 Pro" — not true
+> (context: `SettingsView.swift:126` — stale credit from the original chrome build; the art
+> has been Nano Banana Pro (fal.ai) since the model switch, and the music is fal.ai-generated
+> too. Fix the attribution line: art = Nano Banana Pro via fal.ai; keep sounds line; add music
+> credit. → Developer one-liner, fold into build 11.)
+
+### R5-context
+> Stale close-ups on build 10 (cage refusal view, solved astrolabe) = the 18 never-generated
+> build-1 files — CONFIRMED against the shipped bundle, root-caused (cluster-C mislabel +
+> guard blind spot), gap-fill generation already running (build11_gapfill). Vintage guard to
+> be added by Developer at staging.
