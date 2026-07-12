@@ -134,6 +134,9 @@ final class RoomScene: SKScene {
             let node = overlayNodes[key] ?? {
                 let n = SKSpriteNode()
                 n.anchorPoint = CGPoint(x: 0, y: 1) // top-left origin to match normalized rects
+                // R5-001: named like the hotspot nodes so overlay sprites are identifiable
+                // in accessibility dumps / rendered-frame diagnostics.
+                n.name = "overlay:\(key)"
                 addChild(n)
                 overlayNodes[key] = n
                 return n

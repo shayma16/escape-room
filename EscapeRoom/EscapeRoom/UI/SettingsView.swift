@@ -123,7 +123,10 @@ struct AboutView: View {
                     .font(.headline)
                     .foregroundColor(Chrome.textPrimary)
                     .padding(.top, 8)
-                Text("Original functional sound effects and ambience synthesized in-house (see implementation notes for details). Art generated with Flux 2 Pro.")
+                // R5-002 (build 11): the art credit previously named Flux 2 Pro — stale
+                // since the model switch. Art is Nano Banana Pro via fal.ai; the music is
+                // fal.ai-generated and user-owned.
+                Text("Original functional sound effects and ambience synthesized in-house (see implementation notes for details). Art generated with Nano Banana Pro via fal.ai. Background music generated via fal.ai.")
                     .font(.footnote)
                     .foregroundColor(Chrome.textSecondary)
                 Spacer()

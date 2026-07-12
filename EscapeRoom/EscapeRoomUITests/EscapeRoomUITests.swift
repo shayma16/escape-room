@@ -547,6 +547,13 @@ final class EscapeRoomUITests: XCTestCase {
         // hits it; tapping the old placeholder position no longer does anything.
         tapScene(app, "hearth", 0.248, 0.50)                  // take poker (rod hangs left of the hearth)
         assertHolding(app, "itm-poker")
+        // R5-001 record: a real device-rendered frame of the poker-taken hearth (the
+        // exact surface of the build-10 "misplaced fireplace fragment" report). The
+        // pixel-level registration assertion lives in RenderedFrameOverlayTests (unit
+        // level, SKView.texture(from:) — immune to the CI raster-letterbox); this shot
+        // keeps a human-inspectable frame in the CI artifact record.
+        Thread.sleep(forTimeInterval: 0.6)
+        shoot(app, "play-01b-poker-taken")
         // Select-then-tap (F-007/F-020/F-021): arm the poker, then tap the ash pile.
         // A bare tap on ash is now only a look (no passive auto-apply), so the sift MUST
         // go through the armed-item path or the ring is never yielded.

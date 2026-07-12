@@ -1754,3 +1754,98 @@ tree dumps, and the 36-minute screen recording) and the fixes.
 
 - RED run diagnosed: https://github.com/shayma16/escape-room/actions/runs/29186397614
 - GREEN re-run: (filled after the fix run completes — see below).
+
+## Build 11: R5-001 runtime overlay fix (Developer, 2026-07-12)
+
+### R5-001 — the brief's hypothesis was FALSIFIED by pixel forensics
+
+The round-5 brief assumed a runtime-vs-offline divergence ("the runtime compositor is
+misplacing the overlay despite the offline math looking right"). Forensics show there is
+NO divergence — the offline composite and the runtime render are the same image, and
+BOTH contain the misplaced fragment:
+
+1. **The staged bundle was internally consistent.** The staged `ov-poker-taken.jpg`
+   registers pixel-perfectly against the staged `z1-hearth-base.jpg` at its
+   overlays.json rect: edge-ring (outer 10 px) mean |luma| diff **0.87** grey levels at
+   shift (0,0) — best over the whole ±40 px grid. `RoomScene.positionOverlay` is an
+   exact affine paste of that rect (scene anchor (0.5,0.5), node anchor (0,1),
+   rect x scene-size; verified against the tool's rect contract line by line), so the
+   runtime necessarily composites what the offline composite shows.
+2. **The defect is baked into the manifest-current SOURCE plate.**
+   `z1-hearth-poker-taken@3x.png` (generation `edit-crop`, seed 66003, prompt "REMOVE
+   the iron poker…") is a true region-edit — global diff vs base 0.61 grey levels —
+   but its poker-removal fill is a **+240 px-shifted clone of the fireplace interior**:
+   interior content matches base@(+240,0) at diff 5.6 vs 20.2 in place (3.3x), visibly
+   duplicating the andiron (ball-topped fire-dog), grate and surround edge. That IS the
+   user's "misplaced fireplace fragment": perfectly registered wrong art.
+3. **Why build 10 "passed":** the offline-composite QA check verified REGISTRATION
+   only. The fragment is correctly registered — no registration check (offline or
+   rendered-frame) can catch it. Build 10 rebuilt the overlay MECHANISM but re-cropped
+   the same defective plate, so R4-004's symptom survived intact into R5-001.
+
+### Fixes shipped (each at its own layer)
+
+- **Art (interim, tool-side, staged):** `ov-poker-taken` is now SYNTHESIZED from the
+  base plate — mask the poker (tapered handle / thin rod / J-hook, geometry measured
+  off the re-framed base) and onion-peel inpaint, the exact mechanism already used for
+  the clock hands / drawer spoon / cabinet shelf erasures. Auto-diff vs the base
+  self-locates the new tight rect (0.2607, 0.5042, 0.0435, 0.3411). Verified: edge-ring
+  1.35, interior diff 5.49 (the removed rod), NO duplicated geometry (composites
+  attached to the commit review). Residual: soft shadow-like smudges where the rod
+  crossed the stone surround — reads as soot shadow at gameplay scale. **Flag to
+  Producer/Asset Gen:** a true generative re-delivery of `z1-hearth-poker-taken` can
+  replace this synthesis later; the defective plate remains in specs/ untouched (the
+  concurrent build11_gapfill stream owns specs/assets/) but is NO LONGER consumed.
+- **Pipeline guard (mechanism, anti-recurrence):** `assert_no_misplaced_clone_fill` in
+  tools/build_game_assets.py — for every auto-diff overlay, the variant's changed-region
+  interior must NOT match the base dramatically better at a translated offset than in
+  place (threshold: best-shift diff < 0.55 x zero-shift diff at |shift| >= 16 px fails
+  the build). This is a CONTENT-PROVENANCE check, orthogonal to registration — the class
+  of defect registration checks are provably blind to. Validated against the whole tree:
+  15/15 legitimate variants pass (worst legitimate ratio 0.72: cellar drawer-open); the
+  defective poker plate fails at (+240, 0) with ratio 0.28.
+- **Full-tree audit (same math):** every overlay variant pair (entry cage/lintel/vines,
+  cabinet open/adrawer, cellar barrel/drawer/crank/mirror-d2/d3/shelf/weight/beam x3,
+  hearth rug-moved/trapdoor-open chain) was audited with the shifted-clone metric +
+  visual composite spot-checks. **The poker was the only clone-shift defect.**
+- **The missing rendered-frame check (the QA gap):** new
+  `EscapeRoomTests/RenderedFrameOverlayTests.swift` renders the LIVE scene graph through
+  the real SpriteKit renderer (`SKView.texture(from:)` — actual node positions, anchors,
+  scale mapping, z-order, edge feathering) and asserts the frame matches the offline
+  composite of the same bundled assets, per overlay region: presence (strictly closer to
+  with-overlay than base-only), fidelity (mean |luma| diff < 4), and registration
+  (zero-shift alignment must beat every ±16-scene-px probe shift). Coverage: poker-taken
+  + the full six-overlay cellar stack (barrel/drawer/crank/mirror-d3/shelf/beam-alcove,
+  explicit z-order) — a runtime-compositor divergence can no longer pass silently.
+  Judgment call: this lives at the UNIT level rather than XCUITest screenshots because
+  the CI simulator raster-letterbox (QA-OBS-023, documented across seven builds) makes
+  screenshot point-mapping unreliable; `SKView.texture(from:)` IS the runtime compositor
+  and is immune to that harness artifact. A human-inspectable device-rendered frame of
+  the poker-taken hearth was added to the playthrough artifact record
+  (`play-01b-poker-taken`), and overlay nodes are now named (`overlay:<key>`) for AX /
+  diagnostics.
+
+### R5-002 — About credit
+
+`SettingsView.AboutView` line ~126: "Art generated with Flux 2 Pro" (stale since the
+2026-07-07 model switch) replaced with "Art generated with Nano Banana Pro via fal.ai.
+Background music generated via fal.ai." — one quiet line in the existing About voice;
+the synthesized-sounds sentence kept verbatim.
+
+### Constraints honored
+
+- specs/assets/ untouched (concurrent Asset Gen build11_gapfill stream); staged files
+  changed only under EscapeRoom/Resources via the targeted regeneration.
+- No PR / release; the Producer assembles build 11 after both streams land.
+
+### Security checklist (re-run for this handoff)
+
+- No development-time secrets: re-grepped EscapeRoom/ sources, project file, plists and
+  bundled resources for key/secret/token/Bearer patterns — zero hits; no .env anywhere
+  in the app tree.
+- Minimal entitlements/permissions: unchanged — no *UsageDescription strings, no
+  entitlement files.
+
+### CI
+
+- Green run: (filled after the build-11 verification run completes — see below).
