@@ -36,8 +36,6 @@ struct InventoryBarView: View {
     /// R4-029: one-time first-combine hint latch (per install, like the nav hint).
     @State private var showCombineHint = false
     @State private var combineHintPair: (armed: String, target: String)?
-    /// Drives the combine badge pulse.
-    @State private var combinePulse = false
 
     // §7-R1.1 geometry.
     private var barHeight: CGFloat { horizontalSizeClass_isPad ? 64 : 56 }
@@ -67,15 +65,18 @@ struct InventoryBarView: View {
             }
         }
         .animation(.easeOut(duration: 0.2), value: sortedInventory)
-        .onAppear {
-            withAnimation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true)) {
-                combinePulse = true
-            }
-        }
         .onChange(of: interaction.armedItem) { armed in
             maybeShowFirstCombineHint(armed: armed)
         }
     }
+    // NOTE (build 10 fix): the combine pulse used to be a single bar-level @State toggled
+    // by a repeatForever animation in the BAR's onAppear. The combine-target views appear
+    // LATER (when an item is armed), and SwiftUI does not retroactively animate views
+    // that appear after the animated value change — so the "continuous pulse" the user
+    // picked in R4-029(a) rendered as a STATIC enlarged badge. The pulse now lives in
+    // self-animating views (CombinePulseBadge / CombineBreathingBacking) that start their
+    // own repeatForever on THEIR onAppear, exactly like the nav chevrons' BreathingChevron.
+    // The animation also only exists while a combine target is actually on screen.
 
     private func pill(maxWidth: CGFloat) -> some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -126,9 +127,9 @@ struct InventoryBarView: View {
                 .fill(Color(red: 0.949, green: 0.961, blue: 0.973).opacity(isArmed ? 0.16 : 0))
             // R4-029(a): a combine target gets a stronger amber backing that breathes
             // with the badge pulse, so "these two go together" reads at a glance.
-            RoundedRectangle(cornerRadius: cornerRadius - 4)
-                .fill(Color(red: 0.85, green: 0.62, blue: 0.28)
-                    .opacity(combineTarget ? (combinePulse ? 0.38 : 0.22) : 0))
+            if combineTarget {
+                CombineBreathingBacking(cornerRadius: cornerRadius - 4)
+            }
             GameImage(name: def?.iconAsset ?? "icon-poker")
                 .aspectRatio(contentMode: .fit)
                 .padding(6)
@@ -141,12 +142,7 @@ struct InventoryBarView: View {
         // R4-029(a): larger, PULSING link badge on a combinable target.
         .overlay(alignment: .topLeading) {
             if combineTarget {
-                Image(systemName: "link")
-                    .font(.system(size: 15, weight: .bold))
-                    .foregroundColor(Color(red: 0.949, green: 0.961, blue: 0.973))
-                    .padding(5)
-                    .background(Circle().fill(Color(red: 0.55, green: 0.40, blue: 0.14).opacity(0.95)))
-                    .scaleEffect(combinePulse ? 1.18 : 0.95)
+                CombinePulseBadge()
                     .offset(x: -6, y: -8)
                     .accessibilityHidden(true)
             }
@@ -256,6 +252,43 @@ struct InventoryBarView: View {
         .allowsHitTesting(false)
         .accessibilityLabel("These two items can be combined")
         .accessibilityIdentifier("combine-hint")
+    }
+}
+
+/// R4-029(a) combine-affordance pulse: self-animating link badge (see the NOTE in
+/// InventoryBarView.body). 0.7 s ease-in-out breath, mirroring the chevrons' cadence.
+private struct CombinePulseBadge: View {
+    @State private var pulse = false
+
+    var body: some View {
+        Image(systemName: "link")
+            .font(.system(size: 15, weight: .bold))
+            .foregroundColor(Color(red: 0.949, green: 0.961, blue: 0.973))
+            .padding(5)
+            .background(Circle().fill(Color(red: 0.55, green: 0.40, blue: 0.14).opacity(0.95)))
+            .scaleEffect(pulse ? 1.18 : 0.95)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true)) {
+                    pulse = true
+                }
+            }
+    }
+}
+
+/// R4-029(a): the amber cell backing that breathes with the badge (same lifetime — only
+/// exists while its cell is a combine target, so no permanent animation runs).
+private struct CombineBreathingBacking: View {
+    let cornerRadius: CGFloat
+    @State private var pulse = false
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: cornerRadius)
+            .fill(Color(red: 0.85, green: 0.62, blue: 0.28).opacity(pulse ? 0.38 : 0.22))
+            .onAppear {
+                withAnimation(.easeInOut(duration: 0.7).repeatForever(autoreverses: true)) {
+                    pulse = true
+                }
+            }
     }
 }
 

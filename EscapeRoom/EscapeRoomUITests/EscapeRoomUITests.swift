@@ -155,12 +155,57 @@ final class EscapeRoomUITests: XCTestCase {
     private func useItem(_ app: XCUIApplication, item: String, view: String,
                          onScene nx: CGFloat, _ ny: CGFloat, settle: TimeInterval = 0.8) {
         let cell = app.descendants(matching: .any)["inventory-\(item)"]
-        XCTAssertTrue(cell.waitForExistence(timeout: 5), "inventory item \(item) must exist to arm it")
+        XCTAssertTrue(cell.waitForExistence(timeout: 10), "inventory item \(item) must exist to arm it")
         cell.tap()                                  // arm
         Thread.sleep(forTimeInterval: 0.2)
         let (x, y) = rf(view, nx, ny)               // build-10 re-frame
         sceneCoordinate(app, x, y).tap()            // use on target
         Thread.sleep(forTimeInterval: settle)
+    }
+
+    // MARK: - Navigation arrival guards (build 10, CI run 29186397614 diagnosis)
+    //
+    // On the CPU-starved iPad CI simulator a synthesized navigation tap can be LOST:
+    // in run 29186397614 the study→entry `nav-next` tap (t=1409 s) was synthesized at the
+    // chevron's exact frame (session-log activation point (1340, 503.5) inside
+    // {{1312, 459.5}, {56, 88}}), yet the AX tree and the xcresult screen recording show
+    // the app never left the study. The script then blind-tapped entry coordinates as
+    // silent no-ops until `assertHolding(itm-feather)` wedged 36 minutes into the test.
+    //
+    // Every load-bearing navigation in the solve therefore verifies ARRIVAL: the
+    // destination view's signature hotspot appearing in the accessibility tree (SpriteKit
+    // exposes the always-configured hotspot nodes as `hotspot:<id>` labels — confirmed in
+    // the same run's AX dumps). One retry covers the genuinely-lost-tap case; a real
+    // navigation bug still fails loudly, in seconds, with a precise message — this guard
+    // is strictly MORE rigorous than the old blind tap-and-sleep, not a relaxation.
+    private static let viewSignatureHotspot: [String: String] = [
+        "hearth": "ash", "study": "grimoire", "entry": "cage", "bench": "cauldron",
+        "cabinet": "astrolabe", "cellar": "barrel", "alcove": "planter",
+    ]
+
+    private func sceneHotspot(_ app: XCUIApplication, _ id: String) -> XCUIElement {
+        app.descendants(matching: .any)
+            .matching(NSPredicate(format: "label == %@", "hotspot:\(id)")).firstMatch
+    }
+
+    /// Performs `navigate` and waits for `view`'s signature hotspot to appear, retrying
+    /// the navigation ONCE if it never does (the lost-tap case). The retry only fires
+    /// after the destination demonstrably failed to appear for the full first timeout.
+    private func ensureView(_ app: XCUIApplication, _ view: String,
+                            settle: TimeInterval = 0.6,
+                            file: StaticString = #filePath, line: UInt = #line,
+                            via navigate: () -> Void) {
+        let signature = Self.viewSignatureHotspot[view]!
+        let hotspot = sceneHotspot(app, signature)
+        for attempt in 0..<2 {
+            navigate()
+            if hotspot.waitForExistence(timeout: attempt == 0 ? 20 : 30) {
+                Thread.sleep(forTimeInterval: settle)   // transition dip settles
+                return
+            }
+        }
+        XCTFail("navigation to \(view) (signature hotspot:\(signature)) did not take effect, even after one retry",
+                file: file, line: line)
     }
 
     /// Views every clue-gating close-up (rev 1.3) so the gated code-entry puzzles (p01,
@@ -204,7 +249,7 @@ final class EscapeRoomUITests: XCTestCase {
     /// diagnostic that the preceding scene tap actually landed on its hotspot.
     private func assertHolding(_ app: XCUIApplication, _ item: String,
                                file: StaticString = #filePath, line: UInt = #line) {
-        XCTAssertTrue(app.descendants(matching: .any)["inventory-\(item)"].waitForExistence(timeout: 5),
+        XCTAssertTrue(app.descendants(matching: .any)["inventory-\(item)"].waitForExistence(timeout: 10),
                       "\(item) must be in the inventory bar", file: file, line: line)
     }
 
@@ -517,11 +562,11 @@ final class EscapeRoomUITests: XCTestCase {
         // gated code-entry puzzles will accept their answers. Gather z1's gate clues now.
         tapScene(app, "hearth", 0.613, 0.53); dismissCloseUp(app)   // hearth bellows -> AIR mark
         tapScene(app, "hearth", 0.585, 0.275); dismissCloseUp(app)  // hearth lintel -> FIRE mark
-        tapID(app, "nav-next"); Thread.sleep(forTimeInterval: 0.8) // hearth -> study
+        ensureView(app, "study") { tapID(app, "nav-next") }        // hearth -> study
         viewZ1GatingClues(app)                             // EARTH mark, triptych, grimoire A + recipe
-        tapID(app, "nav-next"); Thread.sleep(forTimeInterval: 0.8) // study -> entry
+        ensureView(app, "entry") { tapID(app, "nav-next") }        // study -> entry
         tapScene(app, "entry", 0.105, 0.62); dismissCloseUp(app)   // windowsill tablet -> WATER mark
-        tapID(app, "nav-next"); Thread.sleep(forTimeInterval: 0.8) // entry -> hearth (wraps)
+        ensureView(app, "hearth") { tapID(app, "nav-next") }       // entry -> hearth (wraps)
 
         // Back at the hearth: rug discovery + the now-ungated dial panel (p02).
         // Rug is tapped in its exposed left strip (left of the trapdoor, which wins the
@@ -541,7 +586,9 @@ final class EscapeRoomUITests: XCTestCase {
         for _ in 0..<5 { tapID(app, "moon-dial-3") } // waning gibbous -> unlock
         shoot(app, "play-04-dials-solved")
         dismissCloseUp(app)
-        tapScene(app, "hearth", 0.60, 0.70, settle: 1.2)      // descend through the trapdoor
+        ensureView(app, "cellar", settle: 1.2) {              // descend through the trapdoor
+            tapScene(app, "hearth", 0.60, 0.70, settle: 1.2)
+        }
         shoot(app, "play-05-cellar")
 
         // z3 cellar (R3-005 re-calibrated to the build-3 cellar plate): barrel right,
@@ -564,7 +611,9 @@ final class EscapeRoomUITests: XCTestCase {
         tapScene(app, "cellar", 0.13, 0.62)                   // mirror detent 3
         // F-024: zone changes are DIEGETIC PASSAGES, not chevrons. The slid-shelf gap
         // (cellar `alcove-passage` hotspot ~center) leads into the alcove.
-        tapScene(app, "cellar", 0.47, 0.505, settle: 1.2)     // cellar -> alcove via the shelf gap
+        ensureView(app, "alcove", settle: 1.2) {              // cellar -> alcove via the shelf gap
+            tapScene(app, "cellar", 0.47, 0.505, settle: 1.2)
+        }
         shoot(app, "play-07-alcove")
         tapScene(app, "alcove", 0.605, 0.31)                  // crow statue close-up (key in beak)
         // Build 10 (R4-026): the key is a manual pickup FROM the close-up — tap the key.
@@ -573,10 +622,10 @@ final class EscapeRoomUITests: XCTestCase {
         dismissCloseUp(app)
 
         // Back out to the cellar, then up the ladder to the hearth, then round to study.
-        tapID(app, "zone-exit"); Thread.sleep(forTimeInterval: 1.2) // alcove->cellar via chevron (edge gap is off the iPad aspectFill crop)     // alcove -> cellar via the right-edge shelf gap
-        tapID(app, "zone-exit"); Thread.sleep(forTimeInterval: 1.2) // cellar->hearth via chevron (edge ladder is off the iPad aspectFill crop)     // cellar -> hearth up the far-right ladder
-        tapID(app, "nav-next")                      // hearth -> study (chevron, same zone)
-        Thread.sleep(forTimeInterval: 0.8)
+        // (zone-exit chevrons: the edge gap/ladder are off the iPad aspectFill crop.)
+        ensureView(app, "cellar", settle: 1.2) { tapID(app, "zone-exit") } // alcove -> cellar
+        ensureView(app, "hearth", settle: 1.2) { tapID(app, "zone-exit") } // cellar -> hearth
+        ensureView(app, "study") { tapID(app, "nav-next") }  // hearth -> study (chevron, same zone)
         shoot(app, "play-08-study")
         // Screenshot-coverage detours (QA re-QA gap list): the grimoire opens at the
         // feather-bookmarked recipe spread; the triptych is the three night paintings.
@@ -599,11 +648,12 @@ final class EscapeRoomUITests: XCTestCase {
         }
         Thread.sleep(forTimeInterval: 0.6)          // close-up closes on solve
         shoot(app, "play-09-runedoor-solved")
-        tapScene(app, "study", 0.762, 0.52, settle: 1.2)     // through the inner door -> bench
+        ensureView(app, "bench", settle: 1.2) {              // through the inner door -> bench
+            tapScene(app, "study", 0.762, 0.52, settle: 1.2)
+        }
 
         // z2: astrolabe, cabinet.
-        tapID(app, "nav-next")                      // bench -> cabinet
-        Thread.sleep(forTimeInterval: 0.8)
+        ensureView(app, "cabinet") { tapID(app, "nav-next") } // bench -> cabinet
         shoot(app, "play-10-cabinet")
         // Clue-gating (rev 1.3): view the Orion window (p03 gate) and the slot-shape
         // close-up (p04 gate) before the code-entry acts.
@@ -630,10 +680,11 @@ final class EscapeRoomUITests: XCTestCase {
 
         // Free the crow. Leave z2 via the workshop exit affordance (-> study), then
         // chevron to the entry (F-024: zone changes are diegetic / the interim z2 exit).
-        tapID(app, "nav-previous")                  // cabinet -> bench (chevron, z2)
-        tapID(app, "zone-exit")                     // workshop -> study (z1)
-        tapID(app, "nav-next")                      // study -> entry
-        Thread.sleep(forTimeInterval: 0.8)
+        // THIS study->entry nav is the exact step whose lost tap wedged CI run
+        // 29186397614 on iPad — all three hops are now arrival-verified (see ensureView).
+        ensureView(app, "bench") { tapID(app, "nav-previous") } // cabinet -> bench (chevron, z2)
+        ensureView(app, "study") { tapID(app, "zone-exit") }    // workshop -> study (z1)
+        ensureView(app, "entry") { tapID(app, "nav-next") }     // study -> entry
         // Screenshot-coverage detour (QA re-QA gap list, NON-LOAD-BEARING): a deliberate
         // armed-item REACH at the cage triggers the D3 terminal-refusal pose (F-011: a
         // bare tap is now a neutral look, so the refusal fires only on an armed offer).
@@ -687,25 +738,29 @@ final class EscapeRoomUITests: XCTestCase {
         // Light the alcove: reach the cellar (via z1 hearth trapdoor), fit the crank at
         // the winch, then pick the blossom in the alcove.
         // entry -> hearth (chevron within z1), then down the trapdoor to the cellar.
-        tapID(app, "nav-next")                      // entry -> hearth (wraps within z1)
-        Thread.sleep(forTimeInterval: 0.8)
-        tapScene(app, "hearth", 0.60, 0.70, settle: 1.2)      // trapdoor -> cellar (diegetic)
+        ensureView(app, "hearth") { tapID(app, "nav-next") }  // entry -> hearth (wraps within z1)
+        ensureView(app, "cellar", settle: 1.2) {              // trapdoor -> cellar (diegetic)
+            tapScene(app, "hearth", 0.60, 0.70, settle: 1.2)
+        }
         // Select-then-tap: arm the crank, then tap the winch (no auto-fit on bare tap).
         useItem(app, item: "itm-crank", view: "cellar", onScene: 0.195, 0.10) // fit crank at the winch drum -> moonbeam
         shoot(app, "play-14-beam")
-        tapScene(app, "cellar", 0.47, 0.505, settle: 1.2)     // cellar -> alcove via the shelf gap
+        ensureView(app, "alcove", settle: 1.2) {              // cellar -> alcove via the shelf gap
+            tapScene(app, "cellar", 0.47, 0.505, settle: 1.2)
+        }
         shoot(app, "play-15-blooming")
         tapScene(app, "alcove", 0.57, 0.76)                   // pick blossom (planter basin, center-bottom)
         assertHolding(app, "itm-blossom")
 
         // Brew: back to the cellar, up to the hearth, round to the study, through the
         // rune door to the workshop bench.
-        tapID(app, "zone-exit"); Thread.sleep(forTimeInterval: 1.2) // alcove->cellar via chevron (edge gap is off the iPad aspectFill crop)     // alcove -> cellar via the right-edge gap
-        tapID(app, "zone-exit"); Thread.sleep(forTimeInterval: 1.2) // cellar->hearth via chevron (edge ladder is off the iPad aspectFill crop)     // cellar -> hearth up the far-right ladder
-        tapID(app, "nav-next")                      // hearth -> study
-        Thread.sleep(forTimeInterval: 0.8)
-        tapScene(app, "study", 0.762, 0.52, settle: 1.2)     // through the (solved) rune door -> bench
-        Thread.sleep(forTimeInterval: 0.8)
+        // (zone-exit chevrons: the edge gap/ladder are off the iPad aspectFill crop.)
+        ensureView(app, "cellar", settle: 1.2) { tapID(app, "zone-exit") } // alcove -> cellar
+        ensureView(app, "hearth", settle: 1.2) { tapID(app, "zone-exit") } // cellar -> hearth
+        ensureView(app, "study") { tapID(app, "nav-next") }  // hearth -> study
+        ensureView(app, "bench", settle: 1.2) {              // through the (solved) rune door -> bench
+            tapScene(app, "study", 0.762, 0.52, settle: 1.2)
+        }
         useItem(app, item: "itm-blossom", view: "bench", onScene: 0.84, 0.55) // mortar (right table) -> paste
         assertHolding(app, "itm-paste")
         dismissCloseUp(app)
@@ -725,10 +780,8 @@ final class EscapeRoomUITests: XCTestCase {
         // Endgame at the door. Leave the workshop via the z2 exit affordance (interim
         // "back through the rune door" chevron; no painted return door yet — flagged),
         // which lands in the study, then chevron round to the entry.
-        tapID(app, "zone-exit")                     // workshop -> study (z1)
-        Thread.sleep(forTimeInterval: 0.8)
-        tapID(app, "nav-next")                      // study -> entry
-        Thread.sleep(forTimeInterval: 0.8)
+        ensureView(app, "study") { tapID(app, "zone-exit") } // workshop -> study (z1)
+        ensureView(app, "entry") { tapID(app, "nav-next") }  // study -> entry
         useItem(app, item: "itm-phial-draught", view: "entry", onScene: 0.58, 0.31) // pour into the crow's-beak basin
         shoot(app, "play-17-unsealed")
         dismissCloseUp(app)

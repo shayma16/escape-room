@@ -1654,3 +1654,103 @@ because its source plate has the shelf closed — with the shelf already open it
 under rather than ghost a closed shelf. beam-blocked/-alcove crops are pixel-consistent
 with the d3-mirror/slid-shelf overlap strips, so beam-on-top keeps the bloom-critical
 "light enters the alcove" cue visible. Hearth trapdoor gets z11 above the rug crop.
+
+---
+
+## Build 10 — Phase 3 (CI red-run fix: iPad UI-test wedge; Developer, 2026-07-12)
+
+CI run 29186397614 (build 10, commit ce027dd) came back RED with exactly one failing
+step: "UI tests - iPad (full playthrough + smoke + save-resume)". Build, all unit-test
+steps, and the iPhone-SE UI step (the SAME full playthrough) were green. This section
+records the full diagnosis (from the run's xcresult: session log, app stdout/stderr, AX
+tree dumps, and the 36-minute screen recording) and the fixes.
+
+### What failed, mechanically
+
+- `testChromeFullyOnScreen_QA_B3_002` ran 36 minutes (build-9 green baseline: 22.6 min)
+  and died on `Failed to get matching snapshots: Timed out while evaluating UI query` at
+  the `assertHolding(itm-feather)` after the cage-key use. The two tests that ran next
+  failed to LAUNCH the app (collateral: the wedged app process was still being torn
+  down); the final two tests (save-resume, scene-fill) then PASSED at normal speed.
+- Session-log activity timeline: the test crawled progressively (each Find/Tap 10-60 s;
+  worst inside close-ups — the dial panel section took 4.5 min for 10 taps), then at
+  t=1720 s the app's main thread stopped being serviced for 486 s and the AX snapshot
+  hard-timed-out.
+
+### Root cause (two layers)
+
+1. **Functional: a LOST navigation tap.** The study→entry `nav-next` tap (t=1409 s) was
+   synthesized at the chevron's exact frame (activation point (1340, 503.5) inside
+   {{1312, 459.5}, {56, 88}} — session log), but the app never left the study: every AX
+   tree dump from 09:42:17 through the failure shows the STUDY hotspots and the cage key
+   still in inventory, and the screen recording shows the static study view throughout.
+   All subsequent entry-coordinate taps (refusal detour, cage-key on the star keyhole)
+   were silent no-ops on study empty space, so `itm-feather` could never appear. The tap
+   was lost by the event-delivery pipeline of the CPU-starved simulator, not by a wrong
+   coordinate (the remapped coordinates were re-verified; earlier identical nav taps in
+   the same run worked).
+2. **Systemic: main-thread starvation on the iPad simulator.** The 13-inch iPad sim
+   renders 2064x2752 in SOFTWARE on the GitHub runner (~5.7x the iPhone-SE pixel count —
+   the constant ~3x iPad slowdown visible in every green run). Two app-side costs kept it
+   at the cliff edge: (a) `GameAssetLoader.image(named:)` had NO decoded-image cache, so
+   every SwiftUI body re-evaluation (every observed state change) re-opened and
+   re-decoded close-up plates (~10-megapixel JPEGs) from disk; (b) the SKView rendered
+   the full scene (base + overlays) at 60 fps forever, INCLUDING under full-screen
+   close-up scrims. Build 9 passed this test at 1355 s — already marginal; build 10's
+   longer script (manual weight/key pickups, slots close-up) and additional composited
+   overlays pushed it over. The audio-HAL overload spam in the app log
+   (`HALC_ProxyIOContext ... skipping cycle due to overload`) is a symptom of the same
+   VM oversubscription, present across the whole run.
+
+### Fixes (app: real perf/correctness work — no test weakening)
+
+- **GameAssetLoader:** decoded `UIImage`s now cached (NSCache, cost = pixel bytes,
+  192 MB budget). Also a straight device win: close-up open/state changes no longer
+  re-decode plates.
+- **RoomScene.textureCache:** now COST-BOUNDED (256 MB). Unbounded NSCache only evicts
+  on memory-pressure notifications, which on a CI VM arrive after the host is already
+  swapping; a full playthrough accumulated every visited plate (~28 MB each).
+- **SpriteKitContainerView:** SKView `preferredFramesPerSecond` = 30 idle (static
+  painterly scene + 150 ms tap pulse — visually indistinguishable, half the render
+  load, battery win on device) and = 1 while a close-up is open (the room is behind a
+  92% scrim and non-interactive; the worst CI crawl segments were exactly the close-up
+  sections). Judgment call recorded: 30 fps is a deliberate presentation choice for this
+  genre, not a CI-only hack; nothing in the style guide requires 60 fps motion.
+- **R4-029 combine-pulse defect found while auditing animations:** the bar-level
+  `repeatForever` started in the BAR's `onAppear`, before any combine-target view
+  exists; SwiftUI does not retroactively animate later-appearing views, so the
+  user-picked "continuous pulse" rendered as a STATIC enlarged badge. The pulse now
+  lives in self-animating views (`CombinePulseBadge`/`CombineBreathingBacking`, same
+  pattern as the chevrons' `BreathingChevron`) that exist only while a combine target
+  is on screen. QA should re-verify R4-029(a) visually.
+
+### Fixes (UI test: arrival-verified navigation — strictly MORE rigorous)
+
+- Every load-bearing navigation in `solveLevelOne` now goes through `ensureView`, which
+  waits for the destination view's SIGNATURE HOTSPOT to appear in the AX tree (SpriteKit
+  exposes the always-configured hotspot nodes as `hotspot:<id>` labels — confirmed in
+  this run's dumps) and retries the tap ONCE if the view never changed. A genuinely lost
+  tap now self-heals; a real navigation bug now fails in SECONDS with a precise message
+  ("navigation to entry ... did not take effect") instead of wedging 30 minutes later on
+  an unrelated inventory assert. No assertion was relaxed; `assertHolding`/arm waits went
+  5 s → 10 s (existence waits sized for CI variance, not behavior changes).
+
+### Contracts honored
+
+- `MoonDialControlView` rotation untouched (R4-007 pre-rotated-sprite contract).
+- Hotspot remap `new_px = old_px*s + (ox,oy)` untouched (verified byte-identical against
+  the manifest `build10_reframe.transforms` in both Swift `Reframe` and the UI-test `rf`).
+- BUG-004 no-critical-element-off-screen assertion untouched.
+
+### Security checklist (re-run for this handoff)
+
+- No development-time secrets: changes are Swift-code-only; re-grepped `EscapeRoom/`
+  sources, project file, and bundled resources for key/secret/token/credential patterns —
+  zero hits; `.env` remains gitignored and unreferenced.
+- Minimal entitlements/permissions: unchanged — no `*UsageDescription` strings, no new
+  entitlements.
+
+### CI
+
+- RED run diagnosed: https://github.com/shayma16/escape-room/actions/runs/29186397614
+- GREEN re-run: (filled after the fix run completes — see below).

@@ -102,11 +102,26 @@ final class RoomScene: SKScene {
         if let cached = textureCache.object(forKey: named as NSString) { return cached }
         guard let image = GameAssetLoader.shared.image(named: named) else { return nil }
         let texture = SKTexture(image: image)
-        textureCache.setObject(texture, forKey: named as NSString)
+        textureCache.setObject(texture, forKey: named as NSString, cost: pixelCost(of: image))
         return texture
     }
 
-    private static let textureCache = NSCache<NSString, SKTexture>()
+    /// Build 10 CI-perf fix (run 29186397614): the texture cache is now COST-BOUNDED.
+    /// An unbounded NSCache only evicts on memory-pressure notifications, which on the
+    /// CI simulator VM arrive after the host is already swapping — a full playthrough
+    /// visits every zone and accumulated every 3840x1920 plate + overlay decoded so far
+    /// (~28 MB each), contributing to the progressive iPad-simulator starvation that
+    /// wedged the build-10 chrome test. 256 MB comfortably holds a whole zone's textures
+    /// while forcing old zones out deterministically.
+    private static let textureCache: NSCache<NSString, SKTexture> = {
+        let cache = NSCache<NSString, SKTexture>()
+        cache.totalCostLimit = 256 * 1024 * 1024
+        return cache
+    }()
+
+    private static func pixelCost(of image: UIImage) -> Int {
+        Int(image.size.width * image.scale * image.size.height * image.scale) * 4
+    }
 
     /// `zPosition` (build 10, cluster B): with independent per-element overlays, two
     /// overlays can OVERLAP (cellar beam × shelf × mirror), and sibling order — set by
@@ -158,8 +173,9 @@ final class RoomScene: SKScene {
         let cacheKey = "feathered:\(named):\(feather.cacheSuffix)" as NSString
         if let cached = textureCache.object(forKey: cacheKey) { return cached }
         guard let image = GameAssetLoader.shared.image(named: named) else { return nil }
-        let texture = SKTexture(image: featheredImage(image, edges: feather))
-        textureCache.setObject(texture, forKey: cacheKey)
+        let feathered = featheredImage(image, edges: feather)
+        let texture = SKTexture(image: feathered)
+        textureCache.setObject(texture, forKey: cacheKey, cost: pixelCost(of: feathered))
         return texture
     }
 
