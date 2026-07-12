@@ -114,7 +114,7 @@ Overscan bands carry atmosphere only, per style-guide S8._
 
 # BUILD-11 gap-fill (18 build-1-era stragglers never rebuilt in build 3) [2026-07-12]
 
-PROGRESS: 0/18 done | 0 retrying | 0 failed | 18 remaining | $0.00 spent this batch | project $19.35 of $23.00 HARD CAP | headroom $3.65
+PROGRESS: 5/19 done (incl. 10b) | 0 retrying | 0 failed | 14 remaining | $0.00 spent this batch | project $19.35 of $23.00 HARD CAP | headroom $3.65
 
 _Scope per Producer handoff: device test proved 18 build-1 painterly images still ship because
 build 3 never generated replacements (not shadows — no new version exists). Rebuild all 18 in
@@ -134,13 +134,13 @@ cu-astrolabe-drawer-open AND cu-astrolabe-drawer-empty from that crop at $0 — 
 |---|-------|--------|--------|------|------|
 | 1 | z1/v-entry/cu-cage-crow-refusal | region edit on cu-cage-crow (pose only) + feathered composite | pending | - | - |
 | 2 | z1/v-entry/cu-cage-open-empty | edit on cu-cage-crow (crow removed/door open), refs wide cage-open | pending | - | - |
-| 3 | z1/v-entry/cu-crow-rafters | PIL crop z1-entry-crow-lintel (freed-crow perch = lintel per b3 canon) | pending | - | - |
-| 4 | z1/v-entry/cu-star-keyhole-key | PIL composite icon-cage-key geometry (gold) into cu-star-keyhole | pending | - | - |
-| 5 | z1/v-hearth/cu-trapdoor-open | PIL crop z1-hearth-trapdoor-open wide (open-lid + dark mouth region) | pending | - | - |
+| 3 | z1/v-entry/cu-crow-rafters | PIL crop z1-entry-crow-lintel (freed-crow perch = lintel per b3 canon) | done | $0 | crop (1400,0,2600,900)->2048x1536; crow on hinge strap above beak-basin, exact-recreation |
+| 4 | z1/v-entry/cu-star-keyhole-key | PIL composite icon-cage-key geometry (gold) into cu-star-keyhole | done | $0 | icon rotated 140.2deg, cut before star bit (inserted), gold LUT from statue-key canon + cool ambient, 12deg gravity droop, soft shadow; anchored in star keyway (1060,736)@3x. Grayscale PASS |
+| 5 | z1/v-hearth/cu-trapdoor-open | PIL crop z1-hearth-trapdoor-open wide (open-lid + dark mouth region) | done | $0 | crop (1800,1100,2893,1920)->2048x1536; lid+mouth+rug edge |
 | 6-8 | z2/v-bench/sprites/rune-ember-I/II/III | PIL ember-glow stamps masked from cu-brew brass numerals (canonical I/II/III) + rects json update | pending | - | - |
 | 9 | z2/v-bench/sprites/ladle-ripple-ccw | PIL CCW arc trail matched to b3 brew liquid | pending | - | - |
-| 10 | z2/v-cabinet/cu-astrolabe-drawer-empty | PIL crop wide z2-cabinet-drawer-open + coin/crank removal | pending | - | - |
-| 10b | z2/v-cabinet/cu-astrolabe-drawer-open (FLAGGED extra, $0) | same crop, items kept | pending | - | - |
+| 10 | z2/v-cabinet/cu-astrolabe-drawer-empty | PIL crop wide z2-cabinet-drawer-open + coin/crank removal | done | $0 | row-interp inpaint + felt grain re-tex; coin (838,928)-(1074,1068) + crank (1126,958)-(1350,1100) + front cast shadow removed; NET-NEW file (game-loaded CloseUps.swift:139, was missing) |
+| 10b | z2/v-cabinet/cu-astrolabe-drawer-open (FLAGGED extra, $0) | same crop, items kept | done | $0 | crop (2400,1150,3100,1675)->2048x1536 + unsharp 70%; coin hallmark + Z-crank crisp at 2.93x upscale, no paid enhance needed |
 | 11-16 | z2/v-cabinet/sprites/astrolabe-plate-1..6 | PIL brass discs sampled from cu-astrolabe; dots re-stamped from b3 plate-N-nb close-ups; plate-2 = canonical Orion (masters/orion-canonical.json) | pending | - | - |
 | 17 | z2/v-cabinet/sprites/astrolabe-pointer | PIL brass needle matched to cu-astrolabe pointer | pending | - | - |
 | 18 | z3/v-cellar/cu-winch-crank | region edit on cu-winch-socket, refs icon-crank + wide crank-fitted crop | pending | - | - |
