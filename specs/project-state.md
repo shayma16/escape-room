@@ -29,18 +29,20 @@ pushed to `level1-rebuild-build3`. Take stock from THIS repo.**
   `gh run view 29190128411` (repo shayma16/escape-room; typical duration 30–80m).
 
 **FIRST ACTIONS on resume:**
-1. Check run 29190128411. GREEN → invoke QA (step below). RED → relaunch a developer
-   agent to diagnose/fix (brief pattern: read implementation-notes Phase 1+2 + manifest
-   build10_reframe.developer_contract; no test-weakening; iterate to green).
-2. On CI green → QA full player-style pass per the round-4 changelist
-   (specs/feedback-backlog.md "ROUND 4 — PROCESSED 2026-07-11"): all round-4
-   verifications + re-verify ALL round-2 closures (R2-META-QA lesson: assert what a
-   HUMAN sees — state visuals, hotspot reachability, item collectibility — not just
-   engine flags), on iPad AND iPhone, incl. alternate-order playthroughs (poker
-   barrel-before-ash MUST stay completable).
-3. QA report → ⛔ USER CHECKPOINT 2 (user reviews before ANY re-release).
-4. On user GO → release build 10 to TestFlight (release.yml, Producer dispatches) →
-   user device-test → merge level1-rebuild-build3 → main gates on that.
+1. ✅ DONE: run 29190128411 GREEN.
+2. ✅ DONE (2026-07-12): QA full player-style pass — **GO** (qa-report.md "Build 10 —
+   player-style regression", commit 26f23f2). R4-019 alt-order soft-lock DEAD (all
+   orderings complete, per-step anti-softlock asserted); letterbox REMOVED, nothing
+   cropped (dual-safe guard on 32 hotspot centers); R4-024 overlay architecture verified
+   on frames (no cross-state contamination); R4-007 dial canonical; ALL round-2 closures
+   re-verified still fixed. 0 crit/major/moderate; 2 minor art residuals (QA-B10-001
+   rug-moved tonal seam → Asset Gen re-roll recommended non-blocking; QA-B10-002 legacy
+   flame/slots-seated overlays, pre-existing).
+3. ⛔ **NOW AT USER CHECKPOINT 2** — user reviews QA verdict, then on GO:
+4. Release build 10 to TestFlight (`gh workflow run release.yml --ref
+   level1-rebuild-build3`) → user device-test (confirm full-width on real glass, judge
+   rug seam severity, combine pulse R4-029a, menu ping, DI pause menu) → merge
+   level1-rebuild-build3 → main.
 
 **Machine setup if missing (same as handoff #1):** git pull branch
 level1-rebuild-build3; gh auth login (repo+workflow); .env with FAL_KEY (gitignored,
