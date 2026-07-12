@@ -765,6 +765,85 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertTrue(misses.isEmpty, "player-style taps missed the visible element:\n" + misses.joined(separator: "\n"))
     }
 
+    // MARK: - Build 10: overlay catalog completeness + registration (cluster B guards)
+
+    /// Every overlay key the coordinator can ever request, per view — shared by the two
+    /// cluster-B guard tests below.
+    private static let requiredOverlayKeys: [String: [String]] = [
+        "z1/v-hearth": ["ov-poker-taken", "ov-rug-moved", "ov-trapdoor-open"],
+        "z1/v-entry": ["ov-vines-gone", "ov-cage-open", "ov-crow-lintel"],
+        "z2/v-bench": ["ov-flame1", "ov-flame2", "ov-flame3"],
+        "z2/v-cabinet": ["ov-slots-seated", "ov-cab-open", "ov-cab-open-empty", "ov-adrawer-open"],
+        "z3/v-cellar": ["ov-barrel-pried", "ov-drawer-open", "ov-drawer-empty",
+                        "ov-crank-fitted", "ov-mirror-d2", "ov-mirror-d3",
+                        "ov-shelf-slid", "ov-weight-hung",
+                        "ov-beam-floor", "ov-beam-blocked", "ov-beam-alcove"],
+        "z4/v-alcove": ["ov-key-taken"],
+    ]
+
+    /// Every overlay key the coordinator can ever request MUST exist in the shipped
+    /// overlays.json. `RoomSceneCoordinator.overlayRect` falls back to `.zero` for a missing
+    /// key, and RoomScene renders nothing for a zero rect — the exact SILENT failure class
+    /// behind R4-011 (the mirror never appeared to move) — so a key that drops out of the
+    /// asset pipeline must fail HERE, loudly, not vanish in-game.
+    func testEveryCoordinatorRequiredOverlayKeyExistsInCatalog() {
+        var missing: [String] = []
+        for (view, keys) in Self.requiredOverlayKeys {
+            for key in keys where OverlayRectCatalog.shared.rect(view: view, overlay: key) == nil {
+                missing.append("\(view)/\(key)")
+            }
+        }
+        XCTAssertTrue(missing.isEmpty,
+                      "coordinator-required overlay keys missing from overlays.json (would render NOTHING in-game, R4-011 class): \(missing.joined(separator: "; "))")
+    }
+
+    /// Registration/seam guard for the per-element overlay architecture: every required
+    /// overlay rect must be a sane sub-region of its plate — inside [0,1], non-degenerate,
+    /// and smaller than the full frame. A full-frame rect means auto-diff failed to localize
+    /// the element, i.e. the state-variant plate no longer pixel-registers with its base —
+    /// which would produce a visible seam or whole-plate flash in-game. The pixel-level seam
+    /// spot-check is done at asset staging (compose verification, recorded in the
+    /// implementation notes); this guards the geometry invariants that keep it valid.
+    func testOverlayRectsAreSaneSubRegionsOfThePlate() {
+        var offenders: [String] = []
+        for (view, keys) in Self.requiredOverlayKeys {
+            for key in keys {
+                guard let r = OverlayRectCatalog.shared.rect(view: view, overlay: key) else {
+                    continue // completeness is asserted by the test above
+                }
+                let inBounds = r.minX >= 0 && r.minY >= 0 && r.maxX <= 1.0001 && r.maxY <= 1.0001
+                let nonDegenerate = r.width > 0.005 && r.height > 0.005
+                // "Sub-region": strictly smaller than the full frame on at least one axis
+                // (the beam overlays are large light shafts but never the whole 2:1 frame).
+                let subRegion = r.width < 0.95 || r.height < 0.95
+                if !(inBounds && nonDegenerate && subRegion) {
+                    offenders.append("\(view)/\(key) rect=(\(String(format: "%.3f", r.minX)),\(String(format: "%.3f", r.minY)),\(String(format: "%.3f", r.width)),\(String(format: "%.3f", r.height)))")
+                }
+            }
+        }
+        XCTAssertTrue(offenders.isEmpty,
+                      "overlay rects out of bounds / degenerate / full-frame (registration drift): \(offenders.joined(separator: "; "))")
+    }
+
+    /// Mirror-motion guard (R4-011 regression): the d2/d3 overlays must crop (nearly) the
+    /// same plate region — the standing mirror on the LEFT of the cellar — so rotating the
+    /// mirror visibly changes it. The build-9 bug placed the hand rect at the plate center
+    /// (x ≈ 0.55 old framing), cropping an unchanged wall region: the overlay drew, but
+    /// nothing ever LOOKED different.
+    func testMirrorOverlaysSitOverTheLeftStandMirror() {
+        guard let d2 = OverlayRectCatalog.shared.rect(view: "z3/v-cellar", overlay: "ov-mirror-d2"),
+              let d3 = OverlayRectCatalog.shared.rect(view: "z3/v-cellar", overlay: "ov-mirror-d3") else {
+            XCTFail("mirror overlays missing from catalog")
+            return
+        }
+        // Same element: centers within a few percent of each other.
+        XCTAssertEqual(d2.midX, d3.midX, accuracy: 0.05, "d2/d3 must crop the same mirror")
+        XCTAssertEqual(d2.midY, d3.midY, accuracy: 0.05, "d2/d3 must crop the same mirror")
+        // Over the left-third stand mirror, not the plate center.
+        XCTAssertLessThan(d2.midX, 0.34,
+                          "mirror overlay must sit over the LEFT stand mirror (build-9 R4-011 put it mid-plate)")
+    }
+
     /// R3-005: the cuckoo was REMOVED (Q3). Tapping LEFT of the clock — where the stale
     /// cuckoo close-up used to open — must hit NOTHING (empty stone), and the clock hotspot
     /// must cover only the clock itself. This is the exact "tapping left of the clock opens
