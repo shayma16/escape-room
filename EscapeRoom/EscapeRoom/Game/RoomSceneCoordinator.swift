@@ -218,8 +218,11 @@ final class RoomSceneCoordinator: ObservableObject {
                           rectNormalized: overlayRect("z1/v-hearth", "ov-poker-taken"))
         scene.setOverlay("rug", imageNamed: RoomVisuals.rugMoved(state) ? "ov-rug-moved" : nil,
                           rectNormalized: overlayRect("z1/v-hearth", "ov-rug-moved"))
+        // Explicit z: the open-trapdoor crop overlaps the folded-rug crop and must stack
+        // above it (build 10 — never rely on node-creation order for overlapping overlays).
         scene.setOverlay("trapdoor", imageNamed: RoomVisuals.trapdoorOpen(state) ? "ov-trapdoor-open" : nil,
-                          rectNormalized: overlayRect("z1/v-hearth", "ov-trapdoor-open"))
+                          rectNormalized: overlayRect("z1/v-hearth", "ov-trapdoor-open"),
+                          zPosition: 11)
     }
 
     // MARK: - v-study (z1)
@@ -397,19 +400,31 @@ final class RoomSceneCoordinator: ObservableObject {
 
         // Beam: a light overlay that is a pure function of (moonbeam-on, mirror-detent-3,
         // shelf-slid) — one element, independently composited (never a base swap).
+        //
+        // Stacking (these overlays OVERLAP, so z is explicit and state-derived — see the
+        // setOverlay doc): mirror z11 < shelf z12 < beam z13. The beam-blocked/-alcove
+        // crops were diffed from plates whose overlap strips already show the d3 mirror
+        // edge / slid shelf, so drawing the beam ON TOP is pixel-consistent AND keeps the
+        // bloom-critical "light enters the alcove" cue visible. EXCEPT `.floorBeam`, whose
+        // source plate has the shelf CLOSED: with the shelf already open (weight hung,
+        // mirror still at d2) the beam must slip UNDER the shelf/mirror overlays (z9),
+        // sacrificing a sliver of glow instead of ghosting a closed shelf over the open one.
         let beamImage: String?
+        var beamZ: CGFloat = 13
         switch RoomVisuals.beamVisual(state) {
         case .none:           beamImage = nil
-        case .floorBeam:      beamImage = "ov-beam-floor"
+        case .floorBeam:      beamImage = "ov-beam-floor"; beamZ = 9
         case .blockedOnShelf: beamImage = "ov-beam-blocked"
         case .intoAlcove:     beamImage = "ov-beam-alcove"
         }
         scene.setOverlay("beam", imageNamed: beamImage,
-                          rectNormalized: beamImage.map { overlayRect("z3/v-cellar", $0) } ?? .zero)
+                          rectNormalized: beamImage.map { overlayRect("z3/v-cellar", $0) } ?? .zero,
+                          zPosition: beamZ)
 
         // Shelf slid open (reveals the alcove mouth) — independent of the beam.
         scene.setOverlay("shelf", imageNamed: RoomVisuals.shelfSlid(state) ? "ov-shelf-slid" : nil,
-                          rectNormalized: overlayRect("z3/v-cellar", "ov-shelf-slid"))
+                          rectNormalized: overlayRect("z3/v-cellar", "ov-shelf-slid"),
+                          zPosition: 12)
 
         let barrelOverlay = RoomVisuals.barrelOverlay(state)
         scene.setOverlay("barrel", imageNamed: barrelOverlay,
@@ -425,10 +440,13 @@ final class RoomSceneCoordinator: ObservableObject {
         let mirrorOverlay = state.data.mirrorDetent == 3 ? "ov-mirror-d3"
             : (state.data.mirrorDetent == 2 ? "ov-mirror-d2" : nil)
         scene.setOverlay("mirror", imageNamed: mirrorOverlay,
-                          rectNormalized: mirrorOverlay.map { overlayRect("z3/v-cellar", $0) } ?? .zero)
-        // Transient weight-hung beat — now an overlay (was a full base swap).
+                          rectNormalized: mirrorOverlay.map { overlayRect("z3/v-cellar", $0) } ?? .zero,
+                          zPosition: 11)
+        // Transient weight-hung beat — now an overlay (was a full base swap). Topmost:
+        // it covers the shelf region during the beat, before the slide is revealed.
         scene.setOverlay("weight-hung", imageNamed: showingWeightHungBeat ? "ov-weight-hung" : nil,
-                          rectNormalized: overlayRect("z3/v-cellar", "ov-weight-hung"))
+                          rectNormalized: overlayRect("z3/v-cellar", "ov-weight-hung"),
+                          zPosition: 14)
     }
 
     // MARK: - v-alcove (z4)

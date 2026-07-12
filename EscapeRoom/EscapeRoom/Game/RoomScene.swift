@@ -108,16 +108,22 @@ final class RoomScene: SKScene {
 
     private static let textureCache = NSCache<NSString, SKTexture>()
 
-    func setOverlay(_ key: String, imageNamed: String?, rectNormalized: CGRect) {
+    /// `zPosition` (build 10, cluster B): with independent per-element overlays, two
+    /// overlays can OVERLAP (cellar beam × shelf × mirror), and sibling order — set by
+    /// node-CREATION order, i.e. the order states happened to change in — is not a correct
+    /// stacking rule. Callers with overlapping overlays pass an explicit, state-derived
+    /// zPosition (see refreshCellar); non-overlapping overlays keep the default 10.
+    func setOverlay(_ key: String, imageNamed: String?, rectNormalized: CGRect,
+                    zPosition: CGFloat = 10) {
         if let imageNamed, rectNormalized != .zero {
             let node = overlayNodes[key] ?? {
                 let n = SKSpriteNode()
                 n.anchorPoint = CGPoint(x: 0, y: 1) // top-left origin to match normalized rects
-                n.zPosition = 10
                 addChild(n)
                 overlayNodes[key] = n
                 return n
             }()
+            node.zPosition = zPosition
             node.texture = Self.overlayTexture(named: imageNamed, rectNormalized: rectNormalized)
             positionOverlay(node, rectNormalized: rectNormalized)
         } else {

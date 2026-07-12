@@ -1643,3 +1643,14 @@ regenerate overlays + overlays.json in re-framed space. The tool's stale-shadow 
 guards ran clean. The tool now also reproduces the Phase-1 audio state (sfx-wood /
 gen_ambients / sfx-entry removed, sfx-seat added), so `python build_game_assets.py` yields
 the exact shipped bundle.
+
+### Phase-2 addendum: explicit overlay z-order (cluster B)
+
+With independent per-element overlays, overlapping overlays (cellar beam × shelf × mirror;
+hearth rug × trapdoor) can no longer rely on node-creation order (state-path-dependent).
+`setOverlay` now takes an explicit `zPosition` (default 10): cellar mirror 11 < shelf 12 <
+beam 13 (weight-hung beat 14), EXCEPT `.floorBeam` which renders at z9 (under shelf/mirror)
+because its source plate has the shelf closed — with the shelf already open it must slip
+under rather than ghost a closed shelf. beam-blocked/-alcove crops are pixel-consistent
+with the d3-mirror/slid-shelf overlap strips, so beam-on-top keeps the bloom-critical
+"light enters the alcove" cue visible. Hearth trapdoor gets z11 above the rug crop.
