@@ -1,23 +1,36 @@
 {
  "rune-ember-I": {
   "paste_xy_3x": [
-   169,
-   654
+   624,
+   161
+  ],
+  "size_3x": [
+   279,
+   293
   ],
   "applies_to": "cu-brew-* plates"
  },
  "rune-ember-II": {
   "paste_xy_3x": [
-   812,
-   1102
+   1190,
+   169
+  ],
+  "size_3x": [
+   306,
+   303
   ],
   "applies_to": "cu-brew-* plates"
  },
  "rune-ember-III": {
   "paste_xy_3x": [
-   1714,
-   654
+   1543,
+   473
+  ],
+  "size_3x": [
+   255,
+   326
   ],
   "applies_to": "cu-brew-* plates"
- }
+ },
+ "_build11_note": "Rebuilt from build-3 cu-brew-clear plaques (build-1 sprites archived). Positions CHANGED vs build-1: Developer must sync CloseUpLayout.brewEmberRects (Swift transcription) to these values, incl. per-numeral sizes. Sprite = plaque cutout w/ white-hot ember channels + orange halo; pixel-aligned at paste_xy_3x/size_3x over 2048x1536."
 }
