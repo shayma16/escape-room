@@ -84,3 +84,9 @@ _Report the running total to the user after each level completes._
   @1x/@2x/@3x export, per-image cost logging). Crop-scoped edits are the standing
   state-variant technique (~25x cheaper than full-frame re-renders, pixel-aligned).
 - fal seed-replay is NOT reproducible — never plan on regenerating a plate by seed.
+
+**Build-11 spend update (2026-07-12):** gap-fill batch (19 never-regenerated build-1 files
+incl. one game-loaded image that never existed) = $0.45. **Running Level-1 art total: $19.80
+of the $23.00 hard cap** ($3.20 headroom). Nano Banana Pro since 2026-07-08 (earlier rows
+above were the Flux era; tooling notes above predate the switch — fal_gen.py now targets
+fal-ai/nano-banana-pro).
