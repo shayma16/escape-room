@@ -325,6 +325,75 @@ def strip_poly(p0, p1, w0, w1, extend=0):
 
 # ------------------------------------------------------------- diff overlays
 
+def assert_no_misplaced_clone_fill(base_im, var_im, bbox, name,
+                                   max_shift=260, step=20, ratio=0.55, min_shift=16):
+    """R5-001 anti-recurrence guard (build 11): fail the build if a state-variant's
+    changed-region content matches the BASE much better at a translated offset than in
+    place — the signature of a "misplaced clone" fill.
+
+    Root case this catches: the manifest-current z1-hearth-poker-taken plate's
+    generative REMOVE-the-poker edit filled the poker area with a +240 px-shifted copy
+    of the fireplace interior (a second andiron + duplicated grate). The plate still
+    pixel-REGISTERS with the base (edge-ring diff < 1 grey level), so the auto-diff
+    crop + the runtime composite were both geometrically perfect — perfectly registered
+    WRONG art, which no registration check can see. Content provenance is checked here
+    instead: for the changed bbox's interior, if base@shift matches the variant's fill
+    dramatically better (< ratio x the in-place diff) at a non-trivial shift, the fill
+    is a misplaced clone of scene content and MUST NOT ship (R4-004 -> R5-001 lineage).
+
+    Measured separation on the current tree (interior mean-abs-diff, grey levels):
+    every legitimate variant scores best-shift/zero-shift >= 0.72; the defective poker
+    plate scores 0.28 at (+240, 0). Threshold 0.55 splits them with ~2x margin each way.
+    """
+    from PIL import ImageStat
+    x0, y0, x1, y1 = bbox
+    inset = 30
+    if (x1 - x0) <= 2 * inset + 40 or (y1 - y0) <= 2 * inset + 40:
+        return  # too small for a meaningful interior-content comparison
+    ix0, iy0, ix1, iy1 = x0 + inset, y0 + inset, x1 - inset, y1 - inset
+    base_l = base_im.convert("L")
+    var_l = var_im.convert("L")
+    if var_l.size != base_l.size:
+        var_l = var_l.resize(base_l.size, Image.LANCZOS)
+    # Quarter-scale search keeps this pure-PIL pass fast; a >= 16 px clone shift
+    # survives the downsample easily (the poker defect is 240 px).
+    ds = 4
+    bw, bh = base_l.size
+    base_s = base_l.resize((bw // ds, bh // ds), Image.BILINEAR)
+    var_s = var_l.resize((bw // ds, bh // ds), Image.BILINEAR)
+    sx0, sy0, sx1, sy1 = ix0 // ds, iy0 // ds, ix1 // ds, iy1 // ds
+    interior = var_s.crop((sx0, sy0, sx1, sy1))
+
+    def mean_diff(dx, dy):
+        ax0, ay0 = sx0 + dx // ds, sy0 + dy // ds
+        ax1, ay1 = ax0 + (sx1 - sx0), ay0 + (sy1 - sy0)
+        if ax0 < 0 or ay0 < 0 or ax1 > base_s.width or ay1 > base_s.height:
+            return None
+        region = base_s.crop((ax0, ay0, ax1, ay1))
+        return ImageStat.Stat(ImageChops.difference(region, interior)).mean[0]
+
+    zero = mean_diff(0, 0)
+    if zero is None or zero < 3.0:
+        return  # near-identical fill (nothing visibly changed inside) — nothing to clone
+    best = (zero, 0, 0)
+    for dy in range(-max_shift, max_shift + 1, step):
+        for dx in range(-max_shift, max_shift + 1, step):
+            if abs(dx) < min_shift and abs(dy) < min_shift:
+                continue
+            d = mean_diff(dx, dy)
+            if d is not None and d < best[0]:
+                best = (d, dx, dy)
+    if best[0] < ratio * zero:
+        raise SystemExit(
+            f"MISPLACED-CLONE GUARD FAILED for {name}: the variant's changed region "
+            f"matches the base {zero / max(best[0], 1e-6):.1f}x better when shifted by "
+            f"({best[1]}, {best[2]}) px (diff {best[0]:.1f} vs {zero:.1f} in place). "
+            "The state fill is a misplaced clone of scene content (R5-001 class: e.g. a "
+            "duplicated andiron where the poker was removed) and would composite as a "
+            "visibly wrong fragment despite perfect registration. Re-derive the variant "
+            "plate (Asset Gen) or synthesize the state from the base (build_inpainted).")
+
+
 def diff_overlay(base_im, var_im, pad=12, thresh=14, clamp=None):
     """Return (bbox, crop) covering where var differs from base, or None.
 
@@ -558,6 +627,7 @@ MANUAL_OVERLAYS = [
 ]
 
 MANUAL_OVERLAY_BASE = {
+    "z1/v-hearth":  "z1/v-hearth/z1-hearth-base@3x.png",
     "z2/v-cabinet": "z2/v-cabinet/z2-cabinet-base@3x.png",
     "z3/v-cellar":  "z3/v-cellar/z3-cellar-base@3x.png",
     "z4/v-alcove":  "z4/v-alcove/z4-alcove-base@3x.png",
@@ -572,12 +642,16 @@ SPRITE_JSONS = [
 # Optional 6th element: clamp rect (x0, y0, x1, y1) restricting the diff, used where
 # a re-rendered variant carries low-level drift outside the intended element
 # (asset-manifest flag: cage re-render brightness shift).
-# Only the state variants that DO pixel-align with the current build-3 base (the poker-
-# taken -nb plate, which is a true region-edit of the same 4K base) still use the automatic
-# diff. Everything else moved to MANUAL_OVERLAYS (gap G3). ov-rug-moved / ov-trapdoor-open
-# are computed from build-3-derived extras in main() (gap G1).
+# Only the state variants that DO pixel-align with the current build-3 base still use the
+# automatic diff. Everything else moved to MANUAL_OVERLAYS (gap G3). ov-rug-moved /
+# ov-trapdoor-open are computed from build-3-derived extras in main() (gap G1).
+#
+# R5-001 (build 11): z1-hearth-poker-taken is NO LONGER consumed. It pixel-aligns with
+# the base, but its poker-removal fill is a +240 px-shifted clone of the fireplace
+# interior (duplicated andiron) — the user-visible "misplaced fireplace fragment".
+# ov-poker-taken is now SYNTHESIZED from the base in build_inpainted() (see the extras
+# auto-diff loop in main), and assert_no_misplaced_clone_fill guards the whole class.
 OVERLAYS = [
-    ("z1/v-hearth", "z1-hearth-base", "z1-hearth-poker-taken", "ov-poker-taken", False),
     # z1 entry (re-framed variants align — self-locating rects)
     ("z1/v-entry", "z1-entry-base", "z1-entry-cage-open",   "ov-cage-open",   False),
     ("z1/v-entry", "z1-entry-base", "z1-entry-crow-lintel", "ov-crow-lintel", False),
@@ -670,6 +744,33 @@ def build_inpainted(report):
     fixed = inpaint(im, mask, blur=4.0, noise=5, seed=12)
     save_plate(fixed, "z2/v-cabinet/cu-astrolabe-drawer-empty.jpg")
     report.append("inpaint drawer -> z2/v-cabinet/cu-astrolabe-drawer-empty.jpg")
+
+    # --- z1 wide: poker removed, SYNTHESIZED from the base (R5-001, build 11) ---
+    # ROOT CAUSE of the "misplaced fireplace fragment" (R4-004 -> R5-001): the manifest-
+    # current z1-hearth-poker-taken plate's generative REMOVE-the-poker edit filled the
+    # poker area with a +240 px-shifted CLONE of the fireplace interior (a second
+    # andiron + duplicated grate). The plate pixel-REGISTERS with the base perfectly
+    # (edge-ring diff < 1 grey level), so build 10's auto-diff cropped it faithfully and
+    # the runtime composited it exactly where the rect says — perfectly registered wrong
+    # art. The runtime compositor was verified equal to the offline composite; the
+    # defect lives in the source plate. Until the Asset agent re-delivers that plate,
+    # the poker-taken state is synthesized here by inpainting the poker (tapered handle,
+    # thin rod, J-hook) out of the base directly — the same mechanism as the clock-hands
+    # / spoon / cabinet-shelf erasures above. Geometry measured off the re-framed base.
+    base_hearth = load("z1/v-hearth/z1-hearth-base@3x.png").convert("RGB")
+    poker_polys = [
+        strip_poly((1057, 1085), (1102, 1520), 16, 15),  # rod, leaning slightly right
+        strip_poly((1102, 1500), (1052, 1588), 17, 16),  # hook: lower sweep
+        strip_poly((1052, 1588), (1012, 1533), 15, 13),  # hook: tip curling up-left
+    ]
+    poker_ellipses = [
+        (1057, 1040, 30, 68),   # tapered wooden handle
+        (1075, 1580, 78, 34),   # hook curve + contact shadow on the hearth ledge
+        (1122, 1583, 38, 36),   # hook's rightmost tip resting on the ledge
+    ]
+    pmask = polygon_mask(base_hearth.size, poker_polys, poker_ellipses, grow=4)
+    extras["z1/v-hearth#poker-taken"] = inpaint(base_hearth, pmask, blur=3.0, noise=5, seed=21)
+    report.append("inpaint poker  -> wide hearth poker-taken (overlay source, R5-001)")
 
     # --- z3 wide: drawer-open without spoon (build-10 re-framed coords) ---
     # The spoon sits on the open drawer bottom in the RE-FRAMED z3-cellar-drawer-open
@@ -1159,6 +1260,9 @@ def main():
             print(f"   !! no diff for {name}")
             continue
         bbox, crop = res
+        # R5-001 guard: a variant whose fill is a misplaced clone of scene content
+        # composites as a perfectly registered WRONG fragment — refuse to ship it.
+        assert_no_misplaced_clone_fill(base_im, var_im, bbox, name)
         rel = f"{view}/overlays/{name}.jpg"
         save_plate(crop, rel)
         w, h = base_im.size
@@ -1204,7 +1308,13 @@ def main():
     # Emptied-container overlays (gap G3): inpainted from the 2560 variants, so crop by the
     # SAME hand-rect as their filled counterparts (the empty state shows the same element
     # region, now without the item). rect (view, extras-key, name, filled-rect, dim).
+    # + R5-001 (build 11): ov-poker-taken is now sourced from the base-derived inpaint
+    # extra (see build_inpainted) instead of the defective clone-fill variant plate; the
+    # auto-diff against the base self-locates the tight poker region exactly like the
+    # emptied-container overlays. (Synthesized-from-base extras cannot clone-shift, so
+    # the misplaced-clone guard applies only to the variant-plate loop above.)
     for view, ekey, name in [
+        ("z1/v-hearth", "z1/v-hearth#poker-taken", "ov-poker-taken"),
         ("z3/v-cellar", "z3/v-cellar#drawer-empty", "ov-drawer-empty"),
         ("z2/v-cabinet", "z2/v-cabinet#cab-open-empty", "ov-cab-open-empty"),
     ]:
