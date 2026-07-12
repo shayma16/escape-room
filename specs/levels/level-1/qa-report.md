@@ -471,3 +471,108 @@ NO-GO for this build.
 - But QA-B3-001 (content boxed into a left-anchored square; 25-54 % dead black band; DI pause menu partially off-screen) is a critical, human-visible presentation defect on EVERY device class tested. It is not shippable and the green CI does not surface it. QA-B3-002 (clipped completion/pause chrome) rides along.
 - Recommended path: route QA-B3-001 (+ 002) to the Developer via the Producer as a presentation-layer fix (no logic/art/spec change), add the screenshot-composition + chrome-on-screen assertions so CI goes red until fixed, then re-run this player-style pass. Everything else (soft-lock, state rendering, clue-gating, sound wiring, nav, re-rolls, completability) is GREEN and would clear on the re-run.
 - Standing scope disclaimer: CI-simulator evidence only. Real-touch feel, thermals, haptics, and final on-device presentation confirmation remain the user manual TestFlight spot-check before release approval.
+
+---
+
+# Build 10 — player-style regression (QA, 2026-07-12)
+
+**Branch:** `level1-rebuild-build3`, HEAD `84f4d74` (CI tested `a12300c`; delta `a12300c..84f4d74` is `specs/project-state.md` only — no app code, so the CI evidence applies to HEAD).
+**Build under test:** build 10 = round-4 fix batch (clusters A–F + singles) + plate re-frame into the iPad dual-safe band with **`.aspectFill` restored (letterbox REMOVED)** + Phase-3 CI-perf/nav fixes.
+**Spec under test:** `feedback-backlog.md` "ROUND 4 — PROCESSED 2026-07-11" routed changelist (checkpoint-1 approved), `implementation-notes.md` Build 10 Phases 1–3, `asset-manifest.json` `build10_reframe` (incl. `developer_contract`), `puzzle-graph.json` rev 1.3.
+**CI run analysed:** [29190128411](https://github.com/shayma16/escape-room/actions/runs/29190128411) — **GREEN**: build + unit ×3 devices (119 tests each, 0 failures) + UI ×3 (iPad 5/5 incl. FULL playthrough; iPhone SE 5/5 incl. full playthrough; Dynamic Island 2/2).
+**Method (binding R2-META-QA):** all six xcresult bundles downloaded via `gh run download`; 100+ attachment PNGs extracted from the CAS stores, restored to upright, and VIEWED; per-frame content compared against the staged plates/overlays; overlay composites reproduced offline from `overlays.json` where the playthrough captured no frame; the R4-007 dial verified by reproducing the exact view transform on the staged sprite. Green assertions alone were never accepted for anything a human can see.
+
+## Headline verdict: **GO** (recommendation — decision is the user's at CHECKPOINT 2)
+
+0 critical, 0 major, 0 moderate new bugs. 2 minor known-residual art items + 2 standing test-infrastructure notes. Every round-4 fix verified; every round-2 closure re-verified still fixed.
+
+## 1. R4-019 lifecycle / alternate-order completability — PASS (the round's critical gate)
+
+- `ItemLifecycle.uses` transcribed 1:1 from the graph (all 15 itm-* nodes verified against `puzzle-graph.json`, incl. `uses: []` never-consume for the rusted key); reconcile hooked at `GameState` init / `setFlag` / `markSolved` — unbypassable, covers the R4-030 combine path.
+- **Alternate orderings green ×3 devices:** `testInvariantAndCompletability_orderingA_p06BeforeP05` (the exact soft-lock order: barrel BEFORE ash), `orderingB`, `orderingC_mirrorFirst_cellarFirst` — each asserts after EVERY step that no item ever leaves play with an unsatisfied use, then asserts completion.
+- **Coordinator-level repro green:** `testPokerSurvivesBarrelBeforeAsh_thenConsumesAfterBoth_R4_019` drives the real hotspot tap routing — poker survives p06, ring collected (not stranded), poker consumed only after both uses.
+- **Both failure directions covered:** R4-030 flip-side visible IN THE RENDERED FRAMES — inventory across the playthrough shows file+spoon present before p12, GONE after p12; crank gone after p08; paste/shavings/feather consumed by the brew (play-16 holds phial only). `testConsumedItemsNeverReappearCollectable`, `testBuild9SaveMigrationReconcilesLingeringItems` (stale build-9 save comes clean), relaunch-mid-pickup anti-softlock — all green.
+- Manual pickups uniform: weight (`testWeightManualPickupSurvivesRelaunch_antiSoftlock`) and statue key (`testStatueKeyIsManualPickupFromCloseUp_R4_026`) are two-step collect in the UI playthrough script and passed on both device classes; play-07/play-15 frames show key-in-beak → beak-empty.
+- **Scope note (no suite extension made):** the alternate order is verified at engine+coordinator level, not by a second full UI playthrough. Judged adequate, not a gap: rendering is state-driven per element (order-independent by construction), the coordinator repro exercises the real tap path, and a second 12-minute iPad UI playthrough would re-approach the exact CI-starvation cliff Phase 3 just fixed. If the Producer wants belt-and-braces, the cheap follow-up is reordering the EXISTING playthrough script (barrel-before-ash) in a future pass, not adding a run.
+
+## 2. R4-024 per-element overlay architecture — PASS (screenshot-verified)
+
+| Check | Rendered evidence | Result |
+|---|---|---|
+| Mirror state independent of shelf/drawer | play-05 vs play-06 (iPad): shelf slides + drawer opens + weight hangs; mirror pixel-identical upright | PASS |
+| Mirror VISIBLY moves at detents (R4-011) | play-05 (upright) vs play-14 (clearly tilted d3) on BOTH iPad and iPhone frames | PASS — the build-9 "mirror never moves" defect is dead |
+| Beam appears only after p08, correct variant | play-14: shaft + tall vertical ellipse at the slid-shelf gap = matches `z3-cellar-beam-alcove` spec plate (distinct from the round `blocked` spot and the `floor` pool), composited with shelf-slid + mirror-d3 + drawer-open on the ONE stable base | PASS |
+| No cross-state contamination | no frame anywhere shows a barrel/beam/mirror state flip alongside an unrelated interaction | PASS |
+| Hearth overlays registered (R4-004/006) | offline composite of staged `ov-poker-taken` + `ov-rug-moved` + `ov-trapdoor-open` at their `overlays.json` rects: poker cleanly absent (no misaligned patch, no floating fragment), trapdoor renders OVER the folded rug (z-order correct) | PASS (see QA-B10-001 residual) |
+| Guard tests | `testEveryCoordinatorRequiredOverlayKeyExistsInCatalog` (R4-011 silent-miss class), `testOverlayRectsAreSaneSubRegionsOfThePlate`, `testMirrorOverlaysSitOverTheLeftStandMirror` — green ×3 | PASS |
+
+## 3. Letterbox removed / no critical element cropped — PASS
+
+- **Harness-immune geometry (the authority):** `testSceneContentFillsScreen_QA_B3_001` DIAG on all three devices shows `sceneFrame == window` EXACTLY — iPad 1376×1032, iPhone SE 667×375, Dynamic Island 874×402, all landscape, scene spans 100 % of the window. `.aspectFill` restored; no in-app letterbox.
+- **Rendered frames corroborate:** every one of the 100+ reviewed frames shows art filling the entire app content region — zero internal black bars (build 9's letterbox bars are gone).
+- **No-crop guard:** rewritten `testQA_BUG_004_criticalHotspotsInsideDualSafeZone` green ×3 — 32 puzzle-critical hotspot centers inside the manifest dual-safe band (iPad-4:3 ∩ iPhone-19.5:9) on the REMAPPED hotspots; 3 documented exclusions (`ladder`, `cellar-passage`, `workbench`) all have redundant access (chrome `zone-exit` chevron / inventory combine) and the iPad playthrough actually exited the cellar/alcove via the chevron.
+- **Reframe fidelity:** Swift `Reframe.transform(for:)` matches `build10_reframe.transforms` value-for-value (all 7 views); staged plates re-staged in re-framed space; UI-test `sceneCoordinate` flipped to max-scale cover math.
+- **Screenshot-fidelity caveat (carry-forward, quantified):** the CI framebuffer rasters keep only a screen-height-wide column (iPad 75 %, SE 56 %, DI 46 % of width — `pixelFill_whole` matches exactly), so far-right plate content (barrel, cage, ladder) is absent from CI screenshots. That band loss is the KNOWN harness artifact (portrait boot), not app layout — proven by the window-exact scene frame plus the playthrough successfully tapping those very elements at their visual positions. Final full-width visual confirmation on real glass remains the user's TestFlight spot-check.
+
+## 4. Hotspot re-frame remap — PASS
+
+`testTapsAtVisibleElementPositionsHitTheirHotspots_R3_005` (taps at human-visible art positions, reframed) green ×3; `testQA_BUG_009` 44 pt floor recomputed for `.aspectFill` max-scale, offender list empty ×3; full playthrough completed via scene taps on BOTH the tightest layout (SE) and the primary device (iPad) with arrival-verified navigation (`ensureView` — strictly more rigorous than build 9; no assertion relaxed).
+
+## 5. R4-007 moon dial — PASS (exact-transform verification)
+
+- `MoonDialControlView` line 44 `rotationEffect(.degrees(Double(phaseRaw) * -45))` byte-identical (contract honored; no double-apply).
+- Staged `dial-face.png` MD5 == the new pre-rotated `dial-face@3x.png`; the non-prerotated sprite is quarantined in `_rejects/build10-pre-reframe/`.
+- Reproduced the view math offline: sprite rotated −225° (waningGibbous, index 5) puts a white gibbous with the **dark bite on the RIGHT** under the top notch — canonical, spec-correct.
+- Rendered play-04 frame: dial 1 = waxing crescent (lit sliver right), dial 2 = full, both canonical under their notches; off-notch marks appear rotated exactly as the pre-rotation design predicts. (Dial 3 sits in the CI raster's lost band — covered by the sprite-math proof above.)
+- Triptych canon: `cu-triptych-3` (three crows) shows the SAME waning-gibbous dark-bite-RIGHT moon. Dial, triptych, and engine solution indexes all agree.
+
+## 6. Sound — PASS (code + bundle level)
+
+Retired assets physically absent from `Resources/Audio` (`sfx-wood`, `sfx-entry`, `amb-z1..z4`, `sfx-menu-tap`) and guarded by `testRetiredPshAndOceanAssetsDoNotShip_build10` (green ×3); `sfx-seat` added (in-house synth, licensing surface updated); drawer opens silent + spoon pickup chimes (`testDrawerOpenIsSilent_spoonPickupChimes_clusterD`); menu ping standardized (`testMenuPingShipsAndTickIsRetired_R4_003`); music level-scoped and restart-clean (`testLevelAudioIsMusicOnlyAndRestartsCleanly_R4_002_F004`, `testMusicIsScopedToLevelLifecycle_R3_001`). Root-cause verdict recorded by the Developer (never-fully-shipped, not lost) is consistent with the git evidence cited. Audible quality is the user's device check.
+
+## 7. Round-2 closure re-verification (standing directive) — ALL STILL FIXED
+
+| Round-2 closure | Build-10 evidence | Verdict |
+|---|---|---|
+| State-visual refresh after solve/pickup (R2-014/015 class) | ash-glint ring visible (play-02); dials retain solved marks (play-04); cabinet visibly OPEN in the WIDE view after p04 (play-12 — R4-022(1)); bloom closed→open (play-07→15); key-in-beak→empty; beam on; brew pearlescent spiral (play-16); inventory reflects every consume | STILL FIXED |
+| Resolved-container close-ups — no grey box | astrolabe six-plate mini-game + drawer-open (coin+crank), cabinet interior (file+phial), cage-open-empty, crow-rafters ALL current-generation art (staged files viewed); no grey/stale frame in 100+ reviewed | STILL FIXED (cluster C re-staged) |
+| Manual pickup (R2-020/F-023/F-018) | ash ring, weight, statue key, spoon all two-step collect in the passing UI script; unit guards green | STILL FIXED (now uniform) |
+| Armed-item retention + non-blocking looks (R2-030/R4-005) | `testArmedItemNeverBlocksLooks_R4_005`, `testEmptySceneTapDisarms_R4_005` green ×3; playthrough refusal detour arms + retains | STILL FIXED (model completed) |
+| Nav model (F-024/F-025) | smoke walks all z1 views; playthrough traverses all zones via diegetic passages; single-view zone `zone-exit` chevron used by the iPad script | STILL FIXED |
+| Triptych per-panel mapping (R2-007) | play-08c renders the real panel-2 close-up; panel-3 canon verified from staged art | STILL FIXED |
+| Depleted-hotspot pruning / dead hotspots silent (Q1/F-006/F-014) | `testDeadHotspotsAreSilent_F006_F014` green ×3 | STILL FIXED |
+| Clue-gating + D7 persistence (rev 1.3) | `testSaveResumeMidPlaythroughPersistsGate` GREEN on iPad (299 s) AND iPhone SE (100 s) — quit→terminate→relaunch, gate stays satisfied, p01 solves post-relaunch | STILL FIXED |
+| psh removal (R2-024) | see §6 — root fixed at the trigger map this time, bundle-level guard added | NOW ACTUALLY SHIPPED |
+| Cuckoo removal (Q3) | hearth frames (iPad + iPhone): intact numeral ring, no cuckoo; `testClockIsInertAfterCuckooRemoval_Q3` green | STILL FIXED |
+| p04 placement feedback (R4-020(1)/QA-BUG-017) | `testCorrectPartialPlacementGivesPositiveFeedback_R4_020` green ×3; `sfx-seat` ships | FIXED |
+| Level Select label (R4-001/R3-003) | play-19 + smoke-02 frames: card reads **"Level 1"**, serif, completion badge renders | FIXED |
+
+## 8. Full end-to-end + save/resume + device matrix
+
+| Device | Build | Unit (119) | UI | Notes |
+|---|---|---|---|---|
+| iPad Pro 13" (M4) — PRIMARY | pass | pass | **full playthrough (706 s) + chrome-solve (1252 s) + smoke + save/resume (299 s) + fill guard — 5/5 PASS** | first fully-green iPad run under `.aspectFill`; completion card + badge asserted; 50 frames reviewed |
+| iPhone SE (3rd gen) — smallest | pass | pass | full playthrough (372 s) + chrome-solve + smoke + save/resume + fill guard — 5/5 PASS | 51 frames reviewed; mirror-move + state visuals confirmed at SE scale |
+| iPhone 16-class (Dynamic Island) | pass | pass | smoke + fill guard — 2/2 PASS | scene = window exactly (874×402); visible chrome clear of the island; raster band-loss worst here (46 %) — chrome sign-off carried by the iPad frames + frame-in-window assertions |
+
+Performance: no crashes/hangs in any step; Phase-3 fixes measurably effective (iPad chrome-solve 1252 s vs the 2160 s wedge / 1355 s build-9 baseline); decoded-image cache + cost-bounded texture cache + close-up fps cap are also straight device wins. Total job well inside the 120-min budget.
+
+## 9. Bug list (this pass)
+
+**QA-B10-001 — rug-moved/trapdoor floor tonal seam (MINOR, known residual, Producer-flagged by the Developer).** The `z1-hearth-rug-moved` source plate carries a pre-existing full-frame tone drift, so its hand-cropped overlay brightens the floor region; in a hard compose the rectangular boundary is discernible (verified on the offline composite; softened in-game by the 12 px feather; NOT visible as broken in any captured frame — no playthrough screenshot covers this state). Not a regression; the R4-004/006 MISREGISTRATION half is definitively fixed. Route: Asset Generation derived-crop re-roll of the rug-moved floor region when convenient. Non-blocking.
+
+**QA-B10-002 — legacy flame / slots-seated overlays (MINOR, pre-existing, documented in the manifest `legacy_plates_flagged`).** `ov-flame1/2/3` + `ov-slots-seated` still derive from 2560×1280 build-2-era plates scaled onto the re-framed bases; hard-compose shows a soft rectangular boundary (feather + flame glow mask it in-game; the brew frames reviewed show no objectionable seam at the captured angle). Regenerate from the 4K bases in a future art batch. Non-blocking.
+
+**QA-B10-INFRA-1 (carry-forward of QA-OBS-023 class):** CI simulator rasters keep only a screen-height-wide column (25–54 % width loss), so iPhone/DI chrome and far-right plate content cannot be visually signed off from CI screenshots — those verifications rest on the passing frame-in-window/geometry assertions plus the iPad frames. Physical-device confirmation remains the user's TestFlight step.
+
+**QA-B10-INFRA-2 (visual-only items deferred to the user's device pass):** R4-029(a) combine pulse/hint (implemented; Phase-3 fixed the static-pulse defect; animation not verifiable from stills), real audio quality, haptics/feel. Listed so CHECKPOINT-2 review knows exactly what CI could not see.
+
+## 10. Go / no-go recommendation
+
+**GO** for build-10 release to TestFlight (decision is the user's at CHECKPOINT 2).
+
+- The round's one critical (R4-019 alternate-order soft-lock) is dead — proven at engine, coordinator, and rendered-inventory level, in both failure directions.
+- The systemic root (R4-024 plate swaps) is replaced by per-element overlays and every symptom in cluster B is verifiably gone on rendered frames (including the two that had "never actually shipped": mirror movement and wide-view cabinet refresh).
+- The letterbox is gone with nothing puzzle-critical cropped (geometry-guarded), hotspots land at visual positions on both device classes, the dial reads canonically, the sound bundle is clean, and all round-2 closures held.
+- Remaining items are two minor art residuals (both already flagged and scoped) and the standing CI screenshot-fidelity limit. Nothing blocks shipping.
+- On-device confirmation list for the user's TestFlight pass: full-width presentation on real glass, rug-moved floor seam severity (QA-B10-001), combine pulse visibility (R4-029a), menu ping/seat cue by ear, DI pause menu on a real notch device.
