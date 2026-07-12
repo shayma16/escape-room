@@ -109,3 +109,38 @@ Overscan bands carry atmosphere only, per style-guide S8._
 - Project total: $17.25 + $2.10 = **$19.35 of $23.00 HARD CAP** (under the $20.20 projection by $0.85).
 - All 12 items done, none deferred. Legacy-art plates z2-bench-flame1/2/3 + z2-cabinet-slots-seated
   flagged to Producer (NOT re-framed; overlay rect-remap keeps current behavior).
+
+---
+
+# BUILD-11 gap-fill (18 build-1-era stragglers never rebuilt in build 3) [2026-07-12]
+
+PROGRESS: 0/18 done | 0 retrying | 0 failed | 18 remaining | $0.00 spent this batch | project $19.35 of $23.00 HARD CAP | headroom $3.65
+
+_Scope per Producer handoff: device test proved 18 build-1 painterly images still ship because
+build 3 never generated replacements (not shadows — no new version exists). Rebuild all 18 in
+build-3 engine style at canonical paths, R2-031 exact-recreation (crop/composite off existing
+build-3 canonical plates), originals -> _rejects/flux-painterly/._
+_Pre-generation estimate: 15 of 18 derivable at $0 (PIL crop/composite/stamp). Paid nano-banana
+std edits ($0.15) planned ONLY for: cu-cage-crow-refusal (crow pose change), cu-cage-open-empty
+(crow removal + door state), cu-winch-crank (crank fitted into socket) = $0.45 base; contingency
+(cu-star-keyhole-key composite fallback, cu-crow-rafters / drawer-crop detail enhance, 1 retry
+each) caps at ~$1.50. UNDER the $3.65 headroom -> PROCEED._
+_Source-state note found during prep: cu-astrolabe-drawer-open (handoff called it build-3) is in
+fact still BUILD-1 painterly on disk (git: initial commit only). Usable build-3 source is the
+wide z2-cabinet-drawer-open (drawer diff region 2569,1303-2926,1552). Deriving BOTH
+cu-astrolabe-drawer-open AND cu-astrolabe-drawer-empty from that crop at $0 — flagged below._
+
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 1 | z1/v-entry/cu-cage-crow-refusal | region edit on cu-cage-crow (pose only) + feathered composite | pending | - | - |
+| 2 | z1/v-entry/cu-cage-open-empty | edit on cu-cage-crow (crow removed/door open), refs wide cage-open | pending | - | - |
+| 3 | z1/v-entry/cu-crow-rafters | PIL crop z1-entry-crow-lintel (freed-crow perch = lintel per b3 canon) | pending | - | - |
+| 4 | z1/v-entry/cu-star-keyhole-key | PIL composite icon-cage-key geometry (gold) into cu-star-keyhole | pending | - | - |
+| 5 | z1/v-hearth/cu-trapdoor-open | PIL crop z1-hearth-trapdoor-open wide (open-lid + dark mouth region) | pending | - | - |
+| 6-8 | z2/v-bench/sprites/rune-ember-I/II/III | PIL ember-glow stamps masked from cu-brew brass numerals (canonical I/II/III) + rects json update | pending | - | - |
+| 9 | z2/v-bench/sprites/ladle-ripple-ccw | PIL CCW arc trail matched to b3 brew liquid | pending | - | - |
+| 10 | z2/v-cabinet/cu-astrolabe-drawer-empty | PIL crop wide z2-cabinet-drawer-open + coin/crank removal | pending | - | - |
+| 10b | z2/v-cabinet/cu-astrolabe-drawer-open (FLAGGED extra, $0) | same crop, items kept | pending | - | - |
+| 11-16 | z2/v-cabinet/sprites/astrolabe-plate-1..6 | PIL brass discs sampled from cu-astrolabe; dots re-stamped from b3 plate-N-nb close-ups; plate-2 = canonical Orion (masters/orion-canonical.json) | pending | - | - |
+| 17 | z2/v-cabinet/sprites/astrolabe-pointer | PIL brass needle matched to cu-astrolabe pointer | pending | - | - |
+| 18 | z3/v-cellar/cu-winch-crank | region edit on cu-winch-socket, refs icon-crank + wide crank-fitted crop | pending | - | - |
