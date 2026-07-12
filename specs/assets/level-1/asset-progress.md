@@ -114,7 +114,7 @@ Overscan bands carry atmosphere only, per style-guide S8._
 
 # BUILD-11 gap-fill (18 build-1-era stragglers never rebuilt in build 3) [2026-07-12]
 
-PROGRESS: 16/19 done (incl. 10b) | 0 retrying | 0 failed | 3 remaining (paid edits 1,2,18) | $0.00 spent this batch | project $19.35 of $23.00 HARD CAP | headroom $3.65
+PROGRESS: 19/19 done (incl. 10b) | 0 retrying | 0 failed | 0 remaining | $0.45 spent this batch | project $19.80 of $23.00 HARD CAP | headroom $3.20
 
 _Scope per Producer handoff: device test proved 18 build-1 painterly images still ship because
 build 3 never generated replacements (not shadows — no new version exists). Rebuild all 18 in
@@ -132,8 +132,8 @@ cu-astrolabe-drawer-open AND cu-astrolabe-drawer-empty from that crop at $0 — 
 
 | # | Asset | Method | Status | Cost | Note |
 |---|-------|--------|--------|------|------|
-| 1 | z1/v-entry/cu-cage-crow-refusal | region edit on cu-cage-crow (pose only) + feathered composite | pending | - | - |
-| 2 | z1/v-entry/cu-cage-open-empty | edit on cu-cage-crow (crow removed/door open), refs wide cage-open | pending | - | - |
+| 1 | z1/v-entry/cu-cage-crow-refusal | region edit on cu-cage-crow (pose only) + feathered composite | done | $0.15 | seed 61001, region (940,180,1700,1200); crow turned away/head lowered, perch+cup+bars unchanged, outside-region byte-identical |
+| 2 | z1/v-entry/cu-cage-open-empty | edit on cu-cage-crow (crow removed/door open), refs wide cage-open | done | $0.15 | seed 61010, region (620,120,1980,1420); crow GONE + right-side barred door ajar (matches wide), perch+cup intact |
 | 3 | z1/v-entry/cu-crow-rafters | PIL crop z1-entry-crow-lintel (freed-crow perch = lintel per b3 canon) | done | $0 | crop (1400,0,2600,900)->2048x1536; crow on hinge strap above beak-basin, exact-recreation |
 | 4 | z1/v-entry/cu-star-keyhole-key | PIL composite icon-cage-key geometry (gold) into cu-star-keyhole | done | $0 | icon rotated 140.2deg, cut before star bit (inserted), gold LUT from statue-key canon + cool ambient, 12deg gravity droop, soft shadow; anchored in star keyway (1060,736)@3x. Grayscale PASS |
 | 5 | z1/v-hearth/cu-trapdoor-open | PIL crop z1-hearth-trapdoor-open wide (open-lid + dark mouth region) | done | $0 | crop (1800,1100,2893,1920)->2048x1536; lid+mouth+rug edge |
@@ -143,4 +143,13 @@ cu-astrolabe-drawer-open AND cu-astrolabe-drawer-empty from that crop at $0 — 
 | 10b | z2/v-cabinet/cu-astrolabe-drawer-open (FLAGGED extra, $0) | same crop, items kept | done | $0 | crop (2400,1150,3100,1675)->2048x1536 + unsharp 70%; coin hallmark + Z-crank crisp at 2.93x upscale, no paid enhance needed |
 | 11-16 | z2/v-cabinet/sprites/astrolabe-plate-1..6 | PIL brass discs sampled from cu-astrolabe; dots re-stamped from b3 plate-N-nb close-ups; plate-2 = canonical Orion (masters/orion-canonical.json) | done | $0 | ONE clean disc base (plate-6-nb, polar-interp fill of dots/hub/needle/ghost-dimples) + ONE canonical dot stamp; plates 1,3-6 = their 7 detected dark dots (uniform r29@3x-closeup); plate-2 = EXACT canonical Orion offsets+scales, belt-centered. NOTE: -nb close-ups carry ghost dimples of other plates' holes (gen artifact, excluded); plate-2-nb close-up itself has DRIFTED Orion (not game-loaded, reference-only — flagged). Window-clue vs plate-2 side-by-side match PASS; grayscale PASS |
 | 17 | z2/v-cabinet/sprites/astrolabe-pointer | PIL brass needle matched to cu-astrolabe pointer | done | $0 | 900x90 RGBA 4x-supersampled; palette sampled from cu-astrolabe needle cross-section (body 118,97,62 / dark edge / cool specular ridge); hub boss+ring+pin |
-| 18 | z3/v-cellar/cu-winch-crank | region edit on cu-winch-socket, refs icon-crank + wide crank-fitted crop | pending | - | - |
+| 18 | z3/v-cellar/cu-winch-crank | region edit on cu-winch-socket, refs icon-crank + wide crank-fitted crop | done | $0.15 | seed 61020, region (600,480,1780,1500); Z-crank seated in square socket; grip came back WOOD -> $0 PIL recolor to all-steel per icon + wide canon |
+
+## FINAL - BUILD-11 gapfill
+- All 19/19 done (18 planned + 10b drawer-open extra). Spend: $0.45 API (3 std region edits; every retry/fix was $0 PIL) - under the $0.45 base / $1.50 contingency estimate.
+- Project total: $19.35 + $0.45 = **$19.80 of $23.00 HARD CAP** (headroom $3.20 remaining).
+- cu-astrolabe-drawer-empty was MISSING entirely (game-loaded, CloseUps.swift:139) - net-new, live defect fixed.
+- HANDOFF FLAGS: (1) rune-ember rects MOVED - Developer must sync CloseUpLayout.brewEmberRects + staged Resources copy of rune-ember-rects.json;
+  (2) plate-2-nb close-up (reference-only) shows drifted Orion vs masters/orion-canonical.json - sprites use the canon, close-up flagged to Producer;
+  (3) all 19 need staging into EscapeRoom/Resources/GameAssets by Developer (specs/ is source of truth).
+- Manifest: build11_gapfill block written (per-asset source-derivation + geometry + gates).

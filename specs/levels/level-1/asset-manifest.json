@@ -2227,5 +2227,107 @@
   },
   "rejects": "90 superseded files archived in specs/assets/level-1/_rejects/build10-pre-reframe/ (29 plates x3 scales pre-batch + dial-face-marks-not-prerotated x3); no shadow files at canonical slots",
   "spend_this_batch_usd": 2.1
+ },
+ "build11_gapfill": {
+  "date": "2026-07-12",
+  "purpose": "Rebuild of the 18 build-1-era straggler assets never regenerated in build 3 (+ the discovered 19th stale file cu-astrolabe-drawer-open, and cu-astrolabe-drawer-empty which was MISSING entirely despite being game-loaded at CloseUps.swift:139). All derived per R2-031 from named build-3 canonical plates; originals archived to _rejects/flux-painterly/.",
+  "spend": {
+   "api_usd": 0.45,
+   "detail": "3 nano-banana-pro std region edits ($0.15 each: cage-crow-refusal, cage-open-empty, winch-crank); all other 16 files $0 deterministic PIL",
+   "batch_total_usd": 0.45,
+   "project_total_usd": 19.8,
+   "hard_cap_usd": 23.0
+  },
+  "assets": {
+   "z1/v-entry/cu-crow-rafters": {
+    "method": "PIL crop",
+    "source": "z1-entry-crow-lintel@3x",
+    "geometry": "crop (1400,0,2600,900) -> 2048x1536",
+    "note": "freed crow on door-lintel hinge strap above beak-basin (b3 canon perch)"
+   },
+   "z1/v-hearth/cu-trapdoor-open": {
+    "method": "PIL crop",
+    "source": "z1-hearth-trapdoor-open@3x",
+    "geometry": "crop (1800,1100,2893,1920) -> 2048x1536",
+    "note": "open lid + dark misty mouth + rug edge"
+   },
+   "z2/v-cabinet/cu-astrolabe-drawer-open": {
+    "method": "PIL crop + unsharp(r3,70%)",
+    "source": "z2-cabinet-drawer-open@3x",
+    "geometry": "crop (2400,1150,3100,1675) -> 2048x1536 (2.93x)",
+    "note": "19th stale file; coin crescent-hallmark + Z-crank crisp, paid detail-enhance not needed"
+   },
+   "z2/v-cabinet/cu-astrolabe-drawer-empty": {
+    "method": "PIL row-interp inpaint + felt grain re-tex on drawer-open crop",
+    "source": "cu-astrolabe-drawer-open (this batch)",
+    "geometry": "coin removed (838,928)-(1074,1068); crank removed (1126,958)-(1350,1100); crank front-face cast shadow removed (1050,1070)-(1300,1195)",
+    "note": "NET-NEW file; game-loaded (CloseUps.swift:139) but never existed - fixed a live missing-image defect"
+   },
+   "z1/v-entry/cu-star-keyhole-key": {
+    "method": "PIL composite",
+    "source": "cu-star-keyhole@3x + z4/icons/icon-cage-key@3x",
+    "geometry": "icon rotated 140.2deg (shaft horizontal +12deg gravity droop), cut at 62% bow->bit (inserted portion hidden), anchored cut-end (1060,736)@3x in star keyway; gold LUT from cu-statue-key canon + 10% cool ambient; soft shadow (+22,+34)",
+    "note": "grayscale PASS"
+   },
+   "z2/v-bench/sprites/rune-ember-I": {
+    "method": "PIL plaque cutout + glow",
+    "source": "cu-brew-clear@3x",
+    "geometry": "rect_3x (624,161) 279x293",
+    "note": "white-hot channel boost + orange halo; overlay pixel-aligned over cu-brew-* plates"
+   },
+   "z2/v-bench/sprites/rune-ember-II": {
+    "method": "PIL plaque cutout + glow",
+    "source": "cu-brew-clear@3x",
+    "geometry": "rect_3x (1190,169) 306x303"
+   },
+   "z2/v-bench/sprites/rune-ember-III": {
+    "method": "PIL plaque cutout + glow",
+    "source": "cu-brew-clear@3x",
+    "geometry": "rect_3x (1543,473) 255x326"
+   },
+   "z2/v-bench/sprites/rune-ember-rects.json": {
+    "note": "UPDATED - numeral positions MOVED vs build-1; Swift CloseUpLayout.brewEmberRects is a transcription and MUST be synced by Developer (unit test cross-check will flag). Grayscale PASS (stage = stroke count I/II/III)"
+   },
+   "z2/v-bench/sprites/ladle-ripple-ccw": {
+    "method": "PIL draw",
+    "source": "matched to b3 brew liquid tone",
+    "geometry": "900x700 RGBA; tapered comet arc quad-bezier (95,575)-(430,415)-(815,470) + glow + echo arc; same handedness as build-1 (game mirrors x for CW)"
+   },
+   "z2/v-cabinet/sprites/astrolabe-plate-1..6": {
+    "method": "PIL: ONE clean disc base + ONE canonical dot stamp",
+    "source": "disc: plate-6-nb@3x polar-interp fill (dots/hub/needle/ghost-dimples removed); dot stamp: plate-6-nb dot (1035,469) r29; dot positions: each plate's 7 detected dark dots from its own -nb close-up; plate-2: EXACT masters/orion-canonical.json offsets+scales, belt-centered",
+    "geometry": "540x540 RGBA, disc dia 510, close-up->sprite scale 510/870",
+    "note": "GHOST-DIMPLE artifact in all -nb close-ups (faint imprints of other plates' holes) EXCLUDED from sprites to keep the star-match puzzle unambiguous; plate-2-nb close-up itself shows a DRIFTED Orion (reference-only, not game-loaded) - flagged to Producer. Window-clue vs plate-2 side-by-side shape match PASS; grayscale PASS"
+   },
+   "z2/v-cabinet/sprites/astrolabe-pointer": {
+    "method": "PIL draw 4x supersampled",
+    "source": "palette sampled from cu-astrolabe needle cross-section",
+    "geometry": "900x90 RGBA; hub boss+ring+pin at x=52, kite needle 95->885"
+   },
+   "z1/v-entry/cu-cage-crow-refusal": {
+    "method": "nano-banana-pro region edit ($0.15, seed 61001)",
+    "source": "cu-cage-crow@3x",
+    "geometry": "region (940,180,1700,1200), feather 42; outside-region pixels byte-identical",
+    "note": "crow turned away, back to camera, head lowered - refusal beat; perch/cup/bars unchanged"
+   },
+   "z1/v-entry/cu-cage-open-empty": {
+    "method": "nano-banana-pro region edit ($0.15, seed 61010)",
+    "source": "cu-cage-crow@3x, ref z1-entry-cage-open@3x",
+    "geometry": "region (620,120,1980,1420), feather 42",
+    "note": "crow gone, right-side barred door ajar (matches wide plate), perch+cup intact"
+   },
+   "z3/v-cellar/cu-winch-crank": {
+    "method": "nano-banana-pro region edit ($0.15, seed 61020) + $0 PIL grip recolor",
+    "source": "cu-winch-socket@3x, ref z2/icons/icon-crank@3x",
+    "geometry": "region (600,480,1780,1500), feather 42; grip wood->steel recolor bbox (1150,1100,1650,1330)",
+    "note": "Z-crank seated in square socket, grip toward viewer; recolored to all-steel per icon + wide z3-cellar-crank-fitted canon"
+   }
+  },
+  "quality_gates": {
+   "style_consistency": "every asset A/B'd against its parent build-3 plate during production (crops derived directly; edits feather-composited so unchanged pixels are byte-identical)",
+   "grayscale_2_3": "PASS on glyph/pattern-bearing items: star-keyhole-key, rune-ember I/II/III (stroke count), astrolabe plates (dot patterns), window-Orion vs plate-2 match",
+   "canonical_filename_discipline": "all 19 at canonical paths; 18 superseded originals -> _rejects/flux-painterly/; shadow-scan clean (no _work/-v2 strays)",
+   "scale_variants": "@3x/@2x/@1x emitted for all 19"
+  }
  }
 }
