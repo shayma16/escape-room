@@ -81,11 +81,15 @@ enum CloseUpLayout {
     ]
 
     /// Rim-rune ember overlay positions on the cu-brew-* plates (from
-    /// sprites/rune-ember-rects.json; sprites are 166x184 over 2048x1536).
+    /// sprites/rune-ember-rects.json — paste_xy_3x/size_3x over 2048x1536).
+    /// Build 11 gapfill: the ember sprites were REBUILT from the build-3 cu-brew-clear
+    /// plaques and their positions MOVED vs the build-1 sprites (per-numeral sizes now
+    /// differ too). Values re-transcribed; cross-checked against the bundled JSON by
+    /// RenderedFrameOverlayTests.testBrewEmberRectsMatchBundledSpriteJSON.
     static let brewEmberRects: [Int: CGRect] = [
-        1: CGRect(x: 169.0 / 2048, y: 654.0 / 1536, width: 166.0 / 2048, height: 184.0 / 1536),
-        2: CGRect(x: 812.0 / 2048, y: 1102.0 / 1536, width: 166.0 / 2048, height: 184.0 / 1536),
-        3: CGRect(x: 1714.0 / 2048, y: 654.0 / 1536, width: 166.0 / 2048, height: 184.0 / 1536),
+        1: CGRect(x: 624.0 / 2048, y: 161.0 / 1536, width: 279.0 / 2048, height: 293.0 / 1536),
+        2: CGRect(x: 1190.0 / 2048, y: 169.0 / 1536, width: 306.0 / 2048, height: 303.0 / 1536),
+        3: CGRect(x: 1543.0 / 2048, y: 473.0 / 1536, width: 255.0 / 2048, height: 326.0 / 1536),
     ]
 
     /// Clock face center / radius within the cu-clock-* plates (visually measured;

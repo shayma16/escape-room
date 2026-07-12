@@ -40,9 +40,16 @@ final class RenderedFrameOverlayTests: XCTestCase {
         GameState(levelID: 1, store: SaveGameStore(directory: dir))
     }
 
-    private let sceneSize = CGSize(width: 2732, height: 1366)
-    /// Grayscale analysis raster (half scene size): plenty of resolution for ±8 px
-    /// (=16 scene px) registration probes while keeping the pixel loops fast on CI.
+    /// Render at HALF the production scene size (1366x683 instead of 2732x1366). All
+    /// overlay math is normalized (rect x scene-size), so the compositor code paths are
+    /// scale-invariant and identically exercised — but the texture(from:) render target
+    /// stays small enough for every CI simulator. (First CI run 29205368406: full-size
+    /// rendering crashed the test runner on the 3x iPhone 16 Pro simulator — an
+    /// ~8196x4098 RGBA target — while the 2x iPad/SE runs passed; the suite auto-retried
+    /// twice and reported "Executed 0 tests".)
+    private let sceneSize = CGSize(width: 1366, height: 683)
+    /// Grayscale analysis raster (same as the render size): plenty of resolution for
+    /// ±8 px (=16 production-scene px) registration probes while keeping pixel loops fast.
     private let analysisSize = (w: 1366, h: 683)
 
     // MARK: - Rendering + compositing
@@ -53,6 +60,7 @@ final class RenderedFrameOverlayTests: XCTestCase {
     private func renderFrame(_ scene: RoomScene) -> CGImage? {
         let view = SKView(frame: CGRect(x: 0, y: 0, width: 683, height: 341.5))
         view.ignoresSiblingOrder = true // match SpriteKitContainerView's presentation
+        view.contentScaleFactor = 1     // keep the render target device-scale-independent
         view.presentScene(scene)        // texture(from:) is defined for a presented tree
         // Scene anchorPoint is (0.5, 0.5): the plate spans ±width/2 x ±height/2.
         let crop = CGRect(x: -sceneSize.width / 2, y: -sceneSize.height / 2,
@@ -168,19 +176,24 @@ final class RenderedFrameOverlayTests: XCTestCase {
         }
     }
 
-    // MARK: - Case 1: poker-taken (the R5-001 report surface)
+    // MARK: - Case 1: hearth chain — poker-taken (the R5-001 report surface) + the
+    // rug-moved -> trapdoor-open overlay chain (z10 rug under z11 trapdoor; the
+    // trapdoor-open state art is part of the build-11 gapfill re-delivery).
 
     func testRenderedFramePokerTakenMatchesOfflineComposite_R5_001() throws {
         let state = makeState(tempDir())
-        state.addItem(PuzzleGraph.ItemID.poker) // pokerTaken(state) == true
+        state.addItem(PuzzleGraph.ItemID.poker)                 // pokerTaken == true
+        state.unlockZone(PuzzleGraph.ZoneID.z3Cellar)           // rugMoved + trapdoorOpen
         let coordinator = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize)
         guard let frame = renderFrame(coordinator.scene) else {
             XCTFail("SKView.texture(from:) returned nil — cannot render the hearth scene")
             return
         }
         attach(frame, name: "rendered-hearth-poker-taken")
+        // Ascending z order, mirroring refreshHearth: poker/rug z10, trapdoor z11.
+        let stack = ["ov-poker-taken", "ov-rug-moved", "ov-trapdoor-open"]
         guard let expectedImg = offlineComposite(base: "z1-hearth-base", view: "z1/v-hearth",
-                                                 overlays: ["ov-poker-taken"])?.cgImage,
+                                                 overlays: stack)?.cgImage,
               let baseImg = offlineComposite(base: "z1-hearth-base", view: "z1/v-hearth",
                                              overlays: [])?.cgImage,
               let rendered = gray(frame), let expected = gray(expectedImg),
@@ -188,13 +201,58 @@ final class RenderedFrameOverlayTests: XCTestCase {
             XCTFail("could not build offline composites for the hearth")
             return
         }
-        // Whole-frame sanity: base plate + overlay render as one coherent composite.
+        // Whole-frame sanity: base plate + overlays render as one coherent composite.
         let dGlobal = meanAbsDiff(rendered, expected, rect: CGRect(x: 0, y: 0, width: 1, height: 1))
         XCTAssertLessThan(dGlobal, 4.0,
             "hearth: whole rendered frame diverges from the offline composite (global " +
             "mean |luma| diff \(String(format: "%.2f", dGlobal))) — base plate or scene transform drift")
-        assertOverlayRegion(rendered, expected: expected, baseOnly: baseOnly,
-                            viewKey: "z1/v-hearth", overlay: "ov-poker-taken", label: "hearth")
+        for overlay in stack {
+            assertOverlayRegion(rendered, expected: expected, baseOnly: baseOnly,
+                                viewKey: "z1/v-hearth", overlay: overlay, label: "hearth")
+        }
+    }
+
+    // MARK: - Sprite-over-plate registration: brew ember rects (build-11 gapfill sync)
+
+    /// The build-11 gapfill REBUILT the rune-ember sprites from the build-3 brew plates
+    /// and their plate positions MOVED. `CloseUpLayout.brewEmberRects` is a Swift
+    /// transcription of sprites/rune-ember-rects.json — this cross-check makes any
+    /// future drift between the bundled JSON and the transcription fail loudly instead
+    /// of rendering embers at stale positions (the R5-001 lesson applied to sprites).
+    func testBrewEmberRectsMatchBundledSpriteJSON() throws {
+        guard let url = Bundle.main.url(forResource: "rune-ember-rects", withExtension: "json",
+                                        subdirectory: "GameAssets/level-1/z2/v-bench/sprites")
+                ?? Bundle.main.url(forResource: "rune-ember-rects", withExtension: "json") else {
+            XCTFail("rune-ember-rects.json missing from the bundle")
+            return
+        }
+        let data = try Data(contentsOf: url)
+        guard let root = try JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            XCTFail("rune-ember-rects.json unparseable")
+            return
+        }
+        let plate = (w: 2048.0, h: 1536.0)
+        let names = [1: "rune-ember-I", 2: "rune-ember-II", 3: "rune-ember-III"]
+        for (stage, name) in names {
+            guard let entry = root[name] as? [String: Any],
+                  let xy = entry["paste_xy_3x"] as? [Double], xy.count == 2,
+                  let wh = entry["size_3x"] as? [Double], wh.count == 2 else {
+                XCTFail("\(name) missing paste_xy_3x/size_3x in bundled JSON")
+                continue
+            }
+            guard let rect = CloseUpLayout.brewEmberRects[stage] else {
+                XCTFail("CloseUpLayout.brewEmberRects missing stage \(stage)")
+                continue
+            }
+            XCTAssertEqual(Double(rect.minX), xy[0] / plate.w, accuracy: 0.0005,
+                           "\(name) x drifted from bundled JSON")
+            XCTAssertEqual(Double(rect.minY), xy[1] / plate.h, accuracy: 0.0005,
+                           "\(name) y drifted from bundled JSON")
+            XCTAssertEqual(Double(rect.width), wh[0] / plate.w, accuracy: 0.0005,
+                           "\(name) width drifted from bundled JSON")
+            XCTAssertEqual(Double(rect.height), wh[1] / plate.h, accuracy: 0.0005,
+                           "\(name) height drifted from bundled JSON")
+        }
     }
 
     // MARK: - Case 2: cellar full overlay stack (the R4-024 per-element architecture)

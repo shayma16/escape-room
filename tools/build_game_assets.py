@@ -71,24 +71,23 @@ def resolve_src(path):
     return path
 
 
-def assert_no_nb_shadow():
-    """Anti-recurrence guard: fail the build if any canonical asset that the pipeline
-    loads by name still has a "-nb" sibling on disk (the stale-shadow signature).
-
-    We check every canonical @3x path the build requests (PLAIN_PLATES, RGBA_SPRITES,
-    ICONS, and the wide/close-up variant plates loaded by build_inpainted / OVERLAYS /
-    MANUAL_OVERLAYS). If a "-nb" sibling exists next to a requested canonical, staging is
-    ambiguous exactly the way build-3 shipped stale close-ups — so we refuse to build.
-    """
-    requested = set(PLAIN_PLATES) | set(RGBA_SPRITES) | set(ICONS)
+def pipeline_source_paths():
+    """Every specs/assets source path the pipeline consumes (canonical names), shared by
+    the stale-shadow and vintage guards. PLAIN_PLATES, RGBA_SPRITES, ICONS, SPRITE_JSONS,
+    the wide/close-up variant plates loaded by build_inpainted / OVERLAYS /
+    MANUAL_OVERLAYS, and the byte-copied chrome sources."""
+    requested = set(PLAIN_PLATES) | set(RGBA_SPRITES) | set(ICONS) | set(SPRITE_JSONS)
     for (view, var, *_rest) in MANUAL_OVERLAYS:
         requested.add(f"{view}/{var}@3x.png")
+    for view_base in MANUAL_OVERLAY_BASE.values():
+        requested.add(view_base)
     for (view, base, var, *_rest) in OVERLAYS:
         requested.add(f"{view}/{base}@3x.png")
         requested.add(f"{view}/{var}@3x.png")
     # variant plates loaded directly in build_inpainted() by canonical name
     requested |= {
         "z1/v-hearth/cu-clock-unspent@3x.png",  # Q3: cuckoo pop/spent no longer staged
+        "z1/v-hearth/z1-hearth-base@3x.png",    # poker-taken synthesis source (R5-001)
         "z1/v-hearth/z1-hearth-rug-moved@3x.png",
         "z1/v-hearth/z1-hearth-trapdoor-open@3x.png",
         "z2/v-cabinet/cu-astrolabe-drawer-open@3x.png",
@@ -96,8 +95,21 @@ def assert_no_nb_shadow():
         "z3/v-cellar/z3-cellar-barrel-pried@3x.png",
         "z2/v-cabinet/z2-cabinet-open@3x.png",
     }
+    requested |= set(CHROME_STAGED)
+    return requested
+
+
+def assert_no_nb_shadow():
+    """Anti-recurrence guard: fail the build if any canonical asset that the pipeline
+    loads by name still has a "-nb" sibling on disk (the stale-shadow signature).
+
+    If a "-nb" sibling exists next to a requested canonical, staging is ambiguous
+    exactly the way build-3 shipped stale close-ups — so we refuse to build.
+    """
     shadows = []
-    for rel in sorted(requested):
+    for rel in sorted(pipeline_source_paths()):
+        if not rel.endswith("@3x.png"):
+            continue
         nb = rel.replace("@3x.png", "-nb@3x.png")
         if os.path.exists(src(rel)) and os.path.exists(src(nb)):
             shadows.append(f"{rel}  <-shadowed-by->  {nb}")
@@ -106,6 +118,77 @@ def assert_no_nb_shadow():
             "STALE-SHADOW GUARD FAILED: a build-loaded canonical asset still has a '-nb' "
             "sibling on disk. Promote the intended art to the canonical name (Option B) or "
             "delete the stray '-nb'. Offenders:\n  " + "\n  ".join(shadows))
+
+
+# Build-11 VINTAGE GUARD cutoff: the build-3 engine-render rebuild began 2026-07-08
+# (first canonical build-3 promotion commit e1ec056, 2026-07-08T17:24+04:00). Every
+# source the pipeline consumes must have been (re)committed on/after this date; the 19
+# build-1-era stragglers (last committed 2026-07-05, 181392f) shipped through THREE
+# builds because nothing checked source VINTAGE — the stale-shadow guard only catches
+# name AMBIGUITY, not a canonical file that simply was never regenerated.
+BUILD3_VINTAGE_CUTOFF = "2026-07-08T00:00:00+04:00"
+
+# EXPLICIT, tracked exceptions to the vintage guard — pre-build-3 sources that ship
+# KNOWINGLY. Every entry must carry its tracking reference; anything not listed here
+# fails the build. Silent acceptance is exactly what let 19 stale files ship — this
+# list makes acceptance loud, reviewable and revocable.
+KNOWN_LEGACY_SOURCES = {
+    # QA-B10-002 (qa-report, build 10): legacy 2560 flame plates + slots-seated overlay,
+    # recorded by QA as accepted minor art residuals, re-roll deferred (non-blocking).
+    "z2/v-bench/z2-bench-flame1@3x.png": "QA-B10-002 accepted legacy; re-roll deferred",
+    "z2/v-bench/z2-bench-flame2@3x.png": "QA-B10-002 accepted legacy; re-roll deferred",
+    "z2/v-bench/z2-bench-flame3@3x.png": "QA-B10-002 accepted legacy; re-roll deferred",
+    "z2/v-cabinet/z2-cabinet-slots-seated@3x.png": "QA-B10-002 accepted legacy; re-roll deferred",
+    # DISCOVERED BY THIS GUARD (build 11, 2026-07-12): the 20th stale file — the
+    # build-1-era photoreal cabinet-container close-up, missed by the 19-item gapfill.
+    # FLAGGED to the Producer for Asset Gen re-delivery; ships knowingly until then
+    # (see implementation-notes "Build 11" and the build-11 handoff report).
+    "z2/v-cabinet/cu-cabinet-open@3x.png": "20th stale file — FLAGGED build-11, awaiting Asset Gen re-delivery",
+}
+
+
+def assert_no_stale_vintage(report=None):
+    """Fail the build if any consumed specs/assets IMAGE source predates the build-3
+    rebuild epoch per its last git commit (sprite-metadata JSONs are geometry, not art —
+    their correctness is enforced by the Swift cross-check tests, not by vintage).
+    Uncommitted files (a delivery staged mid-iteration) are treated as fresh — stale art
+    is by definition art nobody has touched since an old commit. KNOWN_LEGACY_SOURCES
+    are excepted explicitly and re-printed into the build report every run so they can
+    never go invisible. Requires git; a missing git fails loudly, never silently."""
+    import subprocess
+    from datetime import datetime
+    cutoff = datetime.fromisoformat(BUILD3_VINTAGE_CUTOFF)
+    offenders = []
+    for rel in sorted(pipeline_source_paths()):
+        if not rel.lower().endswith((".png", ".jpg", ".jpeg")):
+            continue
+        p = src(rel)
+        if not os.path.exists(p):
+            continue  # a genuinely missing source fails later at load(), loudly
+        gitpath = os.path.relpath(p, ROOT).replace(os.sep, "/")
+        out = subprocess.run(["git", "log", "-1", "--format=%cI", "--", gitpath],
+                             capture_output=True, text=True, cwd=ROOT, check=True)
+        stamp = out.stdout.strip()
+        if not stamp:
+            continue  # untracked/uncommitted: fresh delivery in progress
+        if datetime.fromisoformat(stamp) < cutoff:
+            if rel in KNOWN_LEGACY_SOURCES:
+                note = f"VINTAGE EXCEPTION (ships knowingly): {rel} — {KNOWN_LEGACY_SOURCES[rel]}"
+                print(f"   !! {note}")
+                if report is not None:
+                    report.append(note)
+            else:
+                offenders.append(f"{rel} (last committed {stamp})")
+    if offenders:
+        raise SystemExit(
+            "VINTAGE GUARD FAILED: the pipeline would stage art whose specs source has "
+            "not been touched since before the build-3 engine-render rebuild "
+            f"(cutoff {BUILD3_VINTAGE_CUTOFF}) — i.e. build-1/2-era art that was never "
+            "regenerated (the exact gap that shipped 19 stale files through three "
+            "builds until build-11 gapfill). Regenerate/re-deliver these sources, or "
+            "archive them to _rejects/ and remove them from the pipeline lists, or add "
+            "a TRACKED entry to KNOWN_LEGACY_SOURCES with QA/Producer sign-off:\n  "
+            + "\n  ".join(offenders))
 
 
 def src(path):
@@ -523,6 +606,11 @@ PLAIN_PLATES = [
     # close-ups rendered as the grey-box progression soft-lock (R2-018/019/025/026).
     "z2/v-cabinet/cu-cabinet-open@3x.png",
     "z2/v-cabinet/cu-astrolabe-drawer-open@3x.png",
+    # Build-11 gapfill: the emptied-drawer close-up is now a REAL delivered asset
+    # (was PIL-inpainted from the drawer-open plate by this tool; the batch also
+    # re-delivered cu-astrolabe-drawer-open itself, which had been the 19th stale
+    # build-1 file). Staged verbatim like every other close-up.
+    "z2/v-cabinet/cu-astrolabe-drawer-empty@3x.png",
     # z3 (beam matrix = full-plate selection)
     "z3/v-cellar/z3-cellar-base@3x.png",
     "z3/v-cellar/z3-cellar-shelf-slid@3x.png",
@@ -736,14 +824,9 @@ def build_inpainted(report):
     save_plate(rug_moved, "z1/v-hearth/z1-hearth-rug-moved.jpg")
     report.append("stage real rug-moved -> z1/v-hearth/z1-hearth-rug-moved.jpg (re-roll G1)")
 
-    # --- cu-astrolabe-drawer-open -> empty ---
-    im = load("z2/v-cabinet/cu-astrolabe-drawer-open@3x.png")
-    mask = polygon_mask(im.size,
-                        polys=[[(725, 1225), (1430, 1225), (1430, 1392), (725, 1392)]],
-                        ellipses=[(830, 1300, 125, 82)])
-    fixed = inpaint(im, mask, blur=4.0, noise=5, seed=12)
-    save_plate(fixed, "z2/v-cabinet/cu-astrolabe-drawer-empty.jpg")
-    report.append("inpaint drawer -> z2/v-cabinet/cu-astrolabe-drawer-empty.jpg")
+    # (Build-11 gapfill: the cu-astrolabe-drawer-empty inpaint that used to live here is
+    # RETIRED — the batch delivered a real emptied-drawer close-up at the canonical name,
+    # staged via PLAIN_PLATES like every other plate.)
 
     # --- z1 wide: poker removed, SYNTHESIZED from the base (R5-001, build 11) ---
     # ROOT CAUSE of the "misplaced fireplace fragment" (R4-004 -> R5-001): the manifest-
@@ -1223,7 +1306,8 @@ def gen_ambients():
 
 def main():
     report = []
-    assert_no_nb_shadow()  # build-3 stale-shadow anti-recurrence guard (fails loud)
+    assert_no_nb_shadow()            # build-3 stale-shadow anti-recurrence guard (fails loud)
+    assert_no_stale_vintage(report)  # build-11 vintage guard: no pre-build-3 sources (fails loud)
     if os.path.isdir(OUT):
         shutil.rmtree(OUT)
     ensure(OUT)

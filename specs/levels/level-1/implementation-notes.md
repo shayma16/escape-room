@@ -1849,3 +1849,39 @@ the synthesized-sounds sentence kept verbatim.
 ### CI
 
 - Green run: (filled after the build-11 verification run completes — see below).
+
+### Build-11 scope addition (same handoff): gapfill staging + vintage guard + ember sync
+
+- **19 build11_gapfill assets staged** via a full pipeline run (`tools/build_game_assets.py`)
+  after the Asset Gen stream completed (HEAD 5141019): crow-rafters, trapdoor-open,
+  astrolabe-drawer-open (the 19th stale file), astrolabe-drawer-EMPTY (net-new — was
+  game-loaded at CloseUps.swift containerPlates but never existed; the tool's PIL inpaint
+  that papered over it is RETIRED and the delivered close-up ships instead),
+  star-keyhole-key, rune-ember I/II/III + rects JSON, ladle-ripple-ccw, astrolabe
+  plates 1–6 + pointer, cage-crow-refusal, cage-open-empty, winch-crank.
+- **Ember rect sync:** `CloseUpLayout.brewEmberRects` re-transcribed to the moved
+  build-11 positions (I: 624,161 279x293; II: 1190,169 306x303; III: 1543,473 255x326
+  @3x over 2048x1536) and a NEW unit cross-check
+  (`testBrewEmberRectsMatchBundledSpriteJSON`) asserts the Swift transcription equals the
+  bundled JSON, so sprite-position drift now fails loudly (the R5-001 lesson applied to
+  sprites).
+- **VINTAGE GUARD added** (`assert_no_stale_vintage`, tools/build_game_assets.py): every
+  consumed specs image source must have been (re)committed on/after the build-3 rebuild
+  epoch (2026-07-08). Validated both ways: pre-gapfill, all 19 stragglers dated
+  2026-07-05 → would have FAILED; post-gapfill the tree passes. Exceptions are an
+  EXPLICIT tracked allowlist (`KNOWN_LEGACY_SOURCES`), re-printed into the build report
+  every run: the QA-B10-002 accepted legacy set (flame1–3, slots-seated) and —
+  **DISCOVERED BY THE NEW GUARD — a 20th stale file the gapfill missed:
+  `z2/v-cabinet/cu-cabinet-open@3x.png`** (build-1-era photoreal art, the container
+  close-up shown right after solving the cabinet; confirmed visually against build-3
+  style). FLAG TO PRODUCER: route to Asset Gen for re-delivery; it ships knowingly in
+  build 11 pending that. Sprite-metadata JSONs are excluded from the vintage check by
+  design (geometry, not art; enforced by the Swift cross-check tests instead).
+- **Rendered-frame guard extended + DI-simulator crash fixed:** the hearth case now
+  co-renders the poker/rug-moved/trapdoor-open stack (z10/z10/z11 — covers the gapfill-
+  adjacent trapdoor chain). First CI run (29205368406) crashed the test runner ONLY on
+  the 3x iPhone 16 Pro simulator (texture(from:) at full 2732x1366 scene size → ~8k x 4k
+  RGBA target; iPad/SE at 2x passed, suite auto-retried twice then "Executed 0 tests").
+  Fixed by rendering at a HALF-SIZE scene (1366x683) with contentScaleFactor 1 — the
+  compositor math is normalized and scale-invariant, so the code paths exercised are
+  identical.

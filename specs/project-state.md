@@ -57,6 +57,22 @@ safe to delete.
 baseline). Feedback: rounds 1–3 shipped; round 4 processed + checkpoint-1 approved,
 fixes implemented, in CI verification.
 
+## Build 11 Developer stream (2026-07-12, post-round-5) — R5-001/R5-002 + gapfill staging
+
+Developer status (this update is Developer-authored; Producer to fold into the resume
+note): R5-001 root-caused — NOT a runtime-compositor bug; the "misplaced fireplace
+fragment" was baked into the manifest-current z1-hearth-poker-taken plate (+240 px
+clone-fill, duplicated andiron). Fixed tool-side (poker synthesized from base;
+misplaced-clone guard on all auto-diff overlays; full-tree audit: poker was the only
+defect). NEW rendered-frame registration tests (SKView.texture(from:) vs offline
+composite: hearth poker/rug/trapdoor stack + six-overlay cellar stack). R5-002 About
+credit fixed. Scope addition landed: all 19 build11_gapfill assets staged, ember rects
+synced (+ JSON cross-check test), VINTAGE GUARD added to the tool (validated: would
+have failed pre-gapfill). ⚠ FLAG FOR PRODUCER: the vintage guard discovered a 20TH
+stale file the gapfill missed — z2/v-cabinet/cu-cabinet-open@3x.png (build-1 photoreal
+container close-up; ships knowingly as a tracked KNOWN_LEGACY_SOURCES exception) —
+route to Asset Gen for re-delivery. No PR opened; Producer assembles build 11.
+
 ## ⭐ PRIOR POSITION (2026-07-11) — Round 4 feedback PROCESSING
 
 Cross-computer handoff complete: this machine is synced to `level1-rebuild-build3`
