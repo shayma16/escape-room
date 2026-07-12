@@ -38,11 +38,14 @@ pushed to `level1-rebuild-build3`. Take stock from THIS repo.**
    re-verified still fixed. 0 crit/major/moderate; 2 minor art residuals (QA-B10-001
    rug-moved tonal seam → Asset Gen re-roll recommended non-blocking; QA-B10-002 legacy
    flame/slots-seated overlays, pre-existing).
-3. ⛔ **NOW AT USER CHECKPOINT 2** — user reviews QA verdict, then on GO:
-4. Release build 10 to TestFlight (`gh workflow run release.yml --ref
-   level1-rebuild-build3`) → user device-test (confirm full-width on real glass, judge
-   rug seam severity, combine pulse R4-029a, menu ping, DI pause menu) → merge
-   level1-rebuild-build3 → main.
+3. ✅ CHECKPOINT 2 PASSED — user GO given 2026-07-12.
+4. ✅ **BUILD 10 RELEASED TO TESTFLIGHT — Within 1.0 (build 10)**, release run
+   29194936494 GREEN (~4 min). NEXT = user device-test on iPad: confirm full-width (no
+   letterbox, nothing cropped), try an ALTERNATE solve order (poker on barrel before
+   ash), cellar overlay states, rug-seam severity, combine pulse R4-029a, menu ping,
+   DI pause menu if available. **On user GO → merge level1-rebuild-build3 → main**
+   (final step; Level 1 complete). Deferred/non-blocking: QA-B10-001 rug-seam re-roll,
+   QA-B10-002 legacy overlays, R2-029 rotate-inspect (Level 2+).
 
 **Machine setup if missing (same as handoff #1):** git pull branch
 level1-rebuild-build3; gh auth login (repo+workflow); .env with FAL_KEY (gitignored,
