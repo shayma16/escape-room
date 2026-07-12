@@ -11,7 +11,48 @@ Level 1 in design. Theme received from user on 2026-07-04.
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
 caged crow, potions/potion-making (user-specified elements).
 
-## ⭐ CURRENT POSITION (2026-07-11) — Round 4 feedback PROCESSING
+## ⭐ CURRENT RESUME NOTE (2026-07-12, CROSS-COMPUTER HANDOFF #2) — READ THIS FIRST
+
+**User is switching computers again (usage limits). Everything durable is committed and
+pushed to `level1-rebuild-build3`. Take stock from THIS repo.**
+
+**Exact position — build 10 is FULLY IMPLEMENTED, awaiting its CI green:**
+- All round-4 fixes are code-complete and pushed (commits 2e4b54d Phase 1 → a12300c):
+  lifecycle engine, armed-item model, sound overhaul, per-element overlay architecture
+  (cluster B / R4-024), hotspot re-frame remap + .aspectFill restored (letterbox GONE),
+  guard tests (overlay catalog completeness, seam/registration, mirror-position, dial
+  view-rotation contract). Art batch complete earlier (12/12; spend $19.35 of $23 cap).
+- CI history: run 29164191154 RED (unit fixes landed in 16ca034); run 29186397614 RED
+  (single failing step: iPad full-playthrough UI test — diagnosed as a lost nav tap
+  under simulator starvation, FIXED in a12300c); **run 29190128411 dispatched
+  2026-07-12 11:01 UTC and IN PROGRESS at handoff — check its verdict FIRST:**
+  `gh run view 29190128411` (repo shayma16/escape-room; typical duration 30–80m).
+
+**FIRST ACTIONS on resume:**
+1. Check run 29190128411. GREEN → invoke QA (step below). RED → relaunch a developer
+   agent to diagnose/fix (brief pattern: read implementation-notes Phase 1+2 + manifest
+   build10_reframe.developer_contract; no test-weakening; iterate to green).
+2. On CI green → QA full player-style pass per the round-4 changelist
+   (specs/feedback-backlog.md "ROUND 4 — PROCESSED 2026-07-11"): all round-4
+   verifications + re-verify ALL round-2 closures (R2-META-QA lesson: assert what a
+   HUMAN sees — state visuals, hotspot reachability, item collectibility — not just
+   engine flags), on iPad AND iPhone, incl. alternate-order playthroughs (poker
+   barrel-before-ash MUST stay completable).
+3. QA report → ⛔ USER CHECKPOINT 2 (user reviews before ANY re-release).
+4. On user GO → release build 10 to TestFlight (release.yml, Producer dispatches) →
+   user device-test → merge level1-rebuild-build3 → main gates on that.
+
+**Machine setup if missing (same as handoff #1):** git pull branch
+level1-rebuild-build3; gh auth login (repo+workflow); .env with FAL_KEY (gitignored,
+copy manually); Python 3.12 + Pillow + numpy. `EscapeRoom/Core/` may appear untracked —
+stale Jul-5 orphan files (GameState.swift, Items.swift), intentionally uncommitted,
+safe to delete.
+
+**Spend state:** art $19.35 of $23.00 cap (round-4 batch $2.10 over the $17.25
+baseline). Feedback: rounds 1–3 shipped; round 4 processed + checkpoint-1 approved,
+fixes implemented, in CI verification.
+
+## ⭐ PRIOR POSITION (2026-07-11) — Round 4 feedback PROCESSING
 
 Cross-computer handoff complete: this machine is synced to `level1-rebuild-build3`
 (build 9), gh authenticated, FAL_KEY present and live-verified against nano-banana-pro.
@@ -36,12 +77,29 @@ TestFlight): 30 items + completion logged; level completed end-to-end. 1 critica
 architecture [Dev, anchor R4-024], (C) stale resolved-state close-ups [Dev staging +
 assert_no_nb_shadow extension], (D) default-psh audit completion [Dev], (E) hotspot
 re-calibration [Dev], (F) armed-item interaction model [Dev]; singles: Level-1 label,
-ocean-residue audio, moon-dial mirror-flip [AssetGen], p04 placement feedback, menu-ping
-consistency; R4-029 combine-UX awaiting user option pick. Standing directive: determine
+ocean-residue audio, moon-dial fix [AssetGen], p04 placement feedback, menu-ping
+consistency; R4-029 combine-UX = option (a) (user pick). Standing directive: determine
 lost-vs-never-shipped for each recurring round-2 fix + add guards; QA re-verifies ALL
-round-2 closures in the build-10 pass. **Status: ⛔ awaiting user CHECKPOINT-1 on the
-changelist; target build 10 (round-4 fixes + deferred letterbox re-frame). The
-`level1-rebuild-build3` → main merge stays gated until the fix pass + QA re-verify.**
+round-2 closures in the build-10 pass.
+
+**CHECKPOINT-1 PASSED 2026-07-11 (user: "implement everything u suggested"). Build-10
+EXECUTION IN PROGRESS, one build, art cap raised to $23.00 hard stop:**
+- ✅ ART BATCH COMPLETE (12/12, commits b215016/ff9299d/0440c74/2c7ae60): all 6 views
+  re-framed into the dual-safe band via $0 deterministic PIL (nano-banana outpaint
+  REJECTED — re-rendered content, violated content-identical rule; $2.10 spent on the
+  rejected attempts, tool specs/tools/reframe_b10.py is the standing re-frame method);
+  z4 verified in-band; R4-008 ghost glyph cleaned; cabinet-window moon canon-fixed
+  (was mirror-flipped); R4-007 ROOT CAUSE = view rotation tilting correct marks — dial
+  sprite rebuilt with pre-rotated marks, VIEW ROTATION MUST NOT CHANGE (contract in
+  manifest build10_reframe.developer_contract); triptych verified correct as-is.
+  Spend $19.35 of $23.00. Legacy-art flags: z2 flame1/2/3 + slots-seated still build-2
+  framing (overlay-remap workaround; regen deferred); z1-hearth-rug-moved tone diff.
+- 🔄 DEVELOPER: Phase 1 (lifecycle engine, armed-item model, sound audit, singles)
+  implemented, CI run 29164191154 dispatched; PHASE 2 GO sent (overlay architecture +
+  hotspot remap per developer_contract + aspectFill/letterbox removal).
+- NEXT: Developer CI green → QA full player-style pass (round-4 + ALL round-2
+  closures) → ⛔ CHECKPOINT 2 (user reviews QA results) → release build 10.
+  Merge to main stays gated until then.
 
 ## ⭐ PRIOR RESUME NOTE (2026-07-10, CROSS-COMPUTER HANDOFF)
 
