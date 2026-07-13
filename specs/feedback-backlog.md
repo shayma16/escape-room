@@ -1895,3 +1895,20 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > cellar state so the wide view shows the empty pried barrel after collect; add it to the
 > rendered-frame overlay coverage. Screenshot incoming. Reinforces: the rendered-frame overlay
 > guard needs to cover EVERY element's taken/resolved state, not a sample.)
+
+### R6-006 — status: logged 🔴 (hotspot mispositioned, p07 — recurrence of R4-023)
+> using the weight on the roped hook doesn't work — hotspot location is WRONG. after random
+> clicking, it let me hook the weight on the WALL hook to the LEFT of the hidden compartment; the
+> compartment opened, but VISUALLY the weight hangs on the ROPED hook to the RIGHT. confirms the
+> hotspot is disconnected from the visual. now the weight is on the roped hook (not in inventory,
+> correct) but ALSO still visible in the barrel.
+> (context: z3 cellar p07 (hang weight → counterweight → open compartment). TWO things: (1) 🔴
+> HOTSPOT MISPOSITIONED — the tap target for hanging the weight is on the LEFT wall hook, but the
+> weight-hung VISUAL renders on the RIGHT roped hook → tap-target ≠ visible affordance. RECURRENCE
+> of R4-023 (p07 hook), which build-10 cluster-E was supposed to fix. LIKELY ROOT (connects R6-001):
+> the build-10 dual-safe RE-FRAME shifted every element's position in the plates, and the hotspot/
+> overlay coordinates were NOT fully re-mapped to the re-framed positions → cellar hotspots (hook)
+> and overlay anchors (poker+rug) are offset by the re-frame delta. → Developer: re-derive cellar
+> (and audit ALL views') hotspot + overlay coords against the CURRENT re-framed plates; tap target
+> must sit on the visible roped hook. (2) reconfirms R6-005 (weight still in barrel). p07 LOGIC is
+> fine (compartment opened) — purely hotspot-position + state-visual. Screenshot incoming.)
