@@ -11,7 +11,25 @@ Level 1 in design. Theme received from user on 2026-07-04.
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
 caged crow, potions/potion-making (user-specified elements).
 
-## ⭐ CURRENT RESUME NOTE (2026-07-12, CROSS-COMPUTER HANDOFF #2) — READ THIS FIRST
+## ⭐ CURRENT RESUME NOTE (2026-07-13) — BUILD 11 SHIPPED
+
+**Build 11 is ON TESTFLIGHT as “Within 1.0 (build 12)”** (release run 29230331494 green;
+the number 11 was consumed by a blocked attempt — the security gate correctly fired on a
+false positive: the R5-002 About credit "fal.ai" tripping the bare-domain scan pattern;
+pattern narrowed, real credential patterns intact). Final CI green on the tip: run
+29225239768 (1h47m full suite; earlier rerun reds were runner flakes — different test
+each attempt). Build 11 contents: R5-001 poker-plate fix (+rendered-frame guards), ALL 20
+stale files replaced (vintage guard live; only the 4 QA-accepted QA-B10-002 residual
+exceptions remain), ember-rect sync, About credit, DI render-crash fix. Art spend $19.80
+of $23.00.
+
+**NEXT:** user device-test on iPad (headline checks: hearth after poker pickup, cage
+close-up, solved astrolabe + drawer, About credit). On user GO → **merge
+level1-rebuild-build3 → main** (Level 1 complete). Deferred non-blocking: QA-B10-002
+legacy flame/slots re-roll, QA-B10-001 rug seam, plate-2-nb reference drift note,
+R2-029 rotate-inspect (Level 2+).
+
+## ⭐ PRIOR RESUME NOTE (2026-07-12, CROSS-COMPUTER HANDOFF #2)
 
 **User is switching computers again (usage limits). Everything durable is committed and
 pushed to `level1-rebuild-build3`. Take stock from THIS repo.**
