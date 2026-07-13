@@ -2082,3 +2082,22 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 - **Severity note:** black box is FAINT/translucent in these captures (not the solid black of
   earlier reports) → the fix is the same (render the empty container correctly per collect state),
   but it reads as a subtle mis-composite, not an alarming solid box, at least in these states.
+
+### Round-6 SCREENSHOT CONFIRMATIONS (batch 4, 2026-07-13) — container CLOSE-UP vs WIDE distinction
+- **R6-010 b (cabinet CLOSE-UP):** file + phial BOTH collected (both in inventory) but BOTH still
+  shown on the cabinet shelf → duplication of both items in the close-up; faint translucent band
+  still crosses the cabinet interior in the close-up.
+- **R6-010 wide (cabinet OPEN):** the cabinet-open-empty WIDE state renders CORRECTLY — shelves
+  empty, no duplication, and the user confirms NO band in the open-wide state ("doesn't have the
+  band since i already opened the cabinet"). → REFINES the earlier R6-010-extend note: the
+  open-wide cabinet is actually clean; the band was on the CLOSED-cabinet wide state (R6-004
+  re-frame band on the base plate, hidden once the open overlay covers it).
+- **BUT same wide shot still shows the ASTROLABE DRAWER (bottom-right) displaying its coin+crank**
+  after collect/consume → R6-008 WIDE duplication persists. So the two containers DIFFER in the
+  wide view: astrolabe drawer duplicates in wide; sun/moon cabinet renders empty in wide correctly.
+  COMMON defect = the CLOSE-UP collected-state (both containers wrong); wide-view is container-
+  specific (drawer wrong, cabinet right). Developer: fix the close-up collected-state render for
+  ALL containers; additionally fix the astrolabe-drawer WIDE taken-state (barrel weight R6-005 is
+  the same wide-taken-state class). Net: (1) close-up per-item collected render [all containers],
+  (2) wide taken-state for drawer + barrel [R6-008/R6-005], (3) the faint band is R6-004 on the
+  base plates.
