@@ -2019,3 +2019,21 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > (an item overlay/placeholder rendering as a black rect instead of showing nothing / the empty
 > shelf). Add the wide cabinet-open-empty state to the render fix + rendered-frame guard. Same
 > screenshot ALSO shows R6-004 band (see R6-004 — cabinet = 5th view).)
+
+### R6-011 — status: logged ⚠️ design decision at checkpoint (recipe↔brew mismatch)
+> the grimoire recipe page shows the spiral going CLOCKWISE with 6 dots, but the brew requires 5
+> CCW → the clue is wrong. "easier to fix the mortar to 5 CLOCKWISE than regenerate the pic?"
+> (context: p14 brew (cauldron, not mortar). DOUBLE mismatch clue↔solution: recipe art = CW + 6
+> dots; brew solution = 5 stirs CCW. Both DIRECTION and COUNT disagree. The CANON (puzzle-graph
+> `clu-grimoire-recipe` + p14 solution) is **5 CCW** — recipe should read "CCW arrowhead + FIVE
+> dots." So the RECIPE ART is the defective side (build-3 regen drew it CW with 6 dots).
+> PRODUCER RECOMMENDATION (answer to the user's question): fix the RECIPE ART, not the brew.
+> Reasons: (1) the brew's 5-CCW is the canonical fixed solution value — CLAUDE.md says don't
+> reopen those; changing it is a puzzle-graph + Validator + anti-softlock change, NOT just "flip a
+> constant". (2) The COUNT also mismatches (6 vs 5), so matching the brew to the art would mean 6
+> CW — a bigger change. (3) The recipe-art fix is art-only, likely a simple targeted re-draw of
+> the spiral (deterministic PIL CCW 5-dot spiral, ~$0), no logic/validator risk. So flipping the
+> art is actually the EASIER and SAFER path, contrary to first impression. → USER DECISION at
+> checkpoint-1: (a) fix recipe art to CCW+5 [recommended], or (b) change brew to match the art
+> (CW + 6 stirs; reopens the solution value). If (a): Asset Gen re-draws the spiral; Validator
+> confirms recipe↔brew match. Screenshot of the recipe page helpful.)
