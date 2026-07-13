@@ -1800,3 +1800,59 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > build-1 files — CONFIRMED against the shipped bundle, root-caused (cluster-C mislabel +
 > guard blind spot), gap-fill generation already running (build11_gapfill). Vintage guard to
 > be added by Developer at staging.
+
+---
+
+## Round 6 (build-11 milestone device testing on iPad — TestFlight "Within 1.0 (build 12)"; logging)
+
+### R6-001 — status: logged (picture incoming)
+> as soon as i pick up the poker from next to the fireplace, AND unveil the cellar door from
+> under the rug, the empty poker placeholder hovers over the rug — a visual bug
+> (context: z1 v-hearth. TWO overlays active together — poker-taken + rug-moved — and the
+> poker-taken overlay renders floating OVER the rug-moved region instead of sitting flush on
+> the hearth surround where the poker was. Build 11 fixed the R5-001 baked-in poker fragment
+> and added rendered-frame registration tests for the poker/rug/trapdoor STACK — but this
+> specific COMBINED state (poker gone + rug folded) apparently still mis-composites: likely a
+> z-order or position issue where the poker-taken patch draws above/into the rug-moved overlay.
+> The rendered-frame guard may test the overlays individually or in a different combo, not this
+> exact pair. → Developer: reproduce the poker-taken + rug-moved combined frame, fix the
+> compositing (z-order/position), and EXTEND the rendered-frame guard to this pairing. Picture
+> to be attached. NOTE: this is the same overlay-compositing family as R4-004/R4-024 — verify
+> the fix is general, not just this pair.)
+
+### R6-002 — status: logged (SIMPLE fix approved by user → do it)
+> arrow clues: (1) AIR up-arrow-with-line on the bellows ✓, (2) FIRE up-arrow above the
+> fireplace ✓, (4) WATER down-arrow-no-line by the window ✓ — all correct. BUT (3) the EARTH
+> down-arrow on the desk flowerpot has its LINE UNDERNEATH the triangle, not through the MIDDLE
+> like the potion-room door shows. "if it's supposed to be in the middle like the door puzzle,
+> and it's a SIMPLE fix, do it; if big, skip."
+> (context: glyph-canon inconsistency, R3-007 family. Canonical EARTH = downward triangle with
+> a horizontal bar THROUGH the middle (matches the door tiles + the classical alchemical earth
+> symbol). The flowerpot mark (`cu-flowerpot` + the wide z1-study flowerpot region if the rune
+> shows there) has the bar mis-placed BELOW the triangle → doesn't match the door → a player
+> comparing clue↔door sees two different EARTH glyphs. VERDICT: this IS a simple fix — a $0
+> deterministic PIL re-stamp of the canonical EARTH glyph onto the flowerpot mark (same
+> technique R3-007 used on the door), so per the user's condition, DO IT. Door = canon; bring
+> the flowerpot to match. → Asset Gen (stamp) + Developer stage; fold into next build. Reinforces
+> R3-007: the four MARKS were assumed pixel-correct but EARTH's bar position drifted from canon —
+> re-verify all four marks match the door canon exactly while at it.)
+
+### R6-003 — status: logged (design principle + fix)
+> picked up the rusted key next to the door in the caged-crow scene, finished the game, NEVER
+> used it → it's a useless inventory item. "i don't mind decoys, but decoys should NEVER be
+> items that are added to inventory. the correct key for the caged crow is taken from the hidden
+> moonflower room — keep that."
+> (context: the rusted bent key (itm-rusted-key / rh-rusted-key) is an INTENTIONAL red herring —
+> plain/snapped bit that can't fit the cage's star keyhole; the REAL key is the star-bit key from
+> the z4 alcove statue (itm-cage-key), which stays. But it's currently COLLECTIBLE → clutters
+> inventory with a permanently-useless item, which reads as a bug/incompleteness to the player.
+> FIX: make the rusted key a NON-COLLECTIBLE scene decoy — still inspectable (close-up shows the
+> broken/plain bit so the 'try it on the cage' theory is defused by LOOKING, not by picking-up-
+> and-failing), but tapping it does NOT add it to inventory. The alcove star-key remains the only
+> collectible cage key. → puzzle-graph note (rusted key = non-inventory decoy; verify NO solve
+> path referenced itm-rusted-key — it's a decoy, so none should → light Validator confirm) +
+> Developer (remove the pickup, keep the inspect close-up). Small, fold into next build.
+> **STANDING DESIGN PRINCIPLE (user, 2026-07-13): decoys/red-herrings must NEVER be collectible
+> inventory items — they stay as in-scene inspectable objects only.** Applies to THIS level
+> (audit other decoys: potion shelf is already non-collectible ✓; clock inert ✓) AND all future
+> levels — add to the Theme & Puzzle Designer's rules.)
