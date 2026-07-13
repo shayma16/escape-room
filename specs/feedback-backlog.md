@@ -1877,9 +1877,10 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > of the aspectFill-restore path; prioritize the views the player sees most (entry, study, hearth).
 > Pictures for entry (top+bottom) + study (top) incoming.
 > Third view CONFIRMED: z3 cellar shows the band TOP AND BOTTOM. So study(top) + entry(top+bottom)
-> + cellar(top+bottom) = ≥3 of 6 views affected → confirmed all-view sweep; also check hearth,
-> bench, cabinet, alcove. Screenshots incoming. Pattern: bands appear on whichever short edge(s)
-> the re-frame had to pad — treat as ALL views, ALL edges; re-derive clean content per edge.)
+> + cellar(top+bottom) + bench/potion-room(top+bottom) = ≥4 of 6 views affected → confirmed
+> all-view sweep (assume all 6; also check cabinet, alcove, hearth). Screenshots incoming. Pattern:
+> bands appear on whichever short edge(s) the re-frame had to pad — treat as ALL views, ALL edges;
+> re-derive clean content per edge.)
 
 ### R6-005 — status: logged (picture incoming) — state-refresh recurrence on BUILD 11
 > barrel: zoomed (closed), back; zoomed again, used poker on it, picked up the weight (now in
@@ -1927,3 +1928,10 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > so 'defer' is wrong — UN-DEFER: → Asset Gen re-roll the 3 flame plates (+ slots-seated) in
 > build-3 style, then remove their KNOWN_LEGACY_SOURCES exceptions so the vintage guard covers them
 > too. Fold into next build. Minor naming aside: user unsure cauldron vs mortar — not an issue.)
+>
+> **CONFIRMED (user, 2026-07-13): the stale image appears ONLY when pumping the bellows** →
+> it IS the flame-stage overlay = the deferred legacy `z2-bench-flame1/2/3` plates, exactly as
+> suspected. Fix = re-roll all THREE flame plates in build-3 style + un-defer (remove their
+> KNOWN_LEGACY_SOURCES exceptions). "check on all combos" → verify every flame stage (0/1/2/3) AND
+> every brew liquid state (clear/fizzle/draught) renders build-3 art, plus the slots-seated 4th
+> deferred residual. So the QA-B10-002 "accepted, deferred" set is fully un-deferred this round.)
