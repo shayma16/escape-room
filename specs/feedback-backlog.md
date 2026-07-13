@@ -2045,3 +2045,21 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > checkpoint-1: (a) fix recipe art to CCW+5 [recommended], or (b) change brew to match the art
 > (CW + 6 stirs; reopens the solution value). If (a): Asset Gen re-draws the spiral; Validator
 > confirms recipe↔brew match. Screenshot of the recipe page helpful.)
+
+### Round-6 SCREENSHOT CONFIRMATIONS (batch, 2026-07-13) — supersedes the "incoming" markers above
+- **R6-004 (entry scene):** band present at top/bottom edges (subtle at this compression). Entry
+  = confirmed via screenshot; all-view sweep stands.
+- **R6-005 (cellar):** CONFIRMED — the iron weight is visible sitting ON/IN the barrel AND is the
+  4th item in the inventory bar simultaneously → clear duplication (taken-state not applied to the
+  barrel).
+- **R6-006 (cellar, p07 solved):** CONFIRMED — the sliding panel is OPEN (dark compartment
+  revealed), the weight now hangs on the ROPED hook (center pulley), and the weight is correctly
+  GONE from inventory (3 items) — BUT the barrel STILL shows the weight → reconfirms R6-005's stale
+  barrel state. Puzzle LOGIC fine (compartment opened). Confirms the hotspot-vs-visual mismatch
+  context.
+- **R6-007 (potion room):** STRONGLY CONFIRMED — the stale asset renders as a DARK PHOTOREAL
+  cauldron RECTANGLE floating/misregistered over the warm stylized bench scene (clearly build-1/2
+  art, wrong style AND wrong frame). It's both STALE (a legacy plate) and MISREGISTERED (floating
+  box). Un-defer + re-roll the flame/cauldron plates AND fix its overlay registration.
+- **BONUS — R6-003 reconfirmed:** the rusted decoy KEY is visibly IN the inventory bar (leftmost
+  item) across the cellar/bench shots — exactly the "decoy should not be collectible" problem.
