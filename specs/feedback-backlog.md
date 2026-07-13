@@ -1805,7 +1805,15 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 
 ## Round 6 (build-11 milestone device testing on iPad — TestFlight "Within 1.0 (build 12)"; logging)
 
-### R6-001 — status: logged (picture incoming)
+### R6-001 — status: logged (SCREENSHOT ATTACHED 2026-07-13)
+> [screenshot] confirms the combined state: rug folded back revealing the trapdoor planks, poker
+> in inventory. AIR rune (up-triangle+bar +I) on the bellows and FIRE (up-triangle +II) on the
+> lintel both read CORRECT here (reconfirms R6-002 that AIR/FIRE are fine; only EARTH drifted).
+> The "empty poker placeholder" the user reports is the poker-taken overlay/patch composited in
+> the wrong spot in this combined poker-taken+rug-moved state — consistent with the R6-006 re-frame
+> coordinate-delta root (overlay anchors not re-mapped to the re-framed plate). Developer reproduces
+> in-engine; the fix is coordinate/overlay-registration, not art. (If the Producer's element ID is
+> off, the exact artifact is in the hearth-base/rug region per the user.)
 > as soon as i pick up the poker from next to the fireplace, AND unveil the cellar door from
 > under the rug, the empty poker placeholder hovers over the rug — a visual bug
 > (context: z1 v-hearth. TWO overlays active together — poker-taken + rug-moved — and the
