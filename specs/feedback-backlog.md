@@ -1975,3 +1975,13 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > playthrough to CI that would FAIL on this. Validator: re-confirm anti_softlock_invariants hold
 > for the poker in the SHIPPED build. This gates the next release — do not ship until a real UI
 > alt-order playthrough completes green.)
+>
+> **REFINED REPRO (user, 2026-07-13; re-testing to confirm):** "the poker disappears if i get to
+> the astrolabe scene BEFORE going to the cellar." → This is likely NOT use-consumption at all —
+> the poker is removed from inventory on ENTERING/REACHING the z2-cabinet (astrolabe) view, before
+> it's used on anything. Suspects: a scene-transition/zone-load side effect, a save/restore round-
+> trip dropping the item, an over-eager lifecycle "remove when satisfied" mis-firing (though the
+> poker's uses are UNSATISFIED here), or armed-item/combine logic clearing it. Much more findable
+> than a general order bug: Developer, instrument inventory on z2-cabinet entry and bisect which
+> event removes the poker. Await user's re-test confirmation of the exact trigger scene/sequence.
+> Still 🔴 CRITICAL (any path that silently drops the multi-use poker = soft-lock).)
