@@ -1985,3 +1985,16 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > than a general order bug: Developer, instrument inventory on z2-cabinet entry and bisect which
 > event removes the poker. Await user's re-test confirmation of the exact trigger scene/sequence.
 > Still 🔴 CRITICAL (any path that silently drops the multi-use poker = soft-lock).)
+>
+> **RE-TEST (user, 2026-07-13): DID NOT REPRODUCE — user still HAS the poker; "not sure if i saw
+> wrong earlier."** → Reclassify from confirmed-critical to **UNCONFIRMED / possibly intermittent
+> or a misperception.** DO NOT treat as a confirmed soft-lock, but DO NOT dismiss — an intermittent
+> item-drop is worse than a deterministic one. **USER DIRECTIVE: "you need to validate this from
+> screenshots."** → the poker (and every multi-use tool's) lifecycle MUST be validated with
+> SCREENSHOT-based UI playthroughs across ALL legal orderings (barrel-before-ash, astrolabe-first,
+> etc.) capturing the inventory bar at each step — not engine/coordinator asserts (that gap is
+> exactly what let R4-019 "pass"). If screenshots show the poker retained through every ordering,
+> R6-009 resolves as no-repro (lifecycle sound); if any frame shows it vanish, that frame is the
+> repro. This screenshot-based lifecycle validation is a GATING requirement for the next release.
+> STANDING (reinforced by user): verification of state/inventory/collect behaviors = rendered
+> screenshots, never engine flags alone.)
