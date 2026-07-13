@@ -1998,3 +1998,18 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > repro. This screenshot-based lifecycle validation is a GATING requirement for the next release.
 > STANDING (reinforced by user): verification of state/inventory/collect behaviors = rendered
 > screenshots, never engine flags alone.)
+
+### R6-010 — status: logged (2 screenshots incoming) — p04 cabinet = SAME 3 defects as R6-008
+> used coin + ring on the cabinet (p04 solved), can see the shaver [file] + vial/bottle [phial]
+> inside; hotspots wrong AGAIN — picked the shaver by random clicking → BLACK BOX appeared → kept
+> random-clicking for the bottle → black box disappears, items in inventory but ALSO still visible
+> in the open cabinet.
+> (context: z2 v-cabinet p04 open-state (file+phial). This reproduces the EXACT R6-008 triad on a
+> SECOND container: (1) black-box partial-collect render, (2) wrong item hotspots (re-frame
+> coordinate delta), (3) items duplicated (collected but still shown in the open cabinet — taken-
+> state not applied). So the three round-6 systemic roots hit EVERY resolved-container close-up
+> (astrolabe drawer R6-008 + sun/moon cabinet R6-010) → the Developer fix MUST be general to the
+> container-reveal→collect mechanism, not per-close-up: (a) render each item gone as it's taken
+> with NO black box for partial states, (b) map item hotspots to the visible items in the
+> re-framed plate, (c) empty the container in the wide+close-up once all items taken. Merge R6-010
+> into R6-008's fix (they are one bug on two containers). Screenshots incoming.)
