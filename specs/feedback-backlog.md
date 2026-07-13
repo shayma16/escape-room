@@ -1912,3 +1912,18 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > (and audit ALL views') hotspot + overlay coords against the CURRENT re-framed plates; tap target
 > must sit on the visible roped hook. (2) reconfirms R6-005 (weight still in barrel). p07 LOGIC is
 > fine (compartment opened) — purely hotspot-position + state-visual. Screenshot incoming.)
+
+### R6-007 — status: logged (picture incoming) — likely the QA-B10-002 DEFERRED legacy art surfacing
+> potion room: closed up on the big pot over the fireplace [CAULDRON, not the mortar — the mortar
+> is the marble bowl on the workbench], tried random combos (2× clockwise, released ladle), went
+> back to the scene, and the cauldron image changed to one of those STALE images.
+> (context: z2 v-bench cauldron/brew (p14). STRONG SUSPECT: this is a KNOWN deferred-legacy asset,
+> NOT a new stale-shadow — the vintage guard has 4 tracked KNOWN_LEGACY_SOURCES exceptions, and
+> THREE of them are the z2 bench FLAME plates `z2-bench-flame1/2/3` (QA-B10-002 "accepted minor art
+> residual, re-roll deferred"). When the player pumps the bellows / interacts with the brew, the
+> flame-stage overlay shows one of those build-2-framed plates → reads as "stale" vs the new bench
+> base. (Could alternatively be a stale brew-state close-up like cu-brew-fizzle — screenshot will
+> disambiguate.) IMPLICATION: the deferred QA-B10-002 residuals are PLAYER-VISIBLE in normal play,
+> so 'defer' is wrong — UN-DEFER: → Asset Gen re-roll the 3 flame plates (+ slots-seated) in
+> build-3 style, then remove their KNOWN_LEGACY_SOURCES exceptions so the vintage guard covers them
+> too. Fold into next build. Minor naming aside: user unsure cauldron vs mortar — not an issue.)
