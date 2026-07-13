@@ -2063,3 +2063,22 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
   box). Un-defer + re-roll the flame/cauldron plates AND fix its overlay registration.
 - **BONUS — R6-003 reconfirmed:** the rusted decoy KEY is visibly IN the inventory bar (leftmost
   item) across the cellar/bench shots — exactly the "decoy should not be collectible" problem.
+
+### Round-6 SCREENSHOT CONFIRMATIONS (batch 3, 2026-07-13) — R6-008 / R6-010 container bug
+- **R6-008 (astrolabe drawer), 3 frames CONFIRMED:** (a) PARTIAL state — crank collected (in
+  inventory) but STILL shown in the open drawer next to the un-taken moon coin → duplication;
+  the "black box" is present but FAINT here (user note) — so the black-box artifact severity
+  VARIES by state (a subtle translucent/dark rect, not always solid). (b) drawer EMPTY once both
+  taken, no black box, both items now in inventory. (c) WIDE cabinet view STILL shows the coin +
+  crank in the astrolabe drawer while both are in inventory → the taken-state-not-applied
+  duplication extends to the WIDE view, not just the close-up.
+- **R6-010 (sun/moon cabinet) CONFIRMED:** cabinet OPEN (p04 solved), the file [shaver] is in
+  inventory but STILL visible on the cabinet shelf → duplication; a faint horizontal band/artifact
+  crosses the cabinet interior (black-box/re-frame residue). Same container-reveal bug as R6-008.
+- **POSITIVE (lifecycle) confirmed:** the moon coin + gold ring were CONSUMED correctly when
+  PLACED into the p04 slots (gone from inventory in the cabinet-open frame). So PLACEMENT
+  consumption works — the bug is specifically CONTAINER-REVEAL items duplicating on COLLECT (they
+  enter inventory but aren't removed from the container render). Narrows the Developer fix.
+- **Severity note:** black box is FAINT/translucent in these captures (not the solid black of
+  earlier reports) → the fix is the same (render the empty container correctly per collect state),
+  but it reads as a subtle mis-composite, not an alarming solid box, at least in these states.
