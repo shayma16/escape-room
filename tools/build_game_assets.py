@@ -139,11 +139,9 @@ KNOWN_LEGACY_SOURCES = {
     "z2/v-bench/z2-bench-flame2@3x.png": "QA-B10-002 accepted legacy; re-roll deferred",
     "z2/v-bench/z2-bench-flame3@3x.png": "QA-B10-002 accepted legacy; re-roll deferred",
     "z2/v-cabinet/z2-cabinet-slots-seated@3x.png": "QA-B10-002 accepted legacy; re-roll deferred",
-    # DISCOVERED BY THIS GUARD (build 11, 2026-07-12): the 20th stale file — the
-    # build-1-era photoreal cabinet-container close-up, missed by the 19-item gapfill.
-    # FLAGGED to the Producer for Asset Gen re-delivery; ships knowingly until then
-    # (see implementation-notes "Build 11" and the build-11 handoff report).
-    "z2/v-cabinet/cu-cabinet-open@3x.png": "20th stale file — FLAGGED build-11, awaiting Asset Gen re-delivery",
+    # (build 11, 2026-07-13) cu-cabinet-open exception REMOVED: the 20th stale file was
+    # re-delivered by Asset Gen as gapfill item 20 ($0 PIL crop of the z2-cabinet-open
+    # wide), so its source is now build-3 canon and the vintage guard covers it normally.
 }
 
 
