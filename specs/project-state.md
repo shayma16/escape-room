@@ -11,7 +11,25 @@ Level 1 in design. Theme received from user on 2026-07-04.
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
 caged crow, potions/potion-making (user-specified elements).
 
-## ⭐ CURRENT RESUME NOTE (2026-07-13) — BUILD 11 SHIPPED
+## ⭐ CURRENT RESUME NOTE (2026-07-14) — ROUND 6 PROCESSED, AWAITING GATE 1
+
+Post-release feedback round 6 processed 2026-07-14 (build-11 milestone on TestFlight
+"Within 1.0 (build 12)"). Routed changelist:
+`specs/levels/level-1/round6-routed-changelist.md`. Two systemic Developer clusters
+(A container/pickup taken-state render, close-up + wide; B re-frame hotspot/overlay
+coordinate remap) + legacy un-defer (R6-007, retire 4 KNOWN_LEGACY_SOURCES) + art singles
+(R6-011 5-CCW recipe spiral, R6-002 EARTH glyph, R6-004 band sweep, R6-003 non-collectible
+decoy, R5-002 About credit). R6-009 poker soft-lock UNCONFIRMED → screenshot-based alt-order
+UI playthrough is a hard release gate. POSITIVE (do not touch): placement consumption works
+(coin/ring consumed at p04). Est. art spend this round ~$0.79 (worst ~$2.61) within the
+$3.20 headroom on the $23.00 cap.
+
+**NEXT:** awaiting user GATE 1 approval of the changelist. On GO → branch off
+level1-rebuild-build3; run ART + DEV tracks in parallel; Cluster B (hotspot remap) must land
+before QA; full QA regression incl. the R6-009 screenshot gate; GATE 2 (QA results) →
+re-release. Merge to main deferred until the round-6 fix build passes.
+
+## ⭐ PRIOR RESUME NOTE (2026-07-13) — BUILD 11 SHIPPED
 
 **Build 11 is ON TESTFLIGHT as “Within 1.0 (build 12)”** (release run 29230331494 green;
 the number 11 was consumed by a blocked attempt — the security gate correctly fired on a

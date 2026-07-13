@@ -85,6 +85,16 @@ _Report the running total to the user after each level completes._
   state-variant technique (~25x cheaper than full-frame re-renders, pixel-aligned).
 - fal seed-replay is NOT reproducible — never plan on regenerating a plate by seed.
 
+**Post-release feedback round 6 (build-11 milestone, processed 2026-07-14).** No difficulty
+rescore — no balance change; Level 1 holds 6.0. Mechanics touched: container-reveal→collect
+taken-state rendering (close-up + wide) and hotspot/overlay re-frame coordinate remap (both
+render/UX, not logic); rusted key demoted to non-collectible decoy (no solve path used it);
+grimoire recipe stir glyph corrected to canon (5 CCW — clue, not solution). Art re-rolls this
+round: recipe spiral crop-edit, EARTH glyph re-stamp ($0), re-frame band sweep, un-deferred
+QA-B10-002 flame1/2/3 + slots-seated. Est. art spend this round ~$0.79 (worst case ~$2.61) —
+within the $3.20 headroom on the $23.00 cap. R6-009 poker-lifecycle: unconfirmed; gated on
+screenshot-based alt-order UI validation before release.
+
 **Build-11 spend update (2026-07-12):** gap-fill batch (19 never-regenerated build-1 files
 incl. one game-loaded image that never existed) = $0.45. **Running Level-1 art total: $19.80
 of the $23.00 hard cap** ($3.20 headroom). Nano Banana Pro since 2026-07-08 (earlier rows

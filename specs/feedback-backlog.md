@@ -2129,3 +2129,25 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
   re-render. Validator then re-confirms recipe↔brew match; Documentation reconciles the walkthrough.
 
 ### ROUND 6 PROCESSING TRIGGERED (2026-07-14) — user said "process it"
+
+**PROCESSED 2026-07-14 (Feedback Intake). Routed changelist:
+`specs/levels/level-1/round6-routed-changelist.md` (handed to Producer; pending GATE 1
+user review before execution).** Phase-2 status per item:
+
+| Item(s) | Class | Status | Target | Cluster / fix type |
+|---------|-------|--------|--------|--------------------|
+| R6-009 | bug (unconfirmed) | routed (release GATE) | QA screenshot UI playthroughs + Validator | poker-lifecycle screenshot validation across all orderings |
+| R6-008, R6-010 (close-up) | bug (major) | routed | Developer | Cluster A — container collected-state render (code) |
+| R6-005, R6-008-wide | bug (major) | routed | Developer | Cluster A — wide taken-state (code) |
+| R6-001, R6-006, R6-008/010-hotspots | bug (major) | routed | Developer | Cluster B — re-frame coordinate remap (hotspot-remap) |
+| R6-007 | bug (major) | routed | Asset-Gen + Developer | Cluster D — un-defer, re-roll + registration + guard-retire |
+| R6-004 | bug (minor/cosmetic) | routed | Asset-Gen | Cluster C — re-frame band sweep (art-crop-edit) |
+| R6-011 | bug (clue↔solution) | routed (decision a) | Asset-Gen + Validator + Documentation | 5-CCW spiral crop-edit |
+| R6-003 | bug (minor) + standing principle | routed | Developer + Validator (light) | non-collectible decoy (code/config) |
+| R6-002 | polish (glyph-canon) | routed | Asset-Gen + Developer | EARTH glyph re-stamp ($0 PIL) |
+| R5-002 (carry) | polish (copy) | routed | Developer | About credit → Nano Banana Pro (fal.ai) / fal.ai music |
+
+No duplicates requiring user merge-confirmation, no unresolved conflicts, no vague/
+unactionable items (the screenshot batches resolved all "incoming" ambiguity), and no open
+questions — R6-011 (option a) and R6-009 (screenshot-validate) were decided during logging.
+
