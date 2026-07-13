@@ -1880,3 +1880,18 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > + cellar(top+bottom) = ≥3 of 6 views affected → confirmed all-view sweep; also check hearth,
 > bench, cabinet, alcove. Screenshots incoming. Pattern: bands appear on whichever short edge(s)
 > the re-frame had to pad — treat as ALL views, ALL edges; re-derive clean content per edge.)
+
+### R6-005 — status: logged (picture incoming) — state-refresh recurrence on BUILD 11
+> barrel: zoomed (closed), back; zoomed again, used poker on it, picked up the weight (now in
+> inventory), back once more → the weight is visible BOTH on the wide scene AND in my inventory
+> (context: z3 cellar barrel (p06). After collecting the weight, the wide cellar view still shows
+> the weight (barrel should read pried-and-EMPTY / weight-taken), so the weight appears duplicated
+> — in-scene AND held. This is the state-visual / overlay family (R4-013 barrel, R2-014 spoon,
+> R4-024 cellar contamination) that build 10's per-element overlay architecture was supposed to
+> fix and QA marked verified — so either the weight-TAKEN transition wasn't wired (barrel shows
+> pried-with-weight, no ov for pried-empty applied on collect) or it regressed. NOTABLE: QA's
+> build-10 overlay verification (offline composites + rendered-frame tests) did NOT catch this,
+> same gap-class as R6-001 (uncovered overlay combo). → Developer: wire/verify the weight-taken
+> cellar state so the wide view shows the empty pried barrel after collect; add it to the
+> rendered-frame overlay coverage. Screenshot incoming. Reinforces: the rendered-frame overlay
+> guard needs to cover EVERY element's taken/resolved state, not a sample.)
