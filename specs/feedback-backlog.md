@@ -1856,3 +1856,23 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > inventory items — they stay as in-scene inspectable objects only.** Applies to THIS level
 > (audit other decoys: potion shelf is already non-collectible ✓; clock inert ✓) AND all future
 > levels — add to the Theme & Puzzle Designer's rules.)
+
+### R6-004 — status: logged (picture incoming)
+> the desk scene (z1 study) has a weird BLURRY effect up top, like the scene got STRETCHED
+> (context: almost certainly a re-frame artifact. Build-10 dual-safe re-framing of all 6 views
+> used `specs/tools/reframe_b10.py` with a "PIL BAND FALLBACK after outpaint rejection" — where
+> it couldn't cleanly extend a plate to the re-framed aspect it filled the edge by stretching/
+> banding existing pixels → a blurry stretched strip. The z1-study base plate's TOP edge is
+> likely showing that band. → Asset Gen: re-derive the study plate's top region cleanly (crop-in
+> / content-preserving fill, NOT a stretch band); if the whole re-frame band is bad on this view,
+> redo that view's re-frame. Await picture for severity + SWEEP the other 5 views (the re-frame
+> touched all 6) for the same top/edge band. Fold into next build.)
+>
+> **CONFIRMED SYSTEMIC (user, 2026-07-13):** the same blurry/stretched band also shows in the
+> caged-crow scene (z1 v-entry), this time on BOTH top AND bottom edges. So the re-frame band
+> artifact is NOT isolated to the study — it's across views (the re-frame added bands wherever the
+> plate's native aspect fell short of the re-framed dual-safe target, top and/or bottom). Treat as
+> a FULL re-frame-band sweep: for each of the 6 views, replace any stretched/blurred fallback band
+> with clean content-preserving fill (or re-frame the view properly). This is the cosmetic residue
+> of the aspectFill-restore path; prioritize the views the player sees most (entry, study, hearth).
+> Pictures for entry (top+bottom) + study (top) incoming.)
