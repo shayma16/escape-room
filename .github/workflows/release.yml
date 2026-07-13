@@ -210,7 +210,11 @@ jobs:
           fi
 
           # --- 1b. Secret-looking strings in every file of the payload (binaries included) ---
-          PATTERNS='FAL_KEY|fal\.ai|fal-[A-Za-z0-9]{16,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|github_pat_|BEGIN [A-Z ]*PRIVATE KEY|api[_-]?key[\"'"'"': ]+[A-Za-z0-9_\-]{16,}'
+          # NOTE (build 11): the bare domain 'fal\.ai' was removed from the patterns — the
+          # About screen's user-approved attribution ("Nano Banana Pro (fal.ai)", R5-002)
+          # legitimately compiles that string into the binary, and a public domain name is
+          # not a secret. Actual fal credentials stay covered by FAL_KEY and fal-<token>.
+          PATTERNS='FAL_KEY|fal-[A-Za-z0-9]{16,}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|ghp_[A-Za-z0-9]{20,}|github_pat_|BEGIN [A-Z ]*PRIVATE KEY|api[_-]?key[\"'"'"': ]+[A-Za-z0-9_\-]{16,}'
           HITS=$(grep -REno --binary-files=text "$PATTERNS" build/scan/Payload || true)
           if [ -n "$HITS" ]; then
             echo "::error::Potential development-time secrets found in .ipa payload:"
