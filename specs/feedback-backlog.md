@@ -2101,3 +2101,19 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
   the same wide-taken-state class). Net: (1) close-up per-item collected render [all containers],
   (2) wide taken-state for drawer + barrel [R6-008/R6-005], (3) the faint band is R6-004 on the
   base plates.
+
+### Round-6 SCREENSHOT CONFIRMATION (batch 5, 2026-07-14) — R6-011 recipe page
+- **R6-011 (grimoire/recipe page) CONFIRMED:** the recipe spread reads left→right: moonflower in a
+  mortar → shaver/file shaving the silver bar → feather dropped into an open hand → FIRE flame with
+  Roman numeral **III**. Below the ingredient row is the STIR glyph: a **spiral with 6 dots** placed
+  along its arc and a terminal **arrowhead at the outer/bottom end pointing LEFT → reads CLOCKWISE**.
+  So the art instructs **6 stirs, clockwise**. The implemented brew solution is **5 stirs, CCW**.
+  → MISMATCH on BOTH count (6 vs 5) AND direction (CW vs CCW), exactly as the user reported.
+- The Flame **III** on the page correctly matches the brew's flame-level requirement (Flame III) —
+  so ONLY the stir glyph is wrong; the flame clue is fine and must be preserved on any redraw.
+- **USER DECISION still pending at checkpoint-1** (unchanged): (a) re-draw the spiral to **5 dots,
+  CCW** to match the fixed solution [Producer recommendation — art-only, no logic/validator churn],
+  or (b) change the brew solution to **6 CW** to match the current art (reopens the solution value,
+  requires Validator re-confirm + walkthrough update). Grimoire cross-clues (potion-door + "where to
+  find the other clues") must be re-checked for consistency under whichever option is chosen.
+  This is the LAST outstanding Round-6 screenshot; round is ready to process on user trigger.
