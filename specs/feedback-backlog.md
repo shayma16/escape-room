@@ -1935,3 +1935,22 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > KNOWN_LEGACY_SOURCES exceptions). "check on all combos" → verify every flame stage (0/1/2/3) AND
 > every brew liquid state (clear/fizzle/draught) renders build-3 art, plus the slots-seated 4th
 > deferred residual. So the QA-B10-002 "accepted, deferred" set is fully un-deferred this round.)
+
+### R6-008 — status: logged (3 screenshots incoming) — astrolabe drawer: black-box + hotspot + dup
+> astrolabe base drawer (z2 cabinet, p03 yield): (SS1) a BLACK SQUARE appears after randomly
+> clicking and finding the FIRST item hotspot (the crank); (SS2) with BOTH hotspots found (moon
+> coin + crank) the drawer reads empty and the black box disappears; (SS3) the crank + moon coin
+> are in inventory BUT also still appear in the open drawer.
+> (context: THREE defects on ONE close-up, each in a family already open this round: (1) 🆕
+> BLACK-SQUARE artifact while one item is collected but not the other — a partial/intermediate
+> drawer state renders a black box (missing/transparent overlay drawn black, or a bad per-item
+> mask); distant echo of the build-3 astrolabe GREY-BOX soft-lock (R2-018/019/025/026) — the
+> partial resolved state still isn't compositing cleanly. (2) HOTSPOT DISCOVERY IS RANDOM — the
+> coin/crank item hotspots don't sit on the visible items → same re-frame-coordinate-delta root as
+> R6-006 (item rects not re-mapped to the re-framed plate). (3) ITEM DUPLICATION — coin+crank in
+> inventory but STILL shown in the open drawer → drawer-emptied state not applied after collect,
+> same as R6-005. → Developer: fix partial-collect drawer render (no black box; each item gone as
+> taken; empty when both taken), re-map the two item hotspots to the visible items, add this
+> drawer's partial+emptied states to the rendered-frame guard. SS1/2/3 incoming. NOTE: this single
+> close-up reproduces ALL THREE of this round's systemic roots (missing/black render, hotspot
+> delta, taken-state-not-applied) — an ideal regression fixture for the Developer.)
