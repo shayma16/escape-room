@@ -1877,8 +1877,8 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > of the aspectFill-restore path; prioritize the views the player sees most (entry, study, hearth).
 > Pictures for entry (top+bottom) + study (top) incoming.
 > Third view CONFIRMED: z3 cellar shows the band TOP AND BOTTOM. So study(top) + entry(top+bottom)
-> + cellar(top+bottom) + bench/potion-room(top+bottom) = ≥4 of 6 views affected → confirmed
-> all-view sweep (assume all 6; also check cabinet, alcove, hearth). Screenshots incoming. Pattern:
+> + cellar(top+bottom) + bench/potion-room(top+bottom) + CABINET(top+bottom) = ≥5 of 6 views
+> affected → all-view sweep confirmed (only alcove unconfirmed; assume all 6). Screenshots incoming. Pattern:
 > bands appear on whichever short edge(s) the re-frame had to pad — treat as ALL views, ALL edges;
 > re-derive clean content per edge.)
 
@@ -2012,4 +2012,10 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > container-reveal→collect mechanism, not per-close-up: (a) render each item gone as it's taken
 > with NO black box for partial states, (b) map item hotspots to the visible items in the
 > re-framed plate, (c) empty the container in the wide+close-up once all items taken. Merge R6-010
-> into R6-008's fix (they are one bug on two containers). Screenshots incoming.)
+> into R6-008's fix (they are one bug on two containers). Screenshots incoming.
+> **EXTENDS (user, 2026-07-13): going back to the WIDE cabinet scene shows the cabinet empty but
+> with a visible BLACK BOX where the placeholder used to be.** So the black-box artifact is not
+> just the close-up partial state — it also renders in the WIDE view's cabinet-open-empty state
+> (an item overlay/placeholder rendering as a black rect instead of showing nothing / the empty
+> shelf). Add the wide cabinet-open-empty state to the render fix + rendered-frame guard. Same
+> screenshot ALSO shows R6-004 band (see R6-004 — cabinet = 5th view).)
