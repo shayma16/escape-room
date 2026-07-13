@@ -1954,3 +1954,24 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > drawer's partial+emptied states to the rendered-frame guard. SS1/2/3 incoming. NOTE: this single
 > close-up reproduces ALL THREE of this round's systemic roots (missing/black render, hotspot
 > delta, taken-state-not-applied) — an ideal regression fixture for the Developer.)
+
+### R6-009 — status: logged 🔴🔴 CRITICAL (progression soft-lock) — R4-019 REGRESSED / never really shipped
+> "again i forgot to get the gold [ring] from the ash using the poker, and the poker is COMPLETELY
+> CONSUMED, rendering the game unsolvable."
+> (context: z1 ash-sift p05 (poker reveals gold ring) + z3 barrel-pry p06 (poker) — the poker is a
+> MULTI-USE tool. User used it on the barrel first, poker got consumed, so the ash-sift is now
+> impossible → gold ring unreachable → LEVEL UNSOLVABLE. This is EXACTLY R4-019, the round-4
+> CRITICAL that build-10's item-lifecycle engine (retain while ANY `uses` entry unsatisfied; remove
+> only when ALL satisfied) was built to fix, and that build-10 QA marked "DEAD". IT IS NOT DEAD in
+> the shipped build. ROOT of the QA MISS: build-10 QA verified R4-019 at "engine + coordinator"
+> level (unit/coordinator asserts) and EXPLICITLY did NOT run a second UI alternate-order
+> playthrough (noted in the qa-report as an accepted scope call). So the ENGINE rule may be right
+> while the actual in-GAME consumption path (whatever code the poker-on-barrel tap runs) still
+> decrements/removes the poker — OR a build-11 change regressed it. This is the recurring project
+> lesson in its worst form: engine-verified ≠ player-experienced, and it shipped a CRITICAL
+> soft-lock. → TOP PRIORITY. Developer: reproduce via a real UI playthrough in the ALTERNATE order
+> (barrel-before-ash), find where the poker is actually consumed in the shipped path, fix so the
+> poker survives until BOTH p05 and p06 are done, and add a UI (not just engine) alternate-order
+> playthrough to CI that would FAIL on this. Validator: re-confirm anti_softlock_invariants hold
+> for the poker in the SHIPPED build. This gates the next release — do not ship until a real UI
+> alt-order playthrough completes green.)
