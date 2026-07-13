@@ -1875,4 +1875,8 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
 > a FULL re-frame-band sweep: for each of the 6 views, replace any stretched/blurred fallback band
 > with clean content-preserving fill (or re-frame the view properly). This is the cosmetic residue
 > of the aspectFill-restore path; prioritize the views the player sees most (entry, study, hearth).
-> Pictures for entry (top+bottom) + study (top) incoming.)
+> Pictures for entry (top+bottom) + study (top) incoming.
+> Third view CONFIRMED: z3 cellar shows the band TOP AND BOTTOM. So study(top) + entry(top+bottom)
+> + cellar(top+bottom) = ≥3 of 6 views affected → confirmed all-view sweep; also check hearth,
+> bench, cabinet, alcove. Screenshots incoming. Pattern: bands appear on whichever short edge(s)
+> the re-frame had to pad — treat as ALL views, ALL edges; re-derive clean content per edge.)
