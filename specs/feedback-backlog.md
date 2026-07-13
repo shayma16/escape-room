@@ -2117,3 +2117,15 @@ Next gate: CHECKPOINT 2 (QA build-10 regression review) before re-release._
   requires Validator re-confirm + walkthrough update). Grimoire cross-clues (potion-door + "where to
   find the other clues") must be re-checked for consistency under whichever option is chosen.
   This is the LAST outstanding Round-6 screenshot; round is ready to process on user trigger.
+
+### R6-011 USER DECISION (2026-07-14): OPTION (a) — regenerate the art
+- User approved re-drawing the stir glyph to **5 dots, COUNTER-CLOCKWISE** to match the fixed brew
+  solution (5 CCW). Brew solution value is NOT reopened.
+- **Binding constraint from user:** "don't lose the other clues on that particular page and the
+  other pages of the grimoire — just fix the affected one." → Asset Gen must edit ONLY the spiral
+  glyph (crop-scoped edit), preserving on the SAME page: moonflower/mortar, file/shaver+silver bar,
+  feather/hand, and the Flame **III** numeral; and preserving ALL OTHER grimoire pages untouched
+  (potion-door clue page + the "where to find the other clues" page). No full-page or full-grimoire
+  re-render. Validator then re-confirms recipe↔brew match; Documentation reconciles the walkthrough.
+
+### ROUND 6 PROCESSING TRIGGERED (2026-07-14) — user said "process it"
