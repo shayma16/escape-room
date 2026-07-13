@@ -114,7 +114,7 @@ Overscan bands carry atmosphere only, per style-guide S8._
 
 # BUILD-11 gap-fill (18 build-1-era stragglers never rebuilt in build 3) [2026-07-12]
 
-PROGRESS: 19/19 done (incl. 10b) | 0 retrying | 0 failed | 0 remaining | $0.45 spent this batch | project $19.80 of $23.00 HARD CAP | headroom $3.20
+PROGRESS: 20/20 done (incl. 10b + item 20 vintage-guard catch 2026-07-13) | 0 retrying | 0 failed | 0 remaining | $0.45 spent this batch | project $19.80 of $23.00 HARD CAP | headroom $3.20
 
 _Scope per Producer handoff: device test proved 18 build-1 painterly images still ship because
 build 3 never generated replacements (not shadows — no new version exists). Rebuild all 18 in
@@ -144,12 +144,17 @@ cu-astrolabe-drawer-open AND cu-astrolabe-drawer-empty from that crop at $0 — 
 | 11-16 | z2/v-cabinet/sprites/astrolabe-plate-1..6 | PIL brass discs sampled from cu-astrolabe; dots re-stamped from b3 plate-N-nb close-ups; plate-2 = canonical Orion (masters/orion-canonical.json) | done | $0 | ONE clean disc base (plate-6-nb, polar-interp fill of dots/hub/needle/ghost-dimples) + ONE canonical dot stamp; plates 1,3-6 = their 7 detected dark dots (uniform r29@3x-closeup); plate-2 = EXACT canonical Orion offsets+scales, belt-centered. NOTE: -nb close-ups carry ghost dimples of other plates' holes (gen artifact, excluded); plate-2-nb close-up itself has DRIFTED Orion (not game-loaded, reference-only — flagged). Window-clue vs plate-2 side-by-side match PASS; grayscale PASS |
 | 17 | z2/v-cabinet/sprites/astrolabe-pointer | PIL brass needle matched to cu-astrolabe pointer | done | $0 | 900x90 RGBA 4x-supersampled; palette sampled from cu-astrolabe needle cross-section (body 118,97,62 / dark edge / cool specular ridge); hub boss+ring+pin |
 | 18 | z3/v-cellar/cu-winch-crank | region edit on cu-winch-socket, refs icon-crank + wide crank-fitted crop | done | $0.15 | seed 61020, region (600,480,1780,1500); Z-crank seated in square socket; grip came back WOOD -> $0 PIL recolor to all-steel per icon + wide canon |
+| 20 | z2/v-cabinet/cu-cabinet-open (ADDED 2026-07-13, vintage-guard catch) | PIL crop wide z2-cabinet-open (b3 canonical open-state) + unsharp(r2,35%) | done | $0 | crop (1112,300,2952,1680)->2048x1536 (1.11x); full armoire standing open, sun medallion on open left door / crescent + ring pull on right, FILE + PHIAL on middle shelf; build-1 t2i photoreal original -> _rejects/flux-painterly/; A/B vs wide + cu-slots-seated PASS (pixel-derived); grayscale PASS; Developer can drop the KNOWN_LEGACY_SOURCES exception for this path |
 
 ## FINAL - BUILD-11 gapfill
 - All 19/19 done (18 planned + 10b drawer-open extra). Spend: $0.45 API (3 std region edits; every retry/fix was $0 PIL) - under the $0.45 base / $1.50 contingency estimate.
+- ITEM 20 (2026-07-13): Developer's new vintage guard caught a 20TH stale build-1 file the batch missed -
+  cu-cabinet-open (game-loaded, was shipping via tracked KNOWN_LEGACY_SOURCES exception). Re-delivered $0 PIL
+  from the b3 wide open-state; total batch count is now 20, spend unchanged.
 - Project total: $19.35 + $0.45 = **$19.80 of $23.00 HARD CAP** (headroom $3.20 remaining).
 - cu-astrolabe-drawer-empty was MISSING entirely (game-loaded, CloseUps.swift:139) - net-new, live defect fixed.
 - HANDOFF FLAGS: (1) rune-ember rects MOVED - Developer must sync CloseUpLayout.brewEmberRects + staged Resources copy of rune-ember-rects.json;
   (2) plate-2-nb close-up (reference-only) shows drifted Orion vs masters/orion-canonical.json - sprites use the canon, close-up flagged to Producer;
-  (3) all 19 need staging into EscapeRoom/Resources/GameAssets by Developer (specs/ is source of truth).
-- Manifest: build11_gapfill block written (per-asset source-derivation + geometry + gates).
+  (3) all 20 need staging into EscapeRoom/Resources/GameAssets by Developer (specs/ is source of truth);
+  (4) item 20: remove the KNOWN_LEGACY_SOURCES exception for z2/v-cabinet/cu-cabinet-open and restage it.
+- Manifest: build11_gapfill block written (per-asset source-derivation + geometry + gates); item 20 appended 2026-07-13.

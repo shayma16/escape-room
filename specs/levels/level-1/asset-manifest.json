@@ -917,7 +917,8 @@
    "batch": 2,
    "generation": "t2i",
    "seed": 70104,
-   "est_cost_usd": 0.0944
+   "est_cost_usd": 0.0944,
+   "superseded_by": "build11_gapfill item 20 (2026-07-13): re-derived from build-3 wide z2-cabinet-open; build-1 t2i original -> _rejects/flux-painterly/"
   },
   {
    "file": "z2/v-cabinet/cu-potion-shelf@3x.png",
@@ -2230,10 +2231,10 @@
  },
  "build11_gapfill": {
   "date": "2026-07-12",
-  "purpose": "Rebuild of the 18 build-1-era straggler assets never regenerated in build 3 (+ the discovered 19th stale file cu-astrolabe-drawer-open, and cu-astrolabe-drawer-empty which was MISSING entirely despite being game-loaded at CloseUps.swift:139). All derived per R2-031 from named build-3 canonical plates; originals archived to _rejects/flux-painterly/.",
+  "purpose": "Rebuild of the 18 build-1-era straggler assets never regenerated in build 3 (+ the discovered 19th stale file cu-astrolabe-drawer-open, and cu-astrolabe-drawer-empty which was MISSING entirely despite being game-loaded at CloseUps.swift:139). All derived per R2-031 from named build-3 canonical plates; originals archived to _rejects/flux-painterly/. ITEM 20 added 2026-07-13: vintage guard caught a 20th stale build-1 file (cu-cabinet-open, previously shipping via KNOWN_LEGACY_SOURCES exception) missed by the original 19-item batch; re-delivered same method ($0 PIL).",
   "spend": {
    "api_usd": 0.45,
-   "detail": "3 nano-banana-pro std region edits ($0.15 each: cage-crow-refusal, cage-open-empty, winch-crank); all other 16 files $0 deterministic PIL",
+   "detail": "3 nano-banana-pro std region edits ($0.15 each: cage-crow-refusal, cage-open-empty, winch-crank); all other 16 files $0 deterministic PIL; item 20 (cu-cabinet-open, 2026-07-13) $0 PIL - no spend change",
    "batch_total_usd": 0.45,
    "project_total_usd": 19.8,
    "hard_cap_usd": 23.0
@@ -2321,13 +2322,19 @@
     "source": "cu-winch-socket@3x, ref z2/icons/icon-crank@3x",
     "geometry": "region (600,480,1780,1500), feather 42; grip wood->steel recolor bbox (1150,1100,1650,1330)",
     "note": "Z-crank seated in square socket, grip toward viewer; recolored to all-steel per icon + wide z3-cellar-crank-fitted canon"
+   },
+   "z2/v-cabinet/cu-cabinet-open": {
+    "method": "PIL crop + unsharp(r2,35%)",
+    "source": "z2-cabinet-open@3x (build-3 canonical wide open-state)",
+    "geometry": "crop (1112,300,2952,1680) -> 2048x1536 (1.11x)",
+    "note": "item 20 (2026-07-13, vintage-guard catch): full armoire standing open - sun medallion on swung-open left door, crescent + ring pull on right door, FILE (cross-hatch rasp) + corked PHIAL on middle inner shelf, grey-blue wall, moonbeam; supersedes build-1 t2i photoreal close-up (seed 70104) -> _rejects/flux-painterly/. Consistency: pixel-derived from wide (exact by construction); door-face geometry agrees with cu-slots-seated; grayscale file+phial silhouettes PASS. Batch-2 note (wide busier than cu) OBSOLETE - cu now identical to wide by derivation. Developer: KNOWN_LEGACY_SOURCES exception for this path can be removed + restage into Resources/GameAssets."
    }
   },
   "quality_gates": {
-   "style_consistency": "every asset A/B'd against its parent build-3 plate during production (crops derived directly; edits feather-composited so unchanged pixels are byte-identical)",
+   "style_consistency": "every asset A/B'd against its parent build-3 plate during production (crops derived directly; edits feather-composited so unchanged pixels are byte-identical); item 20 A/B strip vs wide open-state + cu-slots-seated PASS",
    "grayscale_2_3": "PASS on glyph/pattern-bearing items: star-keyhole-key, rune-ember I/II/III (stroke count), astrolabe plates (dot patterns), window-Orion vs plate-2 match",
-   "canonical_filename_discipline": "all 19 at canonical paths; 18 superseded originals -> _rejects/flux-painterly/; shadow-scan clean (no _work/-v2 strays)",
-   "scale_variants": "@3x/@2x/@1x emitted for all 19"
+   "canonical_filename_discipline": "all 20 at canonical paths; 19 superseded originals -> _rejects/flux-painterly/; shadow-scan clean (no _work/-v2 strays)",
+   "scale_variants": "@3x/@2x/@1x emitted for all 20"
   }
  }
 }
