@@ -47,6 +47,18 @@ tracks launched:
 - **JOIN pass (after both merge):** Developer stages all art + retires 4 KNOWN_LEGACY_SOURCES
   (needs re-rolled flame/slots plates present) → CI → full QA incl. R6-009 screenshot gate.
 
+### BUILD ASSEMBLED — CI DISPATCHED (2026-07-14)
+`build-12-round6-fixes` fully assembled. Sequence done: ART track (0de6489) + DEV track (964b429)
+merged (merge c6746e8); 3 emptied-container plates $0 PIL (7fcdbe0); JOIN pass (2f1c6f7) staged
+all art + RETIRED all 4 QA-B10-002 KNOWN_LEGACY_SOURCES (none still stale) + all guards
+(nb-shadow, vintage, chrome, security) PASS. Art spend $20.85/$23.00 (headroom $2.15; empties
+were $0). No likely CI failure flagged. Container tests now driven by real staged empties
+(cu-cabinet-empty, ov-barrel-pried-empty, ov-adrawer-empty), not interim fallback.
+**NEXT:** push + dispatch build-and-test CI → on green, QA screenshot regression (MUST include
+R6-009 poker alt-order screenshot gate) → GATE 2 user review → re-release as next TestFlight build.
+Non-blocking eyeball items for GATE 2: R6-004 left/right overscan left as-is (only top/bottom
+swept); R6-002 EARTH glyph faint carved-groove remnants (reads correct ▽+bar).
+
 ## ⭐ PRIOR RESUME NOTE (2026-07-13) — BUILD 11 SHIPPED
 
 **Build 11 is ON TESTFLIGHT as “Within 1.0 (build 12)”** (release run 29230331494 green;
