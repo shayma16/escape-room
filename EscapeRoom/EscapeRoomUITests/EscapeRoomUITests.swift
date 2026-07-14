@@ -871,4 +871,233 @@ final class EscapeRoomUITests: XCTestCase {
                       "must have entered z2 (rune gate did NOT re-lock across relaunch — D7)")
         shoot(app2, "resume-03-in-z2-gate-held")
     }
+
+    // MARK: - R6-009 poker multi-use lifecycle across legal solve orderings (Round-6 gate)
+    //
+    // R6-009 (round-6 routed changelist, P0-gate) was an UNCONFIRMED possible soft-lock: the
+    // multi-use poker (p05 hearth-ash sift + p06 cellar-barrel pry) MIGHT be dropped before
+    // both uses if the player reaches scenes in a non-standard order. The release gate is to
+    // PROVE, through the real chrome with inventory screenshots at each key step, that the
+    // poker survives EVERY legal ordering until BOTH uses are satisfied, and is consumed only
+    // after the LAST use.
+    //
+    // Ground truth being exercised: ItemLifecycle (PuzzleGraphModel.swift) retains itm-poker
+    // while EITHER graph use (ashSift / barrelPry) is unsatisfied and consumes it only once
+    // BOTH are solved; the sweep is reconciled from the GameState markSolved/setFlag hooks, so
+    // no interaction path can bypass it. These UI tests are the player-style, screenshot-backed
+    // confirmation of that invariant (the engine-level orderings live in
+    // QALevelFlowTests.testSolvePathOrdering{A,B,C}, which also run each ordering to completion).
+    //
+    // Reachability (design gates, NOT poker gates — so the poker is never a prerequisite for
+    // reaching either of its own uses):
+    //   - the cellar (barrel/p06) requires only: move rug (free) -> moon-dial trapdoor (p02,
+    //     whose ONLY clue-gate is the study triptych) -> descend. None touch the poker.
+    //   - z2 (astrolabe/cabinet) requires: rune door (p01 - four element marks + grimoire
+    //     page A) -> astrolabe (p03 - Orion window). None touch the poker.
+    // Both non-standard orderings below are therefore genuinely reachable by design; neither is
+    // "unreachable by a zone gate", so each is exercised for real rather than argued away.
+    //
+    // ORDERING 3 (standard: ash THEN barrel) is already covered end-to-end by
+    // testFullPlaythroughWithScreenshots (play-01b-poker-taken -> play-02-ash-glint ->
+    // play-05-cellar -> play-06-shelf-slid) - referenced here, not duplicated.
+    //
+    // CI SCOPING (cost): the full EscapeRoomUITests scheme runs on BOTH iPhone SE and iPad, and
+    // the suite is already ~1h47m against the 180-min ceiling. The R6-009 invariant is pure
+    // item-lifecycle logic (device-independent), so these two heavyweight orderings are gated to
+    // the iPhone-SE UI step ONLY via `-skip-testing` on the iPad UI step in build-and-test.yml.
+    // The standard-order full playthrough still runs on BOTH devices for the device matrix.
+
+    /// Waits (polling) for `item` to LEAVE the inventory bar, then asserts it is gone. Used to
+    /// prove the poker is CONSUMED once its last use is satisfied (the reconcile runs on the
+    /// markSolved hook, so this is effectively immediate, but poll to absorb UI-update latency).
+    private func assertNotHolding(_ app: XCUIApplication, _ item: String,
+                                  timeout: TimeInterval = 10,
+                                  file: StaticString = #filePath, line: UInt = #line) {
+        let cell = app.descendants(matching: .any)["inventory-\(item)"]
+        let deadline = Date().addingTimeInterval(timeout)
+        while cell.exists && Date() < deadline { Thread.sleep(forTimeInterval: 0.3) }
+        XCTAssertFalse(cell.exists,
+                       "\(item) must be CONSUMED (removed from the inventory bar) after its last use",
+                       file: file, line: line)
+    }
+
+    /// Shared cellar-descent used by the R6-009 orderings: from the hearth, view the study
+    /// triptych (the ONLY clue-gate for p02), come back, move the rug, solve the moon dials, and
+    /// drop through the trapdoor into the cellar. Assumes `app` is at the hearth. The poker is
+    /// NOT touched anywhere in here, so it must be held on both entry and exit.
+    private func openTrapdoorAndDescend(_ app: XCUIApplication, triptychAlreadyViewed: Bool) {
+        if !triptychAlreadyViewed {
+            ensureView(app, "study") { tapID(app, "nav-next") }         // hearth -> study
+            tapScene(app, "study", 0.377, 0.30)                        // triptych (middle panel) close-up
+            XCTAssertTrue(app.descendants(matching: .any)["closeup-dismiss"].waitForExistence(timeout: 5),
+                          "triptych close-up must present (p02 gate clue)")
+            dismissCloseUp(app)
+            ensureView(app, "hearth") { tapID(app, "nav-previous") }   // study -> hearth
+        }
+        // Rug then the (now-ungated) moon-dial panel - identical to the standard solve.
+        tapScene(app, "hearth", 0.22, 0.80, settle: 0.9)               // move rug
+        tapScene(app, "hearth", 0.60, 0.70, settle: 0.9)               // trapdoor -> dial close-up
+        for _ in 0..<1 { tapID(app, "moon-dial-1") }                   // waxing crescent
+        for _ in 0..<4 { tapID(app, "moon-dial-2") }                   // full
+        for _ in 0..<5 { tapID(app, "moon-dial-3") }                   // waning gibbous -> unlock
+        dismissCloseUp(app)
+        ensureView(app, "cellar", settle: 1.2) {                       // descend through the trapdoor
+            tapScene(app, "hearth", 0.60, 0.70, settle: 1.2)
+        }
+    }
+
+    /// R6-009 ordering 1 - BARREL-BEFORE-ASH. Pry the cellar barrel (p06) with the poker
+    /// BEFORE ever sifting the hearth ash (p05), then complete the ash use. Asserts the poker
+    /// is HELD after the barrel pry (one use still pending) and CONSUMED only after the ash sift
+    /// (both uses done). This is the exact non-standard ordering R4-019 / R6-009 flagged.
+    func testR6009_pokerSurvivesBarrelBeforeAsh() {
+        let app = launchFreshApp()
+        enterLevelOne(app)
+
+        // Take the poker; do NOT sift the ash yet.
+        tapScene(app, "hearth", 0.248, 0.50)                           // take poker
+        assertHolding(app, "itm-poker")
+        shoot(app, "r6009-bba-01-poker-taken")
+
+        // Reach the cellar (rug + moon dials; triptych gate viewed inside the helper). The poker
+        // is untouched by any of this.
+        openTrapdoorAndDescend(app, triptychAlreadyViewed: false)
+        assertHolding(app, "itm-poker")                                // still held on arrival in z3
+
+        // p06: pry the barrel with the poker - the FIRST poker use, ash (p05) still pending.
+        useItem(app, item: "itm-poker", view: "cellar", onScene: 0.735, 0.66)
+        // THE GATE ASSERTION: the poker must NOT be consumed here - p05 is unsatisfied.
+        assertHolding(app, "itm-poker")
+        shoot(app, "r6009-bba-02-poker-HELD-after-barrel-pry")
+        tapID(app, "collect-itm-weight")
+        assertHolding(app, "itm-weight")
+        dismissCloseUp(app)
+
+        // Back up the ladder to the hearth and complete the SECOND poker use (p05 ash sift).
+        ensureView(app, "hearth", settle: 1.2) { tapID(app, "zone-exit") }
+        assertHolding(app, "itm-poker")                                // survived the zone transition
+        // R6-001 combined-state capture: the hearth wide with the poker TAKEN and the rug MOVED
+        // at the same time (the exact state where the poker crop was reported floating over the
+        // moved rug). The refreshHearth z-order fix (poker z9 < rug z10 < trapdoor z11) must have
+        // the moved-rug/open-trapdoor overlays covering any stray poker-crop pixels.
+        shoot(app, "r6009-bba-02b-hearth-poker-taken-AND-rug-moved")
+        useItem(app, item: "itm-poker", view: "hearth", onScene: 0.44, 0.68)  // sift ash -> reveal ring
+        tapID(app, "collect-itm-gold-ring")
+        assertHolding(app, "itm-gold-ring")
+        dismissCloseUp(app)
+
+        // BOTH uses satisfied -> the poker is consumed (and only now). No soft-lock: both
+        // poker-gated yields (weight + ring) were collected in this non-standard order.
+        assertNotHolding(app, "itm-poker")
+        shoot(app, "r6009-bba-03-poker-CONSUMED-after-both-uses")
+    }
+
+    /// R6-009 ordering 2 - ASTROLABE-FIRST. Cross into z2 (rune door), solve the astrolabe and
+    /// COLLECT its drawer (coin + crank) BEFORE the cellar - i.e. fire the z2 markSolved/setFlag
+    /// events (which drive the lifecycle-reconcile sweep) while the poker is held but both its
+    /// uses are still pending - then verify the poker is still there for the barrel, and is
+    /// consumed only after the last (ash) use.
+    func testR6009_pokerSurvivesAstrolabeFirst() {
+        let app = launchFreshApp()
+        enterLevelOne(app)
+
+        tapScene(app, "hearth", 0.248, 0.50)                           // take poker
+        assertHolding(app, "itm-poker")
+        shoot(app, "r6009-af-01-poker-taken")
+
+        // Gather z1 clue set: p01 rune door (4 marks + grimoire page A) AND the triptych (p02
+        // gate, so the later descent needs no extra study trip). Poker untouched throughout.
+        tapScene(app, "hearth", 0.613, 0.53); dismissCloseUp(app)      // AIR (bellows)
+        tapScene(app, "hearth", 0.585, 0.275); dismissCloseUp(app)     // FIRE (lintel)
+        ensureView(app, "study") { tapID(app, "nav-next") }
+        viewZ1GatingClues(app)                                         // EARTH + triptych + grimoire A/recipe
+        ensureView(app, "entry") { tapID(app, "nav-next") }
+        tapScene(app, "entry", 0.105, 0.62); dismissCloseUp(app)       // WATER (windowsill)
+
+        // Solve the rune door (p01) and pass into z2, WITHOUT having touched the cellar or ash.
+        ensureView(app, "study") { tapID(app, "nav-previous") }        // entry -> study
+        tapScene(app, "study", 0.762, 0.52)                            // rune-door close-up
+        for tile in [3, 1, 4, 2] { tapID(app, "rune-tile-\(tile)") }   // AIR, FIRE, EARTH, WATER
+        Thread.sleep(forTimeInterval: 0.6)
+        ensureView(app, "bench", settle: 1.2) {
+            tapScene(app, "study", 0.762, 0.52, settle: 1.2)
+        }
+        ensureView(app, "cabinet") { tapID(app, "nav-next") }
+        assertHolding(app, "itm-poker")                                // survived the z1 -> z2 passage
+
+        // Solve the astrolabe (p03) and COLLECT the drawer - this markSolved(astrolabeOrion) +
+        // the pickups are exactly the "reach a scene in a non-standard order" events R6-009
+        // worried about. None may consume the poker (both its uses are still pending).
+        tapScene(app, "cabinet", 0.93, 0.31); dismissCloseUp(app)      // Orion window (p03 gate)
+        tapScene(app, "cabinet", 0.79, 0.52)                           // astrolabe close-up
+        tapID(app, "astrolabe-plate-2")                                // Orion -> drawer springs open
+        tapID(app, "collect-itm-silver-coin")
+        tapID(app, "collect-itm-crank")
+        assertHolding(app, "itm-crank")
+        dismissCloseUp(app)
+        // THE GATE ASSERTION for this ordering: poker still held after the z2 solve + collect.
+        assertHolding(app, "itm-poker")
+        shoot(app, "r6009-af-02-poker-HELD-in-z2-after-drawer-collect")
+
+        // Now go to the cellar (z2 -> study -> hearth), open the trapdoor (triptych already
+        // viewed above), and pry the barrel. The poker must still be here for its p06 use.
+        ensureView(app, "bench") { tapID(app, "nav-previous") }        // cabinet -> bench
+        ensureView(app, "study") { tapID(app, "zone-exit") }           // workshop -> study
+        ensureView(app, "hearth") { tapID(app, "nav-previous") }       // study -> hearth
+        openTrapdoorAndDescend(app, triptychAlreadyViewed: true)
+        assertHolding(app, "itm-poker")
+
+        useItem(app, item: "itm-poker", view: "cellar", onScene: 0.735, 0.66)  // p06 pry barrel
+        assertHolding(app, "itm-poker")                                // p05 still pending -> retained
+        shoot(app, "r6009-af-03-poker-HELD-after-barrel-pry")
+        tapID(app, "collect-itm-weight")
+        assertHolding(app, "itm-weight")
+        dismissCloseUp(app)
+
+        // Complete the last (ash) use back at the hearth; the poker is then consumed.
+        ensureView(app, "hearth", settle: 1.2) { tapID(app, "zone-exit") }
+        useItem(app, item: "itm-poker", view: "hearth", onScene: 0.44, 0.68)   // p05 sift ash
+        tapID(app, "collect-itm-gold-ring")
+        assertHolding(app, "itm-gold-ring")
+        dismissCloseUp(app)
+        assertNotHolding(app, "itm-poker")
+        shoot(app, "r6009-af-04-poker-CONSUMED-after-both-uses")
+    }
+
+    // MARK: - R6 visual-regression captures (z1 close-ups the full playthrough does not isolate)
+    //
+    // The standard playthrough dismisses these clue close-ups mid-gather, so the round-6 static-
+    // asset fixes below have no dedicated human-inspectable frame in the CI artifact record. This
+    // light z1-only test (no solve) captures them for GATE 2, and adds a FUNCTIONAL guard for
+    // R6-003 (the rusted key must never enter inventory). Cheap enough to run on both devices.
+    func testR6VisualRegression_z1Captures() {
+        let app = launchFreshApp()
+        enterLevelOne(app)                                             // starts at the hearth
+
+        ensureView(app, "study") { tapID(app, "nav-next") }
+        // R6-002: the desk/flowerpot EARTH glyph must read triangle-with-a-bar-THROUGH-the-middle
+        // (down-triangle + horizontal bar), not a bar sitting below the triangle.
+        tapScene(app, "study", 0.10, 0.76)                            // flowerpot EARTH-glyph close-up
+        XCTAssertTrue(app.descendants(matching: .any)["closeup-dismiss"].waitForExistence(timeout: 5),
+                      "flowerpot (EARTH glyph) close-up must present")
+        shoot(app, "r6002-earth-glyph-cu")
+        dismissCloseUp(app)
+        // R6-011: the grimoire recipe stir glyph must read 5 dots, COUNTER-CLOCKWISE (matching the
+        // fixed 5-CCW brew solution), not the old 6-CW spiral.
+        tapScene(app, "study", 0.46, 0.66)                            // grimoire (opens at recipe spread)
+        XCTAssertTrue(app.descendants(matching: .any)["closeup-dismiss"].waitForExistence(timeout: 5),
+                      "grimoire recipe close-up must present")
+        shoot(app, "r6011-recipe-spiral-5ccw-cu")
+        dismissCloseUp(app)
+
+        ensureView(app, "entry") { tapID(app, "nav-next") }
+        // R6-003: tapping the rusted decoy key INSPECTS it (in-world close-up) and must leave the
+        // inventory untouched — it is a decoy, never an inventory item. Functional guard + capture.
+        tapScene(app, "entry", 0.715, 0.53)                           // rusted-key inspect
+        XCTAssertTrue(app.descendants(matching: .any)["closeup-dismiss"].waitForExistence(timeout: 5),
+                      "rusted-key inspect close-up must present")
+        assertNotHolding(app, "itm-rusted-key", timeout: 3)           // R6-003: never collected
+        shoot(app, "r6003-rusted-key-noncollectible")
+        dismissCloseUp(app)
+    }
 }

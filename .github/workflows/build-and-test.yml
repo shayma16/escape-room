@@ -180,6 +180,8 @@ jobs:
             -project EscapeRoom/EscapeRoom.xcodeproj \
             -scheme EscapeRoomUITests \
             -destination "platform=iOS Simulator,name=${{ steps.sims.outputs.ipad_name }}" \
+            -skip-testing:EscapeRoomUITests/EscapeRoomUITests/testR6009_pokerSurvivesBarrelBeforeAsh \
+            -skip-testing:EscapeRoomUITests/EscapeRoomUITests/testR6009_pokerSurvivesAstrolabeFirst \
             -resultBundlePath TestResults/EscapeRoomUITests-iPad.xcresult \
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
