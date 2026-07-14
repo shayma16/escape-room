@@ -1,3 +1,32 @@
+# ROUND 6 ART TRACK — FINAL (build-12-round6-fixes worktree) — 2026-07-14
+PROGRESS: 4/4 items DONE | 0 failed | nano spend this round $1.05 | cumulative Level-1 art $20.85 of $23.00 cap ($2.15 headroom)
+
+IMPORTANT SETUP NOTE: this worktree was created off the WRONG base (build-2, 1ed29a9),
+missing all build-3/10/11 work. Detected during R6-004 scoping; branch hard-reset to the
+correct build-12-round6-fixes tip (f4fd52c). ALL fixes were redone on the correct
+build-11/12 plates. The 2 wasted nano gens on the wrong plate are included in the $1.05.
+
+DELIVERABLES:
+- R6-002 EARTH glyph (cu-flowerpot 1600x1400) - carved bar moved to canon (through middle). PIL $0.
+- R6-011 recipe spiral (cu-grimoire-recipe 2048x1536) - 5 dots + CCW (mirror + 1 dot removed). PIL $0.
+- R6-004 band sweep - top/bottom padded edges of 6 reframed views (hearth/study/entry/bench/cabinet/cellar)
+  + all state variants; clean reflect+dark-vignette fill; content interior byte-identical; base/variant
+  bands identical (clean overlays). Left/right overscan bands NOT flagged (left as-is). Alcove not reframed. PIL $0.
+- R6-007 flame1/2/3 + cabinet-slots-seated - re-rolled build-3 engine style crop-scoped off the fresh
+  3840x1920 base plates (were stale 2560 plates); byte-identical to base outside edited region. nano $1.05.
+
+FAL COST LOG (this round, nano-banana-pro /edit @ 2K = $0.15/gen):
+  slots-seated (WRONG build-2 plate, wasted x2) ... $0.30
+  flame3 (preview + save) .......................... $0.30
+  flame1 ........................................... $0.15
+  flame2 ........................................... $0.15
+  slots-seated (correct 3840 base) ................. $0.15
+  ------------------------------------------------- 
+  round total ...................................... $1.05
+  cumulative Level-1 art ........................... $20.85 / $23.00
+
+---
+
 # Level 1 — Build 9 glyph-consistency + thumbnail (R3-007, R3-002) — deterministic PIL, $0
 
 PROGRESS: 2/2 done | 0 retrying | 0 failed | 0 remaining | $0.00 spent

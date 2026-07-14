@@ -319,7 +319,8 @@
    "seed": 64003,
    "est_cost_usd": 0.0944,
    "prompt": "pre-rendered point-and-click adventure game close-up plate, painterly realism, moody 1990s Myst-style interior detail, muted warm-and-cool night palette, oil painting texture, highly detailed, no text, no letters, no people. An ancient grimoire lying open flat, straight-down view, double parchment spread filling frame, warm lamp light; a glossy BLACK CROW FEATHER lies across the page gutter as a b",
-   "note": "spiral top-down winding outward CCW with arrowhead - handedness locked to brew view (R3)"
+   "note": "spiral top-down winding outward CCW with arrowhead - handedness locked to brew view (R3)",
+   "round6_note": "R6-011: stir glyph corrected to 5 dots CCW."
   },
   {
    "file": "z1/v-study/cu-grimoire-zodiac@3x.png",
@@ -391,7 +392,8 @@
    "generation": "t2i",
    "seed": 64009,
    "est_cost_usd": 0.0944,
-   "prompt": "pre-rendered point-and-click adventure game close-up plate, painterly realism, moody 1990s Myst-style interior detail, muted warm-and-cool night palette, oil painting texture, highly detailed, no text, no letters, no people. Close-up of a dead potted plant on the corner of a dark oak writing desk in warm oil-lamp light: dry withered stems in a weathered TERRACOTTA CLAY flowerpot, the pot's smooth "
+   "prompt": "pre-rendered point-and-click adventure game close-up plate, painterly realism, moody 1990s Myst-style interior detail, muted warm-and-cool night palette, oil painting texture, highly detailed, no text, no letters, no people. Close-up of a dead potted plant on the corner of a dark oak writing desk in warm oil-lamp light: dry withered stems in a weathered TERRACOTTA CLAY flowerpot, the pot's smooth ",
+   "round6_note": "R6-002: EARTH bar moved to canon (through middle)."
   },
   {
    "file": "z1/v-study/cu-runedoor-tiles@3x.png",
@@ -677,7 +679,8 @@
    "batch": 2,
    "generation": "edit-crop",
    "seed": 75015,
-   "est_cost_usd": 0.0212
+   "est_cost_usd": 0.0212,
+   "round6_note": "R6-007: re-rolled build-3 on 3840 base (low flame)."
   },
   {
    "file": "z2/v-bench/z2-bench-flame2@3x.png",
@@ -689,7 +692,8 @@
    "batch": 2,
    "generation": "edit-crop",
    "seed": 75006,
-   "est_cost_usd": 0.0106
+   "est_cost_usd": 0.0106,
+   "round6_note": "R6-007: re-rolled build-3 on 3840 base (medium flame)."
   },
   {
    "file": "z2/v-bench/z2-bench-flame3@3x.png",
@@ -702,7 +706,8 @@
    "generation": "edit-crop",
    "seed": 75007,
    "est_cost_usd": 0.0106,
-   "note": "height ladder verified in grayscale gate; hue constant amber"
+   "note": "height ladder verified in grayscale gate; hue constant amber",
+   "round6_note": "R6-007: re-rolled build-3 on 3840 base (tall flame)."
   },
   {
    "file": "z2/v-bench/cu-brew-clear@3x.png",
@@ -839,7 +844,8 @@
    "batch": 2,
    "generation": "edit-crop",
    "seed": 75008,
-   "est_cost_usd": 0.0103
+   "est_cost_usd": 0.0103,
+   "round6_note": "R6-007: re-rolled build-3 on 3840 base (ring on sun + coin on moon)."
   },
   {
    "file": "z2/v-cabinet/z2-cabinet-open@3x.png",
@@ -1679,7 +1685,7 @@
   }
  },
  "global": {
-  "scope": "one-time app-wide custom art (app icon + launch screen) per specs/global-ui-style.md Section 10 \u2014 theme-independent, never restyled per level",
+  "scope": "one-time app-wide custom art (app icon + launch screen) per specs/global-ui-style.md Section 10 — theme-independent, never restyled per level",
   "generated": "2026-07-05",
   "model": "fal-ai/flux-2-pro (t2i + edit) + PIL derivation pass",
   "asset_root": "specs/assets/global/",
@@ -1694,7 +1700,7 @@
    },
    {
     "file": "launch/emblem-keyhole.png",
-    "role": "flat keyhole emblem \u2014 launch screen mark; Main Menu backdrop reuses at ~8% white (style guide 5.1)",
+    "role": "flat keyhole emblem — launch screen mark; Main Menu backdrop reuses at ~8% white (style guide 5.1)",
     "size": "1024x1024 RGBA, white on transparent, mark 55% of canvas height, centered",
     "method": "flux edit from app-icon-1024 (flat silhouette) + PIL luminance->alpha ramp cleanup + bbox re-center",
     "est_cost_usd": 0.0315
@@ -1713,7 +1719,7 @@
    }
   ],
   "developer_notes": [
-   "iOS icon size set: use asset catalog 'Single Size' with app-icon-1024.png \u2014 Xcode derives all sizes; do NOT hand-export the legacy size matrix.",
+   "iOS icon size set: use asset catalog 'Single Size' with app-icon-1024.png — Xcode derives all sizes; do NOT hand-export the legacy size matrix.",
    "Launch screen: prefer storyboard/launch-configuration with background color #101010 + centered emblem-keyhole.png image over the fixed rasters, so it matches the Main Menu backdrop pixel-for-pixel on every device; the two rasters are reference/fallback renders of the intended result.",
    "Launch must be visually identical to the Main Menu empty backdrop (fade-in effect, style guide 10.2); menu uses the same emblem at 8% white, launch at ~11%."
   ],
@@ -1932,7 +1938,7 @@
  },
  "feedback_round1_fixes": {
   "date": "2026-07-07",
-  "spec": "style-guide.md Rev 2 \u00a77-R 'Feedback round 1 \u2014 art-fix briefs' (AF-1..AF-4)",
+  "spec": "style-guide.md Rev 2 §7-R 'Feedback round 1 — art-fix briefs' (AF-1..AF-4)",
   "budget_cap_usd": 3.0,
   "principle": "inpaint/crop-scoped; approved plates remain style anchors; smallest-change; grayscale acceptance gate; NO full re-renders / NO restyle",
   "technique": "fal flux-2-pro/edit on tight anchored crop, then feathered-mask PIL composite of ONLY the masked region back onto untouched original -> zero drift outside mask",
@@ -2336,5 +2342,51 @@
    "canonical_filename_discipline": "all 20 at canonical paths; 19 superseded originals -> _rejects/flux-painterly/; shadow-scan clean (no _work/-v2 strays)",
    "scale_variants": "@3x/@2x/@1x emitted for all 20"
   }
+ },
+ "round6_art_track": {
+  "date": "2026-07-14",
+  "branch": "build-12-round6-fixes (worktree; reset from a wrong build-2 base to correct f4fd52c)",
+  "items": {
+   "R6-002_earth_glyph": {
+    "file": "z1/v-study/cu-flowerpot@3x.png",
+    "fix": "carved EARTH bar moved to canon: single horizontal bar THROUGH the triangle middle (door tile-4), stray marks healed",
+    "method": "deterministic PIL heal+carve",
+    "cost_usd": 0.0
+   },
+   "R6-011_recipe_spiral": {
+    "file": "z1/v-study/cu-grimoire-recipe@3x.png",
+    "fix": "stir glyph corrected to 5 dots + COUNTER-CLOCKWISE (was 6 CW): horizontal-mirror of the spiral region flips winding+arrow to CCW keeping organic ink/parchment, then one dot removed",
+    "method": "deterministic PIL mirror+heal",
+    "cost_usd": 0.0
+   },
+   "R6-004_band_sweep": {
+    "views": [
+     "z1/v-hearth",
+     "z1/v-study",
+     "z1/v-entry",
+     "z2/v-bench",
+     "z2/v-cabinet",
+     "z3/v-cellar"
+    ],
+    "edges": "top+bottom (short) padded edges + state variants",
+    "fix": "blurry/stretched reframe edge-band replaced with clean content-preserving fill (short reflect + dark atmospheric vignette; no blur, no streak, no object duplication). Left/right overscan bands NOT flagged - left as-is. z4-alcove was never reframed (no band).",
+    "method": "deterministic PIL, content interior byte-identical, base+variant bands identical (clean overlays)",
+    "cost_usd": 0.0
+   },
+   "R6-007_flames_slots": {
+    "files": [
+     "z2/v-bench/z2-bench-flame1@3x.png",
+     "z2/v-bench/z2-bench-flame2@3x.png",
+     "z2/v-bench/z2-bench-flame3@3x.png",
+     "z2/v-cabinet/z2-cabinet-slots-seated@3x.png"
+    ],
+    "fix": "re-rolled in build-3 engine style, crop-scoped off the fresh 3840x1920 base plates (were stale 2560 dark plates, wrong style + resolution-mismatched to base). Flames = progressive low/medium/tall; slots = gold ring on sun + silver moon-coin on moon. Byte-identical to base outside the edited region (clean overlays).",
+    "method": "nano-banana-pro /edit crop-scoped composite",
+    "cost_usd": 1.05,
+    "note": "cost includes 2 wasted gens on the wrong build-2 plate before the base-reset was discovered + a flame3 preview gen"
+   }
+  },
+  "round6_nano_spend_usd": 1.05,
+  "cumulative_level1_art_usd": 20.85
  }
 }
