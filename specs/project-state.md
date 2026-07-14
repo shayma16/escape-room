@@ -60,10 +60,23 @@ both full playthroughs + save/resume + smoke). Path there: run 1 (29311898591) c
 (f000e15, weight-hang 0.23,0.33→0.44,0.55; full UI-playthrough coord audit, only that one stale).
 Run 2 (29314184259) iPad flake (UI-query timeout, iPhone passed same test) then rerun CANCELLED
 at 120-min job timeout → bumped timeout-minutes 120→180 (3f58479). Run 3 green.
-**NEXT:** QA checkpoint (step 12) — MUST satisfy the R6-009 poker alt-order screenshot gate
-(barrel-before-ash, astrolabe-first orderings: poker retained through both uses, no soft-lock) +
-verify round-6 visual fixes against the green run's screenshot artifacts → qa-report.md →
-**GATE 2 user go/no-go** → Documentation second pass → re-release as next TestFlight build.
+**QA DONE (628bb48):** R6-009 poker gate CLEARED — both alt-order UI tests GREEN on iPhone
+(testR6009_pokerSurvivesAstrolabeFirst 153s, testR6009_pokerSurvivesBarrelBeforeAsh 80s), standard
+full playthrough green (iPhone), testR6VisualRegression_z1Captures green (iPad). Visual fixes
+verified from screenshots (spiral 5-CCW, flame plate, EARTH glyph, roped hook, empty wides,
+non-collectible key = PASS; drawer-empty + edge-bands UNVERIFIED-BY-SCREENSHOT → device spot-check).
+qa-report.md: GO. R6-009 tests gated to iPhone-only on iPad step (workflow -skip-testing).
+
+**CI iteration log (build-12):** run1 29311898591 = real bug (stale weight-hook UI coord) → fixed
+f000e15. run2 29314184259 = iPad UI-query flake then rerun CANCELLED at 120min → timeout bumped
+120→180 (3f58479). run3 29328326128 = GREEN (pre-QA baseline; iPad full playthrough passed 1357s).
+run4 29337094840 (post-QA) = R6-009 gate + all substantive tests GREEN, but iPad
+testFullPlaythroughWithScreenshots failed TWICE (initial + rerun) at app.launch() with CoreSimulator
+"Failed to terminate app" — an infra teardown-contamination flake (same test green on iPhone + green
+on iPad in run3). ROOT-CAUSE FIX: UI-test harness now terminates the app in tearDown (6b8dae0) so no
+stuck instance blocks the next test's launch; zero test-logic change.
+**NEXT:** push 6b8dae0 + dispatch fresh full CI → on green, **GATE 2 user go/no-go** →
+Documentation second pass → re-release as next TestFlight build.
 Non-blocking eyeball items for GATE 2: R6-004 left/right overscan left as-is (only top/bottom
 swept); R6-002 EARTH glyph faint carved-groove remnants (reads correct ▽+bar).
 
