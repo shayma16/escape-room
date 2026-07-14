@@ -2384,6 +2384,47 @@
     "method": "nano-banana-pro /edit crop-scoped composite",
     "cost_usd": 1.05,
     "note": "cost includes 2 wasted gens on the wrong build-2 plate before the base-reset was discovered + a flame3 preview gen"
+   },
+   "R6-JOIN_emptied_container_plates": {
+    "date": "2026-07-14",
+    "purpose": "Developer container-render fix loads these by exact logical base-name (existence-guarded). 'Erase the item, show empty interior' state variants. All $0 deterministic PIL: tight item-shaped mask + per-row per-run horizontal linear interpolation between adjacent clean pixels; run independently per scale so @2x/@1x stay byte-identical to their own base plate outside the mask. No nano spend.",
+    "method": "deterministic PIL horizontal-interp inpaint",
+    "cost_usd": 0.0,
+    "plates": {
+     "z2/v-cabinet/cu-cabinet-empty": {
+      "file": "z2/v-cabinet/cu-cabinet-empty@3x.png",
+      "zone": "z2",
+      "view": "v-cabinet",
+      "element": "open sun/moon cabinet interior close-up",
+      "state": "doors open, BOTH shelves empty",
+      "source": "cu-cabinet-open@{1,2,3}x (build-11 canonical)",
+      "geometry_3x": "erased file/rasp (diag line 806,514->839,822 w58) + corked phial (belly ellipse c(952,742) rx71 ry102 + neck 910,600,990,662 + cork 914,588,974,628); dilate4; changed bbox x773-1027 y481-855",
+      "scales": ["@1x 683x512", "@2x 1365x1024", "@3x 2048x1536"],
+      "note": "open doors, interior wood, sun/moon emblems, shelf lips all intact; outside erase region byte-identical to base"
+     },
+     "z3/v-cellar/ov-barrel-pried-empty": {
+      "file": "z3/v-cellar/ov-barrel-pried-empty@3x.png",
+      "zone": "z3",
+      "view": "v-cellar",
+      "element": "cellar barrel wide, pried open",
+      "state": "iron weight GONE, empty barrel interior (R6-005 barrel-weight duplication fix)",
+      "source": "z3-cellar-barrel-pried@{1,2,3}x (build-11 canonical)",
+      "geometry_3x": "erased trapezoid iron weight + ring handle (uniform rect 2658,1266,2786,1404); dilate4; changed bbox x2654-2790 y1262-1408",
+      "scales": ["@1x 1280x640", "@2x 2560x1280", "@3x 3840x1920"],
+      "note": "pried lid, staves, both metal bands, front ledge, hexagonal floor all intact; outside erase region byte-identical to base"
+     },
+     "z2/v-cabinet/ov-adrawer-empty": {
+      "file": "z2/v-cabinet/ov-adrawer-empty@3x.png",
+      "zone": "z2",
+      "view": "v-cabinet",
+      "element": "astrolabe base drawer wide, sprung open",
+      "state": "moon coin + crank GONE, empty drawer floor",
+      "source": "z2-cabinet-drawer-open@{1,2,3}x (build-11 canonical)",
+      "geometry_3x": "erased moon coin (ellipse c(2712,1499) rx44 ry26) + Z-crank (rect 2778,1481,2872,1527), both kept below lit back rim; dilate4; changed bbox x2664-2876 y1469-1531",
+      "scales": ["@1x 1280x640", "@2x 2560x1280", "@3x 3840x1920"],
+      "note": "OPTIONAL item delivered (clean); drawer already functionally hides via code. Lit back rim, drawer front/sides, astrolabe base intact; outside erase region byte-identical to base"
+     }
+    }
    }
   },
   "round6_nano_spend_usd": 1.05,
