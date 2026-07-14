@@ -133,12 +133,13 @@ BUILD3_VINTAGE_CUTOFF = "2026-07-08T00:00:00+04:00"
 # fails the build. Silent acceptance is exactly what let 19 stale files ship — this
 # list makes acceptance loud, reviewable and revocable.
 KNOWN_LEGACY_SOURCES = {
-    # QA-B10-002 (qa-report, build 10): legacy 2560 flame plates + slots-seated overlay,
-    # recorded by QA as accepted minor art residuals, re-roll deferred (non-blocking).
-    "z2/v-bench/z2-bench-flame1@3x.png": "QA-B10-002 accepted legacy; re-roll deferred",
-    "z2/v-bench/z2-bench-flame2@3x.png": "QA-B10-002 accepted legacy; re-roll deferred",
-    "z2/v-bench/z2-bench-flame3@3x.png": "QA-B10-002 accepted legacy; re-roll deferred",
-    "z2/v-cabinet/z2-cabinet-slots-seated@3x.png": "QA-B10-002 accepted legacy; re-roll deferred",
+    # (Round 6 / build 12, 2026-07-14) R6-007 un-defer: the 4 QA-B10-002 exceptions
+    # (z2-bench-flame1/2/3 + z2-cabinet-slots-seated) are RETIRED. These plates are
+    # player-visible in normal play (bellows pump), so "deferred re-roll" was wrong;
+    # Asset-Gen re-rolled all four fresh in build-3 style at 3840x1920 (committed
+    # 2026-07-14, post-cutoff), so the vintage guard now enforces them like everything
+    # else. See specs/levels/level-1/round6-routed-changelist.md Cluster D.
+    #
     # (build 11, 2026-07-13) cu-cabinet-open exception REMOVED: the 20th stale file was
     # re-delivered by Asset Gen as gapfill item 20 ($0 PIL crop of the z2-cabinet-open
     # wide), so its source is now build-3 canon and the vintage guard covers it normally.
@@ -593,6 +594,12 @@ PLAIN_PLATES = [
     "z2/v-bench/cu-mortar-blossom@3x.png",
     "z2/v-bench/cu-mortar-paste@3x.png",
     "z2/v-cabinet/z2-cabinet-base@3x.png",
+    # Round 6 R6-010 (Cluster A): clean EMPTY sun/moon cabinet close-up base. Once BOTH
+    # items are taken, ContainerCloseUpModel.plan swaps plan.base -> "cu-cabinet-empty"
+    # (partial state composites remaining icons over it). Delivered as a real close-up
+    # plate (2048x1536), staged verbatim like every other close-up so GameAssetLoader
+    # indexes it by basename "cu-cabinet-empty".
+    "z2/v-cabinet/cu-cabinet-empty@3x.png",
     "z2/v-cabinet/cu-slots-empty@3x.png",
     "z2/v-cabinet/cu-slots-seated@3x.png",
     "z2/v-cabinet/cu-potion-shelf@3x.png",
@@ -745,8 +752,19 @@ OVERLAYS = [
     # z2 cabinet (re-framed variants align)
     ("z2/v-cabinet", "z2-cabinet-base", "z2-cabinet-open",        "ov-cab-open",     False),
     ("z2/v-cabinet", "z2-cabinet-base", "z2-cabinet-drawer-open", "ov-adrawer-open", False),
+    # Round 6 R6-008-wide (Cluster A): emptied astrolabe-drawer WIDE overlay. Delivered as
+    # a fresh region-edit plate that removes the coin+crank from the open drawer; it aligns
+    # with the base like z2-cabinet-drawer-open, so we auto-diff/self-locate it exactly the
+    # same way. Covers the same drawer footprint as ov-adrawer-open, now empty. The Swift
+    # resolver (astrolabeDrawerOverlay) swaps to it once BOTH items are collected.
+    ("z2/v-cabinet", "z2-cabinet-base", "ov-adrawer-empty",       "ov-adrawer-empty", False),
     # z3 cellar — the R4-024 fix: one base, independent element overlays, all self-located
     ("z3/v-cellar", "z3-cellar-base", "z3-cellar-barrel-pried", "ov-barrel-pried", False),
+    # Round 6 R6-005 (Cluster A): emptied pried-barrel WIDE overlay (weight removed). Same
+    # pried-barrel footprint as ov-barrel-pried, now without the weight; auto-diff'd against
+    # the closed base like ov-barrel-pried. barrelOverlay() swaps to it once the weight is
+    # collected so the barrel never re-nails yet no longer shows the taken weight.
+    ("z3/v-cellar", "z3-cellar-base", "ov-barrel-pried-empty",  "ov-barrel-pried-empty", False),
     ("z3/v-cellar", "z3-cellar-base", "z3-cellar-drawer-open",  "ov-drawer-open",  False),
     ("z3/v-cellar", "z3-cellar-base", "z3-cellar-crank-fitted", "ov-crank-fitted", False),
     ("z3/v-cellar", "z3-cellar-base", "z3-cellar-mirror-d2",    "ov-mirror-d2",    False),

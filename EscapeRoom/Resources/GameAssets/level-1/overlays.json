@@ -13,9 +13,9 @@
    "file": "z1/v-entry/overlays/ov-crow-lintel.jpg",
    "rect": [
     0.440625,
-    0.1515625,
+    0.05625,
     0.18307291666666667,
-    0.24322916666666666
+    0.3385416666666667
    ]
   },
   "ov-vines-gone": {
@@ -87,6 +87,15 @@
   }
  },
  "z2/v-cabinet": {
+  "ov-adrawer-empty": {
+   "file": "z2/v-cabinet/overlays/ov-adrawer-empty.jpg",
+   "rect": [
+    0.6658854166666667,
+    0.7536458333333333,
+    0.09713541666666667,
+    0.0546875
+   ]
+  },
   "ov-adrawer-open": {
    "file": "z2/v-cabinet/overlays/ov-adrawer-open.jpg",
    "rect": [
@@ -134,6 +143,15 @@
     0.225
    ]
   },
+  "ov-barrel-pried-empty": {
+   "file": "z3/v-cellar/overlays/ov-barrel-pried-empty.jpg",
+   "rect": [
+    0.6606770833333333,
+    0.5385416666666667,
+    0.10078125,
+    0.225
+   ]
+  },
   "ov-beam-alcove": {
    "file": "z3/v-cellar/overlays/ov-beam-alcove.jpg",
    "rect": [
@@ -165,9 +183,9 @@
    "file": "z3/v-cellar/overlays/ov-crank-fitted.jpg",
    "rect": [
     0.21041666666666667,
-    0.1109375,
+    0.035416666666666666,
     0.11744791666666667,
-    0.140625
+    0.21614583333333334
    ]
   },
   "ov-drawer-empty": {
