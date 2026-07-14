@@ -130,33 +130,110 @@ enum CloseUpLayout {
 
     enum SlotID { case sun, moon }
 
-    // MARK: Container close-ups (manual pickup, feedback round 1)
+    // MARK: Container close-ups (per-element taken-state render — R4-024, Round 6 Cluster A)
+    //
+    // ROUND 6 REWRITE (R6-008 / R6-010): the old model painted BOTH items into a single
+    // "open" plate and tried to HIDE a collected item under a translucent dark patch — the
+    // "black box" QA reported. That is not per-element compositing. The correct R4-024 model
+    // is: an EMPTY container base + one icon overlay per item, drawn ONLY while that item is
+    // uncollected. A collected item simply stops compositing (no mask, no black box); the
+    // container reads empty once all are taken. See `ContainerCloseUpModel.plan`.
+    //
+    // Item rects re-derived by visual inspection of the CURRENT build-3 plates (the old rects
+    // were off — R6-008/-010 "hotspots require random-clicking"). Coin/crank measured against
+    // cu-astrolabe-drawer-open; file/phial against cu-cabinet-open (same framing as their
+    // empty bases). Rects are normalized to the 2048x1536 close-up plate.
 
-    /// Plate shown while any content is uncollected / once everything is taken. The
-    /// astrolabe has a dedicated inpainted empty close-up; the cabinet has no dedicated
-    /// empty CLOSE-UP plate (build-3 gap G3: ov-cab-open-empty is only a cropped WIDE
-    /// overlay, not a full close-up), so a fully-collected cabinet just re-shows the open
-    /// plate — correct because ContainerCloseUp renders no tap targets once everything is
-    /// collected, and the WIDE view already carries the emptied state.
-    static func containerPlates(_ container: PuzzleEngine.Container) -> (open: String, empty: String) {
-        switch container {
-        case .astrolabeDrawer: return ("cu-astrolabe-drawer-open", "cu-astrolabe-drawer-empty")
-        case .sunMoonCabinet: return ("cu-cabinet-open", "cu-cabinet-open")
-        }
+    struct ContainerItemVisual: Equatable {
+        let id: String
+        let icon: String
+        let rect: CGRect
     }
 
-    /// Collectable-item regions, normalized to the container's OPEN plate (measured
-    /// against the shipped art). Rendered as invisible tap targets (>= 44 pt enforced
-    /// by the view) with a soft dark patch over already-collected items (both
-    /// containers have dark interiors, so absence reads naturally).
-    static let containerItemRects: [PuzzleEngine.Container: [String: CGRect]] = [
-        .astrolabeDrawer: [
-            PuzzleGraph.ItemID.silverCoin: CGRect(x: 0.315, y: 0.765, width: 0.145, height: 0.115),
-            PuzzleGraph.ItemID.crank: CGRect(x: 0.455, y: 0.755, width: 0.255, height: 0.145),
-        ],
-        .sunMoonCabinet: [
-            PuzzleGraph.ItemID.file: CGRect(x: 0.29, y: 0.50, width: 0.29, height: 0.125),
-            PuzzleGraph.ItemID.phial: CGRect(x: 0.55, y: 0.335, width: 0.125, height: 0.29),
-        ],
-    ]
+    struct ContainerConfig {
+        /// The clean, item-free base plate (per-element compositing target).
+        let emptyBase: String
+        /// The legacy plate with the items painted in — the interim fallback used ONLY
+        /// while `emptyBase` is not yet staged (keeps the build safe; no black box).
+        let bakedOpen: String
+        let items: [ContainerItemVisual]
+    }
+
+    static func containerConfig(_ container: PuzzleEngine.Container) -> ContainerConfig {
+        switch container {
+        case .astrolabeDrawer:
+            return ContainerConfig(
+                emptyBase: "cu-astrolabe-drawer-empty",
+                bakedOpen: "cu-astrolabe-drawer-open",
+                items: [
+                    ContainerItemVisual(id: PuzzleGraph.ItemID.silverCoin, icon: "icon-silver-coin",
+                                        rect: CGRect(x: 0.420, y: 0.615, width: 0.065, height: 0.085)),
+                    ContainerItemVisual(id: PuzzleGraph.ItemID.crank, icon: "icon-crank",
+                                        rect: CGRect(x: 0.555, y: 0.600, width: 0.105, height: 0.140)),
+                ])
+        case .sunMoonCabinet:
+            // NOTE (flagged for the JOIN art pass): `cu-cabinet-empty` does not exist yet —
+            // the cabinet items are baked into cu-cabinet-open and there is no clean empty
+            // close-up plate (build-3 gap G3). Until that plate is staged, the resolver
+            // falls back to cu-cabinet-open (items linger, but the black box is gone). Once
+            // an empty cabinet close-up is staged under this name, the cabinet becomes fully
+            // clean with no code change.
+            return ContainerConfig(
+                emptyBase: "cu-cabinet-empty",
+                bakedOpen: "cu-cabinet-open",
+                items: [
+                    ContainerItemVisual(id: PuzzleGraph.ItemID.file, icon: "icon-file",
+                                        rect: CGRect(x: 0.340, y: 0.350, width: 0.070, height: 0.195)),
+                    ContainerItemVisual(id: PuzzleGraph.ItemID.phial, icon: "icon-phial",
+                                        rect: CGRect(x: 0.415, y: 0.390, width: 0.070, height: 0.150)),
+                ])
+        }
+    }
+}
+
+/// Pure, testable render decision for a solved-container close-up (Round 6 Cluster A).
+/// `f(container, collection-state) -> what to draw`, with NO masking layer by construction,
+/// so the "black box" defect cannot recur. Kept out of SwiftUI so the guard tests can assert
+/// every collection state (0 / 1 / 2 taken) without a live view.
+enum ContainerCloseUpModel {
+    struct Plan: Equatable {
+        /// The base plate to show.
+        let base: String
+        /// Item icons to COMPOSITE over the empty base (uncollected items, clean path only).
+        let iconItems: [CloseUpLayout.ContainerItemVisual]
+        /// Tap targets for the uncollected items (sit over the icon OR the baked item).
+        let tapTargets: [CloseUpLayout.ContainerItemVisual]
+        /// Whether the clean empty base is staged (false = interim baked fallback in use).
+        let emptyBaseAvailable: Bool
+    }
+
+    /// `assetExists` is injectable for tests; defaults to the on-disk asset index.
+    static func plan(_ container: PuzzleEngine.Container, state: GameState,
+                     assetExists: (String) -> Bool = { GameAssetLoader.shared.url(for: $0) != nil }) -> Plan {
+        let cfg = CloseUpLayout.containerConfig(container)
+        let uncollected = Set(PuzzleEngine.uncollectedItems(in: container, state: state))
+        let remaining = cfg.items.filter { uncollected.contains($0.id) }
+        let allUncollected = remaining.count == cfg.items.count
+        let emptyAvailable = assetExists(cfg.emptyBase)
+
+        let base: String
+        let icons: [CloseUpLayout.ContainerItemVisual]
+        if allUncollected {
+            // Nothing taken yet: the painted "open" plate shows both items at full quality.
+            base = cfg.bakedOpen
+            icons = []
+        } else if emptyAvailable {
+            // Something taken: clean empty base + an icon for each REMAINING item. The taken
+            // item is simply not composited — it disappears with no black box.
+            base = cfg.emptyBase
+            icons = remaining
+        } else {
+            // Interim (empty plate not staged): keep the baked plate, draw no icons, and —
+            // critically — no dark mask. Collected items linger (flagged) but the reported
+            // black box is gone. Fixed fully once the empty plate lands.
+            base = cfg.bakedOpen
+            icons = []
+        }
+        return Plan(base: base, iconItems: icons, tapTargets: remaining, emptyBaseAvailable: emptyAvailable)
+    }
 }

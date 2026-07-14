@@ -311,12 +311,19 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertEqual(state.data.solvedPuzzles, before.solvedPuzzles)
     }
 
-    func testRustedKeyIsPickupableAndUnlocksNothing() {
+    /// R6-003: the rusted key is a NON-COLLECTIBLE in-world decoy. A tap INSPECTS it in a
+    /// close-up and never adds it to inventory; even if some path armed it (old-save safety)
+    /// it frees/unseals nothing and is never consumed.
+    func testRustedKeyIsNonCollectibleDecoy_R6_003() {
         let state = makeState(tempDir())
         let coordinator = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize)
         coordinator.scene.onHotspotTap?("rusted-key")
-        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.rustedKey))
-        // Rusted key on the star keyhole / cage / door must never free the crow or unseal.
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.rustedKey),
+                       "R6-003: the rusted key must NOT enter inventory")
+        XCTAssertEqual(coordinator.activeCloseUp, .plain(image: "cu-rusted-key"),
+                       "R6-003: tapping the rusted key inspects it in a close-up")
+        // Old-save safety: even if the key is already held, it unlocks nothing / is not spent.
+        state.addItem(PuzzleGraph.ItemID.rustedKey)
         coordinator.useItem(PuzzleGraph.ItemID.rustedKey, on: "star-keyhole")
         coordinator.useItem(PuzzleGraph.ItemID.rustedKey, on: "door-lock")
         XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.crowFreed))
@@ -748,7 +755,8 @@ final class QALevelFlowTests: XCTestCase {
             (.cabinet, "potion-shelf", 0.20, 0.37),
             // cellar
             (.cellar, "barrel", 0.735, 0.66), (.cellar, "drawer", 0.555, 0.40),
-            (.cellar, "hook", 0.23, 0.33), (.cellar, "winch", 0.195, 0.10),
+            // R6-006: the weight hook is the ROPED pulley hook beside the sliding shelf.
+            (.cellar, "hook", 0.44, 0.55), (.cellar, "winch", 0.195, 0.10),
             (.cellar, "mirror", 0.13, 0.62),
             // alcove
             (.alcove, "planter", 0.57, 0.76), (.alcove, "statue-key", 0.605, 0.31),

@@ -300,4 +300,51 @@ final class RenderedFrameOverlayTests: XCTestCase {
                                 viewKey: "z3/v-cellar", overlay: overlay, label: "cellar")
         }
     }
+
+    // MARK: - Case 3 (Round 6 Cluster A): cabinet WIDE contents vs emptied taken-state.
+    //
+    // The changelist notes the sun/moon cabinet WIDE already renders empty correctly and
+    // must NOT regress. This guards BOTH wide states through the live compositor: with the
+    // pair uncollected the overlay is ov-cab-open (contents shown); once both are collected
+    // it becomes ov-cab-open-empty (contents gone). Both overlays share the same rect, so a
+    // stale-state selection (showing contents after collect) is exactly what this catches.
+
+    private func renderCabinetOverlayRegion(collectContents: Bool,
+                                            expectedOverlay: String,
+                                            label: String,
+                                            file: StaticString = #filePath, line: UInt = #line) {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        state.markSolved(PuzzleGraph.PuzzleID.cabinetSunMoon) // doors open, contents visible
+        if collectContents {
+            state.addItem(PuzzleGraph.ItemID.file)
+            state.addItem(PuzzleGraph.ItemID.phial)
+        }
+        XCTAssertEqual(RoomVisuals.cabinetOpenOverlay(state), expectedOverlay,
+                       "\(label): resolver selected the wrong wide overlay", file: file, line: line)
+
+        let coordinator = RoomSceneCoordinator(viewID: .cabinet, state: state, size: sceneSize)
+        guard let frame = renderFrame(coordinator.scene) else {
+            XCTFail("SKView.texture(from:) returned nil — cannot render the cabinet scene", file: file, line: line)
+            return
+        }
+        attach(frame, name: "rendered-cabinet-\(label)")
+        guard let expectedImg = offlineComposite(base: "z2-cabinet-base", view: "z2/v-cabinet",
+                                                 overlays: [expectedOverlay])?.cgImage,
+              let baseImg = offlineComposite(base: "z2-cabinet-base", view: "z2/v-cabinet",
+                                             overlays: [])?.cgImage,
+              let rendered = gray(frame), let expected = gray(expectedImg),
+              let baseOnly = gray(baseImg) else {
+            XCTFail("could not build offline composites for the cabinet", file: file, line: line)
+            return
+        }
+        assertOverlayRegion(rendered, expected: expected, baseOnly: baseOnly,
+                            viewKey: "z2/v-cabinet", overlay: expectedOverlay, label: "cabinet-\(label)",
+                            file: file, line: line)
+    }
+
+    func testRenderedFrameCabinetContentsThenEmptied_R6_A() throws {
+        renderCabinetOverlayRegion(collectContents: false, expectedOverlay: "ov-cab-open", label: "contents")
+        renderCabinetOverlayRegion(collectContents: true, expectedOverlay: "ov-cab-open-empty", label: "emptied")
+    }
 }

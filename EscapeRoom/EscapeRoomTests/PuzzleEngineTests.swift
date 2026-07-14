@@ -1476,3 +1476,124 @@ final class Build10LifecycleAndInteractionTests: XCTestCase {
         XCTAssertEqual(SoundManager.shared.playedLog, [.pickup])
     }
 }
+
+/// Round 6 Cluster A — container/pickup TAKEN-STATE render guard (close-up + wide).
+///
+/// Extends the build-10 rendered-frame overlay guard to cover EVERY element's
+/// partial/taken/emptied state, not a sample. The close-up compositor is SwiftUI, so it is
+/// guarded here at the pure decision layer (`ContainerCloseUpModel.plan`) — which, by
+/// construction, has NO masking layer, so the "black box" (R6-008/-010) cannot recur. The
+/// wide taken-state is guarded via the `RoomVisuals` resolvers. R6-008 (astrolabe drawer:
+/// coin + crank, all three defects on one close-up) is the regression fixture.
+final class ContainerTakenStateGuardTests: XCTestCase {
+    private func tempDir() -> URL {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }
+    private func makeState() -> GameState { GameState(levelID: 1, store: SaveGameStore(directory: tempDir())) }
+
+    private func ids(_ items: [CloseUpLayout.ContainerItemVisual]) -> [String] { items.map { $0.id } }
+
+    // MARK: Close-up per-element decision (R6-008 fixture: astrolabe coin + crank)
+
+    func testAstrolabeCloseUpTakenState_R6_008() {
+        let state = makeState()
+        state.markSolved(PuzzleGraph.PuzzleID.astrolabeOrion) // drawer sprung, both uncollected
+        let existsAll: (String) -> Bool = { _ in true }
+
+        // 0 taken: the painted open plate shows both; no icons, both tappable.
+        var plan = ContainerCloseUpModel.plan(.astrolabeDrawer, state: state, assetExists: existsAll)
+        XCTAssertEqual(plan.base, "cu-astrolabe-drawer-open")
+        XCTAssertTrue(plan.iconItems.isEmpty)
+        XCTAssertEqual(Set(ids(plan.tapTargets)), [PuzzleGraph.ItemID.silverCoin, PuzzleGraph.ItemID.crank])
+
+        // 1 taken (coin): empty base + crank icon only; the coin DISAPPEARS (no black box,
+        // never appears in icons OR tap targets).
+        state.addItem(PuzzleGraph.ItemID.silverCoin)
+        plan = ContainerCloseUpModel.plan(.astrolabeDrawer, state: state, assetExists: existsAll)
+        XCTAssertEqual(plan.base, "cu-astrolabe-drawer-empty")
+        XCTAssertEqual(ids(plan.iconItems), [PuzzleGraph.ItemID.crank])
+        XCTAssertEqual(ids(plan.tapTargets), [PuzzleGraph.ItemID.crank])
+        XCTAssertFalse(ids(plan.iconItems).contains(PuzzleGraph.ItemID.silverCoin))
+        XCTAssertFalse(ids(plan.tapTargets).contains(PuzzleGraph.ItemID.silverCoin))
+
+        // 2 taken: empty base, nothing composited, nothing tappable — reads empty.
+        state.addItem(PuzzleGraph.ItemID.crank)
+        plan = ContainerCloseUpModel.plan(.astrolabeDrawer, state: state, assetExists: existsAll)
+        XCTAssertEqual(plan.base, "cu-astrolabe-drawer-empty")
+        XCTAssertTrue(plan.iconItems.isEmpty)
+        XCTAssertTrue(plan.tapTargets.isEmpty)
+    }
+
+    func testCabinetCloseUpTakenState_emptyPlateStaged_R6_010() {
+        let state = makeState()
+        state.markSolved(PuzzleGraph.PuzzleID.cabinetSunMoon)
+        let existsAll: (String) -> Bool = { _ in true } // simulate cu-cabinet-empty staged (post-JOIN)
+
+        var plan = ContainerCloseUpModel.plan(.sunMoonCabinet, state: state, assetExists: existsAll)
+        XCTAssertEqual(plan.base, "cu-cabinet-open") // both present: painted plate
+        XCTAssertEqual(Set(ids(plan.tapTargets)), [PuzzleGraph.ItemID.file, PuzzleGraph.ItemID.phial])
+
+        state.addItem(PuzzleGraph.ItemID.file) // take file
+        plan = ContainerCloseUpModel.plan(.sunMoonCabinet, state: state, assetExists: existsAll)
+        XCTAssertEqual(plan.base, "cu-cabinet-empty") // clean empty base + remaining icon
+        XCTAssertEqual(ids(plan.iconItems), [PuzzleGraph.ItemID.phial])
+        XCTAssertFalse(ids(plan.tapTargets).contains(PuzzleGraph.ItemID.file), "taken file disappears")
+
+        state.addItem(PuzzleGraph.ItemID.phial)
+        plan = ContainerCloseUpModel.plan(.sunMoonCabinet, state: state, assetExists: existsAll)
+        XCTAssertEqual(plan.base, "cu-cabinet-empty")
+        XCTAssertTrue(plan.iconItems.isEmpty)
+        XCTAssertTrue(plan.tapTargets.isEmpty, "container reads empty when all taken")
+    }
+
+    func testCabinetCloseUpTakenState_interimFallback_noBlackBox() {
+        // Interim (my worktree): cu-cabinet-empty NOT yet staged. The fallback keeps the
+        // baked plate but composites NO mask — the reported black box cannot occur — and the
+        // remaining item stays tappable. Fully clean once the empty plate lands (test above).
+        let state = makeState()
+        state.markSolved(PuzzleGraph.PuzzleID.cabinetSunMoon)
+        let emptyAbsent: (String) -> Bool = { $0 != "cu-cabinet-empty" }
+
+        state.addItem(PuzzleGraph.ItemID.file)
+        let plan = ContainerCloseUpModel.plan(.sunMoonCabinet, state: state, assetExists: emptyAbsent)
+        XCTAssertEqual(plan.base, "cu-cabinet-open")
+        XCTAssertFalse(plan.emptyBaseAvailable)
+        XCTAssertTrue(plan.iconItems.isEmpty)               // no icons drawn on the baked plate
+        XCTAssertEqual(ids(plan.tapTargets), [PuzzleGraph.ItemID.phial]) // taken file untappable
+    }
+
+    // MARK: Wide taken-state resolvers
+
+    func testAstrolabeDrawerWideTakenState_R6_008_wide() {
+        let state = makeState()
+        XCTAssertNil(RoomVisuals.astrolabeDrawerOverlay(state), "closed before solve")
+        state.markSolved(PuzzleGraph.PuzzleID.astrolabeOrion)
+        XCTAssertEqual(RoomVisuals.astrolabeDrawerOverlay(state), "ov-adrawer-open",
+                       "contents shown while uncollected")
+        state.addItem(PuzzleGraph.ItemID.silverCoin)
+        state.addItem(PuzzleGraph.ItemID.crank)
+        // Both collected: the wide must NOT keep showing the coin+crank overlay.
+        XCTAssertNotEqual(RoomVisuals.astrolabeDrawerOverlay(state), "ov-adrawer-open",
+                          "R6-008-wide: stale contents must not linger after collect")
+    }
+
+    func testBarrelWideTakenState_R6_005() {
+        let state = makeState()
+        state.unlockZone(PuzzleGraph.ZoneID.z3Cellar)
+        XCTAssertNil(RoomVisuals.barrelOverlay(state), "nailed barrel: no overlay")
+        state.addItem(PuzzleGraph.ItemID.poker)
+        XCTAssertTrue(PuzzleEngine.pryBarrel(state: state))
+        XCTAssertEqual(RoomVisuals.barrelOverlay(state), "ov-barrel-pried", "weight visible while uncollected")
+        XCTAssertTrue(PuzzleEngine.collectBarrelWeight(state)) // take the weight
+        let after = RoomVisuals.barrelOverlay(state)
+        // R6-005: prefer the emptied-pried overlay when staged; never nil (no re-nailing).
+        XCTAssertNotNil(after, "the pried barrel must never re-nail itself")
+        if RoomVisuals.assetAvailable("ov-barrel-pried-empty") {
+            XCTAssertEqual(after, "ov-barrel-pried-empty", "emptied-pried overlay hides the taken weight")
+        } else {
+            XCTAssertEqual(after, "ov-barrel-pried", "interim fallback keeps the pried look pending JOIN art")
+        }
+    }
+}
