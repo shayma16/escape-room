@@ -608,7 +608,11 @@ final class EscapeRoomUITests: XCTestCase {
         tapID(app, "collect-itm-weight")
         assertHolding(app, "itm-weight")
         dismissCloseUp(app)
-        useItem(app, item: "itm-weight", view: "cellar", onScene: 0.23, 0.33) // hang weight on the wall hook -> z4
+        // R6-006: the weight HOOK moved to the roped pulley hook beside the sliding shelf
+        // (Hotspot "hook" 0.395,0.378,0.098,0.341 -> center ~0.44,0.55 in authored/pre-reframe
+        // space; matches QALevelFlowTests). The old (0.23,0.33) landed on nothing after the
+        // move, so the weight never hung and the shelf never slid (soft-lock at the alcove nav).
+        useItem(app, item: "itm-weight", view: "cellar", onScene: 0.44, 0.55) // hang weight on the roped hook -> shelf slides -> z4
         Thread.sleep(forTimeInterval: 1.2)          // weight-hung beat + shelf slide
         shoot(app, "play-06-shelf-slid")
         tapScene(app, "cellar", 0.555, 0.40)                  // open drawer (handled chest)
