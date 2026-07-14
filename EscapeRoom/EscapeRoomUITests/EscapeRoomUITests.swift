@@ -26,6 +26,19 @@ final class EscapeRoomUITests: XCTestCase {
 
     private let sceneSize = CGSize(width: 2732, height: 1366)
 
+    /// The most-recently-launched app instance, captured on EVERY launch path
+    /// (launchFreshApp + relaunchKeepingSave). Held so tearDown can explicitly
+    /// terminate it, guaranteeing each test leaves NO running instance behind.
+    ///
+    /// CI-hardening (run 29337094840, "UI tests - iPad" flake): XCUITest's
+    /// `app.launch()` first tries to terminate the app instance left running by
+    /// the PREVIOUS test in the class; under heavy/slow-runner load on the long
+    /// iPad run that stale instance can be stuck, the CoreSimulator terminate
+    /// fails ("Failed to terminate com.shayma.within:0"), and the new launch
+    /// aborts. Terminating in tearDown removes that cross-test contamination at
+    /// the source so the next test's launch has nothing left to terminate.
+    private var launchedApp: XCUIApplication?
+
     /// Cold-launch first interactions can exceed 6 s on contended CI runners (the
     /// main-branch flake in run 28803258067 attempt 1 was a 6 s wait on level-card-1
     /// while a concurrent job slowed first-frame). QA re-QA recommendation: 20-30 s
@@ -42,9 +55,22 @@ final class EscapeRoomUITests: XCTestCase {
         XCUIDevice.shared.orientation = .landscapeLeft
     }
 
+    /// CI-hardening: explicitly terminate whatever app instance this test launched so
+    /// it can NEVER linger into the next test's `app.launch()` (see launchedApp doc).
+    /// Nil-guarded so a test that never launched (or a launch that failed before the
+    /// property was set) tears down safely. Always calls super last.
+    override func tearDown() {
+        if let app = launchedApp, app.state != .notRunning {
+            app.terminate()
+        }
+        launchedApp = nil
+        super.tearDown()
+    }
+
     private func launchFreshApp() -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = ["-resetSave"]
+        launchedApp = app
         app.launch()
         assertFullScreenLandscapeComposition(app)
         return app
@@ -56,6 +82,7 @@ final class EscapeRoomUITests: XCTestCase {
     private func relaunchKeepingSave() -> XCUIApplication {
         let app = XCUIApplication()
         app.launchArguments = []   // no reset: reload persisted save
+        launchedApp = app
         app.launch()
         assertFullScreenLandscapeComposition(app)
         return app
