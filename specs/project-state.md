@@ -54,8 +54,16 @@ all art + RETIRED all 4 QA-B10-002 KNOWN_LEGACY_SOURCES (none still stale) + all
 (nb-shadow, vintage, chrome, security) PASS. Art spend $20.85/$23.00 (headroom $2.15; empties
 were $0). No likely CI failure flagged. Container tests now driven by real staged empties
 (cu-cabinet-empty, ov-barrel-pried-empty, ov-adrawer-empty), not interim fallback.
-**NEXT:** push + dispatch build-and-test CI → on green, QA screenshot regression (MUST include
-R6-009 poker alt-order screenshot gate) → GATE 2 user review → re-release as next TestFlight build.
+**CI GREEN (2026-07-14):** build-and-test run 29328326128 SUCCESS on tip 3f58479 (full suite,
+both full playthroughs + save/resume + smoke). Path there: run 1 (29311898591) caught a REAL bug
+— stale weight-hook UI-test coord in EscapeRoomUITests missed the R6-006 hotspot move → fixed
+(f000e15, weight-hang 0.23,0.33→0.44,0.55; full UI-playthrough coord audit, only that one stale).
+Run 2 (29314184259) iPad flake (UI-query timeout, iPhone passed same test) then rerun CANCELLED
+at 120-min job timeout → bumped timeout-minutes 120→180 (3f58479). Run 3 green.
+**NEXT:** QA checkpoint (step 12) — MUST satisfy the R6-009 poker alt-order screenshot gate
+(barrel-before-ash, astrolabe-first orderings: poker retained through both uses, no soft-lock) +
+verify round-6 visual fixes against the green run's screenshot artifacts → qa-report.md →
+**GATE 2 user go/no-go** → Documentation second pass → re-release as next TestFlight build.
 Non-blocking eyeball items for GATE 2: R6-004 left/right overscan left as-is (only top/bottom
 swept); R6-002 EARTH glyph faint carved-groove remnants (reads correct ▽+bar).
 
