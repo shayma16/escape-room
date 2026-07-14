@@ -22,13 +22,16 @@ on:
 jobs:
   build-and-test:
     runs-on: macos-15          # macOS runners bill at 10x minutes on private repos
-    # Raised 60 -> 90 -> 120. Build 9 letterbox follow-up RESTORES the full iPad UI
+    # Raised 60 -> 90 -> 120 -> 180. Build 9 letterbox follow-up RESTORES the full iPad UI
     # playthrough + save/resume (the primary device is now genuinely verified end-to-end,
     # not scoped-around), so BOTH iPhone-SE and iPad run the heavy full playthrough. That
     # is the double-full-playthrough that historically pressured the budget (run
-    # 28899880260 was cancelled at 60 min); 120 min gives comfortable headroom for two
-    # full playthroughs + 3 unit-test device runs + 2 smoke/DI UI runs.
-    timeout-minutes: 120
+    # 28899880260 was cancelled at 60 min). 120 proved NOT enough: build-12 round-6 rerun
+    # 29314184259 was CANCELLED at exactly 120 min mid-iPad-test under slow-runner /
+    # simulator-starvation load (typical green suite is ~1h47m, right at the old ceiling).
+    # 180 min gives real buffer for two full playthroughs + 3 unit-test device runs +
+    # 2 smoke/DI UI runs even when the runner is slow.
+    timeout-minutes: 180
 
     steps:
       - name: Checkout
