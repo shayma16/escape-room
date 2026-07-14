@@ -29,6 +29,24 @@ level1-rebuild-build3; run ART + DEV tracks in parallel; Cluster B (hotspot rema
 before QA; full QA regression incl. the R6-009 screenshot gate; GATE 2 (QA results) →
 re-release. Merge to main deferred until the round-6 fix build passes.
 
+### GATE 1 APPROVED — fix build IN PROGRESS (2026-07-14)
+Branch `build-12-round6-fixes` off `level1-rebuild-build3` (tip ebd3a0c). Two isolated-worktree
+tracks launched:
+- **DEV track DONE** — worktree branch `worktree-agent-a547920d30005b1ab` @ commit `964b429`
+  (clean FF on ebd3a0c). Cluster A (per-element ContainerCloseUpModel.plan replaces baked
+  black-box patch), Cluster B (hotspot re-frame: R6-001 z-order, R6-006 roped-hook + alcove-nav
+  safeguard, R6-008/010 rects), R6-003 (rusted key non-collectible), R6-007 registration
+  (unified image+rect name). R5-002 was ALREADY fixed in build 11 (no change). Tests added.
+  NOT pushed (Producer merges worktrees).
+- **ART track RUNNING** — asset-gen worktree; R6-011/R6-002/R6-004/R6-007 re-rolls.
+- **DISCOVERED dep (feed to ART, do in JOIN):** container items are baked into single reveal
+  plates, not separate overlays. Need three $0 PIL inpaint "empty" variants (code existence-guards
+  them; build safe until staged): (1) `cu-cabinet-empty` [REQUIRED — else cabinet close-up
+  lingers], (2) `ov-barrel-pried-empty` [REQUIRED — else R6-005 barrel weight not visibly fixed],
+  (3) `ov-adrawer-empty` [OPTIONAL nicety — drawer wide already hides functionally].
+- **JOIN pass (after both merge):** Developer stages all art + retires 4 KNOWN_LEGACY_SOURCES
+  (needs re-rolled flame/slots plates present) → CI → full QA incl. R6-009 screenshot gate.
+
 ## ⭐ PRIOR RESUME NOTE (2026-07-13) — BUILD 11 SHIPPED
 
 **Build 11 is ON TESTFLIGHT as “Within 1.0 (build 12)”** (release run 29230331494 green;
