@@ -214,10 +214,19 @@ final class RoomSceneCoordinator: ObservableObject {
     }
 
     private func refreshHearth() {
+        // R6-001: the poker-taken crop reaches DOWN into the hearth-floor/rug band (its rect
+        // extends to ~y0.84, overlapping the folded-rug overlay). With equal z the two
+        // overlays composited in undefined order (ignoresSiblingOrder), so the poker crop
+        // sometimes drew OVER the moved rug — the reported "floats over the rug" box. Fix by
+        // explicit, state-independent stacking: poker BELOW the rug (z9 < z10), rug below the
+        // trapdoor (z10 < z11). The rug/trapdoor overlays carry the correct floor truth in
+        // that band, so drawing them on top covers the poker crop's stray lower pixels.
         scene.setOverlay("poker", imageNamed: RoomVisuals.pokerTaken(state) ? "ov-poker-taken" : nil,
-                          rectNormalized: overlayRect("z1/v-hearth", "ov-poker-taken"))
+                          rectNormalized: overlayRect("z1/v-hearth", "ov-poker-taken"),
+                          zPosition: 9)
         scene.setOverlay("rug", imageNamed: RoomVisuals.rugMoved(state) ? "ov-rug-moved" : nil,
-                          rectNormalized: overlayRect("z1/v-hearth", "ov-rug-moved"))
+                          rectNormalized: overlayRect("z1/v-hearth", "ov-rug-moved"),
+                          zPosition: 10)
         // Explicit z: the open-trapdoor crop overlaps the folded-rug crop and must stack
         // above it (build 10 — never rely on node-creation order for overlapping overlays).
         scene.setOverlay("trapdoor", imageNamed: RoomVisuals.trapdoorOpen(state) ? "ov-trapdoor-open" : nil,
@@ -305,14 +314,22 @@ final class RoomSceneCoordinator: ObservableObject {
     }
 
     private func refreshBench() {
-        scene.setOverlay("flame", imageNamed: flameOverlayName(),
-                          rectNormalized: overlayRect("z2/v-bench", "ov-flame\(max(state.data.cauldronFlameStage, 1))"))
+        // R6-007 registration sub-fix: derive the flame overlay's IMAGE and its placement
+        // RECT from the SAME resolved name. The old code fetched the image via
+        // flameOverlayName() (min(stage,3)) but the rect via ov-flame\(max(stage,1)) — two
+        // independent stage clamps that could select DIFFERENT overlays (right flame plate,
+        // wrong rect => the "floating box" class of misregistration). One source of the name
+        // makes the flame plate always land at its own stage's rect. (The flame plate ART is
+        // re-rolled by Asset-Gen; the JOIN pass stages it + retires the vintage guard.)
+        let flameName = flameOverlayName()
+        scene.setOverlay("flame", imageNamed: flameName,
+                          rectNormalized: flameName.map { overlayRect("z2/v-bench", $0) } ?? .zero)
     }
 
     private func flameOverlayName() -> String? {
         let stage = state.data.cauldronFlameStage
         guard stage > 0 else { return nil }
-        return "ov-flame\(min(stage, 3))"
+        return "ov-flame\(min(max(stage, 1), 3))"
     }
 
     // MARK: - v-cabinet (z2)
@@ -348,8 +365,13 @@ final class RoomSceneCoordinator: ObservableObject {
         // both are collected, then swaps to the empty-shelf overlay.
         scene.setOverlay("cabinet-door", imageNamed: cabOverlay,
                           rectNormalized: cabOverlay.map { overlayRect("z2/v-cabinet", $0) } ?? .zero)
-        scene.setOverlay("adrawer", imageNamed: RoomVisuals.astrolabeDrawerOpen(state) ? "ov-adrawer-open" : nil,
-                          rectNormalized: overlayRect("z2/v-cabinet", "ov-adrawer-open"))
+        // R6-008-wide (Round 6 Cluster A): the astrolabe drawer overlay bakes the coin +
+        // crank, so it must apply the WIDE taken-state — show contents only while something
+        // is uncollected, then the emptied/hidden state (resolver picks ov-adrawer-empty when
+        // staged, else hides the small drawer). Rect follows the resolved overlay name.
+        let adrawerOverlay = RoomVisuals.astrolabeDrawerOverlay(state)
+        scene.setOverlay("adrawer", imageNamed: adrawerOverlay,
+                          rectNormalized: adrawerOverlay.map { overlayRect("z2/v-cabinet", $0) } ?? .zero)
         // QA-BUG-017: a single correctly-seated item is rendered (icon art over its
         // recess) until the pair completes; no dedicated single-seat plate exists.
         let solved = state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon)
@@ -376,7 +398,12 @@ final class RoomSceneCoordinator: ObservableObject {
         scene.configureHotspots(Reframe.map([
             Hotspot(id: "barrel", 0.66, 0.50, 0.15, 0.32),
             Hotspot(id: "drawer", 0.50, 0.34, 0.11, 0.12),
-            Hotspot(id: "hook", 0.185, 0.26, 0.09, 0.14),
+            // R6-006: the weight HOOK is the ROPED pulley hook hanging beside the sliding
+            // plank shelf (reframed ~x0.44-0.52, y0.40-0.68 — the visible rope + hook where
+            // the weight hangs), NOT the wrench-shaped wall hook far left (the old rect at
+            // reframed ~x0.27). Re-derived in OLD framing so Reframe.map places it on the
+            // roped hook. (p07 logic unchanged; only the tap target moved.)
+            Hotspot(id: "hook", 0.395, 0.378, 0.098, 0.341),
             Hotspot(id: "winch", 0.11, 0.02, 0.17, 0.16),
             Hotspot(id: "mirror", 0.05, 0.36, 0.16, 0.52),
             // F-024 diegetic passages: the ladder up to the hearth trapdoor and — once the
@@ -567,10 +594,12 @@ final class RoomSceneCoordinator: ObservableObject {
 
         // -- z1 v-entry --
         case (.entry, "rusted-key"):
-            if !state.hasItem(PuzzleGraph.ItemID.rustedKey) {
-                state.addItem(PuzzleGraph.ItemID.rustedKey)
-                SoundManager.shared.play(.pickup)
-            }
+            // R6-003: the rusted key is an in-world DECOY, never an inventory item (standing
+            // principle: decoys are never collected). A tap INSPECTS it (the close-up shows
+            // the snapped/plain bit that will never fit the star lock) and leaves inventory
+            // untouched. The real cage key comes from the z4 statue. No solve path references
+            // itm-rusted-key (graph `uses: []`), so nothing is lost by never granting it.
+            present(.plain(image: "cu-rusted-key"), from: "rusted-key")
         case (.entry, "windowsill"):
             present(.plain(image: "cu-windowsill"), from: "windowsill")
         case (.entry, "cage"), (.entry, "feed-cup"):
@@ -655,7 +684,15 @@ final class RoomSceneCoordinator: ObservableObject {
             PuzzleEngine.rotateMirror(toDetent: next, state: state)
             SoundManager.shared.play(.grind)
         case (.cellar, "hook"):
-            break // use target for the armed weight; bare tap is inert and silent
+            // R6-006: the roped-hook target now sits over the sliding-shelf / alcove-mouth
+            // region and, being the smaller rect, wins the hit-test over `alcove-passage`.
+            // Once the shelf has slid (weight hung), that spot IS the revealed passage — so a
+            // bare tap there navigates to the alcove, exactly like alcove-passage, and the
+            // move can never strand the player. Before the shelf slides the hook is purely
+            // the armed-weight use target (a bare tap is inert and silent).
+            if RoomVisuals.shelfSlid(state) {
+                onNavigate?(.alcove)
+            }
         case (.cellar, "ladder"):
             // Diegetic passage: up the ladder through the trapdoor (F-024).
             if RoomVisuals.trapdoorOpen(state) {

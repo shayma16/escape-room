@@ -130,6 +130,27 @@ enum RoomVisuals {
         s.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion)
     }
 
+    /// True iff a game-art asset is actually staged in the bundle. Used by the Round 6
+    /// wide taken-state resolvers to prefer a clean "emptied" overlay when its art exists
+    /// and fall back safely when it does not (the empty-variant art is a JOIN-pass
+    /// dependency — see barrelOverlay / astrolabeDrawerOverlay).
+    static func assetAvailable(_ name: String) -> Bool {
+        GameAssetLoader.shared.url(for: name) != nil
+    }
+
+    /// Astrolabe drawer WIDE taken-state (R6-008-wide, Round 6 Cluster A): the drawer shows
+    /// its contents (ov-adrawer-open bakes the coin + crank) while anything is uncollected;
+    /// once BOTH are taken it must no longer show them. If an emptied-drawer overlay
+    /// (`ov-adrawer-empty`) is staged, use it; otherwise hide the overlay so the small corner
+    /// drawer simply reads closed (its close-up still opens the empty container) — either way
+    /// the stale contents no longer linger in the wide.
+    static func astrolabeDrawerOverlay(_ s: GameState) -> String? {
+        guard astrolabeDrawerOpen(s) else { return nil }
+        let anyLeft = !PuzzleEngine.uncollectedItems(in: .astrolabeDrawer, state: s).isEmpty
+        if anyLeft { return "ov-adrawer-open" }
+        return assetAvailable("ov-adrawer-empty") ? "ov-adrawer-empty" : nil
+    }
+
     // MARK: z3 v-cellar
 
     /// Barrel overlay (BUG-004 integration fix): the base plate carries the NAILED
@@ -137,8 +158,16 @@ enum RoomVisuals {
     /// state shows ("barrel (nailed / pried, weight visible inside)" —
     /// visually_necessary_elements). The previous mapping overlaid pried art
     /// pre-solve — a latent visual bug masked by QA-BUG-022's black scenes.
+    ///
+    /// Round 6 (R6-005): apply the WIDE taken-state — ov-barrel-pried BAKES the weight, so it
+    /// must stop showing once the weight is collected. Prefer an emptied-pried overlay
+    /// (`ov-barrel-pried-empty`) when its art is staged; until then keep the pried overlay
+    /// (the barrel must never re-nail itself) so the weight lingers only until the JOIN art
+    /// pass lands the empty variant. Flagged as a JOIN-pass art dependency.
     static func barrelOverlay(_ s: GameState) -> String? {
-        s.hasSolved(PuzzleGraph.PuzzleID.barrelPry) ? "ov-barrel-pried" : nil
+        guard s.hasSolved(PuzzleGraph.PuzzleID.barrelPry) else { return nil }
+        if PuzzleEngine.isWeightUncollectedInBarrel(s) { return "ov-barrel-pried" }
+        return assetAvailable("ov-barrel-pried-empty") ? "ov-barrel-pried-empty" : "ov-barrel-pried"
     }
 
     /// Cellar drawer (feedback round 1 fix): graph states are shut / open-with-spoon /

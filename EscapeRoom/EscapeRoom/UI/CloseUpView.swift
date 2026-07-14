@@ -161,54 +161,46 @@ private extension CGRect {
     }
 }
 
-// MARK: - Solved-container manual pickup (F-023/F-018)
+// MARK: - Solved-container manual pickup (F-023/F-018; Round 6 Cluster A per-element render)
 
-/// Shows the opened container with its remaining contents; the player taps each item
-/// to collect it (with the liked pickup chime). Already-collected items are hidden
-/// under a soft dark patch (both containers have dark interiors, so absence reads
-/// naturally — flagged in implementation notes: per-item removal art doesn't exist).
-/// Once everything is collected the empty-container plate renders instead.
+/// Shows the opened container with its remaining contents for tap-to-collect. Round 6
+/// (R6-008/-010): this is now PER-ELEMENT compositing (R4-024) — an empty base + one icon
+/// per item, drawn only while that item is uncollected. A collected item simply stops
+/// compositing (NO dark-patch mask, so the reported "black box" cannot occur); the
+/// container reads empty once all items are taken. The render decision lives in the pure,
+/// tested `ContainerCloseUpModel.plan`.
 private struct ContainerCloseUp: View {
     @ObservedObject var coordinator: RoomSceneCoordinator
     let container: PuzzleEngine.Container
 
     var body: some View {
-        let plates = CloseUpLayout.containerPlates(container)
-        let uncollected = PuzzleEngine.uncollectedItems(in: container, state: coordinator.state)
-        if uncollected.isEmpty {
-            FittedPlate(imageName: plates.empty)
-        } else {
-            FittedPlateLayout(imageName: plates.open) { fitted in
-                ForEach(PuzzleEngine.containerContents(container), id: \.self) { itemID in
-                    if let normalized = CloseUpLayout.containerItemRects[container]?[itemID] {
-                        let rect = fitted.subRect(normalized)
-                        if uncollected.contains(itemID) {
-                            // Invisible tap target over the painted item (>= 44 pt floor).
-                            Color.white.opacity(0.001)
-                                .frame(width: max(rect.width, 44), height: max(rect.height, 44))
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    coordinator.collectContainerItem(itemID, from: container)
-                                }
-                                .accessibilityLabel(ItemCatalog.definition(for: itemID)?.name ?? "Item")
-                                .accessibilityIdentifier("collect-\(itemID)")
-                                .position(x: rect.midX, y: rect.midY)
-                        } else {
-                            // Collected while its sibling remains: soft dark patch so
-                            // the taken item no longer appears present (F-007 class).
-                            RadialGradient(colors: [Color.black.opacity(0.88), Color.black.opacity(0)],
-                                           center: .center,
-                                           startRadius: 0,
-                                           endRadius: max(rect.width, rect.height) * 0.72)
-                                .frame(width: rect.width * 1.5, height: rect.height * 1.7)
-                                .allowsHitTesting(false)
-                                .position(x: rect.midX, y: rect.midY)
-                        }
-                    }
-                }
+        let plan = ContainerCloseUpModel.plan(container, state: coordinator.state)
+        FittedPlateLayout(imageName: plan.base) { fitted in
+            // Composite an icon for each REMAINING item (clean per-element path). Nothing is
+            // drawn for a collected item — it disappears cleanly with no mask.
+            ForEach(plan.iconItems, id: \.id) { item in
+                let rect = fitted.subRect(item.rect)
+                GameImage(name: item.icon)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: rect.width, height: rect.height)
+                    .allowsHitTesting(false)
+                    .position(x: rect.midX, y: rect.midY)
             }
-            .padding(24)
+            // Invisible tap target over each uncollected item (>= 44 pt floor).
+            ForEach(plan.tapTargets, id: \.id) { item in
+                let rect = fitted.subRect(item.rect)
+                Color.white.opacity(0.001)
+                    .frame(width: max(rect.width, 44), height: max(rect.height, 44))
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        coordinator.collectContainerItem(item.id, from: container)
+                    }
+                    .accessibilityLabel(ItemCatalog.definition(for: item.id)?.name ?? "Item")
+                    .accessibilityIdentifier("collect-\(item.id)")
+                    .position(x: rect.midX, y: rect.midY)
+            }
         }
+        .padding(24)
     }
 }
 
