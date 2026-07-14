@@ -75,8 +75,13 @@ testFullPlaythroughWithScreenshots failed TWICE (initial + rerun) at app.launch(
 "Failed to terminate app" — an infra teardown-contamination flake (same test green on iPhone + green
 on iPad in run3). ROOT-CAUSE FIX: UI-test harness now terminates the app in tearDown (6b8dae0) so no
 stuck instance blocks the next test's launch; zero test-logic change.
-**NEXT:** push 6b8dae0 + dispatch fresh full CI → on green, **GATE 2 user go/no-go** →
-Documentation second pass → re-release as next TestFlight build.
+**CI FULLY GREEN (2026-07-14):** run 29351342351 on tip 7cf278a — full suite incl. the
+previously-flaking iPad full playthrough PASSED (tearDown terminate-fix worked). Round-6 fix build
+is clean end-to-end.
+**AT GATE 2 NOW:** awaiting user go/no-go. On GO → Documentation second pass (reconcile walkthrough
+for R6-011 5-CCW + R6-003 decoy) → Release Manager cuts next TestFlight build (bump build number)
+→ user device spot-check (drawer-empty close-up + R6-004 edge bands are the CI-unverifiable items)
+→ on approval merge build-12-round6-fixes → level1-rebuild-build3 (and eventually → main).
 Non-blocking eyeball items for GATE 2: R6-004 left/right overscan left as-is (only top/bottom
 swept); R6-002 EARTH glyph faint carved-groove remnants (reads correct ▽+bar).
 
