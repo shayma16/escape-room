@@ -1,6 +1,7 @@
 # ROUND 7 ART TRACK — R7-002 edge bands — 2026-07-17 (branch build-12-round6-fixes)
-PROGRESS: 31/31 plates DONE (93 files @1x/@2x/@3x) | 0 failed | outpaint probe 1/1 rejected
+PROGRESS: 35/35 plates DONE (105 files @1x/@2x/@3x) | 0 failed | outpaint probe 1/1 rejected
 SPEND: $0.30 this round | cumulative Level-1 art $21.15 of the $23.00 cap ($1.85 headroom)
+ADDENDUM 2026-07-17: z1-hearth (4 plates) added on Producer decision — $0, spend unchanged.
 
 ## Outcome: PRIMARY (outpaint) attempted and REJECTED -> shipped the user's authorized FALLBACK (clean fade, $0)
 
@@ -23,6 +24,7 @@ top-band horizontal detail 0.55-1.24 -> 0.006-0.016; left-band vertical detail 1
 ## NOT the streak detector, which reports 0 on left/right and phantom bands on soft close-ups)
 | view | L | T | R | B | plates |
 |---|---|---|---|---|---|
+| z1-hearth | 86 | 86 | 87 | 0 | 4 |
 | z1-study | 538 | 240 | 0 | 29 | 1 |
 | z1-entry | 425 | 250 | 573 | 249 | 7 |
 | z2-bench | 430 | 163 | 223 | 163 | 4 |
@@ -40,9 +42,20 @@ VERIFIED: interior byte-identical vs git HEAD 31/31; base/variant bands byte-ide
 from their base); no contouring; every variant byte-identical to its base in the 20px ring
 inside the content rect (maxdiff=0), so one shared band per view is provably seam-correct.
 
+z1-HEARTH ADDENDUM (Producer decision 2026-07-17 — DONE, $0):
+- Swept all 4 wide plates: base, poker-taken, rug-moved*, trapdoor-open. Smear gone
+  (top-band dx 0.83-1.03 -> 0.012-0.013; left-band dy 1.11-1.12 -> 0.029-0.031); interiors
+  byte-identical 4/4; outer row/col pure black 4/4; all 3 scales.
+- All 10 v-hearth cu-* close-ups measured band-free -> excluded (cu-lintel exclusion stands).
+- *rug-moved uses its OWN band (only such plate in the level). Its ring differs from the base
+  by mean 27.9/max 216 (pre-existing global tone diff). MEASURED counterfactual: the shared
+  band would give a 27.82 left / 15.54 top seam step = a visible hairline on a plate staged as
+  a FULL background. Own band gives 2.89/1.28, matching the other three. Costs nothing for rect
+  derivation: its interior already differs from the base across 71.1% of px (mean 23.61), so
+  that diff bbox is already maximal. base/poker-taken/trapdoor-open DO share one identical band
+  (trapdoor-open vs base is a genuine local 14.1% diff, so identity matters there and is kept).
+
 EXCLUDED + WHY (Producer decisions needed):
-- z1/v-hearth (+3 variants): per Producer directive. BUT it does carry a real 86px band
-  (L86 T86 R87 B0) — same defect, mild. One line in the tool covers it if wanted.
 - cu-lintel (394/208) and cu-flowerpot (61): FALSE POSITIVES — no band exists. Both plates are
   merely SOFT; the detector counts rows with diff<1.5 and so measures softness, not smear.
   Fading cu-lintel would have blacked out half a puzzle clue (FIRE triangle + numeral II).

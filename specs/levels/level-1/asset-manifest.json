@@ -2463,13 +2463,19 @@
   "shipped_method": {
    "tool": "specs/tools/band_fade_r7.py (committed, deterministic, $0 PIL)",
    "fill": "band pixels ERASED and rebuilt: ~120px falloff from the content seam (GAMMA 1.5), then literal #000 for the remainder of the band. The falloff runs from the true edge pixel (C0-continuous, no hard cut) through a 16px feather into a low-frequency field blurred at radius 110, which destroys ALL structure. No grain, no dither (verified no contouring: 62 distinct levels across the ramp, mean step 0.305/row).",
-   "scope": "ALL FOUR EDGES of every affected view - not just top/bottom. This is why R6-004 failed.",
+   "scope": "ALL FOUR EDGES of every re-framed view - not just top/bottom. This is why R6-004 failed. z1-hearth added 2026-07-17 on Producer decision (see hearth_addendum).",
    "band_geometry_source": "the applied build-10 transform (authoritative + visually confirmed: seam sits exactly at x=430 on the bench, x=630 on the cabinet). NOT a streak/darkness detector - that detector only sees the dark CLIPPED part of the band, reports 0 on left/right where the smear is worst but not dark enough to clip, and reports phantom bands on soft close-ups.",
-   "plates": 31,
-   "files": 93,
+   "plates": 35,
+   "files": 105,
    "cost_usd": 0.0
   },
   "true_band_geometry_at_3x": {
+   "z1/v-hearth": {
+    "L": 86,
+    "T": 86,
+    "R": 87,
+    "B": 0
+   },
    "z1/v-study": {
     "L": 538,
     "T": 240,
@@ -2510,7 +2516,7 @@
    "seam_safe": "every variant is byte-identical to its base in the 20px ring just inside the content rect (maxdiff=0, all 31 plates), so one shared band per view is provably seam-correct"
   },
   "excluded": {
-   "z1/v-hearth": "Per Producer directive (user never reported it). NOTE: the hearth DOES carry a real but small 86px edge-replicate band (L86 T86 R87 B0) per the same transform - the same defect, just mild. Producer to decide whether to sweep it for consistency; the tool covers it by adding one line.",
+   "z1/v-hearth": "NO LONGER EXCLUDED - swept 2026-07-17 on Producer decision. See hearth_addendum.",
    "z1/v-hearth/cu-lintel": "FALSE POSITIVE - excluded. No edge band exists. dy/dx ratio is 0.6-0.9 THROUGHOUT; only row y=0 is a 1px artifact. The plate is uniformly SOFT (detail ~0.5 vs ~1.4 on sharp content), and the apparent left-edge 'streaks' are the lintel beam's WOOD GRAIN. The 394/208 reading came from a detector that counts consecutive rows with mean diff < 1.5, which on a soft dark close-up runs for hundreds of rows - it measures softness, not smear. Fading 394+208px would have blacked out half of a puzzle-load-bearing clue (FIRE triangle + numeral II).",
    "z1/v-study/cu-flowerpot": "FALSE POSITIVE - excluded. Same cause; only row y=0 is a 1px duplicate (dy=0.004).",
    "z4/v-alcove": "never re-framed, no band (confirmed)",
@@ -2518,11 +2524,39 @@
   },
   "observations_for_producer": {
    "cu-lintel_ghost_rect": "NOT R7-002 and NOT fixed: cu-lintel has a visible translucent RECTANGLE around the FIRE triangle (a region-edit composite artifact with slightly different exposure), and the whole plate is soft/low-detail. It is a puzzle clue. Flagging for a separate decision.",
-   "cabinet_inset": "z2-cabinet content occupies only 70% of the canvas (s=0.70), so an honest fade necessarily yields a wide black frame (30% of width). If the user dislikes the inset look, the fix is the re-frame/aspect handling (Developer-side), not the band art."
+   "cabinet_inset": "z2-cabinet content occupies only 70% of the canvas (s=0.70), so an honest fade necessarily yields a wide black frame (30% of width). If the user dislikes the inset look, the fix is the re-frame/aspect handling (Developer-side), not the band art.",
+   "hearth_rug_moved_tone": "RE-SURFACED (pre-existing, NOT introduced here, out of scope): z1-hearth-rug-moved is globally warmer/brighter than z1-hearth-base - 71.1% of interior pixels differ, mean 23.61. It is staged as a full background plate, so the base -> rug-moved state swap will visibly flash in tone. Flagged in build 10 as a build-3 full-frame-edit artifact and still unfixed; it is also why every diff bbox involving that plate is already maximal."
   },
   "spend_this_item_usd": 0.3,
   "cumulative_level1_art_usd": 21.15,
   "cap_usd": 23.0,
-  "headroom_remaining_usd": 1.85
+  "headroom_remaining_usd": 1.85,
+  "hearth_addendum": {
+   "date": "2026-07-17",
+   "decision": "Producer: fix z1-hearth too. It carries the same defect (86px band); once the other five views were cleanly faded, leaving the hearth smeared made it the one inconsistent scene, and this bug class has already been reported twice because each pass was scoped too narrowly. $0.",
+   "plates_covered": [
+    "z1-hearth-base",
+    "z1-hearth-poker-taken",
+    "z1-hearth-rug-moved",
+    "z1-hearth-trapdoor-open"
+   ],
+   "close_ups_excluded": "All 10 cu-* plates in v-hearth measured band-free (top dx/dy 0.91-1.57, left dy/dx 0.74-1.71; a real smear band reads >>3). cu-ash-undisturbed / cu-ash-sifted / cu-ash-ring-taken / cu-bellows / cu-clock-unspent / cu-clock-pop / cu-clock-spent / cu-dial-panel / cu-trapdoor-open / cu-lintel. cu-lintel exclusion stands per Producer.",
+   "rug_moved_exception": {
+    "what": "z1-hearth-rug-moved derives its band from ITSELF, not from the shared base band. It is the only plate in the level with this exception.",
+    "why": "Its ring differs from the base by mean 27.9 / max 216 - the pre-existing global tone diff from a build-3 full-frame edit, already flagged in build10_reframe.gates.variant_alignment. MEASURED counterfactual: forcing the shared band gives a left seam step of 27.82 and top 15.54 = a visible hairline around the frame. Its own band gives 2.89 / 1.28, matching the other three plates (3.05 / 1.08).",
+    "why_this_costs_nothing": "build_game_assets.py stages rug-moved as a FULL background plate (save_plate -> z1-hearth-rug-moved.jpg), so its seam is seen directly by the player. And band identity buys nothing for rect derivation on this plate: its INTERIOR already differs from the base across 71.1% of pixels (mean 23.61), and trapdoor-open-vs-rug-moved (the pair that feeds ov-trapdoor-open) already differs across 70.5% (mean 22.78) - those diff bboxes are already maximal with or without an identical band.",
+    "band_identity_preserved_where_it_matters": "base / poker-taken / trapdoor-open all have ring maxdiff=0 and share ONE byte-identical band. trapdoor-open vs base is a genuine LOCAL diff (14.1% of px > 8), so band identity matters for that pair and is preserved exactly.",
+    "note_poker_taken": "z1-hearth-poker-taken is no longer consumed (R5-001 synthesizes ov-poker-taken from the base), but the plate was swept anyway so the source set is uniform."
+   },
+   "verification": {
+    "interior_byte_identical": "PASS 4/4 vs git HEAD",
+    "smear_removed": "PASS - top-band horizontal detail 0.83-1.03 -> 0.012-0.013; left-band vertical detail 1.11-1.12 -> 0.029-0.031",
+    "band_identical_to_base": "PASS for base/poker-taken/trapdoor-open; rug-moved by design uses its own band (justified above)",
+    "outer_row_col_pure_black": "PASS 4/4",
+    "seam_step": "1.08-1.28 top / 2.89-3.05 left on all 4 plates",
+    "scales": "PASS 4/4 @1x 1280x640, @2x 2560x1280, @3x 3840x1920"
+   },
+   "cost_usd": 0.0
+  }
  }
 }

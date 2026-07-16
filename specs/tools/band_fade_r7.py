@@ -34,7 +34,8 @@ GUARANTEES
 1. Interior byte-identical: the output starts as a copy of the current canonical plate and
    only pixels strictly OUTSIDE the content rect are assigned. Verified per plate.
 2. Base/variant bands byte-identical: the band is computed ONCE per view from the BASE plate
-   and composited onto every variant. Safe because every variant is byte-identical to its
+   and composited onto every variant (the sole exception is VIEWS[...] own_band_plates - see
+   z1-hearth-rug-moved, justified inline). Safe because every variant is byte-identical to its
    base in the ring just inside the content rect (verified: maxdiff=0 on all 29 plates).
    This also fixes a latent bug: reframe_b10.py drew its grain from one rolling rng, so each
    plate's band got DIFFERENT noise -> base/variant bands differed -> the auto-derived
@@ -56,9 +57,31 @@ GAMMA = 1.5         # falloff shape
 FEATHER_PX = 16.0   # seam -> low-frequency field transition (kills the hard cut)
 BLUR_R = 110        # low-frequency field radius: destroys all structure
 
-# view -> (dir, scale, ox, oy, base, [variants])
-# z1-hearth is EXCLUDED per Producer directive (86px band, user did not report it).
+# view -> (dir, scale, ox, oy, base, [variants], [own_band_plates])
+#
+# own_band_plates (optional 7th): plates whose band is derived from THEMSELVES instead of the
+# shared base band. Used ONLY where a plate does not match the base at the content-rect
+# boundary, so the shared band would abut a mismatched seam. The default, and the rule
+# everywhere else, is ONE shared band per view.
 VIEWS = {
+    # z1-hearth added 2026-07-17 on Producer decision (initially excluded; it carries the
+    # same defect at 86px, and leaving it smeared made it the one inconsistent scene).
+    #
+    # rug-moved takes its OWN band. Its ring differs from the base by mean 27.9 / max 216 -
+    # a pre-existing global tone diff from a build-3 full-frame edit, already flagged in
+    # build10_reframe.gates.variant_alignment. Forcing the shared band would put a ~28-level
+    # hairline step around a plate that build_game_assets.py stages as a FULL background
+    # (save_plate -> z1-hearth-rug-moved.jpg), i.e. it would CREATE the exact class of
+    # visible edge defect this task exists to remove. It costs nothing in rect derivation:
+    # rug-moved's INTERIOR already differs from the base across 71.1% of pixels (mean 23.61),
+    # so every diff bbox involving it is already maximal - band identity buys nothing there.
+    # base/poker-taken/trapdoor-open all have ring maxdiff=0 and DO share one band;
+    # trapdoor-open vs base is a genuine LOCAL diff (14.1% of px), so band identity matters
+    # for that pair and is preserved.
+    "z1-hearth": ("z1/v-hearth", 0.955, 86, 86, "z1-hearth-base",
+                  ["z1-hearth-poker-taken", "z1-hearth-rug-moved",
+                   "z1-hearth-trapdoor-open"],
+                  ["z1-hearth-rug-moved"]),
     "z1-study": ("z1/v-study", 0.86, 538, 240, "z1-study-base", []),
     "z1-entry": ("z1/v-entry", 0.74, 425, 250, "z1-entry-base", [
         "z1-entry-basin-drained-nb", "z1-entry-basin-filled-nb", "z1-entry-cage-open",
@@ -130,20 +153,24 @@ def export(im3x, out_base):
 
 
 def process(view, only_check=False):
-    d, s, ox, oy, base, variants = VIEWS[view]
+    cfg = VIEWS[view]
+    d, s, ox, oy, base, variants = cfg[:6]
+    own_band = cfg[6] if len(cfg) > 6 else []
     x0, y0, x1, y1 = rect(s, ox, oy)
     base_path = os.path.join(ROOT, d, base + "@3x.png")
-    fill, band = build_band(base_path, s, ox, oy)
+    shared_fill, band = build_band(base_path, s, ox, oy)
     out = []
     for nm in [base] + variants:
         p = os.path.join(ROOT, d, nm + "@3x.png")
         orig = np.asarray(Image.open(p).convert("RGB"), dtype=np.uint8)
+        # plates listed in own_band do not match the base at the boundary -> derive from self
+        fill = build_band(p, s, ox, oy)[0] if nm in own_band else shared_fill
         new = orig.copy()
         new[band] = fill[band]                      # ONLY band pixels are ever assigned
         assert np.array_equal(new[y0:y1, x0:x1], orig[y0:y1, x0:x1]), f"interior moved {nm}"
         if not only_check:
             export(Image.fromarray(new), os.path.join(ROOT, d, nm))
-        out.append(nm)
+        out.append(nm + ("*" if nm in own_band else ""))
     return out, (x0, y0, x1, y1)
 
 
