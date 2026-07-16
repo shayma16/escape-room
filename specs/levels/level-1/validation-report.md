@@ -554,3 +554,64 @@ not affect Level 2 mechanic-repetition planning.
 (Flag 1, page A) is a user-checkpoint decision, not an implementation blocker: implement
 page A's required/optional status as a single config flag so the ruling can be applied
 without rework.
+
+---
+---
+
+# Round-6 light re-validation, 2026-07-14
+
+**Validator:** Puzzle Logic Validator
+**Scope:** LIGHT graph-sync pass only (not a full re-validation). The Round-6 fix build
+(branch `build-12-round6-fixes`; R6-003 / R6-011 / R6-009, all CI-green, QA GO,
+user-approved) left `puzzle-graph.json` stale in two places, found by the Documentation
+agent. This section records the two graph fixes and the three targeted re-checks.
+
+## VERDICT: PASS — all three checks PASS. NO solution value changed.
+
+## Graph fixes applied (drift sync to the shipped build)
+
+1. **itm-rusted-key node (R6-003 — decoy key is inspect-only in the shipped code):**
+   - OLD: `"obtained_by": "pickup", "uses": [], "red_herring": true`
+   - NEW: `"obtained_by": "none", "collectible": false, "uses": [], "red_herring": true,`
+     plus a `"notes"` field: *"R6-003 graph sync (2026-07-14): INSPECT-ONLY in the shipped
+     build — the key never enters inventory; it stays on its hook and misleads visually
+     in-scene only (close-up shows the snapped plain bit). The real cage key remains
+     itm-cage-key from the z4 alcove statue."*
+   - Schema note: the graph had no prior convention for a non-collectible scenery item
+     (this is its first), so the explicit `"obtained_by": "none"` + `"collectible": false`
+     pair with an item-level `"notes"` field (already used on itm-phial-draught) was used
+     rather than inventing new structure.
+2. **p11-cage-unlock clue text (stale drag interaction):**
+   - OLD: *"star keyhole visibly matches star key bit (and visibly rejects itm-rusted-key's
+     plain bit)"* — described inserting/trying the rusted key, an interaction that can no
+     longer occur since the key cannot be held.
+   - NEW: *"star keyhole visibly matches star key bit (the rusted decoy key misleads
+     visually in-scene only: it is inspect-only per R6-003, never held, and its close-up
+     shows a snapped plain bit that plainly cannot match the star keyhole)"*.
+
+All other graph content is byte-for-byte unchanged; JSON validity preserved.
+
+## Re-check results
+
+| Check | Result | Detail |
+|---|---|---|
+| (a) No solve path / dependency edge / `uses` list requires or consumes itm-rusted-key | **PASS** | Node `uses` is `[]`; no `requires`/`yields`/`requires_state`/`requires_condition`/`clue_gate` edge references it; no puzzle `requires` list names it; no example ordering includes it. Its only remaining references are the item node itself, the rewritten p11 clue text (visual mismatch only), one `z1-cabin → itm-rusted-key` `contains` edge (scene containment — harmless and accurate, the key is physically in z1), and the rh-rusted-key red-herring entry. |
+| (b) Recipe/brew consistency (R6-011) | **PASS** | p14 `solution_fixed` remains `flame_stage: 3`, stir `counterclockwise × 5` — unchanged. All clue references agree with the redrawn 5-dot CCW page art: clu-recipe-page content ("flame pictogram with numeral III; spiral with arrowhead pointing counterclockwise and five dots"), p14 derivation ("flame pictogram + III; spiral with CCW arrowhead and five dots"), p14 gate rationale ("flame III, CCW x5 stir"), and visually_necessary_elements ("flame+III, CCW 5-dot spiral"). No contradiction anywhere in the graph. |
+| (c) Poker anti-softlock invariants (R6-009) | **PASS** | itm-poker `uses` still lists BOTH `p05-ash-sift` and `p06-barrel-pry`; both `requires` edges present; no ordering constraint exists between p05 and p06 (p05 requires only the poker, p06 requires poker + z3 — either order valid, per orderings A/B/C); anti_softlock_invariants[1] ("itm-poker … reusable and never consumed") intact. Consistent with the shipped ItemLifecycle behavior (poker retained while either use is unsatisfied) verified GO in QA R6-009. |
+
+## Explicit statement
+
+**No solution value changed** in this pass or in the Round-6 build as reflected here:
+p01 AIR-FIRE-EARTH-WATER, p02 waxing-crescent/full/waning-gibbous, p03 plate-2,
+p04 ring→sun/coin→moon, p14 flame-3 + {paste, shavings, feather} + CCW×5 all stand
+verbatim. Zones, edges, clue gates, difficulty score (6.0/10; z1 5.0, z2 6.0, z3 4.0,
+z4 5.0), and all anti-softlock invariants are untouched.
+
+## Advisory (non-blocking, historical-text only)
+
+- The rh-rusted-key entry ("Tempts use on the front door and cage") and the section-2
+  mistake-path row ("Rusted key tried on cage / front door") describe pre-R6-003 behavior
+  in which the key could be held and tried. Post-R6-003 the temptation is visual-only.
+  Both texts were intentionally left untouched (outside this pass's two-edit scope; the
+  report rows are historical record). If the Designer revises the red-herring blurb in a
+  future graph revision, route it via the Producer — Advisory, not a correctness defect.
