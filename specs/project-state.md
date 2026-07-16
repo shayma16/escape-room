@@ -78,10 +78,33 @@ stuck instance blocks the next test's launch; zero test-logic change.
 **CI FULLY GREEN (2026-07-14):** run 29351342351 on tip 7cf278a — full suite incl. the
 previously-flaking iPad full playthrough PASSED (tearDown terminate-fix worked). Round-6 fix build
 is clean end-to-end.
-**AT GATE 2 NOW:** awaiting user go/no-go. On GO → Documentation second pass (reconcile walkthrough
-for R6-011 5-CCW + R6-003 decoy) → Release Manager cuts next TestFlight build (bump build number)
-→ user device spot-check (drawer-empty close-up + R6-004 edge bands are the CI-unverifiable items)
-→ on approval merge build-12-round6-fixes → level1-rebuild-build3 (and eventually → main).
+**GATE 2 APPROVED by user 2026-07-16. BUILD 13 SHIPPED TO TESTFLIGHT.**
+Release run 29523440104 SUCCESS — "Within 1.0 (build 13)" uploaded to App Store Connect from
+`build-12-round6-fixes`. All steps green (archive w/ cloud-managed signing, build-number stamp,
+export, security re-check, upload). Post-GATE-2 work completed and pushed: Documentation second
+pass (walkthrough reconciled: R6-011 art↔5-CCW match, R6-003 inspect-only decoy, roped-hook
+location, tap-to-collect containers, + documented previously-undocumented rev-1.3 clue gates);
+Release notes `specs/levels/level-1/testflight-notes-build13.md`; light Validator re-validation
+(graph synced: itm-rusted-key obtained_by none/collectible false + p11 clue text; recipe/brew +
+poker invariants PASS; NO solution values changed).
+
+**RELEASE BLOCKER HIT + RESOLVED (record for next time):** release run 29514688025 FAILED at
+archive — Apple account hit the **Apple Development certificate cap**. Root cause: the release
+workflow uses `CODE_SIGN_STYLE=Automatic` + `-allowProvisioningUpdates`, so EVERY CI run on a fresh
+runner mints a NEW Apple Development cert; they accumulate to the cap. User revoked one (dated
+Jul 8) and the re-dispatch succeeded. **This WILL recur every few builds.**
+→ TODO (deferred, non-blocking, raised with user): stop burning a cert per run — either pin a
+reusable signing identity from a .p12 secret, or stop the archive resolving Development signing at
+all (likely the test targets pull one in; archive should only need Apple Distribution).
+NOTE: certs are ACCOUNT-WIDE, not per-app; user has other live App Store/TestFlight apps. Safe rule
+used: only revoke **Apple Development** (disposable, auto-regenerates, cannot affect shipped/
+TestFlight builds); NEVER touch **Apple Distribution**.
+
+**NEXT:** user device spot-check on iPad of build 13. CI-UNVERIFIABLE items needing human eyes:
+(1) astrolabe drawer CLOSE-UP empty state after collecting crank+coin, (2) R6-004 top/bottom edge
+bands. Also flagged non-blocking: R6-004 left/right overscan NOT swept (only top/bottom reported);
+R6-002 EARTH glyph reads correct ▽+bar but has faint carved-groove remnants.
+→ On user approval: merge `build-12-round6-fixes` → `level1-rebuild-build3` → `main` (Level 1 done).
 Non-blocking eyeball items for GATE 2: R6-004 left/right overscan left as-is (only top/bottom
 swept); R6-002 EARTH glyph faint carved-groove remnants (reads correct ▽+bar).
 
