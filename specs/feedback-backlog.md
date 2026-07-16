@@ -2204,3 +2204,55 @@ deliberately LEFT AS-IS** because the original R6-004 report named only top/bott
 ## STILL UNCONFIRMED from round 6 (user did not mention; re-ask at next spot-check)
 - R6-004-adjacent: whether top/bottom specifically improved (user says "some scenes" still bad).
 - R6-002 EARTH glyph faint carved-groove remnants (known, accepted as "fix only if simple").
+
+## ROUND 7 — PRODUCER ROOT-CAUSE DIAGNOSIS (2026-07-16)
+
+### R7-001 cauldron misplaced — ROOT CAUSE FOUND: stale overlay rects on the 4 re-rolled plates
+Measured every overlay's image dims vs its `overlays.json` rect dims (bundle
+`EscapeRoom/Resources/GameAssets/level-1/overlays.json`). **23 of 27 overlays match exactly
+(ratio 1.000). Exactly 4 are mismatched — and they are EXACTLY the 4 QA-B10-002 legacy plates
+that the round-6 ART track re-rolled (R6-007):**
+| overlay | image px | rect px | img/rect |
+|---|---|---|---|
+| z2/v-bench ov-flame1 | 998x652 | 828x541 | **1.204** |
+| z2/v-bench ov-flame2 | 998x768 | 828x637 | **1.204** |
+| z2/v-bench ov-flame3 | 998x883 | 828x733 | **1.204** |
+| z2/v-cabinet ov-slots-seated | 844x423 | 591x295 | **1.427** |
+- The ART re-roll delivered CORRECT art at the correct plate size (3840x1920, matching base), but
+  the overlays' placement RECTS were NOT recomputed from the new art — they are stale, carried from
+  the old 2560-era diff bboxes. The compositor faithfully draws correct art into a wrong rect →
+  the plate is scaled ~83% (flame) / ~70% (slots) and lands off-position = the user's "correctly
+  replaced but not placed correctly where it used to be".
+- Aspect ratios match exactly (998/883 == 828/733), so it is a pure uniform scale+offset error,
+  NOT a bad crop. Confirms rect-derivation, not art, is at fault.
+- **NOTE — R7-001b (not yet user-reported): `ov-slots-seated` is misregistered too** (1.427). That
+  is the cabinet sun/moon "ring+coin seated" overlay. Same bug, same cause. Fix both.
+- The other 23 overlays are auto-derived by `tools/build_game_assets.py` and are all 1.000 — so the
+  fix is to make these 4 derive their rects the same way (the pipeline evidently carried hardcoded/
+  cached rects for the former legacy-exception plates). Fixing the derivation prevents recurrence.
+- Target: Developer (pipeline rect derivation + restage). Verify ALL 27 overlays == 1.000 after.
+
+### R7-002 edge bands — ROOT CAUSE FOUND: stretched pixels under a vignette, never real content
+Origin commit ff9299d (build 10): "S8 dual-safe re-frame of all 6 views (29 plates), **PIL band
+fallback after outpaint rejection**" — the re-frame PADDED the plates top/bottom for the iPad safe
+zone, an outpaint to fill that padding with real content was REJECTED, and it fell back to
+STRETCHING the boundary pixels. Round-6's R6-004 "sweep" then applied a dark vignette ON TOP of
+that stretch: pixel probe shows a smooth ramp from near-black (y=0, avg 6) to real content
+(y~240, avg 57), with constant hue ratios across x = the smear is still there, just dimmed.
+So R6-004 made it darker, not fixed. Measured smear depth per source plate (@3x, 3840x1920) —
+correlates almost exactly with the user's report:
+| view | top smear | bottom smear | user reported |
+|---|---|---|---|
+| study (desk) | 185px | 1px | top ✅ |
+| entry (crow) | 195px | 194px | top+bottom ✅ |
+| bench (cauldron) | 108px | 108px | top ✅ |
+| cabinet (astrolabe) | 233px | 233px | top+bottom ✅ |
+| cellar | 118px | 118px | bottom ✅ |
+| hearth | 15px | 0px | NOT reported ✅ (clean) |
+- Visible because on iPad the app fills width and shows the plate's FULL HEIGHT → the padding is
+  on-screen by design (the dual-safe-zone re-frame intends it to be seen).
+- **USER DECISION (2026-07-16): "Try outpaint, fall back"** — attempt a real outpaint of the padded
+  strips with Nano Banana Pro (genuine scene extension); if it drifts in style/quality, fall back to
+  a CLEAN fade-to-black (erase the smeared pixels entirely, no fake detail) rather than burn budget.
+- Left/right edges also show smear (visible in the bench base plate) — sweep ALL edges this time.
+- Target: Asset-Gen. Budget: $2.15 headroom of the $23.00 cap.
