@@ -1,3 +1,59 @@
+# ROUND 7 ART TRACK — R7-002 edge bands — 2026-07-17 (branch build-12-round6-fixes)
+PROGRESS: 31/31 plates DONE (93 files @1x/@2x/@3x) | 0 failed | outpaint probe 1/1 rejected
+SPEND: $0.30 this round | cumulative Level-1 art $21.15 of the $23.00 cap ($1.85 headroom)
+
+## Outcome: PRIMARY (outpaint) attempted and REJECTED -> shipped the user's authorized FALLBACK (clean fade, $0)
+
+1/1 outpaint probe: z2-cabinet TOP band, CROP-SCOPED 21:9 strip (the one framing build 10
+never tried — it fed the whole canvas). 4K, seed 72001, $0.30. REJECTED: the band art was
+excellent and on-style, but the endpoint re-rendered the whole strip (cabinet reshaped,
+bottles moved, floor replaced); registration 21.25 mean-abs with NO alignment optimum.
+Root cause is architectural: fal nano-banana-pro/edit is not a masked inpaint (no mask
+param; refs downscaled to 1536px) so it CANNOT preserve the interior. Now 8/8 failures
+across 3 framings, $2.40 total burned on this approach (build 10 spent $2.10). DO NOT RETRY.
+Archived: specs/assets/level-1/_rejects/R7-002-outpaint-probe/ (+ README.md).
+
+Shipped instead: specs/tools/band_fade_r7.py (committed, deterministic, $0). Band pixels
+ERASED and rebuilt as ~120px falloff from the seam then literal #000. ALL FOUR EDGES swept
+(R6-004 only did top/bottom — that is why it failed). Structure gone, not dimmed:
+top-band horizontal detail 0.55-1.24 -> 0.006-0.016; left-band vertical detail 1.10-1.21 ->
+0.001-0.005. 52-75% of every band is exactly #000.
+
+## Band geometry (AUTHORITATIVE = the applied build-10 transform, visually confirmed;
+## NOT the streak detector, which reports 0 on left/right and phantom bands on soft close-ups)
+| view | L | T | R | B | plates |
+|---|---|---|---|---|---|
+| z1-study | 538 | 240 | 0 | 29 | 1 |
+| z1-entry | 425 | 250 | 573 | 249 | 7 |
+| z2-bench | 430 | 163 | 223 | 163 | 4 |
+| z2-cabinet | 630 | 288 | 522 | 288 | 5 |
+| z3-cellar | 445 | 173 | 246 | 173 | 14 |
+
+DONE (31/31): z1-study-base | z1-entry base+basin-drained-nb+basin-filled-nb+cage-open+
+crow-lintel+vines-gone+vines-withered | z2-bench base+flame1/2/3 | z2-cabinet base+
+drawer-open+open+slots-seated+ov-adrawer-empty | z3-cellar base+barrel-pried+
+ov-barrel-pried-empty+beam-alcove+beam-blocked+beam-floor+beam-floor-shelf-slid+
+crank-fitted+drawer-open+mirror-d2+mirror-d3+nobeam-nb+shelf-slid+weight-hung
+
+VERIFIED: interior byte-identical vs git HEAD 31/31; base/variant bands byte-identical 31/31
+(fixes a latent bug: reframe_b10.py's rolling rng gave 18 of 22 variants DIFFERENT band grain
+from their base); no contouring; every variant byte-identical to its base in the 20px ring
+inside the content rect (maxdiff=0), so one shared band per view is provably seam-correct.
+
+EXCLUDED + WHY (Producer decisions needed):
+- z1/v-hearth (+3 variants): per Producer directive. BUT it does carry a real 86px band
+  (L86 T86 R87 B0) — same defect, mild. One line in the tool covers it if wanted.
+- cu-lintel (394/208) and cu-flowerpot (61): FALSE POSITIVES — no band exists. Both plates are
+  merely SOFT; the detector counts rows with diff<1.5 and so measures softness, not smear.
+  Fading cu-lintel would have blacked out half a puzzle clue (FIRE triangle + numeral II).
+- cu-lintel separately HAS a translucent ghost RECTANGLE around the FIRE triangle (region-edit
+  composite artifact) — real defect, not R7-002, flagged for a separate decision.
+
+NOT TOUCHED (per brief): tools/build_game_assets.py, overlays.json, EscapeRoom/Resources/**.
+Developer JOIN pass restages.
+
+---
+
 # ROUND 6 ART TRACK — FINAL (build-12-round6-fixes worktree) — 2026-07-14
 PROGRESS: 4/4 items DONE | 0 failed | nano spend this round $1.05 | cumulative Level-1 art $20.85 of $23.00 cap ($2.15 headroom)
 

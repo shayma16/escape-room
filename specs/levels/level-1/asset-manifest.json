@@ -2133,7 +2133,7 @@
   },
   "technique": {
    "content": "uniform scale s + offset (ox,oy) on 3840x1920; single LANCZOS resample; identical transform for base and EVERY wide state variant of the view, so state swaps stay pixel-aligned by construction",
-   "border_band": "deterministic PIL edge-replicate smear + progressive blur/darken vignette + grain (specs/tools/reframe_b10.py); atmosphere-only overscan per style-guide S8",
+   "border_band": "deterministic PIL edge-replicate smear + progressive blur/darken vignette + grain (specs/tools/reframe_b10.py); atmosphere-only overscan per style-guide S8 -- SUPERSEDED 2026-07-17 by round7_band_fade: this edge-replicate smear is the root cause of R7-002; the band is now a true fade to black (specs/tools/band_fade_r7.py).",
    "outpaint_postmortem": "nano-banana-pro edit border outpaint attempted (7 x 4K, $2.10) and REJECTED: the endpoint re-renders the full scene (registration >=13.5 mean-abs after shift search), violating the content-IDENTICAL constraint. Outputs archived in specs/assets/level-1/_work-build10/reframe/."
   },
   "transforms": {
@@ -2371,7 +2371,8 @@
     "edges": "top+bottom (short) padded edges + state variants",
     "fix": "blurry/stretched reframe edge-band replaced with clean content-preserving fill (short reflect + dark atmospheric vignette; no blur, no streak, no object duplication). Left/right overscan bands NOT flagged - left as-is. z4-alcove was never reframed (no band).",
     "method": "deterministic PIL, content interior byte-identical, base+variant bands identical (clean overlays)",
-    "cost_usd": 0.0
+    "cost_usd": 0.0,
+    "SUPERSEDED_2026_07_17": "R7-002: this sweep did NOT remove the smear - measurement on the delivered pixels showed the band still carried real scene structure (top-band horizontal detail 0.55-1.24, left-band vertical detail 1.10-1.21), i.e. the build-10 smear survived under a darker vignette. It also scoped only top+bottom, leaving the left/right bands (the worst: 430-630px on bench/cabinet) untouched. The user reported the same defect twice. Replaced by round7_band_fade."
    },
    "R6-007_flames_slots": {
     "files": [
@@ -2399,7 +2400,11 @@
       "state": "doors open, BOTH shelves empty",
       "source": "cu-cabinet-open@{1,2,3}x (build-11 canonical)",
       "geometry_3x": "erased file/rasp (diag line 806,514->839,822 w58) + corked phial (belly ellipse c(952,742) rx71 ry102 + neck 910,600,990,662 + cork 914,588,974,628); dilate4; changed bbox x773-1027 y481-855",
-      "scales": ["@1x 683x512", "@2x 1365x1024", "@3x 2048x1536"],
+      "scales": [
+       "@1x 683x512",
+       "@2x 1365x1024",
+       "@3x 2048x1536"
+      ],
       "note": "open doors, interior wood, sun/moon emblems, shelf lips all intact; outside erase region byte-identical to base"
      },
      "z3/v-cellar/ov-barrel-pried-empty": {
@@ -2410,7 +2415,11 @@
       "state": "iron weight GONE, empty barrel interior (R6-005 barrel-weight duplication fix)",
       "source": "z3-cellar-barrel-pried@{1,2,3}x (build-11 canonical)",
       "geometry_3x": "erased trapezoid iron weight + ring handle (uniform rect 2658,1266,2786,1404); dilate4; changed bbox x2654-2790 y1262-1408",
-      "scales": ["@1x 1280x640", "@2x 2560x1280", "@3x 3840x1920"],
+      "scales": [
+       "@1x 1280x640",
+       "@2x 2560x1280",
+       "@3x 3840x1920"
+      ],
       "note": "pried lid, staves, both metal bands, front ledge, hexagonal floor all intact; outside erase region byte-identical to base"
      },
      "z2/v-cabinet/ov-adrawer-empty": {
@@ -2421,7 +2430,11 @@
       "state": "moon coin + crank GONE, empty drawer floor",
       "source": "z2-cabinet-drawer-open@{1,2,3}x (build-11 canonical)",
       "geometry_3x": "erased moon coin (ellipse c(2712,1499) rx44 ry26) + Z-crank (rect 2778,1481,2872,1527), both kept below lit back rim; dilate4; changed bbox x2664-2876 y1469-1531",
-      "scales": ["@1x 1280x640", "@2x 2560x1280", "@3x 3840x1920"],
+      "scales": [
+       "@1x 1280x640",
+       "@2x 2560x1280",
+       "@3x 3840x1920"
+      ],
       "note": "OPTIONAL item delivered (clean); drawer already functionally hides via code. Lit back rim, drawer front/sides, astrolabe base intact; outside erase region byte-identical to base"
      }
     }
@@ -2429,5 +2442,87 @@
   },
   "round6_nano_spend_usd": 1.05,
   "cumulative_level1_art_usd": 20.85
+ },
+ "round7_band_fade": {
+  "date": "2026-07-17",
+  "branch": "build-12-round6-fixes",
+  "item": "R7-002 - blurry/stretched scene edges (user-reported TWICE; R6-004 failed to fix)",
+  "root_cause": "build-10 ff9299d re-framed each view into the S8 dual-safe zone: content = uniform scale s + offset (ox,oy) on 3840x1920. The exposed border was filled by PIL edge-replicate padding (np.pad mode='edge') = literally stretching the boundary pixel outward, after an outpaint was rejected. R6-004 then vignetted ON TOP of that stretch, so the smeared pixels survived, merely dimmed.",
+  "user_decision": "'Try outpaint, fall back' (2026-07-16). Outpaint attempted and rejected -> clean fade shipped.",
+  "outpaint_attempt": {
+   "technique": "CROP-SCOPED strip edit - the one variant build 10 never tried (it fed the WHOLE canvas). z2-cabinet TOP band as an exact 21:9 slice y[0,1646) so the model saw mostly real content.",
+   "endpoint": "fal-ai/nano-banana-pro/edit, 4K, seed 72001, mandatory style template verbatim",
+   "result": "REJECTED. The band art itself was excellent and on-style (dark timber ceiling beams, wall + window arch continuation) - the model CAN render the extension. But it re-rendered the whole strip: cabinet reshaped, shelf/bottles moved, floor replaced, left/right bands dropped by re-framing. Registration vs the canonical interior = 21.25 mean-abs with NO alignment optimum (shift search saturates), so its invented ceiling belongs to its own wall geometry and cannot meet our seam.",
+   "architectural_root_cause": "nano-banana-pro/edit is NOT a masked inpaint: no mask parameter, and refs are downscaled to 1536px max side, so byte-identical interior preservation is impossible IN PRINCIPLE. This is a property of the endpoint, not of the prompt.",
+   "cumulative_cost_of_this_rejected_approach_usd": 2.4,
+   "attempts_to_date": "8 (build-10 waveA 3x + waveB 3x + job-test2 prefill 1x = $2.10; build-12 crop-scoped 1x = $0.30)",
+   "DO_NOT_RETRY": "Border outpaint on these plates has now failed 8/8 across 3 distinct framings. The only route that could work is adopting a re-rendered plate WHOLESALE and re-deriving every hotspot rect, overlay and close-up for that view - a full per-view re-roll, far beyond the remaining cap.",
+   "archive": "specs/assets/level-1/_rejects/R7-002-outpaint-probe/ (+ README.md)",
+   "cost_usd": 0.3
+  },
+  "shipped_method": {
+   "tool": "specs/tools/band_fade_r7.py (committed, deterministic, $0 PIL)",
+   "fill": "band pixels ERASED and rebuilt: ~120px falloff from the content seam (GAMMA 1.5), then literal #000 for the remainder of the band. The falloff runs from the true edge pixel (C0-continuous, no hard cut) through a 16px feather into a low-frequency field blurred at radius 110, which destroys ALL structure. No grain, no dither (verified no contouring: 62 distinct levels across the ramp, mean step 0.305/row).",
+   "scope": "ALL FOUR EDGES of every affected view - not just top/bottom. This is why R6-004 failed.",
+   "band_geometry_source": "the applied build-10 transform (authoritative + visually confirmed: seam sits exactly at x=430 on the bench, x=630 on the cabinet). NOT a streak/darkness detector - that detector only sees the dark CLIPPED part of the band, reports 0 on left/right where the smear is worst but not dark enough to clip, and reports phantom bands on soft close-ups.",
+   "plates": 31,
+   "files": 93,
+   "cost_usd": 0.0
+  },
+  "true_band_geometry_at_3x": {
+   "z1/v-study": {
+    "L": 538,
+    "T": 240,
+    "R": 0,
+    "B": 29
+   },
+   "z1/v-entry": {
+    "L": 425,
+    "T": 250,
+    "R": 573,
+    "B": 249
+   },
+   "z2/v-bench": {
+    "L": 430,
+    "T": 163,
+    "R": 223,
+    "B": 163
+   },
+   "z2/v-cabinet": {
+    "L": 630,
+    "T": 288,
+    "R": 522,
+    "B": 288
+   },
+   "z3/v-cellar": {
+    "L": 445,
+    "T": 173,
+    "R": 246,
+    "B": 173
+   }
+  },
+  "verification": {
+   "interior_byte_identical": "PASS 31/31 vs git HEAD - only pixels strictly OUTSIDE the content rect are ever assigned",
+   "smear_removed": "PASS - structure measured on the axis the smear PRESERVED: top-band horizontal detail 0.55-1.24 -> 0.006-0.016; left-band vertical detail 1.10-1.21 -> 0.001-0.005 (~100x)",
+   "pure_black_coverage": "52-75% of every band is exactly #000; outermost row and column are exactly 0",
+   "base_variant_band_identical": "PASS 31/31 - band computed ONCE per view from the BASE and composited onto every variant, so the band diff between base and variant is EXACTLY 0 by construction",
+   "latent_bug_fixed": "reframe_b10.py drew grain from ONE rolling rng across plates, so base and variant bands had DIFFERENT noise (18 of 22 variants mismatched their base). The auto-derived overlay rects could pick that band noise up as a 'difference'. Now byte-identical.",
+   "seam_safe": "every variant is byte-identical to its base in the 20px ring just inside the content rect (maxdiff=0, all 31 plates), so one shared band per view is provably seam-correct"
+  },
+  "excluded": {
+   "z1/v-hearth": "Per Producer directive (user never reported it). NOTE: the hearth DOES carry a real but small 86px edge-replicate band (L86 T86 R87 B0) per the same transform - the same defect, just mild. Producer to decide whether to sweep it for consistency; the tool covers it by adding one line.",
+   "z1/v-hearth/cu-lintel": "FALSE POSITIVE - excluded. No edge band exists. dy/dx ratio is 0.6-0.9 THROUGHOUT; only row y=0 is a 1px artifact. The plate is uniformly SOFT (detail ~0.5 vs ~1.4 on sharp content), and the apparent left-edge 'streaks' are the lintel beam's WOOD GRAIN. The 394/208 reading came from a detector that counts consecutive rows with mean diff < 1.5, which on a soft dark close-up runs for hundreds of rows - it measures softness, not smear. Fading 394+208px would have blacked out half of a puzzle-load-bearing clue (FIRE triangle + numeral II).",
+   "z1/v-study/cu-flowerpot": "FALSE POSITIVE - excluded. Same cause; only row y=0 is a 1px duplicate (dy=0.004).",
+   "z4/v-alcove": "never re-framed, no band (confirmed)",
+   "other_cu_closeups": "measured clean"
+  },
+  "observations_for_producer": {
+   "cu-lintel_ghost_rect": "NOT R7-002 and NOT fixed: cu-lintel has a visible translucent RECTANGLE around the FIRE triangle (a region-edit composite artifact with slightly different exposure), and the whole plate is soft/low-detail. It is a puzzle clue. Flagging for a separate decision.",
+   "cabinet_inset": "z2-cabinet content occupies only 70% of the canvas (s=0.70), so an honest fade necessarily yields a wide black frame (30% of width). If the user dislikes the inset look, the fix is the re-frame/aspect handling (Developer-side), not the band art."
+  },
+  "spend_this_item_usd": 0.3,
+  "cumulative_level1_art_usd": 21.15,
+  "cap_usd": 23.0,
+  "headroom_remaining_usd": 1.85
  }
 }
