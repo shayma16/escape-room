@@ -2151,3 +2151,56 @@ No duplicates requiring user merge-confirmation, no unresolved conflicts, no vag
 unactionable items (the screenshot batches resolved all "incoming" ambiguity), and no open
 questions — R6-011 (option a) and R6-009 (screenshot-validate) were decided during logging.
 
+
+---
+
+# ROUND 7 — build 13 device spot-check (TestFlight "Within 1.0 (build 13)")
+
+_User iPad spot-check of the Round-6 fix build, 2026-07-16. GATE-2 follow-up: this is the
+post-release verification of the round-6 fixes, NOT a new feature round._
+
+## CONFIRMED FIXED ON DEVICE (round-6 fixes verified by the user — close these)
+- **R6-008 astrolabe drawer — FIXED** (user: "the astrolobe ... got fixed"). Container
+  collect-state (Cluster A) confirmed working on device, close-up + wide.
+- **R6-006 weight hook — FIXED** (user: "the weight got fixed"). Cluster B hotspot re-frame
+  remap confirmed working on device.
+  → These two were the round-6 systemic clusters; device-confirmed = clusters A and B land.
+
+## R7-001 — cauldron/flame plate MISPLACED (art correct, registration wrong)
+> "the cauldron picture was correctly replaced but it wasn't placed correctly where it used to
+> be so that needs to be fixed"
+
+The R6-007 ART re-roll SUCCEEDED (the new build-3-style cauldron/flame plate is the one
+rendering — no more dark photoreal box), but the OVERLAY REGISTRATION is still wrong: the
+correct plate is drawn at the wrong position/frame vs where the cauldron actually sits in the
+bench scene. So R6-007 was HALF-fixed: art = yes, placement = no.
+- Note: the round-6 Developer registration sub-fix unified the flame overlay's image name and
+  placement-rect name (was `min(stage,3)` image vs `max(stage,1)` rect). That fixed a
+  right-plate/wrong-rect MISMATCH but evidently the resulting rect itself is still not where
+  the cauldron belongs on the current re-framed bench plate.
+- SUSPECT: the overlay rect in `overlays.json` for the z2/v-bench flame plates was derived
+  against a pre-re-frame (or differently-sized) base — the re-rolled plates are now 3840×1920
+  (were stale 2560), so a rect computed for the old dimensions would land the art off-position.
+- Severity: major (visible misplaced art in the potion room). Target: Developer (+ Asset-Gen if
+  the rect must be re-derived from the plate).
+- NEEDS: screenshot of where the cauldron renders now vs where it should be.
+
+## R7-002 — screen edge bands STILL blurry/stretched on SOME scenes (R6-004 incomplete)
+> "i still see the screen edges blurry/stretched on some scenes"
+
+The R6-004 band sweep did NOT fully resolve on device. Round-6 scope note (from the ART agent,
+and surfaced to the user at GATE 2 as non-blocking): the sweep cleaned the **top/bottom (short)
+padded edges only** across the 6 re-framed views + variants; **left/right overscan bands were
+deliberately LEFT AS-IS** because the original R6-004 report named only top/bottom.
+- LIKELY ROOT: the user is now seeing the untouched **left/right** overscan bands — i.e. scope
+  was too narrow, not that the sweep failed.
+- ALTERNATIVE: some views/states were missed by the sweep, or close-up plates carry bands too
+  (the sweep covered the 6 wide views + their variants; close-ups were not enumerated).
+- Severity: minor/cosmetic but user-visible and now twice-reported → fix properly this time:
+  sweep ALL edges (left/right as well as top/bottom) on ALL affected plates incl. close-ups.
+- Target: Asset-Gen ($0 PIL preferred — the round-6 sweep was $0).
+- NEEDS: which scenes, and which edges (top/bottom vs left/right) — screenshot ideal.
+
+## STILL UNCONFIRMED from round 6 (user did not mention; re-ask at next spot-check)
+- R6-004-adjacent: whether top/bottom specifically improved (user says "some scenes" still bad).
+- R6-002 EARTH glyph faint carved-groove remnants (known, accepted as "fix only if simple").
