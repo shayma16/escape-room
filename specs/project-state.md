@@ -100,6 +100,45 @@ NOTE: certs are ACCOUNT-WIDE, not per-app; user has other live App Store/TestFli
 used: only revoke **Apple Development** (disposable, auto-regenerates, cannot affect shipped/
 TestFlight builds); NEVER touch **Apple Distribution**.
 
+## ⭐ ROUND 7 (build 13 device spot-check) — BOTH DEFECTS FIXED, heading to build 14 (2026-07-17)
+
+User spot-checked build 13: **R6-008 astrolabe drawer + R6-006 weight hook CONFIRMED FIXED on
+device** (round-6 clusters A and B land). Two defects found → Round 7. Both now fixed on
+`build-12-round6-fixes`, verified by the Producer from RENDERED PIXELS (not agent claims):
+
+**R7-002 edge bands — FIXED (4b095ee + 21a1eca).** Root cause: build-10 re-frame PADDED plates;
+an outpaint to fill the padding was REJECTED so it fell back to STRETCHING edge pixels; round-6's
+R6-004 "sweep" then only VIGNETTED that stretch (darker, not gone). User decision = try outpaint,
+fall back. **Outpaint REJECTED AGAIN and marked DO-NOT-RETRY** — architectural, not prompt:
+`nano-banana-pro/edit` has NO mask param and downscales refs to 1536px, so interior preservation is
+impossible in principle (8/8 failures across 3 framings, $2.40 burned across builds 10+13).
+Clean fade-to-black applied to ALL 4 edges, 31 plates + 4 hearth = 35. Probe cost $0.30, rest $0 →
+**cumulative art $21.15 / $23.00 (headroom $1.85)**. Producer LESSON: my smear detector produced
+FALSE POSITIVES on `cu-lintel` (394px) + `cu-flowerpot` — it measured softness/wood-grain, not
+smear; the ART agent correctly overrode me (fading cu-lintel would have blacked out half the FIRE
+triangle + numeral II puzzle clue). It also found left/right bands were REAL and bigger than
+measured (up to 630px), and fixed a latent `reframe_b10.py` rolling-RNG bug (18/22 variants had
+different band noise than their base).
+
+**R7-001 cauldron misplaced — FIXED (c3fcfc8).** Producer measured 23/27 overlays at ratio 1.000;
+exactly the 4 R6-007 re-rolled plates wrong (flame1/2/3 = 1.204, slots-seated = 1.427). Developer
+found the deeper cause: those ratios are EXACTLY the reframe-scale inverses (1/0.83, 1/0.70). A
+`legacy=True` flag in `MANUAL_OVERLAYS` cropped the variant at the OLD pre-re-frame hand rect while
+STORING the re-framed rect, relying on SpriteKit to rescale — correct ONLY while the sources really
+were old-framing 2560 plates. R6-007 re-rolled them fresh at 3840x1920 in re-framed space,
+invalidating the flag's premise. **No number was stale — a PREMISE was.** Fix: moved all 4 into the
+auto-diff `OVERLAYS` list (self-locating diff bboxes) and DELETED the `legacy` flag + its stale hand
+rects so the class is unrepresentable. **All 27 overlays now 1.000.** Two new guards, both tested by
+injecting the old rect: `assert_overlay_rects_match_art()` (Python, blocks writing overlays.json)
++ `testOverlayArtIsPixel1to1WithItsRect` (CI, catches hand-edited overlays.json).
+Bundle restaged onto the band-faded plates. All guards PASS; KNOWN_LEGACY_SOURCES stays EMPTY.
+
+**OPEN (user decision, non-blocking):** `cu-lintel` has a genuine SEPARATE defect — a translucent
+ghost RECTANGLE around the FIRE triangle clue (composite artifact) + soft plate. NOT reported by the
+user across several playthroughs; Producer lean = leave it. Not fixed.
+**NEXT:** CI → release build 14 → user device spot-check → merge to level1-rebuild-build3 → main.
+
+## PRIOR — build 13 spot-check items (superseded by Round 7 above)
 **NEXT:** user device spot-check on iPad of build 13. CI-UNVERIFIABLE items needing human eyes:
 (1) astrolabe drawer CLOSE-UP empty state after collecting crank+coin, (2) R6-004 top/bottom edge
 bands. Also flagged non-blocking: R6-004 left/right overscan NOT swept (only top/bottom reported);
