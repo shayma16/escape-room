@@ -833,6 +833,67 @@ final class QALevelFlowTests: XCTestCase {
                       "overlay rects out of bounds / degenerate / full-frame (registration drift): \(offenders.joined(separator: "; "))")
     }
 
+    /// The base plate each view's overlay rects are normalized against.
+    private static let viewBasePlate: [String: String] = [
+        "z1/v-hearth": "z1-hearth-base",
+        "z1/v-entry": "z1-entry-base",
+        "z2/v-bench": "z2-bench-base",
+        "z2/v-cabinet": "z2-cabinet-base",
+        "z3/v-cellar": "z3-cellar-base",
+        "z4/v-alcove": "z4-alcove-base",
+    ]
+
+    /// R7-001 regression guard: every overlay's shipped ART must be pixel-1:1 with the RECT
+    /// it composites into. An overlay is a crop of a variant plate that RoomScene draws back
+    /// onto the base at `rect`; if the art's pixel dims differ from the rect's dims in
+    /// base-plate pixels, SpriteKit rescales it and it lands at the wrong size AND the wrong
+    /// place. There is no legitimate reason for the two to disagree.
+    ///
+    /// WHAT THIS CAUGHT (build 13, user-reported on device): the 4 plates the round-6 ART
+    /// track re-rolled (ov-flame1/2/3 + ov-slots-seated) kept rects derived from the OLD
+    /// pre-re-frame framing, giving art/rect == 1/reframe-scale (1.204 flame / 1.427 slots).
+    /// The compositor faithfully drew CORRECT art into a WRONG rectangle: the cauldron's fire
+    /// rendered ~180px left and ~280px up of the pot, as a bright patch on the wall. The
+    /// staging pipeline now derives these rects by auto-diff like the other 23, and
+    /// `assert_overlay_rects_match_art` fails the stage; this test is the CI-side backstop
+    /// that also catches a hand-edited overlays.json, which the Python guard would never see.
+    func testOverlayArtIsPixel1to1WithItsRect() {
+        var offenders: [String] = []
+        for (view, keys) in Self.requiredOverlayKeys {
+            guard let baseName = Self.viewBasePlate[view],
+                  let base = GameAssetLoader.shared.image(named: baseName) else {
+                offenders.append("\(view): base plate missing from bundle")
+                continue
+            }
+            let baseW = base.size.width * base.scale
+            let baseH = base.size.height * base.scale
+            for key in keys {
+                guard let r = OverlayRectCatalog.shared.rect(view: view, overlay: key) else {
+                    continue // completeness is asserted by testEveryCoordinator...
+                }
+                guard let art = GameAssetLoader.shared.image(named: key) else {
+                    continue // presence is asserted by the art-reachability test
+                }
+                let rectW = r.width * baseW
+                let rectH = r.height * baseH
+                guard rectW > 1, rectH > 1 else { continue }
+                let rx = (art.size.width * art.scale) / rectW
+                let ry = (art.size.height * art.scale) / rectH
+                if abs(rx - 1.0) > 0.02 || abs(ry - 1.0) > 0.02 {
+                    let dims = String(format: "art %.0fx%.0f vs rect %.0fx%.0f (ratio %.3f/%.3f)",
+                                      art.size.width * art.scale, art.size.height * art.scale,
+                                      rectW, rectH, rx, ry)
+                    offenders.append("\(view)/\(key) \(dims)")
+                }
+            }
+        }
+        XCTAssertTrue(offenders.isEmpty,
+                      "overlay art is not pixel-1:1 with its rect — the runtime will rescale and MISPLACE it "
+                      + "(R7-001 class: the cauldron flame drawn onto the wall beside the pot). "
+                      + "Re-derive the rect from the current plate via tools/build_game_assets.py "
+                      + "(auto-diff), never by hand-editing overlays.json: \(offenders.joined(separator: "; "))")
+    }
+
     /// Mirror-motion guard (R4-011 regression): the d2/d3 overlays must crop (nearly) the
     /// same plate region — the standing mirror on the LEFT of the cellar — so rotating the
     /// mirror visibly changes it. The build-9 bug placed the hand rect at the plate center

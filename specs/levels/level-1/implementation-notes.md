@@ -1885,3 +1885,62 @@ the synthesized-sounds sentence kept verbatim.
   Fixed by rendering at a HALF-SIZE scene (1366x683) with contentScaleFactor 1 — the
   compositor math is normalized and scale-invariant, so the code paths exercised are
   identical.
+
+## Round 7 / build 14 — R7-001 overlay rect derivation (Developer)
+
+- **R7-001 root cause (confirmed, not just reproduced): the retired-premise `legacy` flag,
+  not cached numbers.** `MANUAL_OVERLAYS` entries carried a 6th `legacy` element. For
+  `legacy=True` the staging tool cropped the variant at the OLD (pre-build-10-re-frame)
+  hand rect while STORING the re-framed rect, deliberately relying on SpriteKit to rescale
+  the crop down into the smaller rect. That made `img/rect == 1/REFRAME_scale` **by
+  construction** — bench `1/0.83 = 1.205`, cabinet `1/0.70 = 1.429`, matching the
+  Producer's measured 1.204/1.427 exactly. The flag was *correct* only while those sources
+  really were old-framing 2560-era plates. Round 6 (R6-007) re-rolled all four fresh at
+  3840x1920 in **re-framed** space, silently invalidating the premise: the tool then
+  cropped the wrong region of a correct plate and drew it scaled ~83%/70% and offset
+  (~180px left, ~278px up for ov-flame1) — the user's "correctly replaced but not placed
+  correctly", i.e. the flame's glow on the wall LEFT of the cauldron.
+- **Fix = mechanism, not values.** The 4 plates MOVED from `MANUAL_OVERLAYS` to the
+  auto-diff `OVERLAYS` list, so their rects self-locate from a base-vs-variant diff bbox
+  exactly like the other 23. Measured on the current plates they diff tightly and cleanly
+  (global mean diff 0.12–1.44; bbox 1.5–4.8% of frame), so no hand rect is needed at all.
+  The `legacy` flag and its crop-at-a-different-rect branch are **deleted, not merely
+  unused** — this staleness class is now unrepresentable. The old hand rects were removed
+  rather than kept as comments, so a future re-roll cannot resurrect them.
+- **Anti-recurrence, two layers (both fail loudly):**
+  1. `assert_overlay_rects_match_art()` in `tools/build_game_assets.py` — refuses to write
+     `overlays.json` unless EVERY overlay's staged art is pixel-1:1 with its rect (±2%).
+     Prints the full ratio table each run. Nothing previously compared art dims to rect
+     dims, which is why a 4-of-27 defect stayed invisible until a device screenshot.
+  2. `testOverlayArtIsPixel1to1WithItsRect` (QALevelFlowTests) — CI-side backstop that also
+     catches a hand-edited `overlays.json`, which the Python guard would never see.
+- **Acceptance: all 27 overlays ratio 1.000** (was 23/27). Verified by offline composite
+  that ov-flame1/3 now sit ON the cauldron (fire rooted in the hearth, licking the pot)
+  and ov-slots-seated seats the sun/moon in their carved door recesses.
+- **R7-001b fixed too (never user-reported):** `ov-slots-seated` (1.427) had the same bug
+  and same cause; it is the cabinet sun/moon "ring+coin seated" overlay.
+- **Bonus fix — two rects were band-contaminated and are now tight.** `ov-crow-lintel`
+  (y0 108→291) and `ov-crank-fitted` (y0 68→213) previously stretched UP into the top edge
+  smear band, because the pre-R7-002 rolling RNG gave variants different band noise than
+  their base, so the band read as a "difference". Verified post-fix: base-vs-variant edge
+  bands are now **byte-identical** (max-diff 0) on both views, so no derived rect is band-
+  contaminated. Their art was 1:1 before and after (the band pixels matched the base, so
+  they composited invisibly) — this is reduced overdraw, not a visual change.
+- **Restage picked up R7-002:** 35 band-faded @3x sources; 30 consumed by the pipeline
+  (5 are documented deliberate non-consumers: the `-nb` basin/nobeam wides,
+  `z1-entry-vines-withered`, and `z1-hearth-poker-taken` which R5-001 replaced with a
+  base-derived synthesis). All 12 band-faded full plates restaged; the other 18 feed only
+  interior overlay crops where the edge fade lies outside every crop, so byte-identical
+  output there is correct.
+- **Guards:** `assert_no_nb_shadow` PASS, `assert_no_stale_vintage` PASS with
+  `KNOWN_LEGACY_SOURCES` still **empty** (the 4 QA-B10-002 exceptions stay retired),
+  `assert_chrome_current` PASS, overlay-rect guard PASS (27/27).
+- **Security checklist (run this handoff):**
+  - *No development-time secrets:* grep of `EscapeRoom/` source + a binary-inclusive scan of
+    the staged resource set for `fal.ai` / `FAL_KEY` / `api_key` / bearer / `sk-*` / AWS key
+    patterns returned **zero** matches. `.env` is gitignored (`.gitignore:2`), absent from
+    `EscapeRoom/Resources/`, and copied into no bundle or build phase.
+  - *Minimal entitlements/permissions:* **no** `.entitlements` file, **no**
+    `CODE_SIGN_ENTITLEMENTS` / `com.apple.developer.*` in the pbxproj, and **zero**
+    `NS*UsageDescription` keys. `Info.plist` holds only bundle/orientation/launch-screen
+    keys — no camera, microphone, location or contacts.

@@ -230,6 +230,66 @@ def assert_chrome_current():
             + "\n  ".join(stale))
 
 
+def assert_overlay_rects_match_art(overlays, report=None, tol=0.02):
+    """R7-001 anti-recurrence guard (build 13): every overlay's STAGED ART must be pixel-1:1
+    with the RECT it will be composited into.
+
+    THE INVARIANT: an overlay is a crop of a variant plate that the runtime draws back onto
+    the base plate at `rect`. If the crop's pixel dims != rect's dims in base-plate pixels,
+    SpriteKit necessarily rescales the art -> it lands at the wrong size AND (because rect
+    origin and art origin then disagree) the wrong place. That is a defect 100% of the time;
+    there is no legitimate reason for an overlay's art to be a different size than its rect.
+
+    WHAT SHIPPED WITHOUT THIS GUARD (R7-001): the 4 re-rolled QA-B10-002 plates carried
+    `legacy=True` rects cropped at the OLD pre-re-frame framing while storing re-framed rects,
+    giving img/rect == 1/REFRAME_scale (1.204 flame / 1.427 slots). The compositor faithfully
+    drew correct art into a wrong rectangle: the cauldron's fire rendered as a bright patch on
+    the WALL beside the pot. 23 of 27 overlays were fine — the bug was invisible precisely
+    because it was localized to the 4 plates an ART re-roll had touched. Nothing in the build
+    compared art dims to rect dims, so a re-roll could silently rot the rects again.
+
+    This check is cheap, total (ALL overlays incl. -dim variants), and unambiguous, so a
+    future re-roll that invalidates a rect FAILS THE BUILD instead of reaching a device.
+    """
+    rows = []
+    offenders = []
+    for view in sorted(overlays):
+        bw, bh = load(VIEW_BASE[view]).size
+        for name in sorted(overlays[view]):
+            entry = overlays[view][name]
+            x, y, w, h = entry["rect"]
+            rect_w, rect_h = w * bw, h * bh
+            for rel in [entry["file"]] + ([entry["dimFile"]] if "dimFile" in entry else []):
+                iw, ih = Image.open(out_path(rel)).size
+                rx = iw / max(rect_w, 1e-6)
+                ry = ih / max(rect_h, 1e-6)
+                bad = abs(rx - 1.0) > tol or abs(ry - 1.0) > tol
+                rows.append((view, os.path.basename(rel), f"{iw}x{ih}",
+                             f"{rect_w:.0f}x{rect_h:.0f}", f"{rx:.3f}/{ry:.3f}",
+                             "FAIL" if bad else "ok"))
+                if bad:
+                    offenders.append(
+                        f"{view}/{os.path.basename(rel)}: art {iw}x{ih} vs rect "
+                        f"{rect_w:.0f}x{rect_h:.0f} (ratio {rx:.3f}/{ry:.3f}) — art would be "
+                        f"rescaled {1/rx:.0%}/{1/ry:.0%} and land off-position")
+    print("\n   overlay art-vs-rect registration (R7-001 guard):")
+    print(f"   {'view':<14}{'overlay':<28}{'art px':>12}{'rect px':>12}{'ratio':>14}  {'':<4}")
+    for r in rows:
+        print(f"   {r[0]:<14}{r[1]:<28}{r[2]:>12}{r[3]:>12}{r[4]:>14}  {r[5]:<4}")
+    print(f"   {len(rows)} overlay images checked, {len(offenders)} misregistered")
+    if report is not None:
+        report.append(f"overlay rect guard: {len(rows)} checked, all pixel-1:1 with their rects")
+    if offenders:
+        raise SystemExit(
+            "OVERLAY RECT GUARD FAILED: staged overlay art is not pixel-1:1 with the rect it "
+            "composites into, so the runtime will rescale + misplace it (R7-001 class: the "
+            "cauldron flame drawn onto the wall). This normally means an ART re-roll changed a "
+            "plate's framing/size while its rect stayed stale — re-derive the rect from the new "
+            "plate (auto-diff) rather than editing numbers by hand. Offenders:\n  "
+            + "\n  ".join(offenders))
+    return rows
+
+
 def load(path):
     return Image.open(src(resolve_src(path)))
 
@@ -714,17 +774,27 @@ def reframe_rect(view, rect):
     return (x * s_ + ox, y * s_ + oy, w * s_, h * s_)
 
 
+# R7-001 (build 13): the `legacy` flag is RETIRED — see the OVERLAYS comment below and
+# assert_overlay_rects_match_art. Entries are (view, variant, name, rect, dim); the crop is
+# ALWAYS taken at the same rect that ships in overlays.json, so art and rect cannot diverge.
 MANUAL_OVERLAYS = [
-    ("z2/v-cabinet", "z2-cabinet-slots-seated", "ov-slots-seated", (0.150, 0.24, 0.22, 0.22), False, True),
-    ("z4/v-alcove",  "z4-alcove-key-taken",     "ov-key-taken",     (0.48, 0.10, 0.22, 0.34), False, False),
+    ("z4/v-alcove",  "z4-alcove-key-taken",     "ov-key-taken",     (0.48, 0.10, 0.22, 0.34), False),
 ]
 
-MANUAL_OVERLAY_BASE = {
+# Canonical base plate per view — single source of truth, used by the manual-overlay crops,
+# the emptied-container overlays, the guards, and assert_overlay_rects_match_art (which needs
+# a base size for EVERY view that owns overlays, incl. the auto-diff-only ones).
+VIEW_BASE = {
     "z1/v-hearth":  "z1/v-hearth/z1-hearth-base@3x.png",
+    "z1/v-study":   "z1/v-study/z1-study-base@3x.png",
+    "z1/v-entry":   "z1/v-entry/z1-entry-base@3x.png",
+    "z2/v-bench":   "z2/v-bench/z2-bench-base@3x.png",
     "z2/v-cabinet": "z2/v-cabinet/z2-cabinet-base@3x.png",
     "z3/v-cellar":  "z3/v-cellar/z3-cellar-base@3x.png",
     "z4/v-alcove":  "z4/v-alcove/z4-alcove-base@3x.png",
 }
+
+MANUAL_OVERLAY_BASE = VIEW_BASE
 
 SPRITE_JSONS = [
     "z1/v-study/sprites/runedoor-tiles.json",
@@ -744,7 +814,31 @@ SPRITE_JSONS = [
 # interior (duplicated andiron) — the user-visible "misplaced fireplace fragment".
 # ov-poker-taken is now SYNTHESIZED from the base in build_inpainted() (see the extras
 # auto-diff loop in main), and assert_no_misplaced_clone_fill guards the whole class.
+#
+# R7-001 (build 13): the flame1/2/3 + slots-seated plates MOVED HERE from MANUAL_OVERLAYS.
+# ROOT CAUSE of the user-reported "cauldron replaced but not placed where it used to be":
+# those 4 were the QA-B10-002 *legacy 2560-era* plates, and carried `legacy=True`, whose
+# code path cropped the variant at the OLD (pre-build-10-re-frame) rect while STORING the
+# re-framed rect — deliberately relying on SpriteKit to rescale the crop down into the
+# smaller rect. That made img/rect == 1/REFRAME_scale BY CONSTRUCTION (bench 1/0.83 = 1.205,
+# cabinet 1/0.70 = 1.429 — exactly the measured 1.204/1.427 mismatches). It was *correct*
+# only while the sources really were old-framing 2560 plates. Round 6 (R6-007) re-rolled all
+# four fresh at 3840x1920 in RE-FRAMED space, which silently invalidated the flag's premise:
+# the pipeline then cropped the wrong region of a correct plate and drew it, scaled ~83%/70%
+# and offset (~177px left / 271px up for the flame), onto the wall beside the cauldron.
+# Measured against the current plates, all four now diff tightly and cleanly against their
+# base (mean global diff 0.12-1.44; bbox 1.5-4.8% of frame, nowhere near the edge bands), so
+# they self-locate exactly like the other 23 overlays and no hand rect is needed at all.
+# The `legacy` flag and its crop-at-a-different-rect branch are DELETED, not just unused:
+# rect staleness of this class is now unrepresentable, and assert_overlay_rects_match_art
+# fails the build if any overlay's art ever stops being pixel-1:1 with its rect again.
 OVERLAYS = [
+    # z2 bench — bellows-pumped flame states (R6-007 re-roll; auto-diff self-locating)
+    ("z2/v-bench", "z2-bench-base", "z2-bench-flame1", "ov-flame1", False),
+    ("z2/v-bench", "z2-bench-base", "z2-bench-flame2", "ov-flame2", False),
+    ("z2/v-bench", "z2-bench-base", "z2-bench-flame3", "ov-flame3", False),
+    # z2 cabinet — sun/moon ring+coin seated (R6-007 re-roll; R7-001b, same bug/cause)
+    ("z2/v-cabinet", "z2-cabinet-base", "z2-cabinet-slots-seated", "ov-slots-seated", False),
     # z1 entry (re-framed variants align — self-locating rects)
     ("z1/v-entry", "z1-entry-base", "z1-entry-cage-open",   "ov-cage-open",   False),
     ("z1/v-entry", "z1-entry-base", "z1-entry-crow-lintel", "ov-crow-lintel", False),
@@ -776,15 +870,11 @@ OVERLAYS = [
     ("z3/v-cellar", "z3-cellar-base", "z3-cellar-beam-alcove",  "ov-beam-alcove",  False),
 ]
 
-# Additional misaligned wide overlays (gap G3), same hand-rect crop mechanism as
-# MANUAL_OVERLAYS above but for z1-entry / z2-bench. Kept in one place with their bases.
-MANUAL_OVERLAYS += [
-    # LEGACY 2560 flame plates (contract): crop OLD rect, store REMAPPED rect.
-    ("z2/v-bench", "z2-bench-flame1",          "ov-flame1",         (0.13, 0.30, 0.26, 0.34), False, True),
-    ("z2/v-bench", "z2-bench-flame2",          "ov-flame2",         (0.13, 0.24, 0.26, 0.40), False, True),
-    ("z2/v-bench", "z2-bench-flame3",          "ov-flame3",         (0.13, 0.18, 0.26, 0.46), False, True),
-]
-MANUAL_OVERLAY_BASE["z2/v-bench"] = "z2/v-bench/z2-bench-base@3x.png"
+# (R7-001, build 13: the three z2-bench flame hand-rect entries that used to live here are
+# GONE — they moved to the auto-diff OVERLAYS list above. Their hand rects were authored in
+# OLD pre-re-frame framing and were the stale half of the misregistration; keeping them as
+# "documentation" would only invite the next re-roll to resurrect them. z2/v-bench's base is
+# declared once in VIEW_BASE with every other view.)
 
 
 # ------------------------------------------------------- inpainted variants
@@ -1384,26 +1474,25 @@ def main():
     # we only take the intended element rect. Overlay texture feathering (SpriteKit side)
     # softens the crop seam; a small tonal patch may remain (flagged, same class as the
     # old ov-adrawer note). The rect goes straight into overlays.json.
-    for view, var, name, rect, dim, legacy in MANUAL_OVERLAYS:
-        base_im = load(MANUAL_OVERLAY_BASE[view]).convert("RGB")
+    # R7-001: the crop is taken at EXACTLY the rect that ships in overlays.json. There is no
+    # longer any path that crops one rect and stores another (the retired `legacy` flag) — the
+    # art is pixel-1:1 with its destination by construction, so SpriteKit never rescales it.
+    for view, var, name, rect, dim in MANUAL_OVERLAYS:
+        base_im = load(VIEW_BASE[view]).convert("RGB")
         w, h = base_im.size
         var_im = load(f"{view}/{var}@3x.png").convert("RGB")
         if var_im.size != base_im.size:
             var_im = var_im.resize(base_im.size, Image.LANCZOS)
         store = reframe_rect(view, rect)          # overlays.json rect (re-framed space)
-        # Legacy 2560 plate: its content is at the OLD framing, so crop at the OLD rect
-        # and let SpriteKit scale that crop into the smaller remapped rect on the
-        # re-framed base. Re-framed source: crop directly at the remapped rect.
-        crop_rect = rect if legacy else store
         nx, ny, nw, nh = store
-        cx0, cy0 = int(crop_rect[0] * w), int(crop_rect[1] * h)
-        cx1, cy1 = int((crop_rect[0] + crop_rect[2]) * w), int((crop_rect[1] + crop_rect[3]) * h)
+        cx0, cy0 = int(nx * w), int(ny * h)
+        cx1, cy1 = int((nx + nw) * w), int((ny + nh) * h)
         crop = var_im.crop((cx0, cy0, cx1, cy1))
         rel = f"{view}/overlays/{name}.jpg"
         save_plate(crop, rel)
         entry = {"file": rel, "rect": [nx, ny, nw, nh]}
         overlays.setdefault(view, {})[name] = entry
-        print(f"   {name} (manual, legacy={legacy}): store_rect=({nx:.3f},{ny:.3f},{nw:.3f},{nh:.3f})")
+        print(f"   {name} (manual): store_rect=({nx:.3f},{ny:.3f},{nw:.3f},{nh:.3f})")
 
     # Emptied-container overlays (gap G3): inpainted from the 2560 variants, so crop by the
     # SAME hand-rect as their filled counterparts (the empty state shows the same element
@@ -1469,6 +1558,10 @@ def main():
         save_plate(crop, rel)
         overlays.setdefault("z1/v-hearth", {})[name] = {"file": rel, "rect": [nx, ny, nw, nh]}
         print(f"   {name} (manual): rect=({nx},{ny},{nw},{nh})")
+
+    # R7-001: refuse to write overlays.json if any overlay's art is not pixel-1:1 with its
+    # rect (would rescale + misplace at runtime — the cauldron-flame-on-the-wall defect).
+    assert_overlay_rects_match_art(overlays, report)
 
     with open(out_path("overlays.json"), "w") as f:
         json.dump(overlays, f, indent=1, sort_keys=True)
