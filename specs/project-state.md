@@ -136,7 +136,17 @@ Bundle restaged onto the band-faded plates. All guards PASS; KNOWN_LEGACY_SOURCE
 **OPEN (user decision, non-blocking):** `cu-lintel` has a genuine SEPARATE defect — a translucent
 ghost RECTANGLE around the FIRE triangle clue (composite artifact) + soft plate. NOT reported by the
 user across several playthroughs; Producer lean = leave it. Not fixed.
-**NEXT:** CI → release build 14 → user device spot-check → merge to level1-rebuild-build3 → main.
+**BUILD 14 SHIPPED TO TESTFLIGHT (2026-07-17).** CI green (run 29582213189, first try incl. the new
+overlay-registration test). Release run 29607835708 SUCCESS → "Within 1.0 (14)" uploaded. Cert-cap
+blocker recurred AGAIN (release run 29594981602 failed at Archive, same "maximum number of
+certificates") — user revoked one more Apple Development cert, re-dispatch succeeded. **This is now
+2 builds in a row hitting the cap; PROPOSED durable fix to user: pin a reusable Apple Development
+.p12 as GitHub secrets so CI stops minting a new cert per run** — user has NOT yet decided (offered
+to set up after build 14 ships).
+**NEXT:** user device spot-check of build 14 — verify R7-001 (cauldron flame on the pot, cabinet
+ring/coin seated) + R7-002 (clean faded edges on all 6 scenes). On approval → merge
+`build-12-round6-fixes` → `level1-rebuild-build3` → `main` (Level 1 DONE). Only knowingly-unshipped
+item: `cu-lintel` ghost rectangle (Producer lean = leave; user's call).
 
 ## PRIOR — build 13 spot-check items (superseded by Round 7 above)
 **NEXT:** user device spot-check on iPad of build 13. CI-UNVERIFIABLE items needing human eyes:
