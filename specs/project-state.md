@@ -12,7 +12,18 @@ main (PR #8, 2026-07-18) — shipped as TestFlight "Within 1.0 (14)", user-verif
 Level 2 — "The Clockmaker's Attic": mechanical/time-based puzzles (user-specified
 elements: gear ratios, clock hands as clues, time zones, Roman numerals; designer free to
 add theme-fitting puzzles). Branch: `level2-clockmakers-attic` off main @ b38bc9c.
-Pipeline position: step 2 (Theme & Puzzle Designer running).
+Pipeline position: step 4 CHECKPOINT COMPLETE (2026-07-18) -> rev 1.2 in progress.
+
+**Design status:** graph rev 1.1 validated PASS-WITH-CHANGES (fix applied); official
+difficulty 6.5 (z1 5.5 / z2 7.0 / z3 7.0 / z4 3.5). USER CHECKPOINT RULINGS: #1 OVERRULED
+IIII convention -> use standard IV (design change); #2 arithmetic peak RATIFIED; #3 p06
+ungated RATIFIED; #4 12-hour wrap RATIFIED; #5 mirror trap KEEP with documented easing
+valve reserved (user will judge on play); #6 pictograms fine + DUBAI MUST be a landmark
+city ("for authenticity"), Tel Aviv/Tehran/Riyadh EXCLUDED, rest designer's choice (may
+move the vault code — permitted pre-art); #7 pry-sweep gating ACCEPTED pending playtest.
+Designer applying rev 1.2 (3 changes). NEXT: light Validator on rev-1.2 deltas -> Producer
+preps blind-layout.md (strip ring directions, vault derivation, mirrored-set solution) ->
+Blind Playtester -> step 6 user checkpoint.
 
 ## Level 1 (COMPLETE — for reference)
 
