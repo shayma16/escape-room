@@ -1,0 +1,166 @@
+{
+ "level": 2,
+ "batch": "batch-1 (canonical sheets + zone z1)",
+ "spec_revision": "1.3",
+ "generated": "2026-07-18 (recovered from session-limit cutoff 2026-07-19)",
+ "model": "fal-ai/nano-banana-pro (t2i + edit) + deterministic PIL glyph/precision passes (l2_glyphs.py canonical source)",
+ "pricing_basis": "$0.15/image std (2K), $0.30/image 4K (verified 2026-07-08); PIL passes $0",
+ "budget": {
+  "level_cap_usd": 15.0,
+  "predecessor_spend_usd": 2.25,
+  "predecessor_spend_note": "RECOVERED FROM CUTOFF. $1.80 confirmed through commit deabd17 (predecessor's own asset-progress.md itemization: Liberty die raw $0.15 + v-bench wide $1.05 (r1 safe-zone reject + r2 + relocation edit + coat crop-fix) + v-master wide $0.30 + v-door wide $0.30). PLUS est $0.45 for the 3 icon raws (screwdriver / tile-blank / watch-blank @2K std) generated after deabd17 and before commit e6e1381 - NOT included in the $1.80 the handoff quoted. Best-effort honest total: $2.25.",
+  "batch1_resumer_spend_usd": 0.0,
+  "batch1_total_usd": 2.25,
+  "cumulative_level2_usd": 2.25
+ },
+ "reference_anchors": {
+  "note": "Cross-level style library: L1 seed anchors + L2 z1 wides. All fresh L2 generations anchor against these (up to 14 refs).",
+  "l1_files": [
+   "../level-1/masters/sky-master@3x.png",
+   "../level-1/z1/v-hearth/z1-hearth-base@1x.png",
+   "../level-1/z1/v-study/z1-study-base@1x.png",
+   "../level-1/z1/v-entry/z1-entry-base@1x.png"
+  ],
+  "l2_files": [
+   "z1/v-bench/z1-bench-base@3x.png",
+   "z1/v-master/z1-master-base@3x.png",
+   "z1/v-door/z1-door-base@3x.png"
+  ],
+  "glyph_canon": "specs/tools/l2_glyphs.py is the ONE canonical source for every load-bearing glyph (numerals I-XII std+mirrored, star/house/gear/door/ring12 dies, Big Ben/Burj/Fuji geometric dies; Liberty NB-generated then threshold-cleaned). The generative model NEVER re-draws a load-bearing glyph.",
+  "canonical_wide_rule": "Wide base plates are canonical truth; every close-up is a CROP of the (glyph-integrated) @3x wide, enhanced/stamped at CU resolution, with the edited patch composited back into the wide so wide and CU are pixel-consistent."
+ },
+ "assets": [
+  {
+   "file": "masters/glyphs/num-*.png (24 files: I-XII std + full mirrored set)",
+   "zone": "shared",
+   "view": "-",
+   "element": "canonical Roman numeral stamps, engraved-serif letterform with load-bearing asymmetry (4.1)",
+   "state": "master",
+   "method": "deterministic PIL (l2_glyphs.render_numeral)",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "RECOVERED (commit deabd17). Contracts PASS: mirrored IV reads malformed VI; mirrored VII reads IIV never legible VII; no IIII anywhere."
+  },
+  {
+   "file": "masters/numerals-canonical@{1x,2x,3x}.png",
+   "zone": "shared",
+   "view": "-",
+   "element": "canonical sheet A: composed numeral reference sheet (std + mirrored)",
+   "state": "master",
+   "method": "deterministic PIL compose",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "RECOVERED (commit deabd17). Acceptance contracts PASS."
+  },
+  {
+   "file": "masters/glyphs/die-{star,house,gear,door,ring12}.png",
+   "zone": "shared",
+   "view": "-",
+   "element": "small-mark dies: star / house / gear / arched door / 12-notch ring (4.4)",
+   "state": "master",
+   "method": "deterministic PIL (l2_glyphs)",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "RECOVERED (commit deabd17). ring12 = exactly 12 notches, 12 at top."
+  },
+  {
+   "file": "masters/glyphs/die-{bigben,burj,fuji}.png",
+   "zone": "shared",
+   "view": "-",
+   "element": "geometric landmark dies (4.3): Big Ben w/ mandatory protruding clock-face stage; Burj strictly monotonic taper; Fuji horizontal",
+   "state": "master",
+   "method": "deterministic PIL (l2_glyphs)",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "RECOVERED (commit deabd17). 24px distinctness PASS (A2)."
+  },
+  {
+   "file": "masters/glyphs/die-liberty.png",
+   "zone": "shared",
+   "view": "-",
+   "element": "Statue of Liberty die: 7-ray crown, torch arm, pedestal",
+   "state": "master",
+   "method": "NB-generated + threshold-cleaned",
+   "generation": "t2i",
+   "est_cost_usd": 0.15,
+   "note": "RECOVERED (commit deabd17). Part of predecessor $1.80. 7 crown rays verified."
+  },
+  {
+   "file": "masters/landmark-dies@{1x,2x,3x}.png",
+   "zone": "shared",
+   "view": "-",
+   "element": "canonical sheet B: four landmark dies + small marks, composed",
+   "state": "master",
+   "method": "deterministic PIL compose",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "RECOVERED (commit deabd17). 24px distinctness PASS."
+  },
+  {
+   "file": "z1/v-bench/z1-bench-base@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "v-bench",
+   "element": "wide plate 3840x1920: workbench/slate/screwdriver rack/stove+tile II/coat on peg/barometer/bench clutter",
+   "state": "base",
+   "method": "t2i 4K, safe-zone audited; slate + tile faces deliberately blank for deterministic stamping",
+   "generation": "t2i",
+   "est_cost_usd": 1.05,
+   "note": "RECOVERED (commit deabd17). $1.05 per predecessor progress file: r1 safe-zone reject + r2 + relocation edit + coat crop-fix (barometer/coat relocated into iPad band). Rejects archived in _rejects/."
+  },
+  {
+   "file": "z1/v-master/z1-master-base@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "v-master",
+   "element": "wide plate 3840x1920: master longcase (6:00, star case) / workroom door dial + tray / crate straw + tile VII / ceiling linkage rods",
+   "state": "base",
+   "method": "t2i 4K, safe-zone audited",
+   "generation": "t2i",
+   "est_cost_usd": 0.3,
+   "note": "RECOVERED (commit deabd17). Generative dial socket layout + generative numerals superseded by deterministic rebuild (see batch-1b entries)."
+  },
+  {
+   "file": "z1/v-door/z1-door-base@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "v-door",
+   "element": "wide plate 3840x1920: stair door + keyhole-free time-lock bar / linkage rods / dormer + town / cat on cushion in sunbeam / sill tile XI / beam mark / uniform floorboards",
+   "state": "base",
+   "method": "t2i 4K, safe-zone audited",
+   "generation": "t2i",
+   "est_cost_usd": 0.3,
+   "note": "RECOVERED (commit deabd17). Generative beam mark drifted (gear-ring + leaf) - superseded by canonical house+ring12 rebuild (batch-1b)."
+  },
+  {
+   "file": "z1/icons/inv-screwdriver@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "icons",
+   "element": "inventory cutout: flat-blade screwdriver (pry-tool silhouette)",
+   "state": "inventory",
+   "method": "NB raw (white-key) -> keyed RGBA via l2_icons_build.py",
+   "generation": "t2i",
+   "est_cost_usd": 0.15,
+   "note": "RECOVERED (commit e6e1381). Raw generated post-deabd17; $0.15 est, part of the $0.45 uncounted icon-raw spend."
+  },
+  {
+   "file": "z1/icons/inv-tile-{ii,iv,vii,xi}@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "icons",
+   "element": "inventory cutouts: cast brass tiles II / IV / VII / XI, canonical numeral stamps engraved",
+   "state": "inventory",
+   "method": "ONE NB tile-blank raw keyed (masters/glyphs/tile-blank.png) + l2_glyphs numeral engrave x4",
+   "generation": "t2i+pil",
+   "est_cost_usd": 0.15,
+   "note": "RECOVERED (commit e6e1381). Single tile-blank raw ($0.15, post-deabd17 uncounted) shared by all four; numerals canonical."
+  },
+  {
+   "file": "z1/icons/inv-watch-{a,b}@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "icons",
+   "element": "inventory cutouts: hunter-case watches lying open - dial (single hand frozen III / IX, canonical numeral ring) + inner lid engraved house-die+ring12 / gear-die+ring12",
+   "state": "inventory",
+   "method": "ONE NB watch-blank raw keyed + l2_icons_build.py deterministic dial/hand/die pass x2",
+   "generation": "t2i+pil",
+   "est_cost_usd": 0.15,
+   "note": "RECOVERED (commit e6e1381). Single watch-blank raw ($0.15, post-deabd17 uncounted) shared by both; 7-R3 single-image inspect carries whole clue."
+  }
+ ]
+}
