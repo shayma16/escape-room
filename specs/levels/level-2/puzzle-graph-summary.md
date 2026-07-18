@@ -1,6 +1,8 @@
-# Level 2 — The Clockmaker's Attic — Puzzle Graph Summary (rev 1.0)
+# Level 2 — The Clockmaker's Attic — Puzzle Graph Summary (rev 1.1)
 
 _For the user's checkpoint review. Companion to `puzzle-graph.json` (same directory)._
+_Rev 1.1: Validator Required Fix 1 applied to the graph's example_ordering_C (the z4
+winding-key/return-tag pickups are now explicit). No design content changed._
 
 **Framing line:** *All his clocks stopped at six.*
 
