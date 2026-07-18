@@ -268,6 +268,22 @@ def die_fuji(width=400, color=(20, 18, 15, 255)):
     return im.resize((width, Hh), Image.LANCZOS)
 
 
+# ------------------------------------------------------- Arabic digit stamps
+
+def render_arabic(text, height=400, color=(20, 18, 15, 255)):
+    """Canonical Arabic tooth-count stamps (16/24/36/40/48/64/72), Georgia Bold.
+    ONE source for every gear stamp level-wide (added 2026-07-19 for the great
+    wheel; z2 rack gears MUST reuse this exact renderer)."""
+    from PIL import ImageFont
+    font = ImageFont.truetype(r"C:\Windows\Fonts\georgiab.ttf", height * 2)
+    x0, y0, x1, y1 = font.getbbox(text)
+    im = Image.new("RGBA", (x1 - x0 + 8, y1 - y0 + 8), (0, 0, 0, 0))
+    d = ImageDraw.Draw(im)
+    d.text((4 - x0, 4 - y0), text, font=font, fill=color)
+    im = im.crop(im.getbbox())
+    return im.resize((round(im.width * height / im.height), height), Image.LANCZOS)
+
+
 # ------------------------------------------------------------------- helpers
 
 def tint(stamp, rgba):

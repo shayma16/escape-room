@@ -9,9 +9,10 @@
   "level_cap_usd": 15.0,
   "predecessor_spend_usd": 2.25,
   "predecessor_spend_note": "RECOVERED FROM CUTOFF. $1.80 confirmed through commit deabd17 (predecessor's own asset-progress.md itemization: Liberty die raw $0.15 + v-bench wide $1.05 (r1 safe-zone reject + r2 + relocation edit + coat crop-fix) + v-master wide $0.30 + v-door wide $0.30). PLUS est $0.45 for the 3 icon raws (screwdriver / tile-blank / watch-blank @2K std) generated after deabd17 and before commit e6e1381 - NOT included in the $1.80 the handoff quoted. Best-effort honest total: $2.25.",
-  "batch1_resumer_spend_usd": 0.0,
-  "batch1_total_usd": 2.25,
-  "cumulative_level2_usd": 2.25
+  "batch1_resumer_spend_usd": 0.3,
+  "batch1_total_usd": 2.55,
+  "cumulative_level2_usd": 2.55,
+  "resumer_spend_note": "Session 2026-07-19 (resumer): 2 NB generations at 2K std = $0.30 (dial-disc-clean edit consumed into the deterministic door-dial rebuild; cu-coat-pockets fresh t2i). Everything else deterministic PIL at $0."
  },
  "reference_anchors": {
   "note": "Cross-level style library: L1 seed anchors + L2 z1 wides. All fresh L2 generations anchor against these (up to 14 refs).",
@@ -161,6 +162,187 @@
    "generation": "t2i+pil",
    "est_cost_usd": 0.15,
    "note": "RECOVERED (commit e6e1381). Single watch-blank raw ($0.15, post-deabd17 uncounted) shared by both; 7-R3 single-image inspect carries whole clue."
+  },
+  {
+   "file": "z1/v-bench/z1-bench-base@{1x,2x,3x}.png (glyph-integrated rev)",
+   "zone": "z1",
+   "view": "v-bench",
+   "element": "canonical wide rev: slate chalk ratio diagram (EXACTLY 24 tallies asserted, canonical XII/VIII, two ?, cam notch + door die), stove tile II canonical engrave, barometer face rebuilt (de-texted, sun/cloud/rain pictograms, fixed needle)",
+   "state": "base",
+   "method": "deterministic PIL overlays built at CU res, downscale-composited (canonical-wide rule)",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "Supersedes pre-glyph wide -> _rejects/z1-bench-base-preglyph@*.png"
+  },
+  {
+   "file": "z1/v-master/z1-master-base@{1x,2x,3x}.png (glyph-integrated rev)",
+   "zone": "z1",
+   "view": "v-master",
+   "element": "canonical wide rev: longcase face rebuilt (canonical numeral ring, 6:00 sharp, canonical star die restamp), door dial rebuilt (12 sockets: seated I/III/V/VI/VIII/IX/X/XII w/ canonical stamps, EMPTY 2/4/7/11), tray reduced to ONE loose VI tile, crate tile VII + straw half-bury, D8 keyhole patched off handle plate",
+   "state": "base",
+   "method": "NB disc-clean edit (face pixels only) + deterministic PIL",
+   "generation": "edit+pil",
+   "est_cost_usd": 0.15,
+   "note": "Generative defects fixed: socket layout was off-spec; handle plate had an invented keyhole (D8). Pre-glyph wide -> _rejects/."
+  },
+  {
+   "file": "z1/v-door/z1-door-base@{1x,2x,3x}.png (glyph-integrated rev)",
+   "zone": "z1",
+   "view": "v-door",
+   "element": "canonical wide rev: drifted gear/leaf beam carving replaced with canonical house die + 12-notch ring (same dies as watch A inner lid), sill tile XI canonical engrave, cat recolored to F3 gray-blue #8C8C90 (warm rim kept)",
+   "state": "base",
+   "method": "deterministic PIL (wood-clone + canonical engraves + chroma-masked recolor)",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "Pre-glyph wide -> _rejects/z1-door-base-preglyph@*.png"
+  },
+  {
+   "file": "z1/v-bench/cu-slate@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "v-bench",
+   "element": "CU 1/12 (2048x1536): slate ratio diagram",
+   "state": "base",
+   "method": "crop of integrated wide + native-res overlay",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "Contract PASS: 24 tallies countable (count asserted in code); XII/VIII canonical; two ?; cam notch + door die; grayscale gate PASS"
+  },
+  {
+   "file": "z1/v-bench/cu-stove-hob@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "v-bench",
+   "element": "CU 2/12: stove hob tile II",
+   "state": "present",
+   "method": "crop + canonical II engrave (legibility-cheated perspective)",
+   "generation": "pil",
+   "est_cost_usd": 0.0
+  },
+  {
+   "file": "z1/v-bench/cu-coat-pockets@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "v-bench",
+   "element": "CU 3/12 (interactive): coat pockets - watch A (closed hunter case + chain) in right pocket, tile IV leaning out of left pocket",
+   "state": "watch A present + tile IV present",
+   "method": "FRESH NB t2i 2K w/ 7 refs (coat crop, L2 wides, watch-a icon, tile-blank, L1 anchors) + canonical IV engrave",
+   "generation": "t2i+pil",
+   "est_cost_usd": 0.15,
+   "seed": 720102,
+   "note": "Only fresh camera in batch (pocket interior not visible in wide); coat tone verified darker-consistent vs wide sample. Taken-state overlays = follow-up (state matrix)"
+  },
+  {
+   "file": "z1/v-bench/cu-barometer@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "v-bench",
+   "element": "CU 4/12: barometer face",
+   "state": "fixed",
+   "method": "crop + deterministic face rebuild (radial band-stat cream, 48-tick ring, engraved rain/cloud/sun pictograms, fixed needle)",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "Contract PASS: reads weather-wheel, categorically not-a-clock; pseudo-text removed"
+  },
+  {
+   "file": "z1/v-master/cu-master-face@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "v-master",
+   "element": "CU 5/12: master longcase, full case framing (face 6:00 + case star in ONE view - p07 gating clue)",
+   "state": "stopped 6:00",
+   "method": "crop + deterministic dial rebuild + canonical star restamp",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "Frame shifted to (540,320)-(2500,1790) so the star clears the 72pt iPad pill band (7-R1.5); canonical numerals radial; grayscale gate PASS"
+  },
+  {
+   "file": "z1/v-master/cu-door-dial@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "v-master",
+   "element": "CU 6/12 (interactive): workroom door dial + tray",
+   "state": "base: 8 seated / 4 empty; tray VI decoy",
+   "method": "crop + NB disc-clean (disc pixels only) + deterministic sockets (donor-hole clones at 2/4/7/11) + donor-tile seats + canonical numeral stamps + tray single-VI + D8 keyhole patch",
+   "generation": "edit+pil",
+   "est_cost_usd": 0.0,
+   "note": "Contract PASS: 12 sockets; seated VI at position 6 plainly legible (tray-decoy disproof); tray VI same cast-tile design; per-socket seated overlays = follow-up"
+  },
+  {
+   "file": "z1/v-master/cu-crate-straw@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "v-master",
+   "element": "CU 7/12: crate straw + tile VII",
+   "state": "present",
+   "method": "crop + canonical VII engrave + straw half-bury clone (partial numeral)",
+   "generation": "pil",
+   "est_cost_usd": 0.0
+  },
+  {
+   "file": "z1/v-door/cu-sill-tile@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "v-door",
+   "element": "CU 8/12: dormer sill tile XI",
+   "state": "present",
+   "method": "crop + canonical XI engrave",
+   "generation": "pil",
+   "est_cost_usd": 0.0
+  },
+  {
+   "file": "z1/v-door/cu-house-ring@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "v-door",
+   "element": "CU 9/12: house-mark beam carving + 12-notch ring",
+   "state": "fixed",
+   "method": "crop + wood-clone cover of drifted generative mark + canonical die_house/die_notch_ring engrave",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "Contract PASS: EXACTLY 12 notches (deterministic); dies identical to watch A inner lid by construction; grayscale gate PASS"
+  },
+  {
+   "file": "z1/v-door/cu-cat-cushion@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "v-door",
+   "element": "CU 10/12 (interactive): cat asleep on cushion in sunbeam",
+   "state": "cat-on",
+   "method": "crop + F3 recolor (chroma-masked toward #8C8C90, warm rim preserved)",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "Cushion reveal/empty overlays = follow-up per state matrix"
+  },
+  {
+   "file": "z1/v-door/cu-floor-cache@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "v-door",
+   "element": "CU 11/12: floorboards right of the ring vertical",
+   "state": "flush",
+   "method": "pure crop - NO visual tell on the cache board (D10: identical boards by design)",
+   "generation": "pil",
+   "est_cost_usd": 0.0
+  },
+  {
+   "file": "z1/v-door/cu-timelock@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "v-door",
+   "element": "CU 12/12: time-lock housing - bar + rod connection, NO keyhole (D8)",
+   "state": "bar seated",
+   "method": "pure crop",
+   "generation": "pil",
+   "est_cost_usd": 0.0
+  },
+  {
+   "file": "z1/icons/inv-great-wheel@{1x,2x,3x}.png",
+   "zone": "z1",
+   "view": "icons",
+   "element": "inventory cutout: bronze great wheel - EXACTLY 64 teeth (asserted), canonical '64' Arabic stamp (l2_glyphs.render_arabic - z2 rack gears MUST reuse), square arbor hole (9.3 rhyme), open spoke windows, RGBA",
+   "state": "inventory",
+   "method": "deterministic PIL prop (F6 route)",
+   "generation": "pil",
+   "est_cost_usd": 0.0
+  },
+  {
+   "file": "z1/z1-review-batch1.png",
+   "zone": "z1",
+   "view": "-",
+   "element": "per-zone review montage: 3 wides + 12 CUs",
+   "state": "-",
+   "method": "PIL contact sheet",
+   "generation": "pil",
+   "est_cost_usd": 0.0
   }
  ]
 }
