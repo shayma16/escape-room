@@ -21,9 +21,15 @@ ungated RATIFIED; #4 12-hour wrap RATIFIED; #5 mirror trap KEEP with documented 
 valve reserved (user will judge on play); #6 pictograms fine + DUBAI MUST be a landmark
 city ("for authenticity"), Tel Aviv/Tehran/Riyadh EXCLUDED, rest designer's choice (may
 move the vault code — permitted pre-art); #7 pry-sweep gating ACCEPTED pending playtest.
-Designer applying rev 1.2 (3 changes). NEXT: light Validator on rev-1.2 deltas -> Producer
-preps blind-layout.md (strip ring directions, vault derivation, mirrored-set solution) ->
-Blind Playtester -> step 6 user checkpoint.
+Rev 1.2 DONE + delta-validated PASS (code VI-X-I-III confirmed; official 6.5: z1 5.0/z2 7.0/
+z3 7.0/z4 3.5; ledger row added). Blind layout WRITTEN + Producer leak-checked + committed
+(survived a session-limit cutoff mid-agent; file was complete). **Blind Playtester RUNNING**
+(2026-07-18, isolation: blind-layout.md only) with 3 scripted variant passes: impatient
+pryer (flag-7 elimination-memory probe), math-averse brute-forcer (p06 tedium), hasty
+reader (mirror trap recovery). NEXT: playtest-report.md -> step 6 USER CHECKPOINT (may
+route back to designer). Then Art Director (note validator A2: Big Ben pictogram must show
+clock-face stage vs Burj spire) -> user style checkpoint -> Asset Gen (budget: fresh L2
+budget TBD with user; L1 closed at $21.15/$23.00).
 
 ## Level 1 (COMPLETE — for reference)
 
