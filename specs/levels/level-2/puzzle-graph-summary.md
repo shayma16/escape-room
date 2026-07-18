@@ -1,8 +1,11 @@
-# Level 2 — The Clockmaker's Attic — Puzzle Graph Summary (rev 1.1)
+# Level 2 — The Clockmaker's Attic — Puzzle Graph Summary (rev 1.2)
 
-_For the user's checkpoint review. Companion to `puzzle-graph.json` (same directory)._
-_Rev 1.1: Validator Required Fix 1 applied to the graph's example_ordering_C (the z4
-winding-key/return-tag pickups are now explicit). No design content changed._
+_For the user's checkpoint review (checkpoint COMPLETE 2026-07-18 — rulings applied below)._
+_Companion to `puzzle-graph.json` (same directory)._
+_Rev 1.2: user checkpoint rulings applied — (1) standard IV notation level-wide, IIII beat
+removed; (2) Dubai/Burj Khalifa added to the city set, **vault code changed to
+VI·X·I·III**; (3) p09 mirrored-dial trap kept, easing valve pre-specced (D9), not
+implemented. Rev 1.1 was the Validator ordering-C text fix._
 
 **Framing line:** *All his clocks stopped at six.*
 
@@ -23,20 +26,21 @@ to Level 1's crow.
 | z1 Main Attic (3 views: bench / master clock & workroom door / stair door & dormer) | start | — |
 | z2 Movement Loft (2 views: automaton gear wall / world-clock row) | no (visible locked door) | p01: complete the door's numeral dial |
 | z3 Behind the Great Dial (1 rich view) | **HIDDEN** | p06: correct gear train runs the automaton mural to full cycle → wall panel swings open |
-| z4 The Clockmaker's Vault | **HIDDEN, nested in z3** (floor hatch under the dial platform) | p07: four-wheel numeric code VI·VII·I·III |
+| z4 The Clockmaker's Vault | **HIDDEN, nested in z3** (floor hatch under the dial platform) | p07: four-wheel numeric code VI·X·I·III |
 
 Reveal chain: attic → workroom → *(the machine literally opens the wall)* → behind the
 tower's great dial → *(numeric code)* → strongroom under the platform. Zones never re-lock.
 
 ## Puzzles by zone (mechanic → fixed solution)
 
-### z1 Main Attic (difficulty ~5.5)
+### z1 Main Attic (difficulty ~5.0)
 - **p01 The numeral-dial door** — scavenge 4 numeral tiles hidden around z1 (II on the
-  stove hob, IIII in the coat pocket, VII in the crate straw, XI on the windowsill) and
-  seat them in the door dial's empty sockets (positions 2/4/7/11). Trap: a tray under the
-  door offers an **IV** tile, and the dial's own seated IX shows subtractive style — but
-  every real clock face in the attic writes four as **IIII**. IV whir-stalls and pops back.
-  → unlocks z2.
+  stove hob, **IV** in the coat pocket, VII in the crate straw, XI on the windowsill) and
+  seat them in the door dial's empty sockets (positions 2/4/7/11). Modest trap (rev 1.2,
+  replaces the removed IIII beat): a tray under the door offers a loose **VI** tile —
+  glyph-order bait for the 4-socket (I-before-V subtracts, I-after-V adds) — disproved by
+  the dial's own seated VI at position 6. Wrong tile whir-stalls and pops back. → unlocks
+  z2. All numerals level-wide are standard subtractive notation (user ruling).
 - **p02 The cat and the mouse** — the cat sleeps on a cushion (something flat beneath it);
   it refuses every offered item with one slow blink. Wind the tin mouse (found in z2) and
   set it down: pounce, chase, cat keeps the mouse and resettles by the exit door. → pocket
@@ -59,31 +63,37 @@ tower's great dial → *(numeric code)* → strongroom under the platform. Zones
   **36 × 64** (either post order — both arrangements accepted). The 48 teases 48×48 = 2304,
   but there is only one 48 in the level. Correct ratio: the mural runs one clean cycle and
   the wall panel opens. → unlocks z3. Live feedback: any mounted pair cranks and visibly
-  runs too fast/too slow.
-- *(clue scenery)* **World-clock row**: four dead clocks, all hands removed, landmark
-  plates with stamped offsets — Eiffel **+I**, Big Ben **★** (reference; same star as the
-  z1 master clock), Fuji **+IX**, Liberty **−V**.
+  runs too fast/too slow. *(Ratified at checkpoint: arithmetic peak stays; stays ungated.)*
+- *(clue scenery)* **World-clock row** (rev 1.2 city set): four dead clocks, all hands
+  removed, landmark plates with stamped offsets — **Burj Khalifa +IV** (Dubai,
+  user-required), **Big Ben ★** (reference; same star as the z1 master clock), **Fuji
+  +IX**, **Liberty −V**.
 
 ### z3 Behind the Great Dial (difficulty ~7.5)
 - **p07 The four-wheel vault hatch** — **THE NUMERIC-CODE LOCK (standing user directive
-  honored).** Four wheels engraved I–XII under pictogram headers (Big Ben ★ / Eiffel /
-  Liberty / Fuji — deliberately a *different order* than the z2 row, forcing pictogram
-  matching). Master clock stopped at 6:00 (★ reference) + stamped offsets →
-  **VI · VII · I · III** (6; 6+1=7; 6−5=1; 6+9=15→3 on a 12-hour wheel). → unlocks z4.
-  *(Clue-gated on viewing both the master clock and the clock row.)*
+  honored).** Four wheels engraved I–XII under pictogram headers (Big Ben ★ / Burj
+  Khalifa / Liberty / Fuji — deliberately a *different order* than the z2 row, forcing
+  pictogram matching). Master clock stopped at 6:00 (★ reference) + stamped offsets →
+  **VI · X · I · III** (6; 6+4=10; 6−5=1; 6+9=15→3 on a 12-hour wheel — the single wrap
+  case, ratified). → unlocks z4. *(Clue-gated on viewing both the master clock and the
+  clock row. REV 1.2: code changed from VI·VII·I·III when Dubai replaced Paris. Offsets
+  are the authentic UTC offsets vs London.)*
 - **p08 Oil and wind** — oil the squealing winding drum, then crank the vault's winding
   key until the drive weight rises. → `clock-wound`.
 - **p09 Set the hands from behind** — the great dial is translucent and seen from BEHIND:
-  numerals visibly mirror-reversed. The vault's "will return" tag shows the release time
-  **7:20** as a *front* view. Naively copying it onto the back view sets the front to 4:40
-  (the designed trap); the aha is to set the **mirror image**. → `hands-at-release`
-  (front = 7:20). *(Clue-gated on inspecting the tag.)*
+  numerals visibly mirror-reversed (a mirrored IV reads as a malformed VI). The vault's
+  "will return" tag shows the release time **7:20** as a *front* view. Naively copying it
+  onto the back view sets the front to 4:40 (the designed trap); the aha is to set the
+  **mirror image**. → `hands-at-release` (front = 7:20). *(Clue-gated on inspecting the
+  tag. User ruling: trap KEPT for now; a pre-planned overlay-only easing valve is specced
+  in developer_notes D9 — a wordless chalk mirror-diagram stageable beside the crank on
+  the existing plate — NOT implemented.)*
 - **p10 Start the pendulum** — push it. → `pendulum-running`.
 - **Derived condition `cond-timelock-release`** = wound ∧ hands-at-7:20 ∧ pendulum —
-  order-free AND over three lat/states; on first TRUE the strike train fires, the linkage
-  rods articulate, and the z1 door bar lifts (permanently latched).
+  order-free AND over three latched/evaluated states; on first TRUE the strike train
+  fires, the linkage rods articulate, and the z1 door bar lifts (permanently latched).
 
-### z4 The Clockmaker's Vault (difficulty ~5.0 — reward room)
+### z4 The Clockmaker's Vault (difficulty ~5.0 designer / 3.5 official — reward room)
 Winding key, the "will return" tag (release-time clue), and quiet lore (the cat's second
 cushion and saucer; an unfinished pocket watch).
 
@@ -101,74 +111,66 @@ example orderings in the JSON exercise pendulum-first and knowledge-first paths.
 
 ## Difficulty self-assessment
 
-**Designer estimate 7.0 overall** (z1 5.5 · z2 7.0 · z3 7.5 · z4 5.0); blind-solve
-75–120 min (L1: 6.0 official, 60–100 min). Escalation comes from **depth, not obscurity**:
-two light-arithmetic inference chains (ratio product; offset arithmetic with 12-hour
-wrap), longer dependency chains (mouse→cat→watch→cache→oil→arbor→train→zone), heavier
-cross-zone clue binding, and one perceptual inversion (mirrored dial) with a designed trap
-answer. No pixel-hunting: every cache is anchored by an engraved ring; every code's data
-is stamped in-scene. Target band 6.5–7.5: hit. Validator assigns the official score.
+**Designer estimate 7.0 overall** (z1 5.0 · z2 7.0 · z3 7.5 · z4 5.0); blind-solve
+75–120 min (L1: 6.0 official, 60–100 min). **Validator official score at rev 1.1: 6.5**
+(z1 5.5 · z2 7.0 · z3 7.0 · z4 3.5) — escalation over L1 judged real and fair. Rev 1.2
+deltas for Validator re-verification: p01 eased slightly (IIII trap removed by user
+ruling; the VI glyph-order decoy is milder — designer z1 now 5.0), p07 code value changed
+with the mechanism intact. Designer expects the official 6.5 to hold or dip at most 0.25.
+Escalation still comes from **depth, not obscurity**: two light-arithmetic inference
+chains, long dependency chains, heavy cross-zone clue binding, one perceptual inversion.
+No pixel-hunting: every cache is anchored by an engraved ring; every code's data is
+stamped in-scene.
 
 ## Real-world knowledge used (fairness notes)
 
 | Fact | Register | In-room backup |
 |---|---|---|
-| Roman numerals I–XII (user-requested) | clearly fair | 8 seated tiles + every dial in the room |
+| Roman numerals I–XII, standard subtractive notation incl. IV-vs-VI glyph order (user-requested; notation per rev 1.2 ruling) | clearly fair | 8 seated tiles + every dial in the room; seated VI disproves the tray decoy |
 | Clock-face layout (12 top, clockwise) | clearly fair | seated tiles anchor all positions |
-| Dials write 4 as IIII (not IV) | **borderline — see flags** | three in-room faces show IIII; wrong tile costs one pop-back |
 | Time zones exist (user-requested) | fair as concept | all offsets stamped in-world; nothing memorized |
-| Landmark silhouettes → cities | fair AND not required | pictogram-to-pictogram matching suffices |
-| 12-hour wrap (15 → 3 o'clock) | mild borderline — see flags | wheel physically only offers I–XII |
-| Gear ratios (bigger = slower; stages multiply) | **borderline — see flags** | slate worked diagram + live speed feedback + bounded trial |
-| Mirror reversal behind a translucent dial | inference, not trivia | reversed numerals in the same close-up as the crank |
+| Landmark silhouettes → cities (Big Ben, Burj Khalifa, Liberty, Fuji) | fair AND not required | pictogram-to-pictogram matching suffices |
+| 12-hour wrap (15 → 3 o'clock) | mild borderline — RATIFIED (flag #4) | wheel physically only offers I–XII |
+| Gear ratios (bigger = slower; stages multiply) | borderline — RATIFIED (flag #2) | slate worked diagram + live speed feedback + bounded trial |
+| Mirror reversal behind a translucent dial | inference, not trivia — CONDITIONALLY KEPT (flag #5, D9 valve specced) | reversed numerals in the same close-up as the crank |
 
-## BORDERLINE FLAGS for the user
+## BORDERLINE FLAGS — CHECKPOINT RULINGS (user, 2026-07-18)
 
-1. **The IIII convention (p01).** Traditional clock dials write four as IIII while keeping
-   IX — a delightful educated-generalist fact, but genuinely not universally known. As
-   designed it is *soft*: three in-room clock faces show IIII, and a wrong IV attempt
-   costs one pop-back with no lockout (trial-and-error resolves it in ≤2 tries). Approve
-   as-is, or demote (make the tray IV tile physically mis-pegged so it can't seat — pure
-   observation, zero knowledge)?
-2. **Gear-ratio arithmetic (p06).** Computing (A/12) × (B/8) = 24 is the level's peak
-   reasoning. Backups: the slate's worked diagram, live too-fast/too-slow feedback, and a
-   bounded (~30-pair, tedious-but-finite) experimentation space. I judge this fair-hard
-   and exactly the escalation the ledger asks for — but it is the single most likely
-   "stuck" point. Confirm you accept a genuine arithmetic puzzle here.
-3. **p06 is deliberately UNGATED** (unlike every other code-like puzzle): a mechanically
-   correct train must work even if the slate was never viewed, because gating physical
-   truth reads as a broken machine. Cost: a determined player can brute-force ~30 pairs.
-   Designer call — confirm.
-4. **12-hour wrap (p07).** Fuji: 6 + 9 = 15 → III. Most adults convert 15:00 readily and
-   the wheel only offers I–XII, but it is the one arithmetic step with a small trap
-   (setting IX by mis-reading "+IX" as the answer). Fair in my judgment; flagging per
-   protocol.
-5. **Mirrored-dial trap (p09).** The naive reading sets 4:40 and produces silence (no
-   tell). Evidence is strong (mirrored numerals fill the same close-up), but this is the
-   level's harshest silent failure. Alternative if you want it gentler: add a small
-   inspection mirror beside the crank showing the front view (drops the puzzle to
-   execution). I recommend keeping the trap.
-6. **Landmark pictograms.** Big Ben / Eiffel / Liberty / Fuji were chosen for maximal
-   recognizability, but NO city knowledge is required — plates match headers by pictogram.
-   Flagging only because the ledger requires listing every RWK surface.
-7. **Difficulty of z1's cache gating.** p03/p04 floorboards/bricks are deliberately
-   tell-free (the watch is the whole clue) and pry attempts are clue-gated no-tell. A
-   player who tries prying before finding the watches gets uniform "doesn't budge" — by
-   design identical to inert boards. Confirm you're comfortable with this gating pattern
-   extending L1's policy to physical sweeps.
+1. **IIII convention — OVERRULED.** User prefers standard IV. Applied level-wide (rev
+   1.2); the IIII teaching beat is removed. p01 compensated with a modest non-RWK VI
+   glyph-order decoy; p01 is slightly easier, accepted.
+2. **Gear-ratio arithmetic — RATIFIED.** The arithmetic peak stays as designed.
+3. **p06 ungated — RATIFIED.** Stays ungated (mechanical truth).
+4. **12-hour wrap — RATIFIED.** Kept as a feature; still exactly one wrap case (Fuji)
+   after the rev 1.2 city change.
+5. **Mirrored-dial trap — CONDITIONAL KEEP.** Kept exactly as designed; user will judge
+   in play. Easing valve pre-specced (D9: overlay-only chalk mirror-diagram beside the
+   crank; activating it changes no solution, gate, or failure grammar). Not implemented.
+6. **Landmark pictograms — MODIFIED.** Dubai (Burj Khalifa) added per user; Tel Aviv,
+   Tehran, Riyadh excluded per user; Paris dropped (designer choice to keep four wheels
+   and exactly one wrap case). **Vault code is now VI·X·I·III.**
+7. **Pry-sweep no-tell gating — ACCEPTED pending playtest.** Blind Playtester must probe
+   the "swept the correct board pre-clue, then inspected the watch, then returned"
+   sequence (Validator R1).
 
 ## Open design questions
 
 - None blocking. The cat's refusal grammar, mouse no-loss rule, and time-lock keyless-door
-  grammar are specified in developer_notes D3/D4/D8; the mirrored-render contract is D1.
+  grammar are specified in developer_notes D3/D4/D8; the mirrored-render contract is D1;
+  the p09 easing valve is D9 (spec only).
 
 ## Visually-necessary elements
 
 The complete per-zone list (with all required states) is in `puzzle-graph.json` →
-`visually_necessary_elements`. Headlines for the Art Director: legible numerals at close-up
-on five distinct dial types (master clock, door dial, watches, world clocks, mirrored
-great dial — the mirrored numerals are load-bearing); countable gear teeth + stamped
-counts; the continuous linkage-rod line from door to strike train across three zones; the
-cat's four staging states; golden-afternoon light with a sunbeam patch (cat) and amber
-transmitted glow (great dial). No color-differentiated puzzle elements exist anywhere in
-the level (see `colorblind_safety`).
+`visually_necessary_elements`, headed by the rev 1.2 **global numeral rule: standard
+subtractive numerals (IV, IX) on every dial, tile, stamp and engraving — no IIII anywhere
+in the level.** Headlines for the Art Director: legible numerals at close-up on five
+distinct dial types (master clock, door dial, watches, world clocks, mirrored great dial —
+the mirrored numerals are load-bearing, and a mirrored IV must crisply read as a malformed
+VI per D1); countable gear teeth + stamped counts; the Burj Khalifa needle-spire silhouette
+(user-required) among four silhouette-distinct landmark plates; the continuous linkage-rod
+line from door to strike train across three zones; the cat's four staging states;
+golden-afternoon light with a sunbeam patch (cat) and amber transmitted glow (great dial);
+clear staging space beside the z3 setting crank reserved for the D9 easing-valve overlay.
+No color-differentiated puzzle elements exist anywhere in the level (see
+`colorblind_safety`).

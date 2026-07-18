@@ -1,8 +1,9 @@
 {
   "level": 2,
   "title": "The Clockmaker's Attic",
-  "spec_revision": "1.1",
+  "spec_revision": "1.2",
   "revision_notes": [
+    "Rev 1.2 (2026-07-18, USER CHECKPOINT RULINGS): three changes. CHANGE 1 (flag #1 OVERRULED -- 'i'd prefer using IV'): all numerals level-wide are now STANDARD SUBTRACTIVE notation (IV, IX); the IIII convention and its teaching beat are removed everywhere (clu-face-convention node deleted; itm-tile-iiii renamed itm-tile-iv; p01 rewritten). p01's tray decoy is now a VI tile -- a modest non-RWK glyph-order wrinkle (IV vs VI), disproved in-scene by the dial's own seated VI; p01 gets slightly easier as permitted (designer z1 estimate 5.5 -> 5.0). CHANGE 2 (flag #6 modified): Dubai (Burj Khalifa, UTC+4) replaces Paris in the world-clock set per user ('add dubai for authenticity'); Tel Aviv, Tehran, Riyadh excluded per user. *** VAULT CODE CHANGED: p07 solution is now VI-X-I-III (was VI-VII-I-III). *** Same mechanism (master time 6:00 + stamped offsets), exactly one wrap case preserved (Tokyo 6+9=15->III). CHANGE 3 (flag #5 conditional keep): p09 mirrored-dial trap kept exactly as designed; a pre-planned overlay-only EASING VALVE is now SPECIFIED (developer_notes D9 + p09.easing_valve) but NOT implemented. All other checkpoint items RATIFIED as designed (#2 arithmetic peak, #3 p06 ungated, #4 12-hour wrap, #7 pry-sweep gating pending playtest). Everything the Validator verified at rev 1.1 is byte-stable except what these changes require. Producer: route p01/p07 deltas to the Validator for re-verification.",
     "Rev 1.1 (2026-07-18): Validator Required Fix 1 applied -- example_ordering_C now explicitly lists the z4 free pickups ('take winding key + return tag') immediately after the z4 unlock and before p08/tag-inspect (the ordering as previously written could not complete; L1-Fix-1 class, example text only). NO solution value, dependency, zone, item, clue gate, or behavior changed.",
     "Rev 1.0 initial design (2026-07-18). Adopts Level 1 rev-1.3 conventions as baseline: clue-gating with no-tell rule, uses-driven item lifecycle (declare every use; retain until all uses satisfied), non-collectible decoys (R6-003), requirement-flag state model (never step order), per-element overlay state rendering, container reveal/collect states, armed-item use, manual pickups."
   ],
@@ -34,11 +35,11 @@
       "views": [
         {
           "id": "v-bench",
-          "elements": ["long workbench with clock parts (ambient, none collectible)", "heavy flat-blade screwdriver in a bench rack (takeable)", "chalk slate propped on the bench: wordless two-stage gear-train diagram -- crank circle ringed by 24 tally marks, small pinion marked XII, unknown wheel '?', coaxial small pinion marked VIII, unknown wheel '?', cam circle with a single notch and a door pictogram", "small iron stove; numeral tile II lying on the cold hob", "clockmaker's coat on a peg: pocket watch A in one pocket, numeral tile IIII in the other", "wheel barometer on the wall (red herring rh-barometer: clock-like dial, fixed needle, sun/cloud/rain pictograms engraved -- inspect-only)"]
+          "elements": ["long workbench with clock parts (ambient, none collectible)", "heavy flat-blade screwdriver in a bench rack (takeable)", "chalk slate propped on the bench: wordless two-stage gear-train diagram -- crank circle ringed by 24 tally marks, small pinion marked XII, unknown wheel '?', coaxial small pinion marked VIII, unknown wheel '?', cam circle with a single notch and a door pictogram", "small iron stove; numeral tile II lying on the cold hob", "clockmaker's coat on a peg: pocket watch A in one pocket, numeral tile IV in the other", "wheel barometer on the wall (red herring rh-barometer: clock-like dial, fixed needle, sun/cloud/rain pictograms engraved -- inspect-only)"]
         },
         {
           "id": "v-master",
-          "elements": ["tall master longcase clock, case engraved with a small star (★), STOPPED at exactly 6:00 (hour hand on VI, minute hand on XII); its dial uses IIII for four", "workroom door painted with a large hand-less clock dial: 12 tile sockets, 8 numeral tiles still seated (I, III, V, VI, VIII, IX, X, XII -- note seated IX shows the subtractive style), 4 sockets empty at the 2, 4, 7 and 11 positions", "wooden tray fixed below the door dial holding one loose tile: IV (decoy; NON-COLLECTIBLE, lives in the tray -- R6-003)", "packing crate of straw; numeral tile VII half-buried in the straw", "linkage rods running along the ceiling from the direction of the stair door, vanishing into the workroom wall (foreshadows z3)"]
+          "elements": ["tall master longcase clock, case engraved with a small star (★), STOPPED at exactly 6:00 (hour hand on VI, minute hand on XII); standard subtractive numerals (IV, IX) like every dial in the level (rev 1.2 user ruling)", "workroom door painted with a large hand-less clock dial: 12 tile sockets, 8 numeral tiles still seated (I, III, V, VI, VIII, IX, X, XII), 4 sockets empty at the 2, 4, 7 and 11 positions", "wooden tray fixed below the door dial holding one loose tile: VI (decoy -- glyph-order confusion with the needed IV; NON-COLLECTIBLE, lives in the tray -- R6-003; the dial's own seated VI at position 6 is the in-scene disproof)", "packing crate of straw; numeral tile VII half-buried in the straw", "linkage rods running along the ceiling from the direction of the stair door, vanishing into the workroom wall (foreshadows z3)"]
         },
         {
           "id": "v-door",
@@ -58,7 +59,7 @@
         },
         {
           "id": "v-clockrow",
-          "elements": ["row of four dead wall clocks, ALL HANDS REMOVED, each with an engraved brass landmark plate beneath and a stamped offset: [1] Eiffel Tower plate stamped '+I', [2] Big Ben plate stamped '★' (no offset -- the reference; same star as the master longcase), [3] Mount Fuji plate stamped '+IX', [4] Statue of Liberty plate stamped '−V'; all four faces use IIII for four", "small parts cabinet; top drawer holds a tin wind-up toy mouse with a butterfly key (takeable)", "glass-front display case of assorted spare clock HANDS, case visibly screwed shut and painted over (red herring rh-hands-case: inspect-only; the world clocks never need hands -- the stamped offsets make the row purely informational)"]
+          "elements": ["row of four dead wall clocks, ALL HANDS REMOVED, each with an engraved brass landmark plate beneath and a stamped offset: [1] Burj Khalifa plate stamped '+IV' (Dubai -- user-required city, rev 1.2), [2] Big Ben plate stamped '★' (no offset -- the reference; same star as the master longcase), [3] Mount Fuji plate stamped '+IX', [4] Statue of Liberty plate stamped '−V'; all faces standard numerals", "small parts cabinet; top drawer holds a tin wind-up toy mouse with a butterfly key (takeable)", "glass-front display case of assorted spare clock HANDS, case visibly screwed shut and painted over (red herring rh-hands-case: inspect-only; the world clocks never need hands -- the stamped offsets make the row purely informational)"]
         }
       ]
     },
@@ -70,7 +71,7 @@
       "views": [
         {
           "id": "v-dial",
-          "elements": ["the tower's great translucent dial seen FROM BEHIND, glowing amber with daylight; all numerals MIRROR-REVERSED (uses IIII); hand silhouettes visible through the glass", "hand-setting crank on the motion works (moves the hands; 5-minute minute detents)", "winding drum with a square key socket; drum bearing dry and squealing (needs oil before the key will turn)", "long pendulum hanging dead still (can be pushed)", "strike train and chime hammers, linked to the ceiling linkage rods that run off toward z1 (the door-bar linkage, seen end-to-end)", "floor hatch in the platform: four brass combination wheels each engraved I-XII, headed left-to-right by pictogram plates: Big Ben ★, Eiffel Tower, Statue of Liberty, Mount Fuji (NOTE: different order than the z2 clock row -- binding is by pictogram, not position)"]
+          "elements": ["the tower's great translucent dial seen FROM BEHIND, glowing amber with daylight; all numerals MIRROR-REVERSED (standard IV/IX notation, mirrored); hand silhouettes visible through the glass", "hand-setting crank on the motion works (moves the hands; 5-minute minute detents)", "winding drum with a square key socket; drum bearing dry and squealing (needs oil before the key will turn)", "long pendulum hanging dead still (can be pushed)", "strike train and chime hammers, linked to the ceiling linkage rods that run off toward z1 (the door-bar linkage, seen end-to-end)", "floor hatch in the platform: four brass combination wheels each engraved I-XII, headed left-to-right by pictogram plates: Big Ben ★, Burj Khalifa, Statue of Liberty, Mount Fuji (NOTE: different order than the z2 clock row -- binding is by pictogram, not position)"]
         }
       ]
     },
@@ -79,7 +80,7 @@
       "name": "The Clockmaker's Vault (under the dial platform)",
       "hidden": true,
       "nested_in": "z3-behind-dial",
-      "unlock": { "condition": "p07-vault-wheels solved", "gate_description": "Floor hatch in z3 v-dial releases when the four wheels read VI-VII-I-III under their pictogram headers." },
+      "unlock": { "condition": "p07-vault-wheels solved", "gate_description": "Floor hatch in z3 v-dial releases when the four wheels read VI-X-I-III under their pictogram headers." },
       "views": [
         {
           "id": "v-vault-interior",
@@ -103,12 +104,12 @@
   "nodes": [
     { "id": "itm-screwdriver", "type": "item", "name": "Heavy flat-blade screwdriver", "location": "z1 v-bench rack", "obtained_by": "pickup", "uses": ["p03-cache-dormer", "p04-cache-chimney"], "notes": "Multi-use tool; NEVER consumed; retained for the whole level (L1 poker lesson -- full uses list declared)." },
     { "id": "itm-tile-ii", "type": "item", "name": "Numeral tile II", "location": "z1 v-bench stove hob", "obtained_by": "pickup", "uses": ["p01-dial-door"] },
-    { "id": "itm-tile-iiii", "type": "item", "name": "Numeral tile IIII", "location": "z1 v-bench coat pocket", "obtained_by": "pickup", "uses": ["p01-dial-door"] },
+    { "id": "itm-tile-iv", "type": "item", "name": "Numeral tile IV", "location": "z1 v-bench coat pocket", "obtained_by": "pickup", "uses": ["p01-dial-door"], "notes": "Rev 1.2: renamed from itm-tile-iiii; standard subtractive notation per user ruling." },
     { "id": "itm-tile-vii", "type": "item", "name": "Numeral tile VII", "location": "z1 v-master crate straw", "obtained_by": "pickup", "uses": ["p01-dial-door"] },
     { "id": "itm-tile-xi", "type": "item", "name": "Numeral tile XI", "location": "z1 v-door windowsill", "obtained_by": "pickup", "uses": ["p01-dial-door"] },
-    { "id": "itm-watch-a", "type": "item", "name": "Pocket watch A (single-handed watchman's dial)", "location": "z1 v-bench coat pocket", "obtained_by": "pickup", "uses": [], "notes": "Clue-carrier, inspectable anywhere: case back engraved with the house symbol ⌂; single hand STOPPED on III; its dial uses IIII (clu-face-convention instance)." },
+    { "id": "itm-watch-a", "type": "item", "name": "Pocket watch A (single-handed watchman's dial)", "location": "z1 v-bench coat pocket", "obtained_by": "pickup", "uses": [], "notes": "Clue-carrier, inspectable anywhere: case back engraved with the house symbol ⌂; single hand STOPPED on III." },
     { "id": "itm-toy-mouse", "type": "item", "name": "Tin wind-up mouse", "location": "z2 v-clockrow cabinet top drawer", "obtained_by": "pickup", "uses": ["p02-cat-mouse"], "notes": "Consumed BY DESIGN at p02 (the cat keeps it); it has no other uses, so consumption is soft-lock-safe. Wound-and-placed anywhere else: it skitters a small circle and RETURNS to inventory (developer_notes D4)." },
-    { "id": "itm-watch-b", "type": "item", "name": "Pocket watch B (single-handed watchman's dial)", "obtained_by": "p02-cat-mouse", "uses": [], "notes": "Clue-carrier, inspectable anywhere: case back engraved with the gear symbol ⚙; single hand STOPPED on IX; dial uses IIII." },
+    { "id": "itm-watch-b", "type": "item", "name": "Pocket watch B (single-handed watchman's dial)", "obtained_by": "p02-cat-mouse", "uses": [], "notes": "Clue-carrier, inspectable anywhere: case back engraved with the gear symbol ⚙; single hand STOPPED on IX." },
     { "id": "itm-great-wheel", "type": "item", "name": "Great wheel (bronze gear, 64 teeth, stamped 64)", "obtained_by": "p03-cache-dormer", "uses": ["p06-gear-train"], "notes": "Mountable/unmountable freely on either post; returns to inventory when unmounted. Never consumed." },
     { "id": "itm-oilcan", "type": "item", "name": "Long-spout oil can", "obtained_by": "p04-cache-chimney", "uses": ["p05-free-arbor", "p08-oil-wind"], "notes": "Multi-use; NEVER consumed/emptied; retained until both uses satisfied and beyond." },
     { "id": "itm-winding-key", "type": "item", "name": "Square-bit winding key", "location": "z4 hook", "obtained_by": "pickup", "uses": ["p08-oil-wind"] },
@@ -120,9 +121,8 @@
     { "id": "clu-ring-dormer", "type": "clue", "location": "z1 v-door beam", "content": "Carved ⌂ ringed by a 12-notch clock-position circle: the in-scene 'apply a clock direction HERE' anchor. 3-o'clock = toward the third floorboard right of the dormer.", "supports": ["p03-cache-dormer"], "viewed_when": "dormer ring close-up displayed (not part of the gate; anchor only)" },
     { "id": "clu-ring-chimney", "type": "clue", "location": "z2 v-frame chimney breast", "content": "Carved ⚙ ringed by a 12-notch clock-position circle. 9-o'clock = the brick directly left of the ring.", "supports": ["p04-cache-chimney"], "viewed_when": "chimney ring close-up displayed (not part of the gate; anchor only)" },
     { "id": "clu-master-time", "type": "clue", "location": "z1 v-master longcase clock", "content": "Master clock stopped at exactly 6:00; case bears the same ★ as the Big Ben plate and the vault's Big Ben wheel header. Establishes reference time = 6.", "supports": ["p07-vault-wheels"], "viewed_when": "master clock face close-up displayed" },
-    { "id": "clu-worldclock-row", "type": "clue", "location": "z2 v-clockrow", "content": "Four hand-less clocks with landmark plates and stamped offsets: Eiffel +I, Big Ben ★ (reference), Fuji +IX, Liberty −V. With reference 6: Eiffel 7, Big Ben 6, Fuji 6+9=15 -> III on a 12-hour dial, Liberty 6−5=1. Landmark identification is NOT required -- pictogram matching to the vault headers suffices.", "supports": ["p07-vault-wheels"], "viewed_when": "clock-row plates close-up displayed" },
-    { "id": "clu-face-convention", "type": "clue", "location": "multiple", "content": "Every clock face in the attic writes four as IIII (traditional dial convention), while nine stays IX. Instances: watch A dial, master longcase dial, all four world-clock faces.", "supports": ["p01-dial-door"], "view_instances": ["watch A inspect", "master clock close-up", "clock-row close-up"], "viewed_when": "ANY instance displayed (single shared flag; NOT a gate -- fairness evidence for the IIII tile choice)" },
-    { "id": "clu-mirrored-numerals", "type": "clue", "location": "z3 v-dial", "content": "The great dial's numerals read mirror-reversed from behind -- the standing evidence that the back view is a MIRROR of the front, so the return tag's front-view 7:20 must be set as its mirror image.", "supports": ["p09-set-hands"], "viewed_when": "great dial close-up displayed (self-satisfying: the setting crank lives in this close-up)" },
+    { "id": "clu-worldclock-row", "type": "clue", "location": "z2 v-clockrow", "content": "Four hand-less clocks with landmark plates and stamped offsets: Burj Khalifa +IV, Big Ben ★ (reference), Fuji +IX, Liberty −V. With reference 6: Burj Khalifa 6+4=10, Big Ben 6, Fuji 6+9=15 -> III on a 12-hour dial (the single wrap case, ratified), Liberty 6−5=1. Landmark identification is NOT required -- pictogram matching to the vault headers suffices. (Rev 1.2: Dubai replaces Paris per user ruling; real offsets vs London: Dubai +4, Tokyo +9, New York −5.)", "supports": ["p07-vault-wheels"], "viewed_when": "clock-row plates close-up displayed" },
+    { "id": "clu-mirrored-numerals", "type": "clue", "location": "z3 v-dial", "content": "The great dial's numerals read mirror-reversed from behind -- the standing evidence that the back view is a MIRROR of the front, so the return tag's front-view 7:20 must be set as its mirror image. (Art: a mirrored IV reads as a malformed VI and vice versa -- see D1.)", "supports": ["p09-set-hands"], "viewed_when": "great dial close-up displayed (self-satisfying: the setting crank lives in this close-up)" },
     { "id": "clu-return-tag", "type": "clue", "location": "inventory (itm-return-tag inspect)", "content": "Mini FRONT-VIEW dial fixed at 7:20 over a door pictogram: the time-lock's release time.", "supports": ["p09-set-hands"], "viewed_when": "return-tag inventory inspect close-up displayed" },
     { "id": "clu-linkage-rods", "type": "clue", "location": "z1 (v-door, v-master) and z3 v-dial", "content": "Visible linkage rods run from the stair door's time-lock bar along the ceiling into the wall, and re-emerge in z3 at the strike train: the door is opened BY the clock. Foreshadowing/orientation, not a gate.", "supports": ["p11-exit"], "viewed_when": "any linkage close-up displayed" },
     { "id": "clu-cat-refusal", "type": "clue", "location": "z1 v-door cat", "content": "Nudging the cat or offering ANY inventory item gets the same terminal refusal: one slow blink, the cat resettles heavier on the cushion; offered items return unspent. Categorical ('this will never work'), identical on repeat, no escalation. Petting is allowed (purr, no state change). The only thing that moves a cat is prey.", "supports": ["p02-cat-mouse"], "viewed_when": "n/a (behavioral grammar, developer_notes D3)" },
@@ -132,15 +132,16 @@
       "type": "puzzle",
       "name": "The numeral-dial door",
       "location": "z1 v-master workroom door",
-      "mechanic": "environmental scavenger (4 hidden tiles) + positional numeral seating + convention discrimination (IIII vs IV)",
+      "mechanic": "environmental scavenger (4 hidden tiles) + positional numeral seating + glyph-order discrimination (IV vs VI decoy)",
       "input": "Seat numeral tiles into the four empty sockets (positions 2, 4, 7, 11).",
-      "solution_fixed": { "socket-2": "itm-tile-ii", "socket-4": "itm-tile-iiii", "socket-7": "itm-tile-vii", "socket-11": "itm-tile-xi", "rejected": "tray IV tile in socket-4" },
-      "derivation": "Standard clock-face layout gives each numeral its position (the 8 seated tiles anchor it). The trap: the tray offers an IV tile and the seated IX shows the subtractive style, but every real dial in the attic writes four as IIII (clu-face-convention). Seating IV in socket-4: the mechanism whirs, stalls, and the IV pops back to its tray; seating IIII completes the dial and trips the latch.",
-      "requires": ["itm-tile-ii", "itm-tile-iiii", "itm-tile-vii", "itm-tile-xi"],
-      "clues": ["clu-face-convention", "8 seated tiles anchor positions", "tray IV decoy (in-scene only)"],
-      "clue_gate": { "gated": false, "rationale": "Physical seating with pop-back rejection, self-anchored by the 8 seated tiles. The only knowledge fork (IIII vs IV) costs at most one extra attempt, and the convention evidence stands in three in-room faces -- gating would add friction for zero anti-spoiler gain." },
+      "solution_fixed": { "socket-2": "itm-tile-ii", "socket-4": "itm-tile-iv", "socket-7": "itm-tile-vii", "socket-11": "itm-tile-xi", "rejected": "tray VI tile in socket-4" },
+      "derivation": "Standard clock-face layout gives each numeral its position (the 8 seated tiles anchor it; the whole level uses standard subtractive notation -- rev 1.2 user ruling). The modest trap: the tray under the door offers a loose VI tile, inviting glyph-order confusion with the needed IV (I-before-V subtracts, I-after-V adds). The in-scene disproof sits on the dial itself: VI is already seated at position 6. Seating the tray VI in socket-4 whirs, stalls, and pops it back to the tray; seating IV completes the dial and trips the latch.",
+      "requires": ["itm-tile-ii", "itm-tile-iv", "itm-tile-vii", "itm-tile-xi"],
+      "clues": ["8 seated tiles anchor positions (incl. the seated VI at position 6 -- the tray decoy's standing disproof)", "tray VI decoy (in-scene only)"],
+      "clue_gate": { "gated": false, "rationale": "Physical seating with pop-back rejection, self-anchored by the 8 seated tiles. The only fork (IV vs the decoy VI) costs at most one extra attempt and is disproved by the dial itself -- gating would add friction for zero anti-spoiler gain." },
       "yields": { "zone_unlock": "z2-workroom" },
-      "failure_behavior": "Wrong tile or wrong socket: whir-stall, tile pops back (inventory tiles to inventory, tray tile to tray). Unlimited attempts, correct seats persist."
+      "failure_behavior": "Wrong tile or wrong socket: whir-stall, tile pops back (inventory tiles to inventory, tray tile to tray). Unlimited attempts, correct seats persist.",
+      "notes": "Rev 1.2: the IIII-convention trap is removed per user ruling; p01 is deliberately slightly easier now (compensating VI decoy kept modest per Producer instruction -- scope unchanged)."
     },
     {
       "id": "p02-cat-mouse",
@@ -173,7 +174,7 @@
         "required_viewed": ["clu-watch-a"],
         "logic": "all_of",
         "gate_behavior": "Until watch A has been inspected, EVERY board (including the correct one) refuses to budge under the screwdriver -- presentation-identical to the always-inert boards. No tell. Stale case: none (prying is an explicit act, re-attempted after viewing).",
-        "rationale": "The cache board has NO independent visual tell, so a sweep-pry of the dormer boards would brute-force the pointer puzzle (same class as L1's six-tap astrolabe risk). Watch A carries the cache's entire information; the gate cannot false-block an earned solve."
+        "rationale": "The cache board has NO independent visual tell, so a sweep-pry of the dormer boards would brute-force the pointer puzzle (same class as L1's six-tap astrolabe risk). Watch A carries the cache's entire information; the gate cannot false-block an earned solve. (User ratified this pattern at checkpoint, pending playtest -- flag #7.)"
       },
       "yields": { "items": ["itm-great-wheel"] },
       "failure_behavior": "Wrong board OR gated attempt: doesn't budge, identical. No damage, unlimited attempts."
@@ -217,13 +218,13 @@
       "type": "puzzle",
       "name": "The automaton gear train",
       "location": "z2 v-frame",
-      "mechanic": "gear-ratio reasoning (two-stage reduction; meshing train) -- LEVEL SIGNATURE MECHANIC",
+      "mechanic": "gear-ratio reasoning (two-stage reduction; meshing train) -- LEVEL SIGNATURE MECHANIC (user ratified as the arithmetic peak, flag #2)",
       "input": "Mount one gear on POST A (meshing the crank's fixed 12-tooth pinion; POST A carries a fixed coaxial 8-tooth pinion) and one on POST B (meshed by that pinion, driving the cam). Then crank through one full cam revolution.",
       "solution_fixed": { "gear_set": ["36-tooth (rack)", "64-tooth (itm-great-wheel)"], "arrangement": "EITHER order -- 36 on A with 64 on B, or 64 on A with 36 on B (ratio product commutes; both are correct by design, multiple valid solves)", "target_ratio": "24 crank turns : 1 cam turn" },
       "derivation": "Slate: (A/12) x (B/8) = 24 -> A x B = 2304. Available: rack {16, 24, 36, 40, 48, 72} + the found 64-tooth great wheel. Unique pair anywhere in the level: 36 x 64 (the 36 is on the rack; the 64 must be found via p03 -- the great wheel is strictly required). The 48 tempts 48 x 48 = 2304 exactly, but only one 48 exists (rh-48-gear).",
       "requires": ["state: arbor-freed", "itm-great-wheel", "zone: z2-workroom"],
       "clues": ["clu-slate-ratio", "stamped tooth counts (Arabic) + physically countable teeth on every loose gear", "Roman XII / VIII stamps on the fixed pinions", "live mechanical feedback: with ANY meshing pair mounted the crank turns and the cam/mural visibly runs at the resulting speed"],
-      "clue_gate": { "gated": false, "rationale": "Mechanical truth: a correctly built 24:1 train MUST work whether or not the slate was seen -- gating it would read as a broken machine. The brute-force surface (~30 ordered pairs, each needing a cranking test) is real but tedious, and the visible too-fast/too-slow cam feedback is INTENDED reasoning material, not a leak. Flagged in the summary as a difficulty judgment call." },
+      "clue_gate": { "gated": false, "rationale": "Mechanical truth: a correctly built 24:1 train MUST work whether or not the slate was seen -- gating it would read as a broken machine. The brute-force surface (~30 ordered pairs, each needing a cranking test) is real but tedious, and the visible too-fast/too-slow cam feedback is INTENDED reasoning material, not a leak. User CONFIRMED ungated at checkpoint (flag #3)." },
       "yields": { "zone_unlock": "z3-behind-dial", "via": "at exactly 24:1 the mural completes one full clean cycle (sun crosses the carved town, the watchman figure strikes his bell), a counterweight drops, and the wall panel swings open -- latches open permanently" },
       "failure_behavior": "Wrong ratio: the cam visibly runs too fast or too slow; at cycle-end the panel latch ratchets and SLIPS with a clack (identical clack for every wrong ratio -- speed itself is the only differential feedback, by design). Gears freely remountable; rack gears return to the rack, the great wheel returns to inventory if unmounted. No lockout."
     },
@@ -233,9 +234,9 @@
       "name": "The four-wheel vault hatch (NUMERIC-CODE LOCK -- standing user directive honored)",
       "location": "z3 v-dial floor hatch",
       "mechanic": "numeric combination lock; time-zone offset reasoning with cross-zone clue binding",
-      "input": "Set four wheels (each engraved I-XII) under pictogram headers: Big Ben ★, Eiffel, Liberty, Fuji.",
-      "solution_fixed": ["VI", "VII", "I", "III"],
-      "derivation": "Master clock (z1) stopped at 6:00 and shares the ★ with the Big Ben plate/header -> reference 6. z2 plates give offsets: Eiffel +1 -> 7; Liberty −5 -> 1; Fuji +9 -> 15 -> III on a 12-hour wheel. Header order at the vault differs from the z2 row order, forcing pictogram matching. Landmark-name knowledge is never required -- pictograms match pictograms; the offsets are stamped in-world.",
+      "input": "Set four wheels (each engraved I-XII) under pictogram headers: Big Ben ★, Burj Khalifa, Liberty, Fuji.",
+      "solution_fixed": ["VI", "X", "I", "III"],
+      "derivation": "REV 1.2 -- CODE CHANGED from VI-VII-I-III (Dubai replaces Paris per user ruling). Master clock (z1) stopped at 6:00 and shares the ★ with the Big Ben plate/header -> reference 6. z2 plates give offsets: Burj Khalifa +4 -> 10 (X); Liberty −5 -> 1 (I); Fuji +9 -> 15 -> III on a 12-hour wheel (the single wrap case, ratified at checkpoint, flag #4). Header order at the vault differs from the z2 row order, forcing pictogram matching. Landmark-name knowledge is never required -- pictograms match pictograms; the offsets are stamped in-world. Real-world offsets are authentic (Dubai UTC+4, Tokyo UTC+9, New York UTC−5 vs London).",
       "requires": ["zone: z3-behind-dial"],
       "clues": ["clu-master-time", "clu-worldclock-row"],
       "clue_gate": {
@@ -281,7 +282,9 @@
         "rationale": "144 detent combinations plus the tag being on the required path (z4 precedes any possible knowledge of 7:20) means the gate can never false-block; it closes the persistent-fiddling/spoiler path only."
       },
       "yields": { "state": "hands-at-release", "state_semantics": "Continuously evaluated: TRUE while front-time = 7:20. Once cond-timelock-release latches, later hand movement is irrelevant (door bar stays raised)." },
-      "failure_behavior": "Any non-7:20 front time (including the un-mirrored 4:40 trap) OR gated state: nothing -- the clock simply sits at that time. No tell beyond absence of the strike. Unlimited adjustment."
+      "failure_behavior": "Any non-7:20 front time (including the un-mirrored 4:40 trap) OR gated state: nothing -- the clock simply sits at that time. No tell beyond absence of the strike. Unlimited adjustment.",
+      "easing_valve": "USER RULING (flag #5, 2026-07-18): trap KEPT as designed for now; a pre-planned overlay-only softening is SPECIFIED in developer_notes D9 but NOT implemented. Activating it later must not change this node's solution, gate, or failure grammar.",
+      "notes": "User checkpoint ruling: 'i feel it may be a bit hard but i'll have to play it to see, keep for now, with room to make it easier in future.'"
     },
     {
       "id": "p10-start-pendulum",
@@ -318,7 +321,7 @@
 
     { "from": "z1-attic", "to": "itm-screwdriver", "type": "contains" },
     { "from": "z1-attic", "to": "itm-tile-ii", "type": "contains" },
-    { "from": "z1-attic", "to": "itm-tile-iiii", "type": "contains" },
+    { "from": "z1-attic", "to": "itm-tile-iv", "type": "contains" },
     { "from": "z1-attic", "to": "itm-tile-vii", "type": "contains" },
     { "from": "z1-attic", "to": "itm-tile-xi", "type": "contains" },
     { "from": "z1-attic", "to": "itm-watch-a", "type": "contains" },
@@ -327,7 +330,7 @@
     { "from": "z4-vault", "to": "itm-return-tag", "type": "contains" },
 
     { "from": "itm-tile-ii", "to": "p01-dial-door", "type": "requires" },
-    { "from": "itm-tile-iiii", "to": "p01-dial-door", "type": "requires" },
+    { "from": "itm-tile-iv", "to": "p01-dial-door", "type": "requires" },
     { "from": "itm-tile-vii", "to": "p01-dial-door", "type": "requires" },
     { "from": "itm-tile-xi", "to": "p01-dial-door", "type": "requires" },
     { "from": "itm-toy-mouse", "to": "p02-cat-mouse", "type": "requires" },
@@ -362,26 +365,27 @@
 
   "solve_path_notes": {
     "structure": "Spine: z1 tile scavenge -> p01 -> z2. Then THREE parallel workstreams that cross-bind zones: (1) pointer-watch stream: watch A (z1 coat) -> dormer cache -> great wheel; mouse (z2) -> cat (z1) -> watch B -> chimney cache (z2) -> oil can; (2) machine stream: oil arbor -> gear train -> z3; (3) knowledge stream: view master time (z1) + world-clock row (z2) -> vault code. In z3: vault -> z4 (key + tag) -> endgame trio (wind / set hands / pendulum) in ANY order -> strike -> z1 exit. Any interleaving satisfying the requirement edges is valid.",
-    "example_ordering_A": ["take screwdriver", "take coat items (watch A + tile IIII)", "take tiles II, VII, XI", "view master clock close-up (satisfies clu-master-time AND a clu-face-convention instance)", "p01", "take mouse (z2)", "view clu-slate-ratio (z1 slate)", "inspect watch A (clu-watch-a)", "p03 (great wheel)", "p02 in z1 (cat -> watch B)", "inspect watch B (clu-watch-b)", "p04 (oil can)", "p05", "p06 -> z3", "view clu-worldclock-row (z2)", "p07 -> z4", "take winding key + return tag", "p08", "inspect return tag (clu-return-tag)", "p09 (mirrored 7:20)", "p10", "cond-timelock-release latches, strike fires", "return to z1", "p11"],
+    "example_ordering_A": ["take screwdriver", "take coat items (watch A + tile IV)", "take tiles II, VII, XI", "view master clock close-up (satisfies clu-master-time)", "p01", "take mouse (z2)", "view clu-slate-ratio (z1 slate)", "inspect watch A (clu-watch-a)", "p03 (great wheel)", "p02 in z1 (cat -> watch B)", "inspect watch B (clu-watch-b)", "p04 (oil can)", "p05", "p06 -> z3", "view clu-worldclock-row (z2)", "p07 -> z4", "take winding key + return tag", "p08", "inspect return tag (clu-return-tag)", "p09 (mirrored 7:20)", "p10", "cond-timelock-release latches, strike fires", "return to z1", "p11"],
     "example_ordering_B_pendulum_first": ["take tiles + screwdriver + watch A", "p01", "inspect watch A", "p03", "take mouse", "p02", "inspect watch B", "p04", "p05", "view clu-slate-ratio AFTER experimenting at the frame (slate is confirmatory, not gating)", "p06 -> z3", "p10 (pendulum pushed FIRST -- weak swing)", "view clu-master-time + clu-worldclock-row", "p07 -> z4", "take key + tag, inspect tag", "p09 (hands set before winding)", "p08 (winding completes the trio -- condition latches here)", "return to z1", "p11"],
-    "example_ordering_C_knowledge_first": ["view clu-master-time and note 6:00 before anything else", "take screwdriver + tiles + watch A", "p01", "view clu-worldclock-row and pre-compute VI-VII-I-III long before the vault exists", "take mouse", "p02", "inspect watches A and B in either order", "p04 then p03 (cache order is free)", "p05", "p06 -> z3", "p07 first thing in z3 (gates already satisfied) -> z4", "take winding key + return tag (z4 free pickups)", "p08", "p10", "inspect return tag (clu-return-tag)", "p09 (last condition -- latch fires)", "return to z1", "p11"],
+    "example_ordering_C_knowledge_first": ["view clu-master-time and note 6:00 before anything else", "take screwdriver + tiles + watch A", "p01", "view clu-worldclock-row and pre-compute VI-X-I-III long before the vault exists", "take mouse", "p02", "inspect watches A and B in either order", "p04 then p03 (cache order is free)", "p05", "p06 -> z3", "p07 first thing in z3 (gates already satisfied) -> z4", "take winding key + return tag (z4 free pickups)", "p08", "p10", "inspect return tag (clu-return-tag)", "p09 (last condition -- latch fires)", "return to z1", "p11"],
     "state_model": "All progression is satisfied-requirement flags (zone unlocked, item held, state latched, clue viewed) plus one derived condition (cond-timelock-release, an order-free AND over three states -- orderings B and C exercise different completion orders). No step-order tracking anywhere. p06 accepts BOTH gear arrangements (unordered set).",
-    "revision_note": "Rev 1.1 (Validator Required Fix 1): ordering C previously ran 'p07 -> z4' straight into p08 and the tag inspect without listing the z4 pickups (winding key, return tag), so p08's key requirement and the tag inspect were unsatisfied; both acquisition steps are now explicit. Orderings A and B were verified valid as written by the Validator."
+    "revision_note": "Rev 1.1 (Validator Required Fix 1): ordering C's z4 pickups made explicit; orderings A/B verified valid as written. Rev 1.2: ordering A's coat step now reads 'tile IV' and its master-clock view note no longer references the deleted clu-face-convention; ordering C's pre-computed code updated to VI-X-I-III. No ordering structure changed."
   },
 
   "developer_notes": [
-    { "id": "D1", "topic": "Mirrored-dial contract (p09)", "note": "Canonical clock state is FRONT time; solution_fixed is front 7:20. The z3 close-up RENDERS the back view: numerals and hand angles mirrored across the vertical axis (a front hour-angle of θ renders at −θ). The setting crank changes front time; the render stays consistently mirrored. Do NOT implement a second 'back time' variable. Art: mirrored numerals must be obviously reversed (IIII, VII especially legible-in-reverse) at close-up resolution -- this is the puzzle's entire evidence base." },
+    { "id": "D1", "topic": "Mirrored-dial contract (p09)", "note": "Canonical clock state is FRONT time; solution_fixed is front 7:20. The z3 close-up RENDERS the back view: numerals and hand angles mirrored across the vertical axis (a front hour-angle of θ renders at −θ). The setting crank changes front time; the render stays consistently mirrored. Do NOT implement a second 'back time' variable. Art: mirrored numerals must be obviously reversed at close-up resolution -- this is the puzzle's entire evidence base. Rev 1.2 detail: with standard notation, a mirrored IV reads as a malformed VI (and vice versa), and VII / IX read distinctly backwards -- render the glyph mirroring crisply; it is the strongest reversal evidence on the plate." },
     { "id": "D2", "topic": "cond-timelock-release implementation", "note": "Re-evaluate on every change to clock-wound, hands-at-release, or pendulum-running, plus on z3 close-up entry (D6 stale case for p09). On first TRUE: play strike beat (chimes + rod articulation in the current zone), latch door-bar-raised permanently. Never gate on achievement order." },
     { "id": "D3", "topic": "Cat refusal grammar", "note": "L1 D4 lesson applied from day one: nudging the cat OR offering ANY inventory item produces the identical terminal refusal (one slow blink, resettles heavier); offered items return unspent; no escalation or variation across repeats. Petting: purr, no state change, always available. After p02 the cat sits by the stair door; same refusal grammar applies there." },
     { "id": "D4", "topic": "Toy mouse no-loss rule", "note": "Wound and placed anywhere except at the cat: skitters a small circle and returns to inventory automatically. At the cat: p02 fires, mouse leaves inventory permanently (cat keeps it -- it has no other uses; declared soft-lock-safe)." },
     { "id": "D5", "topic": "Gear-train feedback grammar (p06)", "note": "With any meshing pair mounted and the arbor freed, cranking runs the mural at the true resulting ratio -- visible speed IS intended feedback (mechanical truth, not a leak). Every wrong ratio ends its cam cycle with the SAME latch-slip clack; only speed differs. Gears mount/unmount freely; rack gears live in the apparatus (never inventory); the great wheel returns to inventory when unmounted. The fixed pinions (XII, VIII) are not removable." },
     { "id": "D6", "topic": "Clue-gate evaluation & stale-correct-input", "note": "Inherit L1 D6 verbatim: gated puzzles re-evaluate (gate AND solution) on every input/attempt event AND on entry into the puzzle's close-up. Stale cases here: p07 (wheels pre-set correctly while gated) and p09 (front 7:20 pre-set while gated). p03/p04 have none (pry is an explicit act)." },
-    { "id": "D7", "topic": "Clue-viewed flags persist", "note": "Inherit L1 D7: one persistent saved boolean per gating clue (clu-watch-a, clu-watch-b, clu-master-time, clu-worldclock-row, clu-return-tag) plus the non-gating shared flag for clu-face-convention. Set on first display of any qualifying view; never cleared; ordinary satisfiable requirements." },
-    { "id": "D8", "topic": "Time-lock is remote and keyless", "note": "The z1 stair door must never accept item use or code input: its housing has no keyhole (art requirement). Any interaction while barred: the bar rattles once against the linkage -- identical every time, pointing attention up the rods (the door teaches 'solve me elsewhere')." }
+    { "id": "D7", "topic": "Clue-viewed flags persist", "note": "Inherit L1 D7: one persistent saved boolean per gating clue (clu-watch-a, clu-watch-b, clu-master-time, clu-worldclock-row, clu-return-tag). Set on first display of the qualifying view; never cleared; ordinary satisfiable requirements. (Rev 1.2: the non-gating clu-face-convention flag is deleted with its node.)" },
+    { "id": "D8", "topic": "Time-lock is remote and keyless", "note": "The z1 stair door must never accept item use or code input: its housing has no keyhole (art requirement). Any interaction while barred: the bar rattles once against the linkage -- identical every time, pointing attention up the rods (the door teaches 'solve me elsewhere')." },
+    { "id": "D9", "topic": "p09 EASING VALVE -- SPEC ONLY, DO NOT IMPLEMENT (user ruling 2026-07-18, flag #5: 'keep for now, with room to make it easier in future')", "note": "Pre-planned softening for the mirrored-dial trap, designed now so a future 'make it easier' is a small staged change, not a redesign. THE VALVE: add a small wordless chalk sketch beside the setting crank on the EXISTING z3 close-up plate -- two mini-dials joined by a horizontal double-headed arrow, the left dial plain, the right dial its exact mirror image (the clockmaker's own working reminder that the back mirrors the front). STAGING: ships as a per-element overlay / crop-scoped edit on the existing plate (the standing L1 state-variant technique; no full-frame re-roll, est. cost one crop edit or $0 PIL), registered as a new optional clue node clu-mirror-chalk (non-gating, supports p09, viewed_when: setting-crank close-up -- self-satisfying like clu-mirrored-numerals). INVARIANTS WHEN ACTIVATED: solution stays front 7:20; p09's gate, no-tell rule, and failure grammar are untouched; no other node changes. Optional second tier if the first proves insufficient (design intent recorded, NOT specced for staging yet): make the return tag double-sided -- its reverse shows the mirrored dial; this would require new inventory-inspect art, so it is the fallback, not the valve. ACTIVATION AUTHORITY: user, at any post-release feedback round, via Producer to Developer + Asset Generation." }
   ],
 
   "red_herrings": [
-    { "id": "rh-iv-tile", "node": "z1 door-dial tray IV tile", "design": "The subtractive IV tile sits ready in the tray under the door dial, and the dial's own seated IX validates the subtractive style. Every actual clock face in the attic uses IIII (three in-room instances). NON-COLLECTIBLE: lives in the tray, seats-and-pops-back (whir-stall) from socket-4. Fairness valve: worst case one extra attempt; the convention is flavor-turned-teaching, not a wall." },
+    { "id": "rh-vi-tile", "node": "z1 door-dial tray VI tile", "design": "Rev 1.2 (replaces rh-iv-tile after the IIII convention was removed by user ruling): the tray under the door dial offers a loose VI tile -- glyph-order bait for the empty 4-socket (IV = one-before-five, VI = one-after-five). Honest and self-disproving: the dial's own seated VI at position 6 is permanently visible one glance away. NON-COLLECTIBLE: lives in the tray, seats-and-pops-back (whir-stall) from any socket. Fairness valve: worst case one extra attempt." },
     { "id": "rh-48-gear", "node": "z2 gear rack 48-tooth gear", "design": "48 x 48 = 2304 exactly -- the arithmetic works, inviting a hunt for 'the second 48'. Only one exists, anywhere. NON-COLLECTIBLE (rack gears never enter inventory); mounting the lone 48 with anything else gives honest wrong-speed feedback. Time-cost trap only; the 36 x 64 solution uses parts the player demonstrably has." },
     { "id": "rh-hands-case", "node": "z2 display case of spare clock hands", "design": "The hand-less world clocks scream 'find and refit the hands'. The spare-hands case is screwed shut and painted over (inspect-only, NON-COLLECTIBLE contents); the world clocks accept no interaction. The stamped offsets on the plates are the actual payload -- the row is informational, not restorable. Defusal: categorical inertness from first contact, L1 feed-cup lesson." },
     { "id": "rh-barometer", "node": "z1 wheel barometer", "design": "A clock-like brass dial that is not a clock: fixed needle, engraved sun/cloud/rain pictograms in close-up. Invites hand-setting/code theories; accepts no input. Pure time-cost; the pictograms make its non-clock nature legible without words." }
@@ -398,14 +402,15 @@
   ],
 
   "visually_necessary_elements": {
+    "global_numeral_rule": "REV 1.2 USER RULING -- ALL dials, faces, tiles, stamps and engravings level-wide use STANDARD SUBTRACTIVE Roman numerals (IV, IX). No IIII anywhere in the level.",
     "z1-attic": [
       "workbench + screwdriver rack (present / taken)",
       "chalk slate with the two-stage ratio diagram (24 tallies, XII, VIII, two '?', cam notch + door pictogram) -- legible in close-up",
       "stove with tile II on hob (present / taken)",
-      "coat on peg: pocket close-up (watch A + tile IIII present / taken, independently)",
+      "coat on peg: pocket close-up (watch A + tile IV present / taken, independently)",
       "wheel barometer: fixed needle + sun/cloud/rain pictograms in close-up",
-      "master longcase clock: stopped at 6:00 sharp, ★ on case, dial uses IIII, all legible in close-up",
-      "workroom door dial: 12 sockets; 8 seated tiles (incl. subtractive IX); 4 empty sockets at positions 2/4/7/11; tray with IV tile; states: per-socket empty / seated; whir-stall pop-back animation; door shut / open",
+      "master longcase clock: stopped at 6:00 sharp, ★ on case, standard numerals, all legible in close-up",
+      "workroom door dial: 12 sockets; 8 seated tiles (I, III, V, VI, VIII, IX, X, XII -- the seated VI must be clearly legible as the tray decoy's disproof); 4 empty sockets at positions 2/4/7/11; tray with VI tile; states: per-socket empty / seated; whir-stall pop-back animation; door shut / open",
       "crate with tile VII in straw (present / taken)",
       "dormer windowsill tile XI (present / taken)",
       "cat: asleep-on-cushion / pounce-chase beat / settled-by-door; terminal-refusal animation (one slow blink, resettles heavier -- identical on repeat); stretch beat when the bar lifts; exit beat (trots out, tail up)",
@@ -419,18 +424,18 @@
       "gear frame: fold-out crank with XII-stamped pinion; POST A with fixed VIII-stamped coaxial pinion; POST B + cam; seized state (rust bloom, crank rocks) / oiled state; per-post mounted-gear overlays for every rack gear and the great wheel",
       "gear rack: six gears 16, 24, 36, 40, 48, 72 -- countable teeth + stamped Arabic numerals, distinct diameters (size + stamp, never color, differentiates them); per-gear on-rack / mounted states",
       "chimney breast: ⚙ mark with 12-notch ring; bricks uniform, cache brick states: flush / pried-open with oil can / empty",
-      "world-clock row: four hand-less faces (all IIII), landmark plates with stamped offsets: Eiffel +I, Big Ben ★, Fuji +IX, Liberty −V -- silhouettes and stamps legible in close-up",
+      "world-clock row: four hand-less faces (standard numerals), landmark plates with stamped offsets: Burj Khalifa +IV, Big Ben ★, Fuji +IX, Liberty −V -- silhouettes and stamps legible in close-up (Burj Khalifa: unmistakable needle-spire profile, user-required)",
       "parts cabinet: top drawer shut / open with mouse / empty",
       "spare-hands display case: screwed + painted-over frame legible in close-up (inspect-only)"
     ],
     "z3-behind-dial": [
-      "great translucent dial from behind, amber transmitted light; MIRROR-REVERSED numerals (IIII convention) clearly legible in close-up; hand silhouettes at any set time (mirrored render per D1)",
-      "setting crank (hand positions update live; 5-min minute detents)",
+      "great translucent dial from behind, amber transmitted light; MIRROR-REVERSED standard numerals clearly legible in close-up (mirrored IV reads as malformed VI -- crisp glyph mirroring per D1); hand silhouettes at any set time (mirrored render per D1)",
+      "setting crank (hand positions update live; 5-min minute detents); NOTE: keep clear staging space beside the crank on this plate for the D9 easing-valve chalk overlay (spec only, not shipped at rev 1.2)",
       "winding drum: dry/rusted state, oiled state, key-in-socket, weight low / rising / fully raised",
       "pendulum: dead still / weak swing / full swing",
       "strike train + hammers; strike animation with rod articulation",
       "linkage rods entering from the z1 direction -- continuity with z1 rods",
-      "floor hatch: four I-XII wheels with pictogram headers (Big Ben ★, Eiffel, Liberty, Fuji -- DIFFERENT order than z2 row); wheels at any position; hatch shut / open"
+      "floor hatch: four I-XII wheels with pictogram headers (Big Ben ★, Burj Khalifa, Liberty, Fuji -- DIFFERENT order than z2 row); wheels at any position; hatch shut / open"
     ],
     "z4-vault": [
       "strongroom under the platform, ladder or steps down",
@@ -445,13 +450,16 @@
     "No puzzle uses color differentiation anywhere. Gears differ by SIZE + countable teeth + stamped numerals; tiles by engraved numerals; world clocks by landmark SILHOUETTES + stamped offsets; vault wheels by pictogram headers + engraved numerals.",
     "Brass vs bronze vs steel finishes are ambient only, never load-bearing.",
     "Mirrored-dial reading depends on numeral SHAPE reversal, not color.",
-    "Cat/mouse, oiling, winding: state changes are shape/motion (weight height, pendulum motion, bar position), never color."
+    "Cat/mouse, oiling, winding: state changes are shape/motion (weight height, pendulum motion, bar position), never color.",
+    "All four landmark pictograms (Big Ben, Burj Khalifa, Statue of Liberty, Mt Fuji) are silhouette-distinct at close-up size -- shape only, no color reliance."
   ],
 
   "designer_difficulty_estimate": {
     "scale": "1-10 (Validator assigns official ledger score)",
     "estimate": 7.0,
-    "per_zone": { "z1-attic": 5.5, "z2-workroom": 7.0, "z3-behind-dial": 7.5, "z4-vault": 5.0 },
+    "per_zone": { "z1-attic": 5.0, "z2-workroom": 7.0, "z3-behind-dial": 7.5, "z4-vault": 5.0 },
+    "validator_official_score": 6.5,
+    "validator_score_status": "6.5 (z1 5.5, z2 7.0, z3 7.0, z4 3.5) is the rev-1.1 official score. Rev 1.2 deltas for re-verification: p01 eased slightly (IIII trap removed per user ruling; VI glyph-order decoy is milder -- designer z1 now 5.0), p07 code value changed with mechanism intact. Designer expects the official 6.5 to hold or dip at most 0.25.",
     "blind_solve_estimate": "75-120 min first-time (vs L1's playtest-calibrated 60-100)",
     "escalation_rationale": "vs L1's 6.0: (1) two genuine multi-step inference chains with light arithmetic -- gear-ratio product (A/12 x B/8 = 24) and time-zone offsets with a 12-hour wrap; (2) longer dependency chains (mouse -> cat -> watch B -> chimney cache -> oil -> arbor -> gear train -> zone 3); (3) heavier cross-zone clue binding (z1 master time + z2 plates -> z3 vault; z1 slate -> z2 frame; watches found in one zone, applied in another); (4) one perceptual inversion (mirrored dial) with a designed trap answer (4:40). Difficulty comes from chain depth and layered reasoning, never pixel-hunting: every cache is anchored by an engraved ring, every code's data is stamped in-scene."
   },
@@ -460,22 +468,21 @@
     "gear-ratio train reasoning (two-stage reduction, unique pair, live mechanical feedback) -- NEW, level signature",
     "clock-hand-as-pointer caches (watch angle applied at engraved clock-position rings) -- NEW",
     "time-zone offset numeric-code lock (reference time + stamped offsets + 12-hour wrap; honors standing user directive) -- NEW",
-    "mirrored-dial hand-setting (front/back reversal inference) -- NEW",
-    "numeral-tile convention seating (IIII vs IV) -- NEW twist on placement",
+    "mirrored-dial hand-setting (front/back reversal inference; D9 easing valve specced) -- NEW",
+    "numeral-tile seating with glyph-order decoy (IV vs VI) -- NEW twist on placement (rev 1.2; formerly the IIII-convention trap)",
     "remote mechanical time-lock endgame (3-input order-free derived condition) -- evolution of L1's latched-condition pattern",
     "tool-on-hotspot pry/oil (screwdriver, oil can) -- deliberate L1 echo, evolved (clue-gated pointer caches)",
     "character-interaction beat (cat + wind-up mouse) -- deliberate L1 echo (series' quiet living presence)"
   ],
 
   "real_world_knowledge_register": [
-    { "fact": "Roman numerals I-XII (reading and matching)", "confidence": "clearly fair; user-requested ingredient", "in_room_backup": "8 seated tiles anchor dial positions; every clock face in the attic is a reference" },
+    { "fact": "Roman numerals I-XII, standard subtractive notation (reading and matching, incl. IV-vs-VI glyph order)", "confidence": "clearly fair; user-requested ingredient; notation per user ruling rev 1.2", "in_room_backup": "8 seated tiles anchor dial positions (seated VI disproves the tray decoy); every clock face in the attic is a reference" },
     { "fact": "Standard clock-face layout (12 at top, clockwise)", "confidence": "clearly fair", "in_room_backup": "8 seated tiles + every in-room dial" },
-    { "fact": "Traditional dials write 4 as IIII while keeping IX", "confidence": "BORDERLINE -- FLAGGED for checkpoint (delicious educated-generalist fact; ledger pre-flagged)", "in_room_backup": "three in-room faces show IIII; wrong tile costs one pop-back attempt, no lockout" },
-    { "fact": "Different cities keep different times (time zones exist)", "confidence": "clearly fair as a concept; user-named ingredient", "in_room_backup": "ALL offsets stamped in-world (+I, −V, +IX, ★); no memorized offset ever required" },
-    { "fact": "Famous landmark silhouettes (Big Ben, Eiffel Tower, Statue of Liberty, Mt Fuji)", "confidence": "fair, and NOT actually required", "in_room_backup": "pictogram-to-pictogram matching between plates and wheel headers fully suffices; city names never needed" },
-    { "fact": "12-hour dial wrap (6 + 9 = 15 -> 3 o'clock)", "confidence": "mild BORDERLINE -- FLAGGED (most adults convert 15:00 readily; the wheel only offering I-XII forces the realization)", "in_room_backup": "the Fuji wheel physically cannot show 15; I-XII is the whole affordance" },
-    { "fact": "Bigger gear turns slower; ratio = tooth quotient; stages multiply", "confidence": "BORDERLINE -- FLAGGED (ratio multiplication may stretch some players)", "in_room_backup": "slate worked diagram + live speed feedback at the crank + bounded experimentation (~30 pairs)" },
-    { "fact": "A translucent dial viewed from behind is mirror-reversed", "confidence": "perception/inference, not trivia -- flagged as difficulty call", "in_room_backup": "visibly reversed numerals in the same close-up as the setting crank" },
+    { "fact": "Different cities keep different times (time zones exist)", "confidence": "clearly fair as a concept; user-named ingredient", "in_room_backup": "ALL offsets stamped in-world (+IV, −V, +IX, ★); no memorized offset ever required" },
+    { "fact": "Famous landmark silhouettes (Big Ben, Burj Khalifa, Statue of Liberty, Mt Fuji)", "confidence": "fair, and NOT actually required (Dubai included per user ruling; Tel Aviv/Tehran/Riyadh excluded per user ruling)", "in_room_backup": "pictogram-to-pictogram matching between plates and wheel headers fully suffices; city names never needed" },
+    { "fact": "12-hour dial wrap (6 + 9 = 15 -> 3 o'clock)", "confidence": "mild borderline -- RATIFIED at checkpoint (flag #4); the single wrap case, kept deliberately", "in_room_backup": "the Fuji wheel physically cannot show 15; I-XII is the whole affordance" },
+    { "fact": "Bigger gear turns slower; ratio = tooth quotient; stages multiply", "confidence": "borderline -- RATIFIED at checkpoint (flag #2, arithmetic peak accepted)", "in_room_backup": "slate worked diagram + live speed feedback at the crank + bounded experimentation (~30 pairs)" },
+    { "fact": "A translucent dial viewed from behind is mirror-reversed", "confidence": "perception/inference, not trivia -- CONDITIONALLY KEPT at checkpoint (flag #5; D9 easing valve specced, not implemented)", "in_room_backup": "visibly reversed numerals in the same close-up as the setting crank" },
     { "fact": "A barometer is not a clock (red herring only)", "confidence": "no knowledge required", "in_room_backup": "fixed needle + weather pictograms; accepts no input" }
   ]
 }
