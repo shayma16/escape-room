@@ -510,3 +510,140 @@ Playtester.** Standing playtest probes carry forward: R1/flag-7 (pre-clue sweep-
 sequence), p06/p07 timing, and the p09 4:40-plateau watch. Blind-layout reminder: strip
 the code value, the offset derivations, all solution values, and every dependency edge —
 the plates, stamps, star, and tray tile are described as scenery only.
+
+---
+
+# Rev 1.3 delta check (2026-07-18)
+
+**Validator:** Puzzle Logic Validator — DELTA pass only: the three user-approved
+blind-playtest tweaks (all claimed feedback-grammar/presentation only) against the
+validated rev 1.2 state. The rev-1.0 and rev-1.2 sections above stand except where
+superseded below.
+**Input:** `puzzle-graph.json` rev 1.3 + summary rev 1.3 + `playtest-report.md` (tweak
+rationale), branch `level2-clockmakers-attic`.
+
+## Tweak 1 — D10 pry faint-tell (p03/p04): **PASS — Advisory A1 RESOLVED**
+
+- **Amended no_tell_rule internally consistent** across all six specification sites
+  (clue_gating.no_tell_rule, p03/p04 gate_behavior + failure_behavior, D10, the z1/z2
+  visually-necessary entries, and the zone element text): strict no-tell IN FULL for
+  p07/p09 and for every WRONG board/brick, with a single sanctioned exception — the
+  correct board (p03) / correct brick (p04), pre-clue only. All sites agree on the same
+  cue and the same scope; the playtest report's recommended middle lane ("a creak, a hair
+  of movement") is implemented exactly.
+- **Cannot function as an accidental full tell.** The cue is SFX (creak) + haptic tick +
+  ONE line of animation (a hair of movement under the blade, settles back); D10 mandates
+  repeat-identical presentation, no escalation toward yielding, no loose wobble, no gap,
+  and NO persistent visual change in any state or view. The spot remains firmly
+  non-yielding while gated, so the cue cannot be mistaken for (or ground into) a yield.
+- **Gate itself unchanged:** p03 still gated on clu-watch-a, p04 on clu-watch-b (all_of);
+  post-clue yield behavior identical to rev 1.2; the watches remain the sole information
+  carriers, so no earned solve can be false-blocked.
+- **Bounded information leak — by design, acceptable.** The faint-tell discloses LOCATION
+  (which spot is special) to a pre-clue sweeper but never the yield: the cache still
+  cannot open without the watch, so the gate's anti-skip purpose (playtest 2a — brute
+  pryers skipping the cat/watch/carving chains) is fully preserved. This is the exact
+  trade the playtest recommended and the user approved; not a finding.
+- **A1 status: RESOLVED.** A1's failure mode was elimination-memory poison (a pre-clue
+  "doesn't budge" on the correct spot certifying it inert, contradicting the later watch
+  clue — 15–25 min stall in the playtest's impatient-pryer variant). The faint-tell
+  converts that memory into a hook the later clue confirms rather than contradicts.
+  Advisory closed; the R1 playtest probe is likewise discharged (probed, finding
+  addressed, user-ruled).
+
+## Tweak 2 — cat mouse-offer tell (D3/D4, clu-cat-refusal): **PASS**
+
+- **Direct offer cannot execute or partially satisfy p02.** D3 ("the offer never executes
+  p02") and D4 interaction (1) ("p02 does NOT execute") agree; p02 yields a single atomic
+  flag set plus watch B — no partial state exists to corrupt. The tell (eyes lock/track,
+  tail flicks, body stays put) is one line of animation, repeat-identical, with explicit
+  no-escalation-into-pouncing.
+- **Mouse remains loss-free through all three interactions** (D4, exhaustive): (1) direct
+  offer → tell fires, returns to inventory; (2) wound + floor not near cat → circles,
+  returns; (3) wound + floor near cat → p02 fires, consumed by design (its sole declared
+  use). No fourth interaction surface exists (the butterfly key visibly mismatches the
+  p08 square socket and returns — unchanged).
+- **Anti-softlock invariant #1 still holds:** amended to name the direct-offer case
+  explicitly; re-confirmed true. Every non-mouse item keeps the generic terminal refusal
+  and returns unspent; p02's input, derivation, clu-cat-refusal, and the
+  visually-necessary cat entry are all consistent with D3.
+
+## Tweak 3 — D11 alive-wrong-time ambient: **PASS**
+
+- **Derived presentation only, confirmed at all four spec sites:** state_model ("Rev 1.3
+  adds NO new state"), D11 ("derived (never stored) from existing flags"), D2
+  ("render/audio layer over the existing flags, never as new state"), and the
+  cond-timelock-release definition ("introduces no new state and never affects this
+  condition's evaluation or latch").
+- **Encodes nothing about 7:20:** tick rate, twitch frequency, and animation are
+  invariant across ALL wrong times — no proximity signal; the hammer never strikes and
+  no chime sound ever plays. Identical at 4:40 (the trap) and at every other setting.
+- **Gate-neutrality verified for the subtle case:** the ambient renders regardless of
+  clu-return-tag's viewed state (it describes the MOVEMENT, not the entered code). While
+  p09 is gated with front 7:20 pre-set, hands-at-release never asserts, so the ambient
+  stays active — presentation-identical to any wrong time. The strict p09 no-tell
+  therefore holds; the ambient leaks nothing about the gate or the code. The stale case
+  still resolves via D6, and standing Recommendation R2 (treat the clu-return-tag view
+  event as a re-evaluation trigger) becomes marginally more valuable — it remains
+  non-blocking.
+- **Latch semantics untouched:** ambient terminates the moment cond-timelock-release
+  first goes TRUE (strike grammar unchanged) or an input drops; the condition's inputs,
+  evaluation, and permanent door-bar-raised latch are semantically identical to rev 1.2.
+- **D9 verbatim-dormant: CONFIRMED.** The valve spec body is unchanged (only a
+  status-at-rev-1.3 annotation added to its topic line); `clu-mirror-chalk` still exists
+  nowhere as a node; p09's easing_valve field remains prose-only. The D11/D9 separation
+  is correctly drawn: D11 says "wrong time," D9 would help derive the right one.
+
+## Blast radius — **STABLE** (one stale citation found, documentation-only)
+
+- **Solution values byte-consistent with rev 1.2:** p01 tiles II/IV/VII/XI at sockets
+  2/4/7/11 (tray VI decoy intact); p06 36×64, both arrangements; p07 VI·X·I·III (single
+  Fuji wrap); p09 front 7:20 (4:40 trap intact); caches at ⌂ 3-o'clock board and ⚙
+  9-o'clock brick; master 6:00.
+- **Requires/yields/edges:** identical graph shape — same contains/requires/yields set,
+  3 zone unlocks, 3 contributes_condition + 1 requires_condition, same 5 clue_gate edges
+  and same 4 gated puzzles.
+- **Orderings A/B/C:** unchanged from rev 1.2 (revision_note confirms; re-traced valid —
+  the rev-1.1 Fix-1 z4 pickups and the VI·X·I·III pre-compute both survive in C).
+- **Red herrings:** all four mechanically unchanged; additions are playtest annotations
+  only (the rh-hands-case paint-over emphasis is explicitly optional Art Director
+  discretion, ships as-is per the step-6 ruling).
+- **anti_softlock_invariants:** 7/7 re-confirmed true; #1 and #4 gained accurate additive
+  rev-1.3 clauses (mouse direct-offer return; D10/D11 as repeat-identical presentation
+  that never consumes, escalates, or locks).
+- **Color-blind gate: PASS.** The one additive line is ACCURATE: all three new cues are
+  audio/haptic/motion (creak+shift, eye-track+tail-flick, tick+twitch) — no color channel
+  anywhere. Additionally verified: none is audio-only either — each carries a visible
+  motion component (shift animation, eye/tail movement, hammer twitch), so the cues are
+  also robust for players without sound/haptics. No new color-involving element exists.
+- **A3 (Advisory, documentation-only — stale-citation class):** the graph's
+  `designer_difficulty_estimate.validator_score_status` and the summary's difficulty
+  section both quote the official zone breakdown as "z1 5.5"; the rev-1.2 delta
+  re-validation officially revised z1 to **5.0** (the overall 6.5 is quoted correctly in
+  both). One-word fix for the Designer via the Producer; the ledger value (z1 5.0) is
+  authoritative. Zero design impact.
+
+## Difficulty — **6.5 HOLDS**
+
+The tweaks trim worst-case stall tails (the poisoned-pry 15–25 min stall and the
+restored-but-silent bug-read, per the playtest), not intended-path difficulty: the pry
+gates, the mirror inference, the 4:40 trap, and both code chains are intact — D10/D3/D11
+only remove false-negative feedback that punished correct reasoning. Official:
+**6.5 / 10 (z1 5.0, z2 7.0, z3 7.0, z4 3.5)** — unchanged from rev 1.2.
+
+## Delta verdict
+
+| Tweak | Result |
+|---|---|
+| 1. D10 pry faint-tell (p03/p04) | **PASS** — no-tell rule internally consistent; cannot escalate to a full tell; gate unchanged; **A1 RESOLVED** |
+| 2. Cat mouse-offer tell (D3/D4) | **PASS** — cannot execute/partially satisfy p02; mouse loss-free in all three interactions; invariant #1 holds |
+| 3. D11 alive-wrong-time ambient | **PASS** — derived presentation, no new state; encodes nothing about 7:20; latch semantics untouched; D9 verbatim-dormant |
+| Blast radius | **STABLE** — solutions, edges, orderings, herrings, gates all byte-consistent; colorblind additive line accurate |
+| **Critical findings** | **0** |
+| **New advisories** | **1** (A3: stale "z1 5.5" citation in graph + summary; official is 5.0 — one-word doc fix) |
+| **Official difficulty** | **6.5 / 10** (z1 5.0, z2 7.0, z3 7.0, z4 3.5) — holds |
+
+**Rev 1.3 is verified: the "feedback-grammar only" claim is TRUE.** No solution value,
+dependency, ordering, gate, or red-herring behavior changed. The graph is **CLEARED for
+the Art Director stage (step 7)**. Standing items now: A2 (Big Ben pictogram stage, Art
+Director), A3 (z1 score citation, one-word Designer fix), R2–R5 unchanged; A1/R1 closed.

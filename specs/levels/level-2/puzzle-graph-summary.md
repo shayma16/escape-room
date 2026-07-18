@@ -113,7 +113,7 @@ rev-1.3 tweaks add no state (D10/D11 are presentation over existing flags).
 ## Difficulty self-assessment
 
 **Designer estimate 7.0 overall** (z1 5.0 · z2 7.0 · z3 7.5 · z4 5.0). **Validator
-official: 6.5** (z1 5.5 · z2 7.0 · z3 7.0 · z4 3.5), confirmed at the rev-1.2 delta
+official: 6.5** (z1 5.0 · z2 7.0 · z3 7.0 · z4 3.5), confirmed at the rev-1.2 delta
 re-validation. **Blind-solve now playtest-calibrated: 70–135 min, median ~100** (L1:
 60–100). Playtest verdict on the curve: "the escalation is real" — one derivation (gear
 ratio), one cross-zone synthesis (★/offsets), one perceptual reframe (mirror order),
