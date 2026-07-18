@@ -9,6 +9,7 @@ _(from each level's validation-report.md; per-zone and overall)_
 
 | Level | Theme | Overall difficulty | Per-zone scores | Status |
 |-------|-------|--------------------|-----------------|--------|
+| 2 | The Clockmaker's Attic (mechanical/time: gear ratios, clock hands, time zones, Roman numerals; attic-as-machine) | 6.5/10 (Validator official, rev 1.2: z1 5.0 · z2 7.0 · z3 7.0 · z4 3.5) | z1 Main Attic 5.0 · z2 Movement Loft 7.0 · z3 Behind the Great Dial (hidden) 7.0 · z4 Clockmaker's Vault (hidden nested, reward room) 3.5 | IN DESIGN: graph rev 1.2 validated PASS (delta re-verification 2026-07-18); user checkpoint rulings applied (IV not IIII; Dubai/Big Ben/Liberty/Fuji city set, vault code VI-X-I-III; mirror-trap easing valve D9 spec'd dormant). Next: blind layout -> Blind Playtester |
 | 1 | The Wizard's Cabin (abandoned wizard's cabin in the woods; caged crow, potions) | 6.0/10 (Validator official; unchanged at rev 1.3) | z1 Main Room 5.0 · z2 Potion Workshop 6.0 · z3 Hidden Cellar 4.0 · z4 Walled Alcove 5.0 | RELEASED to TestFlight (build 1) 2026-07-06. Feedback round 1 IN PROGRESS 2026-07-07 → build 2: puzzle-graph rev 1.3 (clue-gating) validated PASS (difficulty holds 6.0); Developer fix batch + art fixes running. Art spend $8.63 (+ round-1 fixes TBD) |
 
 ## Puzzle mechanics used

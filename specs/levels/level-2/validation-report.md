@@ -356,3 +356,157 @@ character beat) — repetition posture is healthy for Level 3 planning.
 **Overall verdict: PASS-WITH-CHANGES.** The design is logically sound, soft-lock-free,
 color-blind-safe, and fairly escalated. Apply Required Fix 1 (ordering C text) before the
 Blind Playtester stage; the borderline-flag rulings in §10 go to the user checkpoint.
+
+---
+
+# Rev 1.2 delta re-verification (2026-07-18)
+
+**Validator:** Puzzle Logic Validator — DELTA pass only, per Producer instruction: the
+three user-checkpoint changes plus their blast radius, against the validated rev 1.1
+state. The rev-1.0 report above stands except where explicitly superseded below.
+**Input:** `puzzle-graph.json` rev 1.2 + summary rev 1.2, branch `level2-clockmakers-attic`.
+
+## Change 1 — IIII→IV conversion, p01 rewrite, clu-face-convention deletion: **PASS**
+
+- **Dangling-reference sweep (grep, entire graph + summary): CLEAN.** Every surviving
+  occurrence of `clu-face-convention`, `itm-tile-iiii`, `rh-iv-tile`, or the string "IIII"
+  is historical documentation only (revision_notes, D7's deletion parenthetical, p01/ledger
+  "formerly" notes, the summary's ruling record). Zero active references: no node, edge,
+  `clues` list, clue_gate, zone element, or visually-necessary entry touches the deleted
+  node or the old IDs. The edge list correctly substitutes `itm-tile-iv` in the z1
+  contains-edge and the p01 requires-edge; no other edge changed.
+- **p01 solvability & clue-completeness: PASS.** Closure unchanged — all 4 tiles are free
+  z1 pickups (stove hob / coat pocket / crate straw / windowsill), p01 is ungated, and the
+  socket complement is still exact (seated {I, III, V, VI, VIII, IX, X, XII} = complement
+  of empty {2, 4, 7, 11}; tiles II/IV/VII/XI match). The deleted node was non-gating and
+  had no consumers besides p01's old clue list, so its removal orphans nothing.
+- **VI-bait soft-lock probe: PASS.** Tray VI seated in socket-4 (or anywhere): whir-stall,
+  pops back to the tray; inventory tiles pop back to inventory; correct seats persist;
+  nothing consumed; unlimited attempts. Worst case is one extra attempt, as claimed.
+- **rh-vi-tile R6-003 conformance: PASS.** Checked carefully per instruction: no
+  `itm-tile-vi` item node exists anywhere in the graph. The VI tile is modeled purely as a
+  zone element + red_herrings entry ("NON-COLLECTIBLE, lives in the tray"); it is
+  graspable/seatable strictly as in-scene interaction, with an explicit tray-return in
+  p01's failure_behavior ("inventory tiles to inventory, tray tile to tray"). This is the
+  same stronger-form R6-003 modeling noted in §9 — the bait can never enter inventory.
+- **In-scene disproof verified load-bearing:** the seated VI at position 6 sits on the same
+  dial as the empty 4-socket, and visually_necessary_elements explicitly requires it
+  "clearly legible as the tray decoy's disproof."
+- **D1 mirror-evidence knock-on (declared blast radius): consistent.** With subtractive
+  notation, mirrored-IV-reads-as-malformed-VI is now the keystone reversal cue for p09 —
+  actually higher-contrast evidence than mirrored IIII would have been. p09's solution,
+  gate, and failure grammar are untouched; D1, clu-mirrored-numerals, the summary, and
+  visually-necessary z3 all agree on the new glyph detail.
+- **Fairness (supersedes the §5 IIII row):** the IIII-convention borderline entry is
+  replaced by IV-vs-VI glyph order — **clearly fair** (in-room disproof one glance away,
+  ≤1-attempt cost, no recall). Net fairness posture of the level improves.
+- **Count reconciliation (supersedes §9 counts):** clue nodes 12 → **11**
+  (clu-face-convention deleted); items remain 12 (rename only); puzzles, herrings, zones
+  unchanged.
+- **Designer z1 re-estimate 5.0: reasonable — adopted** (see difficulty section below).
+
+## Change 2 — City set + vault code VI·X·I·III: **PASS** (one art advisory, A2)
+
+- **Independent re-derivation from stamped in-world data only,** in vault header order
+  (Big Ben ★ / Burj Khalifa / Liberty / Fuji):
+  - Big Ben ★ = reference = master clock stopped at 6:00 → **VI**
+  - Burj Khalifa +IV: 6 + 4 = 10 → **X**
+  - Statue of Liberty −V: 6 − 5 = 1 → **I**
+  - Mount Fuji +IX: 6 + 9 = 15 → 15 − 12 = 3 → **III**
+  - **Re-derived code: VI·X·I·III — CONFIRMED.** Matches p07 `solution_fixed`, the z4
+    unlock gate_description, clu-worldclock-row's worked arithmetic, ordering C's
+    pre-computed value, and the summary. All downstream references consistent; no stale
+    VI·VII·I·III survives anywhere in graph or summary (the only "old code" mentions are
+    the rev-1.2 change records themselves).
+- **Exactly one wrap case, per ruling #4: CONFIRMED.** 10, 1, and 6 are all in I–XII; only
+  Fuji's 15 wraps. X is a legal wheel value (wheels engraved I–XII).
+- **Wheel-order vs row-order mismatch intact:** z2 row [Burj, Big Ben ★, Fuji, Liberty] vs
+  vault headers [Big Ben ★, Burj, Liberty, Fuji] — no positional copy works in either
+  direction; pictogram matching remains forced.
+- **Offsets real-world sane:** Dubai UTC+4, New York −5, Tokyo +9 vs London — accurate
+  standard-time offsets. (Nil-impact observation, not an advisory: under British Summer
+  Time the live differences to Dubai/Tokyo shift by one hour; irrelevant here because
+  every offset is stamped in-world and no recall is ever required.)
+- **Excluded cities: COMPLIANT.** Tel Aviv, Tehran, and Riyadh appear in no zone, node,
+  clue, edge, or art-facing list — only in the summary's ruling record and the RWK
+  register's confidence note, i.e. as documentation of the exclusion decision itself.
+  Dubai/Burj Khalifa is present at every required site (z2 plate, z3 header,
+  clu-worldclock-row, visually-necessary). Paris is fully removed from level content.
+- **Gate integrity unchanged:** p07 still gated on clu-master-time + clu-worldclock-row,
+  both in permanently reachable earlier zones jointly carrying the entire (new) code —
+  cannot false-block; 12⁴ brute-space rationale unaffected by the value change.
+- **Color-blind / silhouette distinctness: PASS, with Advisory A2 (Art Director).** Four
+  distinct shape classes: clock-tower (Big Ben), needle-spire (Burj), standing figure with
+  torch (Liberty), mountain profile (Fuji). Liberty and Fuji are unambiguous against
+  everything. The closest pair is Big Ben vs Burj (two tall verticals) — but the ★ stamp
+  travels with Big Ben on BOTH the z2 plate and the vault header, an independent
+  symbol-not-silhouette cue, so the reference wheel's binding cannot be corrupted even
+  under worst-case silhouette confusion; and visually_necessary already mandates Burj's
+  "unmistakable needle-spire profile." **A2 (Advisory, non-blocking):** render the Big Ben
+  pictogram with its clock-face stage clearly visible at pictogram scale so tower vs spire
+  never collapses; the ★ already guarantees correctness, this protects fluency. No color
+  reliance anywhere; every element retains a secondary non-color cue.
+
+## Change 3 — D9 easing valve (spec only): **PASS**
+
+- **Dormancy: CONFIRMED.** `clu-mirror-chalk` exists nowhere as a node — it is named only
+  inside D9's text as the node to be registered IF the valve is ever activated. Zero
+  references in the nodes array, edges, any clue_gate, D7's persistent-flag list, or
+  p09's `clues`. p09's gate still requires exactly clu-return-tag; the `easing_valve`
+  field on p09 is prose only. As shipped, the valve cannot gate p09, alter the no-tell
+  rule, or affect any dependency.
+- **Activation invariants: internally consistent.** The valve is specified as a
+  non-gating, self-satisfying overlay clue (same close-up as the crank — the
+  clu-mirrored-numerals precedent), solution stays front 7:20, gate and failure grammar
+  declared untouched, and the double-sided-tag second tier is explicitly deferred (design
+  intent only). A future activation is purely additive. Note for that future round:
+  register the clu-mirror-chalk node + supports reference at activation; being non-gating,
+  it needs no D7 flag.
+- Staging space for the overlay is reserved on the existing z3 plate
+  (visually-necessary note) — activation would be a crop-scoped edit, no re-roll. ✓
+
+## Blast radius — everything outside the deltas: **STABLE, CONFIRMED**
+
+- **Solution values intact:** 36×64 (slate + p06, both arrangements still accepted),
+  front 7:20 (p09/D1/return tag), cache positions (⌂ 3-o'clock board, ⚙ 9-o'clock brick),
+  master 6:00, all latches and the derived condition.
+- **Orderings:** A modified only at the two delta-required text spots (coat step reads
+  "tile IV"; deleted-clue mention removed); B untouched; C retains the rev-1.1
+  Required-Fix-1 pickups ("take winding key + return tag (z4 free pickups)") AND carries
+  the new code — **the rev-1.1 fix survives rev 1.2.** Ordering structure unchanged; all
+  three re-traced valid.
+- **Dependencies/edges:** identical graph shape; only the itm-tile-iiii → itm-tile-iv ID
+  substitution. Clue-gate set unchanged (5 edges, same 4 gated puzzles). Red herrings 2–4
+  (rh-48-gear, rh-hands-case, rh-barometer) textually unchanged. All seven
+  anti_softlock_invariants unchanged and re-confirmed true. Developer notes: only D1
+  (glyph detail), D7 (deletion parenthetical), and new D9 moved — all delta-required.
+- **Nothing moved that shouldn't have.** Standing items A1/R1–R5 from the rev-1.0 pass
+  remain in force unchanged.
+
+## Updated official difficulty (ledger)
+
+| Zone | rev-1.1 official | **rev-1.2 official** | Delta basis |
+|---|---|---|---|
+| z1 Main Attic | 5.5 | **5.0** | p01 eased: the RWK convention beat (worth ~0.5 of the zone) is gone; the VI glyph-order fork is milder and self-disproving. p03 (6) still anchors the zone. Designer's 5.0 adopted. |
+| z2 Movement Loft | 7.0 | **7.0** | Untouched. |
+| z3 Behind the Great Dial | 7.0 | **7.0** | p07's code VALUE changed, not its mechanism, chain length, or wrap count; p09 unchanged (D9 dormant). |
+| z4 Vault | 3.5 | **3.5** | Untouched (R5 stands). |
+| **Overall** | 6.5 | **6.5 / 10 — HOLDS** | The overall is carried by the untouched z2/z3 peaks (p06, p07) and chain depth; the removed convention beat was a ≤1-attempt valve contributing little effective difficulty. Within the designer's predicted "hold or dip ≤0.25"; escalation over L1's 6.0 remains real and fair. |
+
+## Delta verdict
+
+| Change | Result |
+|---|---|
+| 1. IIII→IV conversion / p01 rewrite / node deletion | **PASS** (0 dangling refs; R6-003 conformant; no soft-lock; fairness improved) |
+| 2. City set + code VI·X·I·III | **PASS** (code independently re-derived and confirmed; one wrap; exclusions clean; A2 art advisory, non-blocking) |
+| 3. D9 easing valve | **PASS** (genuinely dormant; activation invariants sound) |
+| Blast radius | **STABLE** — nothing outside the deltas moved |
+| **Critical findings** | **0** |
+| **New advisories** | **1** (A2: Big Ben pictogram clock-face stage, Art Director) |
+| **Official difficulty** | **6.5 / 10** (z1 5.0, z2 7.0, z3 7.0, z4 3.5) |
+
+**Rev 1.2 is verified. The graph is CLEARED for blind-layout prep and the Blind
+Playtester.** Standing playtest probes carry forward: R1/flag-7 (pre-clue sweep-pry
+sequence), p06/p07 timing, and the p09 4:40-plateau watch. Blind-layout reminder: strip
+the code value, the offset derivations, all solution values, and every dependency edge —
+the plates, stamps, star, and tray tile are described as scenery only.
