@@ -26,10 +26,23 @@ z3 7.0/z4 3.5; ledger row added). Blind layout WRITTEN + Producer leak-checked +
 (survived a session-limit cutoff mid-agent; file was complete). **Blind Playtester RUNNING**
 (2026-07-18, isolation: blind-layout.md only) with 3 scripted variant passes: impatient
 pryer (flag-7 elimination-memory probe), math-averse brute-forcer (p06 tedium), hasty
-reader (mirror trap recovery). NEXT: playtest-report.md -> step 6 USER CHECKPOINT (may
-route back to designer). Then Art Director (note validator A2: Big Ben pictogram must show
-clock-face stage vs Burj spire) -> user style checkpoint -> Asset Gen (budget: fresh L2
-budget TBD with user; L1 closed at $21.15/$23.00).
+reader (mirror trap recovery). Playtest DONE: READY-WITH-TWEAKS -> 3 tweaks user-approved
+-> rev 1.3 (D10 faint-tell, mouse tell, D11 ambient), delta-validated PASS, A1 RESOLVED,
+A3 quote fix applied. Walkthrough DRAFT done (flags: p08 mouse-at-drum dead spec text —
+Developer must NOT build; naive-4:40 derivation to re-verify at second pass).
+
+**STEP-8 STYLE CHECKPOINT APPROVED (2026-07-18).** Style guide committed: "one held minute
+of golden hour", one-sun continuity rule; scope 7 wides / 25 close-ups / 12 cutouts /
+2 canonical sheets / ~46 crop edits / ~12 sprites, zero planned re-rolls; A2 resolved
+(Big Ben clock-face stage vs Burj monotonic taper). USER RULINGS: F1 display-case
+paint-over YES; F2 KEEP the L1 rune as the series-wide pause glyph (no new glyph asset);
+F3 cat design approved; F4 evening win-beat YES; **L2 ART CAP = $15.00** (fresh budget;
+L1 closed at $21.15/$23.00). STANDING USER PREFERENCES (also saved to auto-memory):
+stylized-3D seed-B engine style; NEVER the "psh" whoosh/hiss SFX (hard rule for all
+Developer/sound work).
+NEXT: Asset Generation (step 9) in per-zone batches — canonical sheets (numerals +
+landmark die) FIRST, then z1 — feeding the FULL cumulative L1 reference library; step-10
+per-zone user reviews follow each batch.
 
 ## Level 1 (COMPLETE — for reference)
 
