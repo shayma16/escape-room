@@ -45,7 +45,7 @@ SCRATCH = os.environ.get(
     r"C:\Users\shaim\AppData\Local\Temp\claude\C--Users-shaim-escape-room\8c048282-9ce7-4b1a-b54a-04e2ba948c25\scratchpad",
 )
 os.makedirs(SCRATCH, exist_ok=True)
-ASSET_ROOT = r"C:\Users\shaim\escape-room\specs\assets\level-1"
+ASSET_ROOT = os.environ.get("FALGEN_ASSET_ROOT", r"C:\Users\shaim\escape-room\specs\assets\level-1")
 ENV_PATH = r"C:\Users\shaim\escape-room\.env"
 RESULTS = os.path.join(SCRATCH, "results.jsonl")
 

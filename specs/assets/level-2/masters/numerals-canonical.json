@@ -1,0 +1,57 @@
+{
+ "numerals": {
+  "I": {
+   "std": "num-i.png",
+   "mir": "num-i-mir.png"
+  },
+  "II": {
+   "std": "num-ii.png",
+   "mir": "num-ii-mir.png"
+  },
+  "III": {
+   "std": "num-iii.png",
+   "mir": "num-iii-mir.png"
+  },
+  "IV": {
+   "std": "num-iv.png",
+   "mir": "num-iv-mir.png"
+  },
+  "V": {
+   "std": "num-v.png",
+   "mir": "num-v-mir.png"
+  },
+  "VI": {
+   "std": "num-vi.png",
+   "mir": "num-vi-mir.png"
+  },
+  "VII": {
+   "std": "num-vii.png",
+   "mir": "num-vii-mir.png"
+  },
+  "VIII": {
+   "std": "num-viii.png",
+   "mir": "num-viii-mir.png"
+  },
+  "IX": {
+   "std": "num-ix.png",
+   "mir": "num-ix-mir.png"
+  },
+  "X": {
+   "std": "num-x.png",
+   "mir": "num-x-mir.png"
+  },
+  "XI": {
+   "std": "num-xi.png",
+   "mir": "num-xi-mir.png"
+  },
+  "XII": {
+   "std": "num-xii.png",
+   "mir": "num-xii-mir.png"
+  }
+ },
+ "notes": {
+  "notation": "subtractive only \u2014 IV/IX, IIII banned (rev 1.2)",
+  "asymmetry": "heavy left-foot serif on I; thick descending / thin ascending on V and X",
+  "mirror_rule": "mirrored stamps flip glyph order AND letterform (dial back view, 4.2)"
+ }
+}
