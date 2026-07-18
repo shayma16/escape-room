@@ -138,12 +138,15 @@ jobs:
             MARKETING_VERSION="$MARKETING_VERSION" \
             CURRENT_PROJECT_VERSION="$BUILD_NUMBER"
 
-      # The app's Info.plist pins CFBundleVersion to a literal, so the archive-time
-      # override doesn't reach the built app — and exportArchive reads the version from
-      # the .xcarchive's OWN ApplicationProperties too. Stamp the real build number into
-      # BOTH the app binary AND the archive metadata before export (export re-signs,
-      # carrying the edit into the .ipa). Without this, App Store Connect rejects the
-      # upload as a duplicate of build "1". (Same fix merged to main via PR #7.)
+      # The app's Info.plist pins CFBundleVersion to a literal ("1"), so the archive-time
+      # CURRENT_PROJECT_VERSION override does NOT reach the built app — every upload came
+      # out as build "1" and App Store Connect rejects duplicates. Stamp the real build
+      # number (and marketing version) directly into the archived app's Info.plist AND the
+      # .xcarchive's own ApplicationProperties before export.
+      # manageAppVersionAndBuildNumber=false in the export plists preserves this; export
+      # re-signs the app, so the edited plist is carried into the signed .ipa.
+      # (This fix was developed independently on main via PR #7 and on the level-1 branch;
+      # the two implementations were identical, reconciled here at the merge.)
       - name: Stamp build number into the archive
         run: |
           set -euo pipefail
@@ -151,12 +154,15 @@ jobs:
           PLIST="$APP/Info.plist"
           /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $BUILD_NUMBER" "$PLIST"
           /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $MARKETING_VERSION" "$PLIST"
+          # exportArchive reads the version from the archive's OWN metadata
+          # (ApplicationProperties in the .xcarchive Info.plist), not just the app binary —
+          # stamp that too, or the delivery still carries the stale build "1".
           ARCH_PLIST="$ARCHIVE_PATH/Info.plist"
           /usr/libexec/PlistBuddy -c "Set :ApplicationProperties:CFBundleVersion $BUILD_NUMBER" "$ARCH_PLIST"
           /usr/libexec/PlistBuddy -c "Set :ApplicationProperties:CFBundleShortVersionString $MARKETING_VERSION" "$ARCH_PLIST"
           echo "Stamped $(basename "$APP") + archive metadata: version $MARKETING_VERSION, build $BUILD_NUMBER"
-          echo "app:     $(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")"
-          echo "archive: $(/usr/libexec/PlistBuddy -c 'Print :ApplicationProperties:CFBundleVersion' "$ARCH_PLIST")"
+          echo "app CFBundleVersion:     $(/usr/libexec/PlistBuddy -c 'Print :CFBundleVersion' "$PLIST")"
+          echo "archive CFBundleVersion: $(/usr/libexec/PlistBuddy -c 'Print :ApplicationProperties:CFBundleVersion' "$ARCH_PLIST")"
 
       - name: Export .ipa
         env:
