@@ -104,7 +104,7 @@
 
   "nodes": [
     { "id": "itm-poker", "type": "item", "name": "Iron poker", "location": "z1 v-hearth", "obtained_by": "pickup", "uses": ["p05-ash-sift", "p06-barrel-pry"] },
-    { "id": "itm-rusted-key", "type": "item", "name": "Rusted bent key", "location": "z1 v-entry hook", "obtained_by": "pickup", "uses": [], "red_herring": true },
+    { "id": "itm-rusted-key", "type": "item", "name": "Rusted bent key", "location": "z1 v-entry hook", "obtained_by": "none", "collectible": false, "uses": [], "red_herring": true, "notes": "R6-003 graph sync (2026-07-14): INSPECT-ONLY in the shipped build -- the key never enters inventory; it stays on its hook and misleads visually in-scene only (close-up shows the snapped plain bit). The real cage key remains itm-cage-key from the z4 alcove statue." },
     { "id": "itm-gold-ring", "type": "item", "name": "Gold ring (plain round band)", "obtained_by": "p05-ash-sift", "uses": ["p04-cabinet-sun-moon"] },
     { "id": "itm-crank", "type": "item", "name": "Winch crank handle", "obtained_by": "p03-astrolabe-orion", "uses": ["p08-shutter-winch"] },
     { "id": "itm-silver-coin", "type": "item", "name": "Silver coin stamped with a crescent", "obtained_by": "p03-astrolabe-orion", "uses": ["p04-cabinet-sun-moon"] },
@@ -311,7 +311,7 @@
       "input": "Use star-bit key on star-shaped cage keyhole; open door.",
       "solution_fixed": "itm-cage-key on cage",
       "requires": ["itm-cage-key"],
-      "clues": ["clu-crow-refusal", "clu-recipe-page (feather-into-open-hand pictogram)", "star keyhole visibly matches star key bit (and visibly rejects itm-rusted-key's plain bit)"],
+      "clues": ["clu-crow-refusal", "clu-recipe-page (feather-into-open-hand pictogram)", "star keyhole visibly matches star key bit (the rusted decoy key misleads visually in-scene only: it is inspect-only per R6-003, never held, and its close-up shows a snapped plain bit that plainly cannot match the star keyhole)"],
       "clue_gate": { "gated": false, "rationale": "Key-on-lock physical act; the star bit visibly matches the star keyhole. Obtaining the key already requires traversing z3/z4, so no shortcut exists to close. The 'freely given' theme is delivered by the refusal grammar (D3/D4), not by a gate; making the correct key inert would directly contradict the terminal-refusal messaging ('this will never work' must stay true only for non-paths)." },
       "yields": { "items": ["itm-feather"], "via": "crow flies to rafters, preens, one feather drifts down; crow remains perched for the rest of the level", "state": "crow-freed" },
       "notes": "VALIDATOR ADVISORY + PLAYTEST R1 APPLIED: the terminal-refusal grammar (crow snaps once, turns its back, guards its wing; identical pose on every repeat, no escalation) covers BOTH reaching into the cage AND offering any inventory item at the brass feed cup -- the 'feed the crow' theory must die fast, not read as 'wrong food, keep trying'. See clu-crow-refusal and developer_notes D3/D4. The draught mis-pour case specifically remains governed by D1."

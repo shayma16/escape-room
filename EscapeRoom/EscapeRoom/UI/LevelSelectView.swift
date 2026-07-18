@@ -76,12 +76,15 @@ private struct LevelCardView: View {
                     .frame(maxHeight: .infinity, alignment: .bottom)
                     .clipShape(RoundedRectangle(cornerRadius: 16))
 
-                Text("\(level.id)")
+                // R4-001 (standing instruction, R3-003 completion): the card label reads
+                // "Level 1" — the WORD plus the serif Arabic numeral, never a bare "1".
+                Text("Level \(level.id)")
                     .font(.chromeLevelNumber())
                     .foregroundColor(isUnlocked ? Chrome.textPrimary : Chrome.disabled)
                     .padding(8)
                     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
                     .padding(.leading, 8)
+                    .accessibilityIdentifier("level-card-\(level.id)-label")
 
                 if isComplete {
                     ZStack {
@@ -105,6 +108,11 @@ private struct LevelCardView: View {
         }
         .disabled(!isUnlocked)
         .buttonStyle(.plain)
+        // R3-001: entering a level is a MAJOR action -> subtle confirm tone (the level
+        // music itself starts later, when the level scene appears — never in the menu).
+        .simultaneousGesture(TapGesture().onEnded {
+            if isUnlocked { SoundManager.shared.play(.menuConfirm) }
+        })
         .accessibilityLabel(isUnlocked ? (isComplete ? "Level \(level.id), completed." : "Level \(level.id)") : "Level \(level.id), locked.")
         .accessibilityIdentifier(isComplete ? "level-card-\(level.id)-complete" : "level-card-\(level.id)")
     }
@@ -117,7 +125,7 @@ private struct LevelCardView: View {
                 .aspectRatio(contentMode: .fill)
         } else {
             Chrome.surface
-                .overlay(Text("\(level.id)").font(.chromeLevelNumber()).foregroundColor(Chrome.textSecondary))
+                .overlay(Text("Level \(level.id)").font(.chromeLevelNumber()).foregroundColor(Chrome.textSecondary))
         }
     }
 }

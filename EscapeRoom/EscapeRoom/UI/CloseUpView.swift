@@ -22,8 +22,11 @@ struct CloseUpView: View {
 
     var body: some View {
         ZStack {
+            // Build 10 (cluster F): the scrim OUTSIDE the plate is "empty space" — with
+            // an item armed, tapping it DISARMS (tap-away deselect, same grammar as the
+            // wide scene). The plate itself remains the armed-use surface.
             Color.black.opacity(0.92).ignoresSafeArea()
-                .onTapGesture { armedUseOrNothing() }
+                .onTapGesture { disarmOrNothing() }
 
             Group {
                 switch request {
@@ -33,13 +36,22 @@ struct CloseUpView: View {
                         .onTapGesture { armedUseOrNothing() }
                 case .container(let container):
                     ContainerCloseUp(coordinator: coordinator, container: container)
+                case .ashPile:
+                    AshPileCloseUp(coordinator: coordinator)
+                case .barrel:
+                    BarrelCloseUp(coordinator: coordinator)
+                case .statueKey:
+                    StatueKeyCloseUp(coordinator: coordinator)
+                case .cabinetSlots:
+                    CabinetSlotsCloseUp(coordinator: coordinator)
                 case .grimoire:
                     PagerCloseUp(coordinator: coordinator,
                                  pages: CloseUpLayout.grimoirePages,
                                  initialIndex: CloseUpLayout.grimoireBookmarkIndex)
-                case .triptych:
+                case .triptych(let panel):
                     PagerCloseUp(coordinator: coordinator,
-                                 pages: CloseUpLayout.triptychPages, initialIndex: 0)
+                                 pages: CloseUpLayout.triptychPages,
+                                 initialIndex: min(max(panel, 0), CloseUpLayout.triptychPages.count - 1))
                 case .clock:
                     ClockCloseUp(coordinator: coordinator)
                 case .dialPanel:
@@ -75,6 +87,12 @@ struct CloseUpView: View {
     /// over generic noise (F-005).
     private func armedUseOrNothing() {
         coordinator.useArmedItemInCloseUp()
+    }
+
+    /// Build 10 (cluster F): a tap on the scrim (empty space around the plate)
+    /// disarms the armed item; with nothing armed it does nothing.
+    private func disarmOrNothing() {
+        coordinator.interaction?.disarm()
     }
 
     /// §7-R2.4 close-up back affordance: bone-white down-chevron on a soft radial backing
@@ -143,54 +161,189 @@ private extension CGRect {
     }
 }
 
-// MARK: - Solved-container manual pickup (F-023/F-018)
+// MARK: - Solved-container manual pickup (F-023/F-018; Round 6 Cluster A per-element render)
 
-/// Shows the opened container with its remaining contents; the player taps each item
-/// to collect it (with the liked pickup chime). Already-collected items are hidden
-/// under a soft dark patch (both containers have dark interiors, so absence reads
-/// naturally — flagged in implementation notes: per-item removal art doesn't exist).
-/// Once everything is collected the empty-container plate renders instead.
+/// Shows the opened container with its remaining contents for tap-to-collect. Round 6
+/// (R6-008/-010): this is now PER-ELEMENT compositing (R4-024) — an empty base + one icon
+/// per item, drawn only while that item is uncollected. A collected item simply stops
+/// compositing (NO dark-patch mask, so the reported "black box" cannot occur); the
+/// container reads empty once all items are taken. The render decision lives in the pure,
+/// tested `ContainerCloseUpModel.plan`.
 private struct ContainerCloseUp: View {
     @ObservedObject var coordinator: RoomSceneCoordinator
     let container: PuzzleEngine.Container
 
     var body: some View {
-        let plates = CloseUpLayout.containerPlates(container)
-        let uncollected = PuzzleEngine.uncollectedItems(in: container, state: coordinator.state)
-        if uncollected.isEmpty {
-            FittedPlate(imageName: plates.empty)
-        } else {
-            FittedPlateLayout(imageName: plates.open) { fitted in
-                ForEach(PuzzleEngine.containerContents(container), id: \.self) { itemID in
-                    if let normalized = CloseUpLayout.containerItemRects[container]?[itemID] {
-                        let rect = fitted.subRect(normalized)
-                        if uncollected.contains(itemID) {
-                            // Invisible tap target over the painted item (>= 44 pt floor).
-                            Color.white.opacity(0.001)
-                                .frame(width: max(rect.width, 44), height: max(rect.height, 44))
-                                .contentShape(Rectangle())
-                                .onTapGesture {
-                                    coordinator.collectContainerItem(itemID, from: container)
-                                }
-                                .accessibilityLabel(ItemCatalog.definition(for: itemID)?.name ?? "Item")
-                                .accessibilityIdentifier("collect-\(itemID)")
-                                .position(x: rect.midX, y: rect.midY)
-                        } else {
-                            // Collected while its sibling remains: soft dark patch so
-                            // the taken item no longer appears present (F-007 class).
-                            RadialGradient(colors: [Color.black.opacity(0.88), Color.black.opacity(0)],
-                                           center: .center,
-                                           startRadius: 0,
-                                           endRadius: max(rect.width, rect.height) * 0.72)
-                                .frame(width: rect.width * 1.5, height: rect.height * 1.7)
-                                .allowsHitTesting(false)
-                                .position(x: rect.midX, y: rect.midY)
-                        }
-                    }
-                }
+        let plan = ContainerCloseUpModel.plan(container, state: coordinator.state)
+        FittedPlateLayout(imageName: plan.base) { fitted in
+            // Composite an icon for each REMAINING item (clean per-element path). Nothing is
+            // drawn for a collected item — it disappears cleanly with no mask.
+            ForEach(plan.iconItems, id: \.id) { item in
+                let rect = fitted.subRect(item.rect)
+                GameImage(name: item.icon)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: rect.width, height: rect.height)
+                    .allowsHitTesting(false)
+                    .position(x: rect.midX, y: rect.midY)
             }
-            .padding(24)
+            // Invisible tap target over each uncollected item (>= 44 pt floor).
+            ForEach(plan.tapTargets, id: \.id) { item in
+                let rect = fitted.subRect(item.rect)
+                Color.white.opacity(0.001)
+                    .frame(width: max(rect.width, 44), height: max(rect.height, 44))
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        coordinator.collectContainerItem(item.id, from: container)
+                    }
+                    .accessibilityLabel(ItemCatalog.definition(for: item.id)?.name ?? "Item")
+                    .accessibilityIdentifier("collect-\(item.id)")
+                    .position(x: rect.midX, y: rect.midY)
+            }
         }
+        .padding(24)
+    }
+}
+
+// MARK: - Ash pile manual ring pickup (R2-003a)
+
+/// The hearth ash close-up. State-resolved plate; when the ring has been sifted up but
+/// not yet taken, an invisible tap target over the visible ring collects it (the liked
+/// pickup chime), after which the cleared-ash plate renders. Also honors armed-item use
+/// (the poker) so sifting works from inside the close-up (F-020).
+private struct AshPileCloseUp: View {
+    @ObservedObject var coordinator: RoomSceneCoordinator
+
+    var body: some View {
+        let ringVisible = PuzzleEngine.isRingUncollectedInAsh(coordinator.state)
+        FittedPlateLayout(imageName: RoomVisuals.ashCloseUp(coordinator.state)) { fitted in
+            if ringVisible {
+                let rect = fitted.subRect(CloseUpLayout.ashRingRect)
+                Color.white.opacity(0.001)
+                    .frame(width: max(rect.width, 44), height: max(rect.height, 44))
+                    .contentShape(Rectangle())
+                    .onTapGesture { coordinator.collectAshRing() }
+                    .accessibilityLabel(ItemCatalog.definition(for: PuzzleGraph.ItemID.goldRing)?.name ?? "Ring")
+                    .accessibilityIdentifier("collect-\(PuzzleGraph.ItemID.goldRing)")
+                    .position(x: rect.midX, y: rect.midY)
+            }
+        }
+        // Armed poker used on the plate sifts the ash (routes to the "ash" hotspot).
+        .contentShape(Rectangle())
+        .onTapGesture { coordinator.useArmedItemInCloseUp() }
+        .padding(24)
+    }
+}
+
+// MARK: - Barrel manual weight pickup (build 10, R4-013)
+
+/// The cellar barrel close-up. Before p06: the nailed pry gap (armed poker on the plate
+/// pries it). After p06 with the weight uncollected: the weight sits visible in the gap
+/// as a tap-to-collect target. INTERIM ART (flagged): no dedicated pried-with-weight
+/// close-up plate exists yet, so the weight renders as its RGBA icon cutout seated in
+/// the gap over the cu-barrel-gap plate; the phase-2 art pass aligns this with the
+/// re-framed plates.
+private struct BarrelCloseUp: View {
+    @ObservedObject var coordinator: RoomSceneCoordinator
+
+    var body: some View {
+        let weightVisible = PuzzleEngine.isWeightUncollectedInBarrel(coordinator.state)
+        FittedPlateLayout(imageName: "cu-barrel-gap") { fitted in
+            if weightVisible {
+                let rect = fitted.subRect(CloseUpLayout.barrelWeightRect)
+                GameImage(name: "icon-weight")
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: rect.width, height: rect.height)
+                    .allowsHitTesting(false)
+                    .position(x: rect.midX, y: rect.midY)
+                Color.white.opacity(0.001)
+                    .frame(width: max(rect.width, 44), height: max(rect.height, 44))
+                    .contentShape(Rectangle())
+                    .onTapGesture { coordinator.collectBarrelWeight() }
+                    .accessibilityLabel(ItemCatalog.definition(for: PuzzleGraph.ItemID.weight)?.name ?? "Weight")
+                    .accessibilityIdentifier("collect-\(PuzzleGraph.ItemID.weight)")
+                    .position(x: rect.midX, y: rect.midY)
+            }
+        }
+        // Armed poker used on the plate pries the barrel (routes to the "barrel" hotspot).
+        .contentShape(Rectangle())
+        .onTapGesture { coordinator.useArmedItemInCloseUp() }
+        .padding(24)
+    }
+}
+
+// MARK: - Statue key manual pickup (build 10, R4-026)
+
+/// The alcove crow-statue close-up. While the key hangs from the beak it is a
+/// tap-to-collect target; once taken the key-taken plate renders.
+private struct StatueKeyCloseUp: View {
+    @ObservedObject var coordinator: RoomSceneCoordinator
+
+    var body: some View {
+        let keyVisible = PuzzleEngine.isStatueKeyUncollected(coordinator.state)
+        FittedPlateLayout(imageName: keyVisible ? "cu-statue-key" : "cu-statue-key-taken") { fitted in
+            if keyVisible {
+                let rect = fitted.subRect(CloseUpLayout.statueKeyRect)
+                Color.white.opacity(0.001)
+                    .frame(width: max(rect.width, 44), height: max(rect.height, 44))
+                    .contentShape(Rectangle())
+                    .onTapGesture { coordinator.collectStatueKey() }
+                    .accessibilityLabel(ItemCatalog.definition(for: PuzzleGraph.ItemID.cageKey)?.name ?? "Key")
+                    .accessibilityIdentifier("collect-\(PuzzleGraph.ItemID.cageKey)")
+                    .position(x: rect.midX, y: rect.midY)
+            }
+        }
+        .padding(24)
+    }
+}
+
+// MARK: - Cabinet slot recesses (build 10, R4-020(1) per-slot placement feedback)
+
+/// State-aware sun/moon slots close-up: each correctly-seated item renders IN its
+/// recess (RGBA icon cutout over the carved recess), so a correct partial placement
+/// reads as visible progress, not a silent nothing. Armed-item taps on the plate route
+/// to the originating slot hotspot as usual (select-then-tap inside close-ups).
+private struct CabinetSlotsCloseUp: View {
+    @ObservedObject var coordinator: RoomSceneCoordinator
+
+    var body: some View {
+        FittedPlateLayout(imageName: "cu-slots-empty") { fitted in
+            // Per-recess use targets: an armed item tapped ON a recess routes to THAT
+            // slot (not just the close-up's originating slot), so both placements can
+            // be made without leaving the zoom.
+            ForEach([CloseUpLayout.SlotID.sun, .moon], id: \.self) { slot in
+                let rect = fitted.subRect(CloseUpLayout.slotSeatRects[slot] ?? .zero)
+                Color.white.opacity(0.001)
+                    .frame(width: max(rect.width, 44), height: max(rect.height, 44))
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        coordinator.useArmedItem(onHotspot: slot == .sun ? "sun-slot" : "moon-slot")
+                    }
+                    .accessibilityLabel(slot == .sun ? "Sun recess" : "Moon recess")
+                    .accessibilityIdentifier(slot == .sun ? "slot-sun" : "slot-moon")
+                    .position(x: rect.midX, y: rect.midY)
+            }
+            if coordinator.pendingSunItem != nil {
+                let rect = fitted.subRect(CloseUpLayout.slotSeatRects[.sun] ?? .zero)
+                GameImage(name: "icon-gold-ring")
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: rect.width, height: rect.height)
+                    .allowsHitTesting(false)
+                    .position(x: rect.midX, y: rect.midY)
+                    .accessibilityIdentifier("seated-sun-item")
+            }
+            if coordinator.pendingMoonItem != nil {
+                let rect = fitted.subRect(CloseUpLayout.slotSeatRects[.moon] ?? .zero)
+                GameImage(name: "icon-silver-coin")
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: rect.width, height: rect.height)
+                    .allowsHitTesting(false)
+                    .position(x: rect.midX, y: rect.midY)
+                    .accessibilityIdentifier("seated-moon-item")
+            }
+        }
+        .contentShape(Rectangle())
+        .onTapGesture { coordinator.useArmedItemInCloseUp() }
+        .padding(24)
     }
 }
 
@@ -217,6 +370,20 @@ private struct PagerCloseUp: View {
             }
             .padding(.horizontal, 6)
         }
+        // R2-008: swipe to flip pages (arrows STAY). Navigation swipe only — no item drag.
+        .contentShape(Rectangle())
+        .gesture(
+            DragGesture(minimumDistance: 24)
+                .onEnded { value in
+                    let dx = value.translation.width
+                    guard abs(dx) > 50, abs(dx) > abs(value.translation.height) else { return }
+                    if dx < 0, index < pages.count - 1 {
+                        SoundManager.shared.play(.page); index += 1
+                    } else if dx > 0, index > 0 {
+                        SoundManager.shared.play(.page); index -= 1
+                    }
+                }
+        )
         .onAppear { recordPage() }
         .onChange(of: index) { _ in recordPage() }
     }
@@ -249,7 +416,7 @@ private struct ClockCloseUp: View {
     @ObservedObject var coordinator: RoomSceneCoordinator
 
     var body: some View {
-        FittedPlateLayout(imageName: RoomVisuals.clockState(coordinator.state, justPopped: coordinator.justPoppedClock)) { fitted in
+        FittedPlateLayout(imageName: RoomVisuals.clockState(coordinator.state)) { fitted in
             let center = CGPoint(x: fitted.minX + CloseUpLayout.clockFaceCenter.x * fitted.width,
                                  y: fitted.minY + CloseUpLayout.clockFaceCenter.y * fitted.height)
             let radius = CloseUpLayout.clockFaceRadius * fitted.width

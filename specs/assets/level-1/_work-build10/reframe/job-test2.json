@@ -1,0 +1,15 @@
+[
+ {
+  "name": "b10-outpaint2-z2-cabinet",
+  "out_dir": "_work-build10/reframe",
+  "endpoint": "edit",
+  "prompt": "Image editing task, NOT a re-render. The input image is a finished stylized game background whose outer margins (roughly the outer 15 percent on each side) are currently a blurred, darkened smear. Repaint ONLY that blurred outer margin band into sharp, plausible continuation of the adjacent room surfaces (stone wall, tiled floor, ceiling), matching the existing perspective, lighting and stylized-PBR game-art look. CRITICAL: the sharp central region of the image must remain EXACTLY as it is, pixel-for-pixel, same position, same scale, same objects - do not redraw, restyle, move or rescale anything inside it. Do not add new objects or symbols in the margins. no text, no people, no watermarks.",
+  "width": 3840,
+  "height": 1920,
+  "resolution_tier": "4k",
+  "seed": 71105,
+  "refs": [
+   "C:\\Users\\shaim\\escape-room\\specs\\assets\\level-1\\_work-build10\\reframe\\z2-cabinet-prefill.png"
+  ]
+ }
+]

@@ -25,6 +25,11 @@ struct ChromePrimaryButtonStyle: ButtonStyle {
         configuration.label
             .font(.headline)
             .foregroundColor(isDestructive ? Chrome.destructive : Chrome.textPrimary)
+            // QA-B3-002: the label must never truncate ("Main Men" / "Play Agai"). Pin it
+            // to a single line at its natural width so the capsule grows to fit the text
+            // instead of clipping it, and keep the minWidth only as a lower bound.
+            .lineLimit(1)
+            .fixedSize(horizontal: true, vertical: false)
             .padding(.horizontal, 32)
             .frame(minWidth: isPad ? 220 : 200, minHeight: isPad ? 56 : 50)
             .background(
@@ -47,7 +52,12 @@ extension Font {
     static func chromeTitle() -> Font {
         .system(.largeTitle, design: .serif).weight(.medium)
     }
+    /// R3-003: the Level-Select card level number is a PLAIN ARABIC numeral in the serif
+    /// accent, per global-ui-style §3 ("Level 1"/"1", never Roman — Roman numerals are an
+    /// in-world glyph language and must not leak into chrome) and §5.2 (`.title3` serif).
+    /// The Roman "I" the user reported was baked into the stale build-2 thumbnail, not
+    /// rendered here; staging the build-3 thumbnail removes it. This stays Arabic.
     static func chromeLevelNumber() -> Font {
-        .system(.title2, design: .serif)
+        .system(.title3, design: .serif)
     }
 }

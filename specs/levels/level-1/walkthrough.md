@@ -1,10 +1,16 @@
 # Level 1 — The Wizard's Cabin — Walkthrough
 
-**STATUS: FINAL (second pass)** — reconciled against `puzzle-graph.json` rev 1.2, the
-Developer's `implementation-notes.md` (judgment calls 1–18 plus the BUG-004 art
-integration), and the re-QA results in `qa-report.md` (step-13 GO, 2026-07-06). All
-solution values are unchanged from the draft; this pass updates interaction and
-positional descriptions to match the shipped build.
+**STATUS: FINAL (Round-6 reconciliation, 2026-07-16)** — reconciled against
+`puzzle-graph.json` rev 1.3, the Developer's `implementation-notes.md` (through the
+Round-6 fix build, branch `build-12-round6-fixes`), and the Round-6 `qa-report.md`
+(step-13 GO, 2026-07-14; GATE 2 approved). All solution values are unchanged. This pass
+updates: the rusted decoy key is now inspect-only and can never be picked up (R6-003);
+the counterweight hangs on the visibly roped pulley hook near the center of the cellar
+scene (R6-006); container finds are tapped to collect and the container visibly empties
+as you take them; and the rev-1.3 clue-gating behavior (shipped since build 11) is now
+documented at each coded lock. The grimoire recipe page's stir glyph was redrawn this
+build (R6-011) to exactly match the description below — 5 dots, counter-clockwise — so
+clue and brew solution now agree in-game.
 
 ---
 
@@ -17,7 +23,9 @@ of the three ingredients can only be given to you — never taken.
 
 This guide follows one complete solve path, zone by zone, in the order a typical player
 encounters things. Many steps can be done in a different order; see **Alternate routes**
-at the end. All solutions are fixed — the exact answers below are always correct.
+at the end. All solutions are fixed — the exact answers below are always correct — but
+each *coded* lock only accepts its code after you have viewed its in-game clue at least
+once (noted at each puzzle below). This guide's step order always satisfies that.
 
 **How the game controls:** the side chevrons cycle between a zone's views. Tapping an
 object of interest opens a close-up; leave a close-up with the down-chevron. Items are
@@ -79,14 +87,18 @@ reference.
 **Press the rune tiles in this exact order: AIR, FIRE, EARTH, WATER.**
 
 A wrong sequence just resets the tiles with a dull knock — no penalty, unlimited tries.
-The inner door opens: the **Potion Workshop** is now accessible.
+The lock is also clue-gated: until you have viewed all four rune-mark close-ups *and*
+grimoire page A, any sequence — including the correct one — gets the identical dull-knock
+reset. View the clues first (as above) and the code works. The inner door opens: the
+**Potion Workshop** is now accessible.
 
-> **Ignore:** the rusted bent key on its hook to the right of the front door. You can
-> pocket it, but its bit is snapped and plain (long-press its inventory icon for a close
-> look), and the cage's star-shaped socket visibly rejects it; it fits nothing in the
-> level. Also, the mantel clock opens into a close-up with a movable hour hand — tap the
-> face to advance it one numeral. The first time the hand reaches XII, a wooden
-> cuckoo-crow pops out: a charming one-time touch, but no reward.
+> **Ignore:** the rusted bent key on its hook to the right of the front door. Tap it for
+> a close look — the bit is snapped and plain, and the cage's keyhole (Part 5) is
+> star-shaped — but it **cannot be taken**; it never enters your inventory. It is an
+> in-world decoy and fits nothing in the level. Also, the mantel clock opens into a
+> close-up with a movable hour hand — tap the face to advance it one numeral. The first
+> time the hand reaches XII, a wooden cuckoo-crow pops out: a charming one-time touch,
+> but no reward.
 
 ---
 
@@ -108,15 +120,18 @@ plate.)
 **In the astrolabe close-up, select plate-2, the Orion plate (three aligned belt stars
 with four shoulder/foot stars).**
 
-The base drawer springs open and its contents go straight to your inventory: the
-**silver coin** (stamped with a crescent) and the **winch crank handle**. Wrong plates
-just knock and do nothing; no lockout.
+The base drawer springs open, revealing the **silver coin** (stamped with a crescent)
+and the **winch crank handle** — tap each to take it; the drawer visibly empties as you
+collect. Wrong plates just knock and do nothing; no lockout. The drawer is also
+clue-gated: it stays shut on *every* plate — including plate-2 — until you have opened
+the window sky close-up at least once, so look at the window first.
 
 ### Step 5. Sift the hearth ash (p05)
 
 Return to the Main Cabin Room's hearth. **Use the iron poker on the ash pile** in the
 fireplace — tap the ash with the poker in your inventory, or drag the poker onto it. A
-glint flashes in the stirred ash and you recover the **gold ring**, a plain round band.
+glint flashes in the stirred ash — tap it to recover the **gold ring**, a plain round
+band.
 
 ### Step 6. Open the ingredient cabinet (p04)
 
@@ -124,12 +139,15 @@ Back in the workshop, the locked ingredient cabinet has two inset slots: a
 circle-with-rays recess (sun) and a crescent recess (moon). In alchemical tradition the
 sun stands for gold and the moon for silver — but you don't need to know that: the round
 ring physically fits only the round sun recess, and the crescent-stamped coin fits only
-the crescent recess, exactly as grimoire page B showed.
+the crescent recess, exactly as grimoire page B showed. (This lock's clue-gate satisfies
+itself the moment you open the cabinet close-up and see the slot shapes — you can't
+miss it.)
 
 **Drag the gold ring onto the sun slot and the silver coin onto the moon slot.**
 
 Wrong or swapped placements simply pop back out to your inventory with a knock. The
-cabinet opens, yielding the **metal file** and the **empty glass phial**.
+cabinet opens; inside are the **metal file** and the **empty glass phial** — tap each to
+take it, and the compartment empties out as you do.
 
 > **Ignore:** the shelf of stoppered potion bottles on the cabinet wall. They are
 > inspectable but wax-fused shut, and their pictogram labels depict unrelated effects
@@ -162,6 +180,8 @@ Careful — waxing and waning phases are mirror images of each other. You don't 
 moon knowledge; just copy the exact silhouette orientation from each painting onto the
 matching dial. A waxing crescent and a waning crescent face opposite directions, as do
 the two gibbous shapes. The dials keep their positions between attempts; no lockout.
+This lock is clue-gated too: the trapdoor stays shut on any code — even the correct
+one — until you have viewed the triptych close-ups, so study the paintings first.
 
 The trapdoor opens, revealing the **Hidden Cellar** (this is the hidden-zone reveal —
 it only exists once the rug is moved and the dial code is entered). Tap the open
@@ -176,17 +196,17 @@ silver, which is what the recipe's "crescent-stamped metal, filed" pictogram cal
 ### Step 9. Pry the barrel (p06)
 
 **Use the iron poker on the nailed barrel lid** beside the ladder (a pry gap is visible
-in close-up). Inside is the **iron plumb weight** — it goes to your inventory. (The
-pried barrel keeps showing a weight nestled inside afterwards; that's just the scene
-art — you already have it.)
+in close-up). The lid comes off, revealing the **iron plumb weight** — tap it to take
+it. Once taken, the barrel shows empty.
 
 ### Step 10. Hang the counterweight (p07) — opens the Walled Alcove
 
-A heavy sliding shelf sits flush against the far wall, with an empty counterweight hook
-and pulley above it, rope visibly connected to the shelf runners.
+A heavy sliding shelf sits flush against the far wall. Near the center of the scene
+hangs the counterweight pulley hook, its rope visibly running to the shelf runners.
 
-**Drag the iron weight onto the empty pulley hook.** The shelf rolls aside, revealing the
-**Walled Alcove** — a hidden zone nested inside the hidden cellar.
+**Drag the iron weight onto the roped pulley hook — the one with the rope, near the
+center of the scene.** The shelf rolls aside, revealing the **Walled Alcove** — a hidden
+zone nested inside the hidden cellar.
 
 ### Step 11. Take the cage key from the alcove
 
@@ -241,9 +261,10 @@ back — there is no food puzzle.
 
 The cage has a tiny star-shaped keyhole. **Use the star-bit cage key** (from the alcove
 statue) — tap the keyhole with the key in your inventory, or drag the key onto the cage.
-(If you try the rusted key instead, the star socket visibly rejects its plain bit.) The
-crow flies up to the rafters, preens, and one **black feather** drifts down to you. The
-crow stays perched for the rest of the level.
+(The rusted decoy key by the door was never an option — its plain snapped bit doesn't
+match the star socket, and it can't be picked up in any case.) The crow flies up to the
+rafters, preens, and one **black feather** drifts down to you. The crow stays perched
+for the rest of the level.
 
 ### Step 16. File silver shavings (p12)
 
@@ -273,7 +294,8 @@ the cauldron to open the brew close-up; the flame and ladle are worked with its 
    feather onto the cauldron, in any order.** Ingredient order does not matter.
 3. **Tap Stir CCW (counterclockwise) exactly 5 times, then tap Release Ladle.** The
    ripple trail in the liquid shows which way you are stirring. (Recipe cue: the spiral
-   with the counterclockwise arrowhead and five dots along it.)
+   with the counterclockwise arrowhead and five dots along it — as of this build the
+   page art shows exactly that.)
 
 **Success:** the liquid takes on a pearlescent sheen with a slow spiral pattern moving
 across its surface — watch for the *pattern*, not a color change.
@@ -282,7 +304,9 @@ across its surface — watch for the *pattern*, not a color change.
 puff, and all three ingredients float to the surface intact and return to your
 inventory. Nothing is ever lost; reset the flame if needed and try again. The failure
 cue is the same regardless of which parameter was wrong, so double-check all three:
-flame **III**, stir **CCW**, count **5**.
+flame **III**, stir **CCW**, count **5**. The brew is also clue-gated: if you have
+somehow never opened the grimoire's recipe page, even a perfect brew fizzles
+identically — read the recipe first.
 
 ### Step 19. Fill the phial (p15)
 
@@ -314,12 +338,15 @@ Again.
 The level has two parallel mid-game branches — the **workshop** branch (rune door →
 astrolabe → cabinet) and the **cellar** branch (trapdoor → barrel → shelf → alcove) —
 and they can be opened and interleaved in any order that respects item prerequisites.
-The path above opens the workshop first. Notable variations:
+The path above opens the workshop first. Whatever the order, each coded lock (p01, p02,
+p03, p14) needs its clue viewed before its code will take — the clue views are ordinary
+requirements and can themselves happen in any order. Notable variations:
 
-- **Cellar first:** you can move the rug, solve the moon dials, and clear the entire
-  cellar/alcove chain (poker → barrel → weight → shelf → cage key → free the crow)
-  before ever touching the workshop rune lock. You will still need the workshop for the
-  crank (light shaft), the file (shavings), the mortar, and the cauldron.
+- **Cellar first:** you can move the rug, view the triptych, solve the moon dials, and
+  clear the entire cellar/alcove chain (poker → barrel → weight → shelf → cage key →
+  free the crow) before ever touching the workshop rune lock. You will still need the
+  workshop for the crank (light shaft), the file (shavings), the mortar, and the
+  cauldron.
 - **Mirror before shutter:** setting the mirror to detent-3 before opening the shutter
   is fully supported; the beam routes into the alcove the moment the shutter opens. And
   if you route the beam at detent-3 before hanging the counterweight, it ends in a
@@ -336,15 +363,20 @@ cellar spoon. Everything else interleaves freely.
 
 ## Quick answer key
 
+Reminder before using this table cold: each coded lock stays inert — with its normal
+"wrong answer" feedback — until its clue has been viewed in-game at least once (p01:
+the four rune marks + grimoire page A; p02: the triptych; p03: the window sky; p14: the
+recipe page). There is deliberately no tell distinguishing "not yet" from "wrong."
+
 | Puzzle | Answer |
 |---|---|
 | Workshop rune lock (p01) | In the lock close-up, press AIR, FIRE, EARTH, WATER |
 | Trapdoor moon dials (p02) | Waxing crescent, full, waning gibbous (orientation matters) |
 | Astrolabe (p03) | Select plate-2 — Orion (three aligned belt stars + four outliers) |
 | Cabinet slots (p04) | Gold ring → sun slot; silver coin → moon slot |
-| Hearth ash (p05) | Poker on ash pile → gold ring |
-| Barrel (p06) | Poker on nailed lid → iron weight |
-| Sliding shelf (p07) | Drag iron weight onto pulley hook |
+| Hearth ash (p05) | Poker on ash pile → tap the glint → gold ring |
+| Barrel (p06) | Poker on nailed lid → tap the weight to take it |
+| Sliding shelf (p07) | Drag iron weight onto the roped pulley hook (center of scene) |
 | Light shaft (p08) | Drag crank handle onto winch socket |
 | Mirror (p09) | Tap to detent-3 (floor scratch marks) |
 | Moonflowers (p10) | Beam in alcove → tap a blossom |
@@ -358,8 +390,15 @@ cellar spoon. Everything else interleaves freely.
 
 ---
 
-*FINAL — reconciled 2026-07-06 against `puzzle-graph.json` rev 1.2, the Developer's
-implementation notes (including the shipped tap/button controls for the moon dials,
-astrolabe, clock, and brew, the rug-discovery/close-up navigation, the D1 feed-cup
-BLOCK, and the BUG-004 re-framed scene layouts), and the re-QA GO verdict in
-`qa-report.md`. All fixed solution values are identical to the draft.*
+*FINAL — reconciled 2026-07-16 against `puzzle-graph.json` rev 1.3, the Developer's
+implementation notes through the Round-6 fix build (`build-12-round6-fixes`), and the
+Round-6 QA GO verdict in `qa-report.md` (2026-07-14, GATE 2 approved). Changes this
+pass: R6-003 rusted decoy key documented as inspect-only (never collectible); R6-006
+counterweight target documented as the roped pulley hook near scene center; container
+finds documented as tap-to-collect with visible emptying (build-10/Round-6 render fixes);
+rev-1.3 clue-gating (shipped build 11) documented at p01/p02/p03/p04/p14 and in the
+answer-key preamble; R6-011 note that the recipe spiral art now matches the 5-dot CCW
+description. All fixed solution values are identical to the previous FINAL and verified
+against the graph: p01 AIR-FIRE-EARTH-WATER; p02 waxing crescent / full / waning
+gibbous; p03 plate-2 Orion; p04 ring→sun, coin→moon; p09 detent-3; p14 flame III, CCW
+×5.*

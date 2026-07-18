@@ -42,14 +42,16 @@ final class PuzzleEngineTests: XCTestCase {
         XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.poker))
     }
 
-    func testItemCombinationFileAndSpoonYieldsShavings() {
+    func testItemCombinationFileAndSpoonYieldsShavings_andConsumesBoth_R4_030() {
         let state = makeState(tempDir())
         state.addItem(PuzzleGraph.ItemID.file)
         state.addItem(PuzzleGraph.ItemID.spoon)
         XCTAssertTrue(ItemCombinations.combine(PuzzleGraph.ItemID.file, PuzzleGraph.ItemID.spoon, state: state))
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.shavings))
-        // Spoon is not consumed per spec note.
-        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.spoon))
+        // Build 10 (R4-030): p12 is the ONLY graph use of both the file and the spoon,
+        // so the uses-driven lifecycle consumes them at the combine.
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.spoon), "spoon has no remaining use after p12 — consumed")
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.file), "file has no remaining use after p12 — consumed")
     }
 
     func testUnrelatedCombinationDoesNothing() {
@@ -265,22 +267,17 @@ final class PuzzleEngineTests: XCTestCase {
         XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.doorUnsealed))
     }
 
-    // MARK: - D5 clock cuckoo: one-shot cosmetic latch, never gates progression
+    // MARK: - Q3: clock cuckoo REMOVED — the clock is a purely inert numeral reference
 
-    func testClockCuckooPopsOnceThenSpent() {
+    func testClockIsInertReference() {
+        // Q3 (user decision 2026-07-08): there is no cuckoo latch anymore. The clock
+        // never writes state and always renders its single face plate — so it can never
+        // gate or reward. Assert the visual resolver is state-independent and inert.
         let state = makeState(tempDir())
-        XCTAssertEqual(PuzzleEngine.setClockToTwelve(state: state), .popped)
-        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent))
-        XCTAssertEqual(PuzzleEngine.setClockToTwelve(state: state), .spentAlready)
-        XCTAssertEqual(PuzzleEngine.setClockToTwelve(state: state), .spentAlready)
-    }
-
-    func testClockCuckooNeverBlocksOtherPuzzles() {
-        // Never touching the clock at all must not prevent solving the level; this is
-        // implicitly covered by every other test never calling setClockToTwelve, but we
-        // assert explicitly that the flag defaults to false and nothing reads it as a gate.
-        let state = makeState(tempDir())
-        XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent))
+        XCTAssertEqual(RoomVisuals.clockState(state), "cu-clock-unspent")
+        // Even a legacy save that still carries the retired flag renders the same face.
+        state.setFlag(PuzzleGraph.StateFlag.clockCuckooSpent)
+        XCTAssertEqual(RoomVisuals.clockState(state), "cu-clock-unspent")
     }
 
     // MARK: - Save / resume persistence
@@ -374,7 +371,9 @@ final class PuzzleEngineTests: XCTestCase {
         let coordinator = RoomSceneCoordinator(viewID: .bench, state: state, size: sceneSize)
         coordinator.useItem(PuzzleGraph.ItemID.file, on: "workbench")
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.shavings), "workbench accepts the p12 combination")
-        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.spoon), "spoon is not consumed")
+        // Build 10 (R4-030): both single-use tools are consumed once p12 is done.
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.spoon), "spoon consumed after its only use (p12)")
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.file), "file consumed after its only use (p12)")
     }
 
     func testWorkbenchUseWithoutBothItemsDoesNothing() {
@@ -506,18 +505,19 @@ final class PuzzleEngineTests: XCTestCase {
         XCTAssertTrue(coordinator.pressedRuneTiles.isEmpty, "dull knock resets tiles flush; no lockout")
     }
 
-    func testClockCloseUpAdvanceTriggersOneShotAtTwelve_D5() {
+    /// Q3 (user decision 2026-07-08): the D5 clock cuckoo one-shot was REMOVED, so the
+    /// old `testClockCloseUpAdvanceTriggersOneShotAtTwelve_D5` (which asserted the first
+    /// XII spent a `clockCuckooSpent` latch) is obsolete and was deleted. Advancing the
+    /// hands is now purely cosmetic and must NEVER write clock state — asserted here and
+    /// in `testClockIsInertReference`.
+    func testAdvancingClockHandsNeverLatchesState_Q3() {
         let state = makeState(tempDir())
         let coordinator = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize)
         XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent))
-        // Advance from the initial position until the hands reach XII exactly once.
-        for _ in 0..<12 where coordinator.clockHour != 12 {
-            coordinator.advanceClockHour()
-        }
-        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent), "first XII must spend the one-shot pop")
-        // Going around again must not un-spend or re-trigger anything.
-        for _ in 0..<12 { coordinator.advanceClockHour() }
-        XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent))
+        // Sweep the hands all the way around (past XII) more than once.
+        for _ in 0..<24 { coordinator.advanceClockHour() }
+        XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent),
+                       "reaching XII must NOT latch any cuckoo state — the clock is inert (Q3)")
     }
 
     // MARK: - Feedback round 1 regression net (select-then-tap, containers, nav, audio)
@@ -534,14 +534,19 @@ final class PuzzleEngineTests: XCTestCase {
         coordinator.scene.onHotspotTap?("ash")
         XCTAssertFalse(state.hasSolved(PuzzleGraph.PuzzleID.ashSift),
                        "a bare tap must NOT sift just because the poker is held (passive auto-apply removed)")
-        XCTAssertEqual(coordinator.activeCloseUp, .plain(image: "cu-ash-undisturbed"), "bare tap = look")
+        XCTAssertEqual(coordinator.activeCloseUp, .ashPile, "bare tap = look at the ash pile")
         coordinator.dismissCloseUp()
         // Arm the poker, then tap the ash: the deliberate select-then-tap use.
         interaction.armedItem = PuzzleGraph.ItemID.poker
         coordinator.scene.onHotspotTap?("ash")
         XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.ashSift))
-        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing))
-        XCTAssertNil(interaction.armedItem, "every use attempt disarms")
+        // R2-003a: sifting REVEALS the ring but does NOT auto-grant it — it must be
+        // collected with an explicit tap.
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.goldRing), "ring is revealed, not auto-granted")
+        XCTAssertTrue(PuzzleEngine.isRingUncollectedInAsh(state), "ring visible+pickable in ash")
+        XCTAssertNil(interaction.armedItem, "a successful sift disarms the poker")
+        coordinator.collectAshRing()
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing), "explicit tap collects the ring")
     }
 
     func testBareTapNeverAutoApplies_barrelWinchKeyhole() {
@@ -573,8 +578,9 @@ final class PuzzleEngineTests: XCTestCase {
         XCTAssertTrue(state.hasFlag(PuzzleGraph.StateFlag.crowFreed))
     }
 
-    /// A failed use (wrong item on a target) also disarms and never mutates state.
-    func testFailedUseDisarmsWithoutStateChurn() {
+    /// R2-030: a failed use (wrong item on a wrong target) KEEPS the item armed so the
+    /// player can immediately try elsewhere, and never mutates state.
+    func testFailedUseKeepsItemArmedWithoutStateChurn_R2_030() {
         let state = makeState(tempDir())
         state.addItem(PuzzleGraph.ItemID.rustedKey)
         let interaction = InteractionModel()
@@ -582,10 +588,24 @@ final class PuzzleEngineTests: XCTestCase {
                                                interaction: interaction)
         let before = state.data
         interaction.armedItem = PuzzleGraph.ItemID.rustedKey
-        coordinator.scene.onHotspotTap?("ash")
-        XCTAssertNil(interaction.armedItem, "failure disarms")
+        coordinator.scene.onHotspotTap?("ash") // rusted key on ash = wrong-target no-op
+        XCTAssertEqual(interaction.armedItem, PuzzleGraph.ItemID.rustedKey,
+                       "R2-030: a wrong-target no-op keeps the item armed")
         XCTAssertEqual(state.data.inventory, before.inventory)
         XCTAssertEqual(state.data.solvedPuzzles, before.solvedPuzzles)
+    }
+
+    /// R2-030 corollary: an intended reaction on the wrong-but-recognized target (the
+    /// rusted-key fairness reject at the door) DOES disarm — it engaged the target.
+    func testIntendedRejectDisarms_R2_030() {
+        let state = makeState(tempDir())
+        state.addItem(PuzzleGraph.ItemID.rustedKey)
+        let interaction = InteractionModel()
+        let coordinator = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize,
+                                               interaction: interaction)
+        interaction.armedItem = PuzzleGraph.ItemID.rustedKey
+        coordinator.scene.onHotspotTap?("door-lock") // fairness reject = engaged
+        XCTAssertNil(interaction.armedItem, "an intended reaction disarms")
     }
 
     /// F-020: an item armed while a close-up is open routes to the close-up's origin
@@ -597,11 +617,14 @@ final class PuzzleEngineTests: XCTestCase {
         let coordinator = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize,
                                                interaction: interaction)
         coordinator.scene.onHotspotTap?("ash") // open the ash close-up (a look)
-        XCTAssertEqual(coordinator.activeCloseUp, .plain(image: "cu-ash-undisturbed"))
+        XCTAssertEqual(coordinator.activeCloseUp, .ashPile)
         interaction.armedItem = PuzzleGraph.ItemID.poker
         coordinator.useArmedItemInCloseUp() // tap the plate with the poker armed
         XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.ashSift),
                       "the close-up must not wall the player off from item use (F-020)")
+        // R2-003a: ring revealed, collected via explicit tap.
+        XCTAssertTrue(PuzzleEngine.isRingUncollectedInAsh(state))
+        coordinator.collectAshRing()
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing))
     }
 
@@ -807,20 +830,60 @@ final class PuzzleEngineTests: XCTestCase {
         XCTAssertTrue(navigated.isEmpty, "no passage through a closed shelf")
     }
 
-    // MARK: F-004 ambient audio lifecycle
+    // MARK: F-004 lineage -> build-10 music-only model (R4-002)
 
-    func testAmbientRestartsAfterStop_F004() {
+    /// Build 10 (R4-002): the per-zone ambient beds and the sfx-entry swell (the
+    /// reported "ocean waves at level entry") are REMOVED — level audio is the looping
+    /// music alone, and it restarts cleanly across exit/re-enter (the original F-004
+    /// requirement, now asserted against the music player).
+    func testLevelAudioIsMusicOnlyAndRestartsCleanly_R4_002_F004() {
         let sound = SoundManager.shared
-        sound.setAmbientZone(.z1)
-        XCTAssertEqual(sound.debugCurrentZone, .z1)
-        // Exit to Main Menu.
-        sound.stopAmbient()
-        XCTAssertNil(sound.debugCurrentZone,
-                     "stopAmbient must clear the zone — the stale value was F-004's root cause")
-        // Re-enter the level: the same zone must restart instead of being debounced.
-        sound.setAmbientZone(.z1)
-        XCTAssertEqual(sound.debugCurrentZone, .z1)
-        sound.stopAmbient()
+        let priorAmbiance = sound.ambianceEnabled
+        sound.ambianceEnabled = true
+        sound.enterLevel()
+        XCTAssertTrue(sound.isMusicActive, "level entry starts the music bed")
+        sound.exitLevel()
+        XCTAssertFalse(sound.isMusicActive, "exit fully stops the music (F-004 root-cause class)")
+        sound.enterLevel()
+        XCTAssertTrue(sound.isMusicActive, "re-entering the level restarts the music, never debounced")
+        sound.exitLevel()
+        sound.ambianceEnabled = priorAmbiance
+    }
+
+    // MARK: R3-001 level-scoped music + menu SFX
+
+    /// R3-001: level music is bound to the LEVEL SCENE lifecycle — it may only play while
+    /// a level is active (enterLevel..exitLevel). Outside a level (menus / pre-level) it
+    /// must never start, even if ambiance is on and startMusicIfNeeded fires.
+    func testMusicIsScopedToLevelLifecycle_R3_001() {
+        let sound = SoundManager.shared
+        let priorAmbiance = sound.ambianceEnabled
+        sound.ambianceEnabled = true       // ambiance ON, but we are NOT in a level
+        sound.exitLevel()                  // ensure menu scope (also stops any music)
+        XCTAssertFalse(sound.debugInLevel)
+        sound.startMusicIfNeeded()
+        XCTAssertFalse(sound.isMusicActive, "level music must NOT play in the menus (R3-001)")
+
+        sound.enterLevel()                 // level scene appears
+        XCTAssertTrue(sound.debugInLevel)
+        XCTAssertTrue(sound.isMusicActive, "level music starts inside the level (ambiance on)")
+
+        sound.exitLevel()                  // back to the menu
+        XCTAssertFalse(sound.debugInLevel)
+        XCTAssertFalse(sound.isMusicActive, "exiting a level stops the music (menus are music-free)")
+
+        sound.ambianceEnabled = priorAmbiance
+    }
+
+    /// R3-001 -> R4-003: the menu chrome uses ONE consistent cue — the liked
+    /// Level-Select ping (menuConfirm). The disliked "tick" (sfx-menu-tap) is retired
+    /// and must no longer ship.
+    func testMenuPingShipsAndTickIsRetired_R4_003() {
+        XCTAssertNotNil(Bundle.main.url(forResource: "sfx-menu-confirm", withExtension: "wav", subdirectory: "Audio")
+            ?? Bundle.main.url(forResource: "sfx-menu-confirm", withExtension: "wav"),
+                        "sfx-menu-confirm.wav (the liked ping) must ship")
+        XCTAssertNil(Bundle.main.url(forResource: "sfx-menu-tap", withExtension: "wav", subdirectory: "Audio"),
+                     "the retired menu tick must not ship (R4-003)")
     }
 
     // MARK: F-012 clue-view tracking substrate (gating pending puzzle-graph rev 1.3)
@@ -962,7 +1025,10 @@ final class PuzzleEngineTests: XCTestCase {
         let study = RoomSceneCoordinator(viewID: .study, state: state, size: sceneSize)
         study.scene.onHotspotTap?("flowerpot")
         XCTAssertTrue(state.hasViewedClue(ClueID.markEarth), "the flowerpot is F-012's missed EARTH clue")
-        study.scene.onHotspotTap?("triptych")
+        // R2-007: the triptych is now three per-panel hotspots (there is no single
+        // "triptych" hotspot anymore). Any panel opens its own close-up but all share the
+        // clu-triptych gate id — tap the right (3-crow) panel and assert the shared gate.
+        study.scene.onHotspotTap?("triptych-3")
         XCTAssertTrue(state.hasViewedClue(ClueID.triptych))
         let entry = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize)
         entry.scene.onHotspotTap?("windowsill")
@@ -971,6 +1037,19 @@ final class PuzzleEngineTests: XCTestCase {
         let cabinet = RoomSceneCoordinator(viewID: .cabinet, state: state, size: sceneSize)
         cabinet.scene.onHotspotTap?("window")
         XCTAssertTrue(state.hasViewedClue(ClueID.windowOrion))
+    }
+
+    func testBuild10CloseUpLayoutSanity() {
+        // The new manual-pickup / seat rects are plate-normalized and must be sane.
+        for rect in [CloseUpLayout.barrelWeightRect, CloseUpLayout.statueKeyRect]
+            + Array(CloseUpLayout.slotSeatRects.values) {
+            XCTAssertGreaterThanOrEqual(rect.minX, 0)
+            XCTAssertGreaterThanOrEqual(rect.minY, 0)
+            XCTAssertLessThanOrEqual(rect.maxX, 1)
+            XCTAssertLessThanOrEqual(rect.maxY, 1)
+            XCTAssertGreaterThan(rect.width, 0)
+            XCTAssertGreaterThan(rect.height, 0)
+        }
     }
 
     func testCloseUpLayoutMatchesBundledRuneTileJSON() throws {
@@ -992,6 +1071,529 @@ final class PuzzleEngineTests: XCTestCase {
             XCTAssertEqual(expected.minY, entry.rect_in_plate_3x[1] / 1536, accuracy: 0.001)
             XCTAssertEqual(RuneDoorSolution.tileRune[tile]?.rawValue, entry.rune,
                            "tile-to-rune mapping must match the manifest")
+        }
+    }
+}
+
+// MARK: - Build 10, cluster A/F/D regression net (round-4 fix batch, 2026-07-11)
+
+/// Developer's own tests for the build-10 fix batch:
+/// - Cluster A: the graph-driven item lifecycle (retain while ANY use unsatisfied,
+///   consume once ALL satisfied), asserted as an INVARIANT against the puzzle graph for
+///   EVERY item across multiple full solve orderings — including the R4-019 soft-lock
+///   ordering (p06 before p05) and a cellar-first path.
+/// - Cluster A: manual pickup for the barrel weight (R4-013) and statue key (R4-026).
+/// - Cluster F: armed-item model — armed never blocks looks; tap-away/re-tap disarms.
+/// - Cluster D + R4-002/003: the retired audio assets can never silently ship again.
+final class Build10LifecycleAndInteractionTests: XCTestCase {
+
+    private func tempDir() -> URL {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }
+
+    private func makeState(_ dir: URL) -> GameState {
+        GameState(levelID: 1, store: SaveGameStore(directory: dir))
+    }
+
+    private func satisfyAllGates(_ state: GameState) {
+        for clueID in [ClueID.markAir, ClueID.markFire, ClueID.markEarth, ClueID.markWater,
+                       ClueID.grimoireElements, ClueID.triptych, ClueID.windowOrion,
+                       ClueID.slotShapes, ClueID.recipePage] {
+            state.markClueViewed(clueID)
+        }
+    }
+
+    private let sceneSize = CGSize(width: 2732, height: 1366)
+
+    // MARK: cluster A — the lifecycle table covers the whole graph
+
+    func testEveryGraphItemHasALifecycleEntry() {
+        for def in ItemCatalog.all {
+            XCTAssertNotNil(ItemLifecycle.uses[def.id],
+                            "\(def.id) must appear in ItemLifecycle.uses (transcribed from puzzle-graph.json)")
+        }
+        // And the red-herring rule: an empty uses array is NEVER consumed.
+        XCTAssertTrue(ItemLifecycle.uses[PuzzleGraph.ItemID.rustedKey]?.isEmpty == true)
+        let state = makeState(tempDir())
+        state.addItem(PuzzleGraph.ItemID.rustedKey)
+        // Solve literally everything; the rusted key must survive.
+        satisfyAllGates(state)
+        for puzzle in [PuzzleGraph.PuzzleID.runeDoor, PuzzleGraph.PuzzleID.moonTrapdoor,
+                       PuzzleGraph.PuzzleID.astrolabeOrion, PuzzleGraph.PuzzleID.cabinetSunMoon,
+                       PuzzleGraph.PuzzleID.ashSift, PuzzleGraph.PuzzleID.barrelPry,
+                       PuzzleGraph.PuzzleID.shelfCounterweight, PuzzleGraph.PuzzleID.shutterWinch,
+                       PuzzleGraph.PuzzleID.mirrorAim, PuzzleGraph.PuzzleID.moonflowerBloom,
+                       PuzzleGraph.PuzzleID.cageUnlock, PuzzleGraph.PuzzleID.fileShavings,
+                       PuzzleGraph.PuzzleID.grindPaste, PuzzleGraph.PuzzleID.brew,
+                       PuzzleGraph.PuzzleID.fillPhial, PuzzleGraph.PuzzleID.doorUnseal,
+                       PuzzleGraph.PuzzleID.escape] {
+            state.markSolved(puzzle)
+        }
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.rustedKey),
+                      "red herring (uses []) must never be auto-consumed")
+    }
+
+    // MARK: cluster A — invariant harness: full playthroughs in multiple orderings
+
+    /// One scripted step of a full engine-level playthrough.
+    private struct Step {
+        let name: String
+        let run: (GameState) -> Void
+    }
+
+    /// The invariant: an item that was ever acquired and is now in NEITHER the
+    /// inventory NOR the cauldron must have ALL its graph uses satisfied. Checked
+    /// after EVERY step of every ordering, for EVERY item.
+    private func runOrderingAssertingInvariant(_ steps: [Step], label: String,
+                                               file: StaticString = #filePath, line: UInt = #line) {
+        let state = makeState(tempDir())
+        satisfyAllGates(state)
+        var everAcquired: Set<String> = []
+        for step in steps {
+            step.run(state)
+            everAcquired.formUnion(state.inventory)
+            for itemID in everAcquired {
+                let heldSomewhere = state.hasItem(itemID)
+                    || state.data.cauldronIngredients.contains(itemID)
+                if !heldSomewhere {
+                    XCTAssertTrue(ItemLifecycle.isDepleted(itemID, state: state),
+                                  "[\(label)] \(itemID) left play at step '\(step.name)' with an UNSATISFIED use — anti-softlock violation (R4-019 class)",
+                                  file: file, line: line)
+                }
+            }
+        }
+        XCTAssertTrue(state.isComplete, "[\(label)] ordering must complete the level", file: file, line: line)
+    }
+
+    private func setDialsToSolution(_ s: GameState) {
+        s.setMoonDialPosition(dial: 0, phase: MoonDialSolution.clockwiseOrder.firstIndex(of: .waxingCrescent)!)
+        s.setMoonDialPosition(dial: 1, phase: MoonDialSolution.clockwiseOrder.firstIndex(of: .full)!)
+        s.setMoonDialPosition(dial: 2, phase: MoonDialSolution.clockwiseOrder.firstIndex(of: .waningGibbous)!)
+    }
+
+    private func pressRunes(_ s: GameState) {
+        for rune in RuneDoorSolution.solutionOrder { PuzzleEngine.pressRuneTile(rune, state: s) }
+    }
+
+    private func brewAndEscape(_ s: GameState) {
+        for id in [PuzzleGraph.ItemID.paste, PuzzleGraph.ItemID.shavings, PuzzleGraph.ItemID.feather] {
+            s.removeItem(id)
+        }
+        s.setCauldronIngredients(BrewSolution.requiredIngredients)
+        _ = PuzzleEngine.resolveBrew(flameStage: BrewSolution.flameStage,
+                                     stirDirection: BrewSolution.stirDirection,
+                                     stirCount: BrewSolution.stirCount, state: s)
+        _ = PuzzleEngine.fillPhial(state: s)
+        _ = PuzzleEngine.pourDraughtOnBasin(state: s)
+        _ = PuzzleEngine.slideBoltAndLeave(state: s)
+    }
+
+    /// Shared step bank; orderings pick sequences from these.
+    private var stepBank: [String: Step] {
+        var bank: [String: Step] = [:]
+        func add(_ name: String, _ run: @escaping (GameState) -> Void) {
+            bank[name] = Step(name: name, run: run)
+        }
+        add("takePoker") { $0.addItem(PuzzleGraph.ItemID.poker) }
+        add("p01") { self.pressRunes($0) }
+        add("p02") { self.setDialsToSolution($0); _ = PuzzleEngine.evaluateMoonDials(state: $0) }
+        add("p03") { _ = PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: $0) }
+        add("collectDrawer") {
+            _ = PuzzleEngine.collectItem(PuzzleGraph.ItemID.silverCoin, from: .astrolabeDrawer, state: $0)
+            _ = PuzzleEngine.collectItem(PuzzleGraph.ItemID.crank, from: .astrolabeDrawer, state: $0)
+        }
+        add("p05") { _ = PuzzleEngine.siftAsh(state: $0) }
+        add("collectRing") { _ = PuzzleEngine.collectAshRing($0) }
+        add("p06") { _ = PuzzleEngine.pryBarrel(state: $0) }
+        add("collectWeight") { _ = PuzzleEngine.collectBarrelWeight($0) }
+        add("p07") { _ = PuzzleEngine.hangWeight(state: $0) }
+        add("p04") {
+            _ = PuzzleEngine.placeCabinetItems(sun: CabinetSolution.sunSlotItem,
+                                               moon: CabinetSolution.moonSlotItem, state: $0)
+        }
+        add("collectCabinet") {
+            _ = PuzzleEngine.collectItem(PuzzleGraph.ItemID.file, from: .sunMoonCabinet, state: $0)
+            _ = PuzzleEngine.collectItem(PuzzleGraph.ItemID.phial, from: .sunMoonCabinet, state: $0)
+        }
+        add("p08") { _ = PuzzleEngine.fitCrankAndTurn(state: $0) }
+        add("p09") { PuzzleEngine.rotateMirror(toDetent: MirrorSolution.solutionDetent, state: $0) }
+        add("p10") { _ = PuzzleEngine.pickBlossom(state: $0) }
+        add("collectKey") { _ = PuzzleEngine.collectStatueKey($0) }
+        add("p11") { _ = PuzzleEngine.unlockCage(state: $0) }
+        add("p12") { _ = PuzzleEngine.fileShavings(state: $0) }
+        add("p13") { _ = PuzzleEngine.grindPaste(state: $0) }
+        add("takeSpoon") { $0.addItem(PuzzleGraph.ItemID.spoon) }
+        add("endgame") { self.brewAndEscape($0) }
+        return bank
+    }
+
+    private func steps(_ names: [String]) -> [Step] {
+        let bank = stepBank
+        return names.map { bank[$0]! }
+    }
+
+    /// Ordering A (graph solve_path_notes): cellar chain early, p01 late — includes
+    /// p06 BEFORE p05, the exact R4-019 soft-lock ordering.
+    func testInvariantAndCompletability_orderingA_p06BeforeP05() {
+        runOrderingAssertingInvariant(steps([
+            "p02", "takePoker", "p06", "collectWeight", "p07", "collectKey", "p11",
+            "p01", "p03", "collectDrawer", "p05", "collectRing", "p04", "collectCabinet",
+            "p08", "p09", "p10", "takeSpoon", "p12", "p13", "endgame",
+        ]), label: "ordering A (p06-before-p05)")
+    }
+
+    /// Ordering B: workshop first, cellar later.
+    func testInvariantAndCompletability_orderingB() {
+        runOrderingAssertingInvariant(steps([
+            "takePoker", "p01", "p03", "collectDrawer", "p05", "collectRing", "p04",
+            "collectCabinet", "p02", "takeSpoon", "p06", "collectWeight", "p07",
+            "collectKey", "p08", "p09", "p10", "p11", "p12", "p13", "endgame",
+        ]), label: "ordering B")
+    }
+
+    /// Ordering C: mirror set to detent-3 BEFORE the shutter opens (D2), and the
+    /// cellar-first branch taken as far as possible before p01.
+    func testInvariantAndCompletability_orderingC_mirrorFirst_cellarFirst() {
+        runOrderingAssertingInvariant(steps([
+            "takePoker", "p02", "p09", "p06", "collectWeight", "p07", "collectKey",
+            "takeSpoon", "p01", "p03", "collectDrawer", "p05", "collectRing", "p04",
+            "collectCabinet", "p08", "p10", "p11", "p12", "p13", "endgame",
+        ]), label: "ordering C (mirror-first, cellar-first)")
+    }
+
+    // MARK: cluster A — the R4-019 soft-lock, reproduced at the coordinator layer
+
+    func testPokerSurvivesBarrelBeforeAsh_thenConsumesAfterBoth_R4_019() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z3Cellar)
+        state.addItem(PuzzleGraph.ItemID.poker)
+        let interaction = InteractionModel()
+        let cellar = RoomSceneCoordinator(viewID: .cellar, state: state, size: sceneSize,
+                                          interaction: interaction)
+        // The user's exact path: poker on the BARREL first (never sifted the ash).
+        interaction.armedItem = PuzzleGraph.ItemID.poker
+        cellar.scene.onHotspotTap?("barrel")
+        XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.barrelPry))
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.poker),
+                      "R4-019: the poker MUST survive p06 while p05 (ash sift) is unsatisfied")
+        cellar.collectBarrelWeight()
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.weight))
+        // Now the ash: the second (and final) poker use.
+        let hearth = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize,
+                                          interaction: interaction)
+        interaction.armedItem = PuzzleGraph.ItemID.poker
+        hearth.scene.onHotspotTap?("ash")
+        XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.ashSift))
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.poker),
+                       "with BOTH uses satisfied the poker is consumed (uses-driven rule)")
+        // The gold ring — the item R4-019 stranded — is still obtainable and usable.
+        hearth.collectAshRing()
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing), "the ring is NOT stranded")
+    }
+
+    /// Migration: a build-9 save that under-consumed (R4-030: spoon+file lingering
+    /// after p12) comes clean; nothing with a remaining use is touched.
+    func testBuild9SaveMigrationReconcilesLingeringItems() {
+        let dir = tempDir()
+        let state = GameState(levelID: 1, store: SaveGameStore(directory: dir))
+        state.addItem(PuzzleGraph.ItemID.spoon)
+        state.addItem(PuzzleGraph.ItemID.file)
+        state.addItem(PuzzleGraph.ItemID.poker) // p05/p06 unsolved: must survive
+        // Simulate the stale build-9 shape: p12 solved while its items are still held —
+        // the markSolved hook (and, for an on-disk stale save, the init-time reconcile)
+        // consumes them.
+        state.markSolved(PuzzleGraph.PuzzleID.fileShavings)
+        let resumed = GameState(levelID: 1, store: SaveGameStore(directory: dir))
+        XCTAssertFalse(resumed.hasItem(PuzzleGraph.ItemID.spoon))
+        XCTAssertFalse(resumed.hasItem(PuzzleGraph.ItemID.file))
+        XCTAssertTrue(resumed.hasItem(PuzzleGraph.ItemID.poker), "items with remaining uses are untouched")
+    }
+
+    // MARK: cluster A — manual pickups (R4-013 weight, R4-026 statue key)
+
+    func testStatueKeyIsManualPickupFromCloseUp_R4_026() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z3Cellar)
+        state.unlockZone(PuzzleGraph.ZoneID.z4Alcove)
+        let coordinator = RoomSceneCoordinator(viewID: .alcove, state: state, size: sceneSize)
+        coordinator.scene.onHotspotTap?("statue-key")
+        XCTAssertEqual(coordinator.activeCloseUp, .statueKey, "statue tap opens the close-up")
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.cageKey), "key is NOT auto-granted (R4-026)")
+        XCTAssertTrue(PuzzleEngine.isStatueKeyUncollected(state), "key visible+pickable in the beak")
+        coordinator.collectStatueKey()
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.cageKey), "explicit tap collects the key")
+        XCTAssertFalse(PuzzleEngine.isStatueKeyUncollected(state))
+        // Key-taken state renders afterwards (and after the key is SPENT at p11 too).
+        XCTAssertTrue(RoomVisuals.cageKeyTaken(state))
+        _ = PuzzleEngine.unlockCage(state: state) // consumes the key (its only use)
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.cageKey))
+        XCTAssertTrue(RoomVisuals.cageKeyTaken(state), "consumed key must NOT re-appear in the beak")
+        XCTAssertFalse(PuzzleEngine.isStatueKeyUncollected(state))
+    }
+
+    func testWeightManualPickupSurvivesRelaunch_antiSoftlock() {
+        let dir = tempDir()
+        let state = GameState(levelID: 1, store: SaveGameStore(directory: dir))
+        state.unlockZone(PuzzleGraph.ZoneID.z3Cellar)
+        state.addItem(PuzzleGraph.ItemID.poker)
+        XCTAssertTrue(PuzzleEngine.pryBarrel(state: state))
+        // Quit between prying and collecting: the weight must still be waiting.
+        let resumed = GameState(levelID: 1, store: SaveGameStore(directory: dir))
+        XCTAssertTrue(PuzzleEngine.isWeightUncollectedInBarrel(resumed))
+        XCTAssertTrue(PuzzleEngine.collectBarrelWeight(resumed))
+        XCTAssertTrue(resumed.hasItem(PuzzleGraph.ItemID.weight))
+    }
+
+    /// Consumed items must not re-appear as collectable in their containers
+    /// (derived-uncollected predicates exclude every sink).
+    func testConsumedItemsNeverReappearCollectable() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        state.unlockZone(PuzzleGraph.ZoneID.z3Cellar) // fitCrankAndTurn requires z3 (CI run 29164191154 fix)
+        satisfyAllGates(state)
+        XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state))
+        XCTAssertTrue(PuzzleEngine.collectItem(PuzzleGraph.ItemID.crank, from: .astrolabeDrawer, state: state))
+        _ = PuzzleEngine.fitCrankAndTurn(state: state) // crank consumed (p08)
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.crank))
+        XCTAssertFalse(PuzzleEngine.isUncollected(PuzzleGraph.ItemID.crank, state: state),
+                       "a consumed crank must not re-appear in the drawer")
+        // Same for the file after p12.
+        state.addItem(PuzzleGraph.ItemID.silverCoin)
+        state.addItem(PuzzleGraph.ItemID.goldRing)
+        XCTAssertTrue(PuzzleEngine.placeCabinetItems(sun: CabinetSolution.sunSlotItem,
+                                                     moon: CabinetSolution.moonSlotItem, state: state))
+        XCTAssertTrue(PuzzleEngine.collectItem(PuzzleGraph.ItemID.file, from: .sunMoonCabinet, state: state))
+        state.addItem(PuzzleGraph.ItemID.spoon)
+        XCTAssertTrue(PuzzleEngine.fileShavings(state: state)) // file+spoon consumed (p12)
+        XCTAssertFalse(PuzzleEngine.isUncollected(PuzzleGraph.ItemID.file, state: state),
+                       "a consumed file must not re-appear in the cabinet")
+        // And the drawer never re-shows a consumed spoon (R4-012(2) class).
+        XCTAssertEqual(RoomVisuals.drawerOverlay(state), "ov-drawer-empty")
+    }
+
+    // MARK: cluster F — armed-item model (R4-005)
+
+    func testArmedItemNeverBlocksLooks_R4_005() {
+        let state = makeState(tempDir())
+        state.addItem(PuzzleGraph.ItemID.rustedKey)
+        let interaction = InteractionModel()
+        let coordinator = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize,
+                                               interaction: interaction)
+        interaction.armedItem = PuzzleGraph.ItemID.rustedKey
+        // The rusted key has no use at the clock — the tap must FALL THROUGH to the
+        // normal look (close-up opens) with the item STILL armed.
+        coordinator.scene.onHotspotTap?("clock")
+        XCTAssertEqual(coordinator.activeCloseUp, .clock,
+                       "an armed item must never block opening a close-up (R4-005)")
+        XCTAssertEqual(interaction.armedItem, PuzzleGraph.ItemID.rustedKey,
+                       "the failed use keeps the item armed (R2-030)")
+        coordinator.dismissCloseUp()
+        // Clue close-ups too (the user's exact report: rune marks not inspectable).
+        coordinator.scene.onHotspotTap?("lintel")
+        XCTAssertEqual(coordinator.activeCloseUp, .plain(image: "cu-lintel"))
+        XCTAssertTrue(state.hasViewedClue(ClueID.markFire),
+                      "clue recording works even while an item is armed")
+        XCTAssertEqual(interaction.armedItem, PuzzleGraph.ItemID.rustedKey)
+    }
+
+    func testEmptySceneTapDisarms_R4_005() {
+        let state = makeState(tempDir())
+        state.addItem(PuzzleGraph.ItemID.poker)
+        let interaction = InteractionModel()
+        let coordinator = RoomSceneCoordinator(viewID: .hearth, state: state, size: sceneSize,
+                                               interaction: interaction)
+        interaction.armedItem = PuzzleGraph.ItemID.poker
+        coordinator.scene.onEmptyTap?()
+        XCTAssertNil(interaction.armedItem, "tapping empty space disarms (tap-away deselect)")
+    }
+
+    // MARK: R4-020(1) — per-slot placement feedback + gate interaction
+
+    func testCorrectPartialPlacementGivesPositiveFeedback_R4_020() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        state.addItem(PuzzleGraph.ItemID.goldRing)
+        state.addItem(PuzzleGraph.ItemID.silverCoin)
+        // Deliberately do NOT satisfy any gates: seating an item must itself count as
+        // seeing the slot shapes (equivalent exposure), so a correct pair placed from
+        // the wide view can never be silently refused by the gate.
+        let coordinator = RoomSceneCoordinator(viewID: .cabinet, state: state, size: sceneSize)
+        SoundManager.shared.resetPlayedLog()
+        // COIN FIRST (the user's order in R4-020).
+        coordinator.useItem(PuzzleGraph.ItemID.silverCoin, on: "moon-slot")
+        XCTAssertEqual(coordinator.pendingMoonItem, PuzzleGraph.ItemID.silverCoin, "correct item seats visibly")
+        XCTAssertTrue(SoundManager.shared.playedLog.contains(.seat),
+                      "a correct partial placement plays the POSITIVE seat cue")
+        XCTAssertFalse(SoundManager.shared.playedLog.contains(.wrong),
+                       "no negative-sounding cue on a correct placement (R4-020(1))")
+        XCTAssertTrue(state.hasViewedClue(ClueID.slotShapes), "seating records the slot-shapes clue")
+        // Ring completes the pair.
+        coordinator.useItem(PuzzleGraph.ItemID.goldRing, on: "sun-slot")
+        XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon))
+        XCTAssertTrue(SoundManager.shared.playedLog.contains(.solve))
+        // And the reverse order still works (fresh state) — ring first.
+        let state2 = makeState(tempDir())
+        state2.unlockZone(PuzzleGraph.ZoneID.z2Workshop)
+        state2.addItem(PuzzleGraph.ItemID.goldRing)
+        state2.addItem(PuzzleGraph.ItemID.silverCoin)
+        let coordinator2 = RoomSceneCoordinator(viewID: .cabinet, state: state2, size: sceneSize)
+        coordinator2.useItem(PuzzleGraph.ItemID.goldRing, on: "sun-slot")
+        XCTAssertEqual(coordinator2.pendingSunItem, PuzzleGraph.ItemID.goldRing)
+        coordinator2.useItem(PuzzleGraph.ItemID.silverCoin, on: "moon-slot")
+        XCTAssertTrue(state2.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon))
+    }
+
+    // MARK: cluster D — the default-tap/nav "psh" class can never silently return
+
+    /// The four reported psh instances (nav chevrons R4-027, cellar entry R4-010,
+    /// drawer R4-012(1), workshop entry R4-017) all traced to ONE asset — sfx-wood —
+    /// fired as a blanket navigation/passage beat. Guard: the retired assets are GONE
+    /// from the bundle, so no surviving trigger could even play them.
+    func testRetiredPshAndOceanAssetsDoNotShip_build10() {
+        for retired in ["sfx-wood", "sfx-entry", "amb-z1", "amb-z2", "amb-z3", "amb-z4",
+                        "sfx-menu-tap", "sfx-click"] {
+            XCTAssertNil(Bundle.main.url(forResource: retired, withExtension: "wav", subdirectory: "Audio")
+                ?? Bundle.main.url(forResource: retired, withExtension: "wav"),
+                         "\(retired).wav is retired (cluster D / R4-002 / R4-003) and must NOT ship")
+        }
+        // The new positive seat cue ships.
+        XCTAssertNotNil(Bundle.main.url(forResource: "sfx-seat", withExtension: "wav", subdirectory: "Audio")
+            ?? Bundle.main.url(forResource: "sfx-seat", withExtension: "wav"),
+                        "sfx-seat.wav (R4-020(1) positive placement cue) must ship")
+    }
+
+    func testDrawerOpenIsSilent_spoonPickupChimes_clusterD() {
+        let state = makeState(tempDir())
+        state.unlockZone(PuzzleGraph.ZoneID.z3Cellar)
+        let coordinator = RoomSceneCoordinator(viewID: .cellar, state: state, size: sceneSize)
+        SoundManager.shared.resetPlayedLog()
+        coordinator.scene.onHotspotTap?("drawer") // open: visual only (R4-012(1))
+        XCTAssertTrue(SoundManager.shared.playedLog.isEmpty,
+                      "drawer open is silent — the sfx-wood psh is removed (cluster D)")
+        coordinator.scene.onHotspotTap?("drawer") // take spoon
+        XCTAssertEqual(SoundManager.shared.playedLog, [.pickup])
+    }
+}
+
+/// Round 6 Cluster A — container/pickup TAKEN-STATE render guard (close-up + wide).
+///
+/// Extends the build-10 rendered-frame overlay guard to cover EVERY element's
+/// partial/taken/emptied state, not a sample. The close-up compositor is SwiftUI, so it is
+/// guarded here at the pure decision layer (`ContainerCloseUpModel.plan`) — which, by
+/// construction, has NO masking layer, so the "black box" (R6-008/-010) cannot recur. The
+/// wide taken-state is guarded via the `RoomVisuals` resolvers. R6-008 (astrolabe drawer:
+/// coin + crank, all three defects on one close-up) is the regression fixture.
+final class ContainerTakenStateGuardTests: XCTestCase {
+    private func tempDir() -> URL {
+        let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
+        return dir
+    }
+    private func makeState() -> GameState { GameState(levelID: 1, store: SaveGameStore(directory: tempDir())) }
+
+    private func ids(_ items: [CloseUpLayout.ContainerItemVisual]) -> [String] { items.map { $0.id } }
+
+    // MARK: Close-up per-element decision (R6-008 fixture: astrolabe coin + crank)
+
+    func testAstrolabeCloseUpTakenState_R6_008() {
+        let state = makeState()
+        state.markSolved(PuzzleGraph.PuzzleID.astrolabeOrion) // drawer sprung, both uncollected
+        let existsAll: (String) -> Bool = { _ in true }
+
+        // 0 taken: the painted open plate shows both; no icons, both tappable.
+        var plan = ContainerCloseUpModel.plan(.astrolabeDrawer, state: state, assetExists: existsAll)
+        XCTAssertEqual(plan.base, "cu-astrolabe-drawer-open")
+        XCTAssertTrue(plan.iconItems.isEmpty)
+        XCTAssertEqual(Set(ids(plan.tapTargets)), [PuzzleGraph.ItemID.silverCoin, PuzzleGraph.ItemID.crank])
+
+        // 1 taken (coin): empty base + crank icon only; the coin DISAPPEARS (no black box,
+        // never appears in icons OR tap targets).
+        state.addItem(PuzzleGraph.ItemID.silverCoin)
+        plan = ContainerCloseUpModel.plan(.astrolabeDrawer, state: state, assetExists: existsAll)
+        XCTAssertEqual(plan.base, "cu-astrolabe-drawer-empty")
+        XCTAssertEqual(ids(plan.iconItems), [PuzzleGraph.ItemID.crank])
+        XCTAssertEqual(ids(plan.tapTargets), [PuzzleGraph.ItemID.crank])
+        XCTAssertFalse(ids(plan.iconItems).contains(PuzzleGraph.ItemID.silverCoin))
+        XCTAssertFalse(ids(plan.tapTargets).contains(PuzzleGraph.ItemID.silverCoin))
+
+        // 2 taken: empty base, nothing composited, nothing tappable — reads empty.
+        state.addItem(PuzzleGraph.ItemID.crank)
+        plan = ContainerCloseUpModel.plan(.astrolabeDrawer, state: state, assetExists: existsAll)
+        XCTAssertEqual(plan.base, "cu-astrolabe-drawer-empty")
+        XCTAssertTrue(plan.iconItems.isEmpty)
+        XCTAssertTrue(plan.tapTargets.isEmpty)
+    }
+
+    func testCabinetCloseUpTakenState_emptyPlateStaged_R6_010() {
+        let state = makeState()
+        state.markSolved(PuzzleGraph.PuzzleID.cabinetSunMoon)
+        let existsAll: (String) -> Bool = { _ in true } // simulate cu-cabinet-empty staged (post-JOIN)
+
+        var plan = ContainerCloseUpModel.plan(.sunMoonCabinet, state: state, assetExists: existsAll)
+        XCTAssertEqual(plan.base, "cu-cabinet-open") // both present: painted plate
+        XCTAssertEqual(Set(ids(plan.tapTargets)), [PuzzleGraph.ItemID.file, PuzzleGraph.ItemID.phial])
+
+        state.addItem(PuzzleGraph.ItemID.file) // take file
+        plan = ContainerCloseUpModel.plan(.sunMoonCabinet, state: state, assetExists: existsAll)
+        XCTAssertEqual(plan.base, "cu-cabinet-empty") // clean empty base + remaining icon
+        XCTAssertEqual(ids(plan.iconItems), [PuzzleGraph.ItemID.phial])
+        XCTAssertFalse(ids(plan.tapTargets).contains(PuzzleGraph.ItemID.file), "taken file disappears")
+
+        state.addItem(PuzzleGraph.ItemID.phial)
+        plan = ContainerCloseUpModel.plan(.sunMoonCabinet, state: state, assetExists: existsAll)
+        XCTAssertEqual(plan.base, "cu-cabinet-empty")
+        XCTAssertTrue(plan.iconItems.isEmpty)
+        XCTAssertTrue(plan.tapTargets.isEmpty, "container reads empty when all taken")
+    }
+
+    func testCabinetCloseUpTakenState_interimFallback_noBlackBox() {
+        // Interim (my worktree): cu-cabinet-empty NOT yet staged. The fallback keeps the
+        // baked plate but composites NO mask — the reported black box cannot occur — and the
+        // remaining item stays tappable. Fully clean once the empty plate lands (test above).
+        let state = makeState()
+        state.markSolved(PuzzleGraph.PuzzleID.cabinetSunMoon)
+        let emptyAbsent: (String) -> Bool = { $0 != "cu-cabinet-empty" }
+
+        state.addItem(PuzzleGraph.ItemID.file)
+        let plan = ContainerCloseUpModel.plan(.sunMoonCabinet, state: state, assetExists: emptyAbsent)
+        XCTAssertEqual(plan.base, "cu-cabinet-open")
+        XCTAssertFalse(plan.emptyBaseAvailable)
+        XCTAssertTrue(plan.iconItems.isEmpty)               // no icons drawn on the baked plate
+        XCTAssertEqual(ids(plan.tapTargets), [PuzzleGraph.ItemID.phial]) // taken file untappable
+    }
+
+    // MARK: Wide taken-state resolvers
+
+    func testAstrolabeDrawerWideTakenState_R6_008_wide() {
+        let state = makeState()
+        XCTAssertNil(RoomVisuals.astrolabeDrawerOverlay(state), "closed before solve")
+        state.markSolved(PuzzleGraph.PuzzleID.astrolabeOrion)
+        XCTAssertEqual(RoomVisuals.astrolabeDrawerOverlay(state), "ov-adrawer-open",
+                       "contents shown while uncollected")
+        state.addItem(PuzzleGraph.ItemID.silverCoin)
+        state.addItem(PuzzleGraph.ItemID.crank)
+        // Both collected: the wide must NOT keep showing the coin+crank overlay.
+        XCTAssertNotEqual(RoomVisuals.astrolabeDrawerOverlay(state), "ov-adrawer-open",
+                          "R6-008-wide: stale contents must not linger after collect")
+    }
+
+    func testBarrelWideTakenState_R6_005() {
+        let state = makeState()
+        state.unlockZone(PuzzleGraph.ZoneID.z3Cellar)
+        XCTAssertNil(RoomVisuals.barrelOverlay(state), "nailed barrel: no overlay")
+        state.addItem(PuzzleGraph.ItemID.poker)
+        XCTAssertTrue(PuzzleEngine.pryBarrel(state: state))
+        XCTAssertEqual(RoomVisuals.barrelOverlay(state), "ov-barrel-pried", "weight visible while uncollected")
+        XCTAssertTrue(PuzzleEngine.collectBarrelWeight(state)) // take the weight
+        let after = RoomVisuals.barrelOverlay(state)
+        // R6-005: prefer the emptied-pried overlay when staged; never nil (no re-nailing).
+        XCTAssertNotNil(after, "the pried barrel must never re-nail itself")
+        if RoomVisuals.assetAvailable("ov-barrel-pried-empty") {
+            XCTAssertEqual(after, "ov-barrel-pried-empty", "emptied-pried overlay hides the taken weight")
+        } else {
+            XCTAssertEqual(after, "ov-barrel-pried", "interim fallback keeps the pried look pending JOIN art")
         }
     }
 }

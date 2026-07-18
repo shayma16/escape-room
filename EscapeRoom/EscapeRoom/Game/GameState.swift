@@ -54,9 +54,30 @@ struct LevelSaveData: Codable, Equatable {
 /// save/resume and the Level Select completion indicators.
 struct SaveGame: Codable, Equatable {
     var levels: [Int: LevelSaveData] = [:]
+    /// Legacy single master toggle (build <= 2). Retained for migration only; the live
+    /// settings are the two independent toggles below (R2-006). Never surfaced in the UI
+    /// anymore — kept so an older save decodes and seeds the split toggles once.
     var soundOn: Bool = true
+    /// R2-006: split audio settings — ambiance/music mute and SFX mute, independent and
+    /// persisted separately. `nil` in a decoded pre-split save; migrated from `soundOn`
+    /// on first load (see custom init).
+    var ambianceOn: Bool = true
+    var sfxOn: Bool = true
 
     static let empty = SaveGame()
+
+    init() {}
+
+    /// Migration-tolerant decode: pre-split saves carry only `soundOn`; seed BOTH new
+    /// toggles from it so muted players stay muted and everyone else stays on.
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        levels = try c.decodeIfPresent([Int: LevelSaveData].self, forKey: .levels) ?? [:]
+        let legacy = try c.decodeIfPresent(Bool.self, forKey: .soundOn) ?? true
+        soundOn = legacy
+        ambianceOn = try c.decodeIfPresent(Bool.self, forKey: .ambianceOn) ?? legacy
+        sfxOn = try c.decodeIfPresent(Bool.self, forKey: .sfxOn) ?? legacy
+    }
 }
 
 /// Observable runtime game state for a single level. Wraps a `LevelSaveData` and
@@ -80,6 +101,10 @@ final class GameState: ObservableObject {
             data.unlockedZones.insert(PuzzleGraph.startZoneID)
             persist()
         }
+        // Build 10 cluster A migration: a save written by the build-9 lifecycle
+        // (which under-consumed — R4-030's lingering spoon/file) may still hold
+        // fully-depleted items; reconcile once on load so old saves come clean.
+        ItemLifecycle.reconcile(self)
     }
 
     // MARK: - Read helpers
@@ -132,6 +157,10 @@ final class GameState: ObservableObject {
         guard !data.flags.contains(id) else { return }
         data.flags.insert(id)
         persist()
+        // Build 10 cluster A: every way an item use can become satisfied passes
+        // through setFlag or markSolved, so reconciling here (and only here) makes
+        // the uses-driven retain/consume rule impossible to bypass (R4-019/R4-030).
+        ItemLifecycle.reconcile(self)
     }
 
     func clearFlag(_ id: String) {
@@ -144,6 +173,8 @@ final class GameState: ObservableObject {
         guard !data.solvedPuzzles.contains(puzzleID) else { return }
         data.solvedPuzzles.insert(puzzleID)
         persist()
+        // Build 10 cluster A: see setFlag — the single, unbypassable reconcile point.
+        ItemLifecycle.reconcile(self)
     }
 
     func setRuneDoorProgress(_ progress: [String]) {

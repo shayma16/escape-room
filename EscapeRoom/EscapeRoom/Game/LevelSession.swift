@@ -10,7 +10,9 @@ import Combine
 /// Not persisted: an armed item is a momentary intention, not progress state.
 final class InteractionModel: ObservableObject {
     /// The inventory item the player has armed (tap an inventory icon to arm; tap it
-    /// again to disarm). Using it on any target — success or failure — disarms.
+    /// again / its ✕ badge / any empty space to disarm — cluster F, R4-005). A
+    /// SUCCESSFUL use disarms; a failed use keeps it armed (R2-030) and falls through
+    /// to the normal look so the armed state never blocks inspection.
     @Published var armedItem: String?
     /// Item currently shown in the enlarged inspect view (F-016).
     @Published var inspectingItem: String?
@@ -75,7 +77,9 @@ final class LevelSession: ObservableObject {
     func goTo(_ view: ViewID) {
         guard state.isZoneUnlocked(view.zoneID) else { return }
         currentView = view
-        SoundManager.shared.setAmbientZone(ambientZone(for: view.zoneID))
+        // Build 10 (R4-002 / cluster D): no per-zone ambient bed and no navigation
+        // sound — the level bed is the looping music alone (kept alive by the
+        // SoundManager level scope); view/zone changes are visually announced only.
     }
 
     func nextView() {
@@ -95,15 +99,5 @@ final class LevelSession: ObservableObject {
         interaction.disarm()
         interaction.inspectingItem = nil
         currentView = .hearth
-    }
-
-    private func ambientZone(for zoneID: String) -> SoundManager.Zone {
-        switch zoneID {
-        case PuzzleGraph.ZoneID.z1Cabin: return .z1
-        case PuzzleGraph.ZoneID.z2Workshop: return .z2
-        case PuzzleGraph.ZoneID.z3Cellar: return .z3
-        case PuzzleGraph.ZoneID.z4Alcove: return .z4
-        default: return .z1
-        }
     }
 }

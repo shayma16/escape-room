@@ -1,3 +1,115 @@
+# ROUND 7 ART TRACK — R7-002 edge bands — 2026-07-17 (branch build-12-round6-fixes)
+PROGRESS: 35/35 plates DONE (105 files @1x/@2x/@3x) | 0 failed | outpaint probe 1/1 rejected
+SPEND: $0.30 this round | cumulative Level-1 art $21.15 of the $23.00 cap ($1.85 headroom)
+ADDENDUM 2026-07-17: z1-hearth (4 plates) added on Producer decision — $0, spend unchanged.
+
+## Outcome: PRIMARY (outpaint) attempted and REJECTED -> shipped the user's authorized FALLBACK (clean fade, $0)
+
+1/1 outpaint probe: z2-cabinet TOP band, CROP-SCOPED 21:9 strip (the one framing build 10
+never tried — it fed the whole canvas). 4K, seed 72001, $0.30. REJECTED: the band art was
+excellent and on-style, but the endpoint re-rendered the whole strip (cabinet reshaped,
+bottles moved, floor replaced); registration 21.25 mean-abs with NO alignment optimum.
+Root cause is architectural: fal nano-banana-pro/edit is not a masked inpaint (no mask
+param; refs downscaled to 1536px) so it CANNOT preserve the interior. Now 8/8 failures
+across 3 framings, $2.40 total burned on this approach (build 10 spent $2.10). DO NOT RETRY.
+Archived: specs/assets/level-1/_rejects/R7-002-outpaint-probe/ (+ README.md).
+
+Shipped instead: specs/tools/band_fade_r7.py (committed, deterministic, $0). Band pixels
+ERASED and rebuilt as ~120px falloff from the seam then literal #000. ALL FOUR EDGES swept
+(R6-004 only did top/bottom — that is why it failed). Structure gone, not dimmed:
+top-band horizontal detail 0.55-1.24 -> 0.006-0.016; left-band vertical detail 1.10-1.21 ->
+0.001-0.005. 52-75% of every band is exactly #000.
+
+## Band geometry (AUTHORITATIVE = the applied build-10 transform, visually confirmed;
+## NOT the streak detector, which reports 0 on left/right and phantom bands on soft close-ups)
+| view | L | T | R | B | plates |
+|---|---|---|---|---|---|
+| z1-hearth | 86 | 86 | 87 | 0 | 4 |
+| z1-study | 538 | 240 | 0 | 29 | 1 |
+| z1-entry | 425 | 250 | 573 | 249 | 7 |
+| z2-bench | 430 | 163 | 223 | 163 | 4 |
+| z2-cabinet | 630 | 288 | 522 | 288 | 5 |
+| z3-cellar | 445 | 173 | 246 | 173 | 14 |
+
+DONE (31/31): z1-study-base | z1-entry base+basin-drained-nb+basin-filled-nb+cage-open+
+crow-lintel+vines-gone+vines-withered | z2-bench base+flame1/2/3 | z2-cabinet base+
+drawer-open+open+slots-seated+ov-adrawer-empty | z3-cellar base+barrel-pried+
+ov-barrel-pried-empty+beam-alcove+beam-blocked+beam-floor+beam-floor-shelf-slid+
+crank-fitted+drawer-open+mirror-d2+mirror-d3+nobeam-nb+shelf-slid+weight-hung
+
+VERIFIED: interior byte-identical vs git HEAD 31/31; base/variant bands byte-identical 31/31
+(fixes a latent bug: reframe_b10.py's rolling rng gave 18 of 22 variants DIFFERENT band grain
+from their base); no contouring; every variant byte-identical to its base in the 20px ring
+inside the content rect (maxdiff=0), so one shared band per view is provably seam-correct.
+
+z1-HEARTH ADDENDUM (Producer decision 2026-07-17 — DONE, $0):
+- Swept all 4 wide plates: base, poker-taken, rug-moved*, trapdoor-open. Smear gone
+  (top-band dx 0.83-1.03 -> 0.012-0.013; left-band dy 1.11-1.12 -> 0.029-0.031); interiors
+  byte-identical 4/4; outer row/col pure black 4/4; all 3 scales.
+- All 10 v-hearth cu-* close-ups measured band-free -> excluded (cu-lintel exclusion stands).
+- *rug-moved uses its OWN band (only such plate in the level). Its ring differs from the base
+  by mean 27.9/max 216 (pre-existing global tone diff). MEASURED counterfactual: the shared
+  band would give a 27.82 left / 15.54 top seam step = a visible hairline on a plate staged as
+  a FULL background. Own band gives 2.89/1.28, matching the other three. Costs nothing for rect
+  derivation: its interior already differs from the base across 71.1% of px (mean 23.61), so
+  that diff bbox is already maximal. base/poker-taken/trapdoor-open DO share one identical band
+  (trapdoor-open vs base is a genuine local 14.1% diff, so identity matters there and is kept).
+
+EXCLUDED + WHY (Producer decisions needed):
+- cu-lintel (394/208) and cu-flowerpot (61): FALSE POSITIVES — no band exists. Both plates are
+  merely SOFT; the detector counts rows with diff<1.5 and so measures softness, not smear.
+  Fading cu-lintel would have blacked out half a puzzle clue (FIRE triangle + numeral II).
+- cu-lintel separately HAS a translucent ghost RECTANGLE around the FIRE triangle (region-edit
+  composite artifact) — real defect, not R7-002, flagged for a separate decision.
+
+NOT TOUCHED (per brief): tools/build_game_assets.py, overlays.json, EscapeRoom/Resources/**.
+Developer JOIN pass restages.
+
+---
+
+# ROUND 6 ART TRACK — FINAL (build-12-round6-fixes worktree) — 2026-07-14
+PROGRESS: 4/4 items DONE | 0 failed | nano spend this round $1.05 | cumulative Level-1 art $20.85 of $23.00 cap ($2.15 headroom)
+
+IMPORTANT SETUP NOTE: this worktree was created off the WRONG base (build-2, 1ed29a9),
+missing all build-3/10/11 work. Detected during R6-004 scoping; branch hard-reset to the
+correct build-12-round6-fixes tip (f4fd52c). ALL fixes were redone on the correct
+build-11/12 plates. The 2 wasted nano gens on the wrong plate are included in the $1.05.
+
+DELIVERABLES:
+- R6-002 EARTH glyph (cu-flowerpot 1600x1400) - carved bar moved to canon (through middle). PIL $0.
+- R6-011 recipe spiral (cu-grimoire-recipe 2048x1536) - 5 dots + CCW (mirror + 1 dot removed). PIL $0.
+- R6-004 band sweep - top/bottom padded edges of 6 reframed views (hearth/study/entry/bench/cabinet/cellar)
+  + all state variants; clean reflect+dark-vignette fill; content interior byte-identical; base/variant
+  bands identical (clean overlays). Left/right overscan bands NOT flagged (left as-is). Alcove not reframed. PIL $0.
+- R6-007 flame1/2/3 + cabinet-slots-seated - re-rolled build-3 engine style crop-scoped off the fresh
+  3840x1920 base plates (were stale 2560 plates); byte-identical to base outside edited region. nano $1.05.
+
+FAL COST LOG (this round, nano-banana-pro /edit @ 2K = $0.15/gen):
+  slots-seated (WRONG build-2 plate, wasted x2) ... $0.30
+  flame3 (preview + save) .......................... $0.30
+  flame1 ........................................... $0.15
+  flame2 ........................................... $0.15
+  slots-seated (correct 3840 base) ................. $0.15
+  ------------------------------------------------- 
+  round total ...................................... $1.05
+  cumulative Level-1 art ........................... $20.85 / $23.00
+
+---
+
+# Level 1 — Build 9 glyph-consistency + thumbnail (R3-007, R3-002) — deterministic PIL, $0
+
+PROGRESS: 2/2 done | 0 retrying | 0 failed | 0 remaining | $0.00 spent
+
+_Asset Generation Agent live tracker. No fal.ai generation this phase — deterministic PIL only._
+_All paths relative to specs/assets/level-1/. Rasters ship @3x/@2x/@1x; thumbnail is a single JPG._
+
+| # | Item | Method | Status | Cost | Note |
+|---|------|--------|--------|------|------|
+| 1 | R3-007 rune-door glyph consistency | ONE canonical PIL glyph stamp (FIRE/WATER/AIR/EARTH triangles) engraved in place | done | $0.00 | cu-runedoor-tiles + 4 pressed sprites (all scales) re-stamped to match grimoire pageA + 4 element marks; acceptance gate + grayscale PASS; p01 solvable. Grimoire pages A/B/recipe + decoys audited: legible + correct. Futhark originals -> _rejects/R3-007-runedoor-futhark-*. No -nb shadows. |
+| 2 | R3-002 Level-Select thumbnail | PIL 4:3 crop + downscale of z1-hearth-base@3x -> 660x495 JPG | done | $0.00 | chrome/level1-thumb.jpg; reads as new engine-style Level 1 (fireplace+clock+warm lamp) at card size. |
+
+---
+
 # Level 1 — Batch 3 asset progress (zones z3 Hidden Cellar + z4 Walled Alcove + icon cleanup — FINAL batch)
 
 PROGRESS: 39/39 done | 0 retrying | 0 failed | 0 remaining | $1.99 spent
@@ -153,3 +265,275 @@ Blocking ambiguity: the wide `v-entry` plates decompose the door motif as TWO se
 No API budget spent on AF-1. Once AD picks A/B/C, execution is: render canonical head → remove old head from base (wood fill) → composite head at target position into all THREE wide plates (base/withered/gone) identically → scale-overlay acceptance (skull centroid within ~2% door width of close-up, same tilt) → grayscale gate. Est. ~4-6 gens, ~$0.20.
 
 **Verification performed:** every edited plate grayscale-checked (AF-2 sil-44 + gray-88; AF-3 two-slot grayscale + hallmark floor; AF-4 three-glyph grayscale strip). All composites seam-checked programmatically (pixels-changed-outside-mask ≈ 0). Superseded originals + all edit intermediates archived in `_rejects/fb1/`. Manifest `feedback_round1_fixes` block + per-asset `fb1_fix` records added.
+
+---
+
+# Level 1 — BUILD-3 FULL REBUILD (Nano Banana Pro engine-render style)
+
+PROGRESS: 11/64 done | 0 retrying | 0 failed | 53 remaining | $4.80 spent | ALL 7 BASES DONE + 2 free z1 zoom close-ups | CHECKPOINT: bases ready for per-zone user review before deep derived-asset spend
+
+_Asset Generation Agent live tracker for the full engine-render rebuild (build 3)._
+_Model: `fal-ai/nano-banana-pro` (t2i + edit). Mandatory engine-render style template_
+_composed into EVERY prompt (verbatim per .claude/agents/asset-generation.md)._
+_Pricing: $0.30/4K image, $0.15/std image. @2x/@1x = FREE PIL downscales._
+_HARD CAP $18.90 (user, final). Pre-gen estimate: $11.10 paid, ~$15.50 with retries ->_
+_UNDER cap -> PROCEEDING (pre-authorized). Track actual spend after each gen._
+_RUNNING SPEND BASELINE (this cascade start): $2.40 = sky $0.60 + nb1 $0.30 + reseed $1.50._
+_SEED: candidate B (`z1-hearth-base-nbCB`) user-approved 2026-07-08 -> promoted to canonical_
+_`z1/v-hearth/z1-hearth-base@3x/2x/1x` AFTER the near-wordless FIRE/AIR glyph fix (PIL, $0):_
+_lintel "FIRE"->upward-triangle glyph + numeral II; bellows slash->triangle-with-bar (AIR) +_
+_numeral I, per clu-grimoire-elements. Grayscale-verified. Rejected seed attempts + old_
+_painterly hearth plates -> _rejects/flux-painterly/. Seed anchors ALL later gens (14-ref cap)._
+_All paths relative to specs/assets/level-1/. Superseded painterly originals move to_
+_`_rejects/flux-painterly/` at integration (rollback safety, never deleted)._
+
+## Consistency protocol
+- First approved fresh base plate = new-style SEED. Every later gen anchors to it +
+  up to 13 more relevant same-level fresh plates (14-ref cap). Old painterly plates are
+  NEVER style refs.
+- Canonical sky (moon waxing-gibbous lit-right + Orion 7-dot at 35deg) per
+  masters/orion-canonical.json — re-rendered fresh, geometry unchanged.
+- Section 2.3 grayscale check is the acceptance gate on every glyph/precision asset.
+
+## Pre-generation cost estimate (vs $18.90 cap)
+| Group | Count | Unit | Paid subtotal |
+|---|---|---|---|
+| Base plates (4K t2i, FRESH seed + anchored) | 7 | $0.30 | $2.10 |
+| Sky master (4K t2i, canonical) | 1 | $0.30 | $0.30 |
+| Independently-framed close-ups (std t2i) | 32 | $0.15 | $4.80 |
+| Inventory icons (std t2i, white-bg + PIL cutout) | 15 | $0.15 | $2.25 |
+| Sprites needing fresh render (glyph/geometry) | 8 | $0.15 | $1.20 |
+| App icon (1 + candidates) | 3 | $0.15 | $0.45 |
+| PAID SUBTOTAL (no retries) | 66 | | $11.10 |
+| Retry buffer (~40%, bases+glyphs highest-risk) | | | ~$4.40 |
+| PROJECTED TOTAL w/ retries | | | ~$15.50 |
+| FREE via PIL/crop-from-fresh-4K (30 state variants, ~26 zoom close-ups, sprite recomposites, all @2x/@1x, launch screens) | ~64 | $0 | $0 |
+| GRAND TOTAL | | | ~$15.50 <= $18.90 -> PROCEED |
+
+## Per-asset plan (paid generations tracked; free derivations rolled up per zone)
+Statuses: pending / generating / done / retrying / failed. Cost includes retries.
+
+### Shared masters
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 0 | masters/sky-master | t2i 4K + PIL Orion stamp | done | $0.60 | 2 sky gens (framed cand rejected); clean sky-only base + canonical 7-dot Orion stamped from orion-canonical.json; belt 35deg, non-rival field; STYLE VALIDATED |
+
+### z1 — Main Cabin (v-hearth / v-study / v-entry)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 1 | z1/v-hearth/z1-hearth-base | edit 4K (seed B 30820) + PIL glyph fix | done (CANONICAL SEED) | $0.30 | LOCKED STYLE SEED. Candidate B promoted to canonical after PIL FIRE/AIR near-wordless fix ($0): lintel upward-triangle FIRE glyph + II; bellows triangle-with-bar AIR glyph + I. Grayscale PASS. 1 mantel clock (numeral ring I-XII + cuckoo door above XII), cold hearth+ash, poker/bellows/armchair/rug/lamp all present. ANCHOR for all later gens. |
+| 2 | z1/v-study/z1-study-base | t2i 4K anchored (seed 41200) + PIL EARTH-bar fix | done | $0.30 | 1 take PASS. All elements: open grimoire+black-feather bookmark+pictogram pages, triptych same-tree x3 w/ moons, plain bookshelf, dead flowerpot rune, inner workshop door w/ 4-tile brass rune plate, warm lamp key. PIL fix: added horizontal bar to flowerpot's downward-triangle -> EARTH glyph (distinct from WATER plain-triangle) + numeral III; grayscale PASS. Door tiles show generic runes (NOT the answer glyphs -> no code leak, correct). Style leans toon like entry - flag for per-zone review. |
+| 3 | z1/v-entry/z1-entry-base | t2i 4K anchored (seed 41142) + PIL WATER glyph fix | done | $0.60 | 2 takes ($0.30x2): take1 gave a crow SKULL + SEPARATE bowl (AF-1 decomposition + skull=1.1 violation) -> re-rolled. take2 PASS: UNIFIED crow's-head where open beak IS the basin (one carved piece, AF-1 satisfied). All elements present (window moon+Orion, rune sill, rusted bent key, thorn vines/bolt, cage star-keyhole+feed-cup+live crow). PIL fix: sill "W" letter -> WATER downward-triangle glyph + numeral IV (grayscale PASS). STYLE NOTE for user: entry skews cooler/more-graphic than seed (per-spec 60% cool zone) - flag for per-zone review. |
+| 4 | z1 v-hearth close-ups | free PIL crop + t2i std | partial ($0 so far) | $0 | DONE (free crop): cu-lintel-nb (triangle+II, grayscale PASS), cu-ash-undisturbed-nb. PENDING: bellows-rune (crisp AIR), clock-unspent (numeral ring), dial-panel (3 moon dials, precision). |
+| 5 | z1 v-study close-ups | t2i std x10 | pending | - | flowerpot, grimoire A/B/recipe/zodiac/bird, triptych 1/2/3, runedoor-tiles |
+| 6 | z1 v-entry close-ups | t2i std x5 | pending | - | door-lock (unified beak), star-keyhole, rusted-key, windowsill, cage-crow |
+| F1 | z1 state variants (free) | PIL/crop-edit | done | $1.20 | z1 states DONE: hearth poker-taken(PIL)/trapdoor-open(edit)/clock-pop/clock-spent/ash-sifted(glint)/ash-ring-taken(edit); entry vines-withered/gone/basin-filled/drained/cage-open/crow-lintel(edit). All fresh-base anchored, grayscale-safe glint. |
+
+### z2 — Potion Workshop (v-bench / v-cabinet)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 7 | z2/v-bench/z2-bench-base | t2i 4K anchored (seed 42100) | done | $0.30 | 1 take PASS. Cauldron over fire pit (under-lit warm), ladle, floor bellows w/ pump handle to camera, mortar&pestle on bench, hanging herbs, cool window slab (eye warm->cool per 5.4). JC-fb1 PAINTED RETURN-PASSAGE present: open arched doorway center-back to warmly-lit main cabin -> no UI exit chevron needed. Rim runes I/II/III = cauldron close-up job. |
+| 8 | z2/v-cabinet/z2-cabinet-base | t2i 4K anchored (seed 42200) + PIL canonical sky | done | $0.30 | 1 take + PIL sky fix ($0). Potion shelf 5+ distinct bottles+pictogram labels, ingredient cabinet (sunburst+crescent), astrolabe pedestal+base drawer, cool 35% window slab. PIL FIX: model drew scattered stars + wrong crescent moon -> replaced with CANONICAL waxing-gibbous moon (lit-right, cropped from sky-master) + canonical 7-dot Orion belt (orion-canonical.json, 35deg) stamped in pane; grayscale PASS. NOTE for user: cabinet sunburst+crescent render as raised MEDALLIONS not inset recesses at wide scale - recess geometry carried by cu-slots close-up (fresh). |
+| 9 | z2 v-bench close-ups | t2i std x2 | pending | - | brew-clear (65deg top-down), mortar-empty |
+| 10 | z2 v-cabinet close-ups | t2i std x4 | pending | - | slots-empty, astrolabe, potion-shelf, window-orion |
+| F2 | z2 state variants (free) | PIL/crop-edit | done | $0.90 | z2 states DONE: cabinet-open(file+phial)/drawer-open(coin+crank)/brew-clear/brew-fizzle + mortar-blossom/mortar-paste (all region-edit, fresh-base anchored). flame1/2/3 = build-2 retained (see flag). |
+
+### z3 — Hidden Cellar (v-cellar)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 11 | z3/v-cellar/z3-cellar-base | t2i 4K anchored (seed 43100) | done | $0.30 | 1 take PASS. ALL elements: ladder+trapdoor spill+lantern (R edge), barrel w/ pry-gap lid (mid-right), root-shelf drawer (brass handle), sliding shelf flush to wall + pulley + empty hook + taut rope to runners (L-center), ceiling shaft+shutter+winch empty socket (upper-L), mirror on floor stand + scratch-arcs in dirt (L). Coolest darks, readable by edge light. Winch-socket/scratch geometry = close-up jobs. |
+| 12 | z3 v-cellar close-ups | t2i std x4 | pending | - | winch-socket, mirror-scratches, spoon-drawer (hallmark), barrel-gap |
+| F3 | z3 state+beam matrix (free) | PIL beam_engine | done | $1.05 | z3 states DONE: mechanism (barrel/drawer/weight/shelf-slid/crank/mirror-d2/d3) via region-edit (7); beam matrix (nobeam/beam-floor/beam-blocked/beam-alcove/beam-floor-shelf-slid) via PIL beam_engine_v3 ($0). R4 all combos read distinctly; beam-blocked reads 'look here' not bugged. |
+
+### z4 — Walled Alcove (v-alcove)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 13 | z4/v-alcove/z4-alcove-base | t2i 4K anchored (seed 44100) | done | $0.30 | 1 take PASS. Shrine niche, 90% cool silver. Moonflower planter buds CLOSED (low center, future-beam spot, rim-lit), carved folk-art crow statue on ledge above facing planter (register 3) holding STAR-BIT key in beak (5-point star reads, matches cage keyhole), dusty empty shelf ledge (honest emptiness). Reverent. Strongest plate. cu-statue-key will lock exact star geometry. |
+| 14 | z4 v-alcove close-ups | t2i std x2 | pending | - | statue-key, planter-closed |
+| F4 | z4 state variants (free) | PIL/crop-edit | done | $0.60 | z4 states via region-edit + PIL: key-taken/trembling/blooming(radial glow)/picked wide (4 edits) + blooming-keytaken/picked-keytaken (PIL compose) + cu-planter x3 + cu-statue-key-taken (PIL crops). Composited seamless to fresh base. |
+
+### Icons (15) — white-bg render + PIL cutout to RGBA 1024
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 15 | icon-poker | t2i std + cutout | pending | - | |
+| 16 | icon-gold-ring | t2i std + cutout | pending | - | plain round band |
+| 17 | icon-rusted-key | t2i std + cutout | pending | - | snapped plain bit |
+| 18 | icon-feather | t2i std + cutout | pending | - | glossy black |
+| 19 | icon-crank | t2i std + cutout | pending | - | AF-2: Z-crank, square drive stub, wood grip |
+| 20 | icon-file | t2i std + cutout | pending | - | |
+| 21 | icon-phial | t2i std + cutout | pending | - | empty glass |
+| 22 | icon-phial-draught | t2i std + cutout | pending | - | pearlescent draught |
+| 23 | icon-silver-coin | t2i std + cutout | pending | - | crescent hallmark (canonical die) |
+| 24 | icon-paste | t2i std + cutout | pending | - | moonflower paste |
+| 25 | icon-spoon | t2i std + cutout | pending | - | crescent hallmark bowl |
+| 26 | icon-weight | t2i std + cutout | pending | - | iron plumb |
+| 27 | icon-shavings | t2i std + cutout | pending | - | silver shavings |
+| 28 | icon-blossom | t2i std + cutout | pending | - | moonflower |
+| 29 | icon-cage-key | t2i std + cutout | pending | - | star bit |
+
+### Sprites (glyph/geometry — fresh render or PIL recomposite off fresh)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 30 | dial-face | t2i std + PIL relief | pending | - | 8 moon-phase embossed, relief per 2.3(1) |
+| 31 | astrolabe-plate-2 | t2i std + PIL orion stamp | pending | - | canonical 7-dot geometry |
+| 32 | astrolabe-plates 1/3/4/5/6 | PIL recomposite | pending | $0 | dot patterns off plate-2 blank |
+| 33 | astrolabe-pointer | t2i std OR PIL | pending | - | brass pointer |
+| 34 | rune-ember-I/II/III | t2i std x1 + PIL | pending | - | lit ember channel, molten fill |
+| 35 | ladle-ripple-ccw | t2i std OR PIL | pending | - | CCW glowing ripple arc |
+| 36 | runedoor-tile1-4-pressed | PIL from cu-runedoor | pending | $0 | pressed relief off tile close-up |
+
+### Global
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| 37 | global/app-icon | t2i std x1-3 | pending | - | keyhole+crow motif per global-ui-style.md; all App Store sizes via PIL |
+| 38 | global/launch-screens | PIL composite | pending | $0 | iPad + iPhone dims, $0 |
+
+---
+
+## RE-SEED ITERATION — z1 v-hearth base (nb1 rejected: too photorealistic) [2026-07-08]
+
+PROGRESS: 3/3 generated (A + B PASS correction; C DEFECTIVE) | 0 retrying | 1 defect held | 0 remaining | $1.50 spent (this task, AT CAP) | running rebuild spend $2.40 | HOLD for user pick
+
+_User reviewed nb1 (`z1-hearth-base-nb1@3x.png`) and REJECTED it for reading too photorealistic
+(architectural-viz / photo look). Mandatory template intent = "stylized real-time 3D game render, NOT
+painterly/matte-painting" — nb1 drifted photoreal. SEED-ONLY iteration: 3 candidates progressively
+pushing STYLIZATION so the user picks the degree. No cascade; nb1 kept in place for comparison; no
+commit (Producer commits)._
+
+_Correction (all candidates, user-approved): ONE clock only — single MANTEL clock bearing BOTH the
+Roman-numeral ring I–XII AND a cuckoo door above XII; REMOVE the separate wall-mounted cuckoo clock
+from nb1. Same fixed camera + §5.1 scene content + z1-cabin visually_necessary_elements. Duet §4:
+60% cool / 40% warm._
+
+_Anchors: nb1 plate (LAYOUT/framing continuity only, never a style ref) + masters/sky-master-nb2@3x
+(cool moonlight). Mandatory style template verbatim in every prompt; only stylization-degree language
+varies A→B→C. Method that worked: `edit` endpoint (preserves the approved §5.1 composition) + an
+explicit two-part correction clause (delete wall clock -> plain stone; add cuckoo door above XII)._
+
+_Method notes / discarded takes (counted in spend): A first try used the `edit` endpoint WITHOUT the
+reinforced correction -> copied nb1's two-clock layout + no cuckoo door (discard). A second try used
+`t2i` (no layout anchor) -> abandoned the §5.1 composition entirely + overshot stylization + spelled
+runes as letters (discard). Final method for all three = `edit` + reinforced correction clause._
+
+| # | Candidate | Stylization degree | Method | Status | Cost | Note |
+|---|-----------|--------------------|--------|--------|------|------|
+| A | z1-hearth-base-nbCA | lightly stylized (art-directed stylized realism) | edit 4K + corr (seed 30810) | done — PASS | $0.90 | includes 2 discarded takes (edit-no-corr, t2i). Correction PASS: 1 mantel clock, numeral ring I–XII legible + cuckoo door in peaked top; wall clock gone. Composition matches §5.1. Lightest of 3. DEFECT: lintel rune spelled "FIRE" as letters (flag — re-rendered at lintel close-up anyway). |
+| B | z1-hearth-base-nbCB | clearly / strongly stylized game art | edit 4K + corr (seed 30820) | done — PASS | $0.30 | Correction PASS: 1 mantel clock w/ numeral ring + cuckoo door above XII (recessed door visible in arched top); wall clock gone -> plain stone. Clearly stylized sculpted-stone game-art look; landed toward the strong end. DEFECT: lintel "FIRE" letters (same flag). Slight painterly lean on stone surface — flag. |
+| C | z1-hearth-base-nbCC | strongly stylized (intended) | edit 4K + corr (seed 30830) | done — DEFECTIVE | $0.30 | FAILS correction: wall cuckoo clock NOT removed (still upper-right) AND mantel clock has NO cuckoo door (reverted to nb1 two-clock layout). Also stayed closest to photoreal -> also missed the strongly-stylized brief. DO NOT USE. Re-roll needs a small budget bump beyond this task's $1.50 cap. |
+
+**RESOLVED 2026-07-08:** user picked **candidate B** (clearly-stylized game art). B promoted to
+canonical `z1-hearth-base` after the FIRE/AIR PIL glyph fix; A & C archived to _rejects/flux-painterly/.
+Stylization language of B is now the standing rebuild target (encoded in agent template).
+
+**HOLD — at $1.50 task cap.** Report A/B/C to user. A = lightly stylized (correction PASS). B =
+clearly/strongly stylized (correction PASS). C = defective (two-clock revert; least stylized).
+Recommend picking A or B; C-strong re-roll needs Producer/user budget go-ahead (+~$0.30). Chosen
+candidate becomes the locked seed + standing stylization language for the whole rebuild.
+
+---
+
+## BUILD-3 DERIVED-ASSET PHASE (resumed 2026-07-08 — close-ups / icons / sprites / state variants)
+
+DERIVED PROGRESS: 45/52 fresh done | 0 retrying | 0 failed | 0 remaining | $16.05 spent | COMPLETE. All fresh close-ups(30)+icons(15)+plates(6)+state variants(38) done. Grayscale gate PASS. All visually_necessary_elements present. Final $16.05 of $18.90.
+_Resumed after transcript loss. 7 bases + sky + cu-lintel-nb + cu-ash-undisturbed-nb already DONE (do not regen)._
+_Per-scene consistency (user directive): every derived asset anchors to ITS OWN zone base as PRIMARY ref + up to 13 more relevant refs. Do NOT force one zone's finish onto another._
+_Fresh renders = std tier $0.15 (2K -> ~2048px, 4:3 close-up plates unless noted). State variants + zoom crops + @2x/@1x = FREE PIL._
+_Pre-gen estimate: 52 fresh x $0.15 = $7.80 base; ~$10.15 w/ 30% retry buffer. $4.80 + $10.15 = $14.95 < $18.90 -> PROCEED._
+_Grayscale 2.3 gate on every glyph/precision asset. cu-slots MUST carry inset sun/moon RECESS geometry (wide shows raised medallions)._
+
+### z1-hearth fresh close-ups (anchor: z1-hearth-base seed)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| D-h1 | cu-clock-face | t2i std anchored | done | $0.30 | cu-clock-face-nb: numeral ring legible, cuckoo door above XII, 2 distinct hands. incl 1 retry (422 numeral-string reword). states via PIL. |
+| D-h2 | cu-bellows-rune | t2i std anchored | done | $0.15 | cu-bellows-rune-nb: AIR triangle-with-bar + numeral I crisp. Grayscale PASS (reads by shape). |
+| D-h3 | cu-dial-panel | t2i std + PIL relief | done | $0.30 | cu-dial-panel-nb: head-on substrate (persp take archived) + PIL 8-phase moon stamp on all 3 dials. Waxing lit-RIGHT / waning lit-LEFT, unmistakable. Grayscale 2.3(1)/A5/R5 PASS. incl 1 regen. |
+
+### z1-study fresh close-ups (anchor: z1-study-base)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| D-s1 | cu-grimoire-A | t2i std anchored | done | $0.15 | cu-grimoire-A-nb: 4 element runes+pictograms (FIRE=up-tri/flame, WATER=down-tri/wave, AIR=tri-bar/cloud, EARTH=down-tri-bar/mountain). Matches scene glyph legend. Grayscale PASS. |
+| D-s2 | cu-grimoire-B | t2i std anchored | done | $0.15 | cu-grimoire-B-nb: sun+ring / crescent+crescent-coin mapping clue. Legible. |
+| D-s3 | cu-grimoire-recipe | t2i std anchored | done | $0.15 | cu-grimoire-recipe-nb: feather bookmark + moonflower/pestle, filed crescent-metal, feather-into-hand, flame+III, CCW 5-dot spiral (arrowhead confirms CCW center-out). R3 handedness = brew view (enforce on cu-brew). |
+| D-s4 | cu-grimoire-zodiac | t2i std anchored | done | $0.15 | cu-grimoire-zodiac-nb: DECOY, uniform line weight, no highlighted constellation. |
+| D-s5 | cu-grimoire-bird | t2i std anchored | done | $0.15 | cu-grimoire-bird-nb: DECOY graphite crow study, no callouts. |
+| D-s6 | cu-triptych-1 | t2i std anchored | done | $0.15 | cu-triptych-1-nb: 1 crow, waxing-crescent moon (lit right), same bare tree left. Painted-artifact. Grayscale PASS. |
+| D-s7 | cu-triptych-2 | t2i std anchored | done | $0.15 | cu-triptych-2-nb: 2 crows, full moon, same tree. PASS. |
+| D-s8 | cu-triptych-3 | t2i std anchored | done | $0.15 | cu-triptych-3-nb: 3 crows, waning-gibbous moon (lit left), same tree. PASS. |
+| D-s9 | cu-flowerpot-rune | free crop OR t2i | done | $0 | cu-flowerpot-rune-nb: FREE crop off study base. EARTH down-tri-with-bar + III engraved in clay, legible. Grayscale PASS. |
+| D-s10 | cu-runedoor-tiles | t2i std anchored | done | $0.15 | cu-runedoor-tiles-nb: 4 pressable brass rune tiles, generic runes (no code leak), pressed/unpressed relief. Pressed-state variants via PIL. |
+
+### z1-entry fresh close-ups (anchor: z1-entry-base)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| D-e1 | cu-door-lock | t2i std anchored | done | $0.15 | cu-door-lock-nb: unified crow-beak basin (one carved piece, beak IS basin) over vine-wrapped bolt. AF-1 canonical. Basin states via PIL. |
+| D-e2 | cu-star-keyhole | t2i std anchored | done | $0.15 | cu-star-keyhole-nb: clean 5-point star socket, rejects plain key. PIL-patched OUT a baked 'INTERACT' text/icon (no-text rule). key-in-lock frame via PIL. |
+| D-e3 | cu-rusted-key | free crop OR t2i | done | $0.15 | cu-rusted-key-nb: bent rusted key, plain simple bit (no star) = fairness valve, visually rejects star keyhole. |
+| D-e4 | cu-windowsill-rune | free crop OR t2i | done | $0.15 | cu-windowsill-rune-nb: WATER down-triangle + IV etched in sill, moonlit. Grayscale PASS (slight perspective skew, legible). |
+| D-e5 | cu-cage-crow | t2i std anchored | done | $0.15 | cu-cage-crow-nb: live corvid (register 1, glossy, catch-light) + brass feed cup in bars = base CAGED state. Refusal-pose + crow-states via PIL variants. |
+
+### z2-bench fresh close-ups (anchor: z2-bench-base)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| D-b1 | cu-brew | t2i std anchored | done | $0.15 | cu-brew-nb: ~65deg top-down over rim; pearlescent draught w/ CCW spiral (handedness matches recipe page, R3 PASS) + ladle CCW ripple; rim runes I/II/III w/ lit ember channels. clear/fizzle states via PIL. |
+| D-b2 | cu-mortar | t2i std anchored | done | $0.15 | cu-mortar-nb: empty stone mortar+pestle, warm key light. blossom/paste states via PIL. |
+| D-b3 | cu-rim-rune | free crop OR t2i | done | $0.15 | cu-rim-rune-nb: I/II/III rim runes w/ molten ember channels, firelight. flame-stage detail. |
+
+### z2-cabinet fresh close-ups (anchor: z2-cabinet-base)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| D-c1 | cu-slots | t2i std anchored | done | $0.15 | cu-slots-nb: CRITICAL PASS - both slots are INSET RECESSES (sun ring-annular seat + crescent cavity, visible interior depth/shadow, NOT raised medallions). Crescent horns RIGHT = canonical. seated/open states via PIL. |
+| D-c2 | cu-astrolabe-plate | t2i std + PIL orion | done | $0.30 | cu-astrolabe-plate-nb: regen as BLANK brass disc (dots take archived) + PIL canonical 7-dot Orion stamp from orion-canonical.json (belt 35deg, clears hub). Grayscale PASS. Other 5 plate dot-patterns via PIL (SP-2/32). incl 1 regen. |
+| D-c3 | cu-potion-shelf | t2i std anchored | done | $0.15 | cu-potion-shelf-nb: 5 distinct bottle sils + wax seals + labels: frost(snowflake)/growth(seedling)/sleep(CLOSED lidded eye, AF-4 correct)/2 decoys. Blind-name PASS in grayscale. |
+| D-c4 | cu-window-orion | free crop from canonical sky | done | $0 | cu-window-orion-nb: FREE crop of cabinet window (canonical moon lit-right + 7-dot Orion). In-scene sky the player matches to plate-2. |
+| D-c5 | cu-coin-hallmark | t2i std + PIL hallmark | done | $0.15 | cu-coin-hallmark-nb: silver coin, crescent hallmark horns-RIGHT = canonical die (matches cu-slots crescent + spoon bowl). Legible. |
+
+### z3-cellar fresh close-ups (anchor: z3-cellar-base)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| D-z1 | cu-winch-socket | t2i std anchored | done | $0.15 | cu-winch-socket-nb: iron hub w/ EMPTY SQUARE SOCKET (crank-shaped absence, too big/wrong for key) + pulley/rope. crank-fitted via PIL. |
+| D-z2 | cu-mirror-scratches | t2i std anchored | done | $0.15 | cu-mirror-scratches-nb: floor mirror on iron stand w/ detent bracket + pale scratch arcs worn in dirt floor. mirror-sweep/detent states via PIL. |
+| D-z3 | cu-spoon-drawer | t2i std + PIL hallmark | done | $0.15 | cu-spoon-drawer-nb: open drawer + silver spoon; PIL-stamped canonical crescent hallmark (horns RIGHT) in bowl = coin die match. PASS. |
+| D-z4 | cu-barrel-gap | t2i std anchored | done | $0.15 | cu-barrel-gap-nb: barrel nailed lid w/ visible pry-gap wedge + lifted nails. pried+weight state via PIL. |
+
+### z4-alcove fresh close-ups (anchor: z4-alcove-base)
+| # | Asset | Method | Status | Cost | Note |
+|---|-------|--------|--------|------|------|
+| D-a1 | cu-statue-key | t2i std anchored | done | $0.15 | cu-statue-key-nb: dignified folk-art carved crow (register 3, not toy/not alive) + 5-point star-bit key in beak (matches cage keyhole/cage-key icon). key-taken via PIL. |
+| D-a2 | cu-planter-closed | t2i std anchored | done | $0.15 | cu-planter-closed-nb: moonflower buds tightly closed, cool moonlit, shrine niche = base state. trembling/blooming(radial glow)/picked via PIL. |
+
+### Icons (15) — white-bg t2i std + PIL cutout to RGBA
+| # | Asset | Status | Cost | Note |
+|---|-------|--------|------|------|
+| I-1 | icon-poker | pending | done | $0.15 | icon-poker-nb RGBA: iron poker+hook+loop, loop hole transparent. Clean cutout. |
+| I-2 | icon-gold-ring | pending | done | $0.15 | icon-gold-ring-nb RGBA: plain gold band, center hole transparent. |
+| I-3 | icon-rusted-key | pending | done | $0.15 | icon-rusted-key-nb RGBA: bent rusted key, plain snapped bit, bow hole transparent. |
+| I-4 | icon-feather | pending | done | $0.15 | icon-feather-nb RGBA: glossy black feather w/ iridescence. |
+| I-5 | icon-crank | pending | done | $0.15 | icon-crank-nb RGBA: AF-2 Z-crank (square drive+offset arm+wood grip), reads crank not knife. |
+| I-6 | icon-file | pending | done | $0.15 | icon-file-nb RGBA: steel file w/ cross-hatch + wood handle. |
+| I-7 | icon-phial | pending | done | $0.15 | icon-phial-nb RGBA: empty glass vial+cork. |
+| I-8 | icon-phial-draught | pending | done | $0.15 | icon-phial-draught-nb RGBA: pearlescent draught, silhouette matches empty phial. |
+| I-9 | icon-silver-coin | pending | done | $0.15 | icon-silver-coin-nb RGBA + PIL canonical crescent hallmark (horns RIGHT). Matches spoon/cu-slots/cu-coin. |
+| I-10 | icon-paste | pending | done | $0.15 | icon-paste-nb RGBA: pale moonflower paste in stone dish. |
+| I-11 | icon-spoon | pending | done | $0.15 | icon-spoon-nb RGBA + PIL canonical crescent hallmark in bowl (matches coin). |
+| I-12 | icon-weight | pending | done | $0.15 | icon-weight-nb RGBA: iron plumb weight, ring loop hole transparent. |
+| I-13 | icon-shavings | pending | done | $0.15 | icon-shavings-nb RGBA: curled silver filed shavings. |
+| I-14 | icon-blossom | pending | done | $0.15 | icon-blossom-nb RGBA: luminous moonflower blossom + green stem. |
+| I-15 | icon-cage-key | pending | done | $0.15 | icon-cage-key-nb RGBA: iron key w/ crisp 5-POINT STAR bit (matches star keyhole + statue key), bow hole transparent. |
+
+### Sprites (glyph/geometry — fresh where render needed)
+| # | Asset | Status | Cost | Note |
+|---|-------|--------|------|------|
+| SP-1 | dial-face (moon-phase blank) | pending | done | $0 | moon-phase geometry stamped into cu-dial-panel (8 phases x 3 dials). No separate sprite. |
+| SP-2 | astrolabe-plate-blank | pending | done | $0 | astrolabe-plate-blank + 6 plates: plate-2-nb = canonical Orion (from cu-astrolabe-plate, orion-canonical.json); plates 1/3/4/5/6 = distinct decoy 7-dot patterns, identical dot size/finish (no luminance tell), PIL-stamped. |
+| SP-3 | astrolabe-pointer | pending | done | $0 | astrolabe-pointer: brass index needle present in every plate render (rotates as unit); no separate sprite needed. |
+| SP-4 | rune-ember-lit | pending | done | $0 | rune-ember I/II/III: delivered in cu-rim-rune-nb (lit ember channels) + cu-brew rim runes; per-stage lit variants = PIL off those. |
+| SP-5 | ladle-ripple-ccw | pending | done | $0 | ladle-ripple-ccw: delivered in cu-brew-nb (CCW glowing ripple arc, R3 handedness). Stir-feedback frames = PIL/animation off cu-brew. |
+
+### State variants (FREE PIL off fresh bases/close-ups) — rolled up per zone
+_All same-camera same-lighting; PIL overlay/crop-edit; pixel-aligned to base by construction._
+- z1-hearth: poker-taken, rug-moved, trapdoor-open, ash-sifted, ash-ring-taken, clock-pop, clock-spent
+- z1-entry: cage-open, crow-rafters, crow-lintel, vines-withered, vines-gone, basin-filled, basin-drained, bolt-free, bolt-slid, key-in-lock
+- z2-bench: flame-1/2/3, brew-fizzle, brew-draught, mortar-blossom, mortar-paste
+- z2-cabinet: cabinet-open, drawer-open, slots-seated, astrolabe-drawer-open
+- z3-cellar: rebuild via PIL off fresh cellar base + beam engine (barrel-pried/drawer-open/weight-hung/shelf-slid/crank-fitted/mirror-d2/d3/beam matrix)
+- z4-alcove: planter-trembling, planter-blooming, planter-picked, statue-key-taken

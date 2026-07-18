@@ -36,12 +36,21 @@ struct MainMenuView: View {
                         }
                         .buttonStyle(.chromePrimary)
                         .accessibilityIdentifier("menu-play")
+                        // R3-001: Play is a MAJOR action -> subtle confirm tone (no level
+                        // music yet — that starts only when the level scene appears).
+                        .simultaneousGesture(TapGesture().onEnded {
+                            SoundManager.shared.play(.menuConfirm)
+                        })
 
                         NavigationLink(value: MenuDestination.settings) {
                             Label("Settings", systemImage: "gearshape")
                         }
                         .buttonStyle(.chromePrimary)
                         .accessibilityIdentifier("menu-settings")
+                        // R3-001: soft tactile menu click for a plain navigation button.
+                        .simultaneousGesture(TapGesture().onEnded {
+                            SoundManager.shared.play(.menuConfirm)
+                        })
                     }
 
                     Spacer()

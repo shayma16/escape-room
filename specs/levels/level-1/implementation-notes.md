@@ -708,3 +708,1239 @@ Two prior red runs on this branch, both fixed:
   guard had never actually run green before (it shipped in PR #2 whose merge run was a 3 s
   no-op). Rewrote it to assert the app WINDOW frame is landscape (origin 0,0; width > height),
   which is the guard's real intent and is environment-robust.
+
+
+---
+
+## Round 2 fix batch (build 3) - 2026-07-08
+
+Build 3 = new build-3 engine-render art + the round-2 Developer fix clusters, on branch
+`level1-rebuild-build3`. Framing (per feedback-backlog ROUND 2 PROCESSED): the level was
+completable end-to-end; every issue was presentation-layer. Root-cause clusters below.
+
+### Part 1 - art integration + build-pipeline gaps (flagged to Producer for the ledger)
+
+The bundle is (re)staged deterministically by tools/build_game_assets.py from the approved
+build-3 plates under specs/assets/level-1/. Integrating the new art surfaced three build-3
+asset-delivery inconsistencies handled defensively in the build script (flagged here for the
+Producer / Asset-Gen; the level builds and renders correctly now):
+
+- G1 - missing/renamed z1-hearth wide variants. Build 3 shipped poker-taken and trapdoor-open
+  ONLY as raw -nb files (never promoted to the canonical filename) and shipped NO rug-moved
+  plate at all. Fix: resolve_src() prefers the canonical name then falls back to -nb;
+  rug-moved is DERIVED from the build-3 trapdoor-open plate by inpainting the raised lid +
+  haze into a dark closed recess (real build-3 art, deterministic; the 3-dial detail lives in
+  the cu-dial-panel close-up).
+- G2/G3 - base/variant dimension + generation mismatch. Build-3 BASE plates are fresh 4K
+  (3840x1920); the state-VARIANT wide plates are superseded-generation region-edits at
+  2560x1280 that do NOT pixel-align with the new bases, so automatic diff-overlays produced
+  garbage full-frame crops (whole frame differs even at matched size / high threshold). Fix:
+  the misaligned wide states are composited from hand-specified element-rect crops
+  (MANUAL_OVERLAYS, rects from the known hotspot geometry) out of the size-matched variant,
+  so the coordinator's multi-state overlay layering still works with only the intended element
+  replaced. Residual: minor tonal drift inside a crop where the variant's global lighting
+  differs from the 4K base (feather-softened). A future Asset-Gen pass could re-derive these
+  variants against the 4K bases for pixel-perfect crops.
+
+Only genuinely-aligned variants still use the automatic diff (ov-poker-taken, and the
+G1-derived ov-rug-moved / ov-trapdoor-open).
+
+### Part 2 - fix clusters
+
+CLUSTER B (progression soft-lock) - RESOLVED. Root cause was at the STAGING layer: the two
+solved-container OPEN close-up plates cu-cabinet-open and cu-astrolabe-drawer-open were absent
+from PLAIN_PLATES, so ContainerCloseUp rendered a missing texture -> the grey box where
+coin/crank (p03) and file/phial (p04) were invisible/uncollectible. Both are now staged; the
+container close-ups render the open plate with tappable item targets. Wide-view resolved
+states render via the localized manual overlays. All RoomVisuals resolvers are f(state) ->
+image, never event-ordered.
+
+CLUSTER A (sound) - RESOLVED. Confirmed NO default per-tap sound: the only always-on tap
+feedback (RoomScene.flashTapFeedback) plays nothing (visual parchment pulse only), so R2-024's
+"psh on every tap incl. nav/empty" cannot recur. Cues are event-mapped (pickup kept per
+R2-002; solve/unlock/door/page/etc.). Added a themed sfx-door cue for the rune door + front
+door (R2-015a). SoundManager now has two independent channels - ambianceEnabled (music + beds)
+and sfxEnabled (interaction cues). The user-supplied music-level1.wav loops seamlessly as the
+level bed at an unobtrusive volume, REPLACING the ocean ambience (R2-004/005); the per-zone
+amb-z* loops are retained as a very faint tint UNDER the music so zones stay tonally distinct.
+Music rights: fal.ai-generated, user-owned, commercial use OK (Producer-cleared 2026-07-08;
+see licensing table).
+
+CLUSTER C (item lifecycle) - RESOLVED. Ash ring is now manual pickup: siftAsh reveals the ring
+(no auto-grant) and the new .ashPile close-up shows a tap-to-collect ring, then the cleared
+plate renders (R2-003a). dropItemIfDepleted implements R2-020 place/consume/retain: a tool is
+retained while any graph uses entry is unsatisfied and dropped once ALL are done (poker = p05
+ash AND p06 barrel; crank = p08; weight = p07; file = p12; cage key = p11) - never before,
+preserving anti-softlock. R2-030: useItem returns Bool; a wrong-target no-op keeps the item
+ARMED, disarm only on a successful/engaged use. R2-028: a combinable inventory item shows a
+clear combine link badge + amber backing when its partner is armed.
+
+CLUSTER D (navigation) - RESOLVED. R2-008 swipe cycles views (arrows stay) and flips grimoire
+pages (navigation swipe only; item-drag stays removed). R2-021 transient first-run directional
+hint (SF-Symbol glyphs + brief captions, auto-hides after ~3s, shown once per install via
+UserDefaults - near-wordless-safe). R2-023b single-view zones (cellar/alcove) get a clear
+always-visible down-chevron EXIT affordance routing the diegetic passage back.
+
+CLUSTER F (R2-007) - RESOLVED. The triptych is now three per-panel hotspots, each opening its
+OWN close-up (tapping the 3-crow right panel opens the 3-crow close-up), fixing the right->left
+mismap. Shared clu-triptych gate id preserved.
+
+CLUSTER G / Q3 - cuckoo REMOVED. No cuckoo pop, no cu-clock-pop/cu-clock-spent states, no D5
+latch/setClockToTwelve. The mantel clock is purely the p01 numeral-ring reference (hands still
+move cosmetically). GRAPH NOTE for the Producer/ledger: this is the only graph-affecting change
+- drop the D5 cuckoo one-shot from the design (rh-clock is now just the numeral reference).
+clockCuckooSpent flag kept for save migration only.
+
+Q1 - depleted-hotspot pruning: the barrel (after weight taken) and the planter (after the
+single blossom picked) no longer offer a pointless zoom; their spent state shows in the wide
+view. Red-herring decoys (potion shelf, decoy grimoire pages) stay zoomable by design.
+
+Q2 - rotate-to-inspect: DEFERRED to Level 2+ per user decision; TODO note left in
+InventoryBarView.swift above ItemInspectView.
+
+R2-006 - settings: two independent, separately-persisted toggles (Music & Ambiance / Sound
+Effects) replacing the single Sound toggle. specs/global-ui-style.md sections 5.4/8 updated
+with the second speaker-state row. SaveGame migrates both from legacy soundOn.
+
+### Part 4 - tests verify like a player
+New/updated unit tests assert the rendered/collectible outcome, not just engine flags: the ash
+close-up presents .ashPile and the ring is revealed-then-collected (not auto-granted);
+container yields are collected via explicit taps; a failed use keeps the item armed (R2-030);
+the clock is inert (Q3). The full-playthrough engine flows now collect the ash ring the
+two-step way (siftAndCollectRing).
+
+#### Build-3 CI test fixes (2026-07-08) — two stale unit tests corrected, no code change
+The build-3 batch left two obsolete test assertions that failed CI run 28965195362; both
+were fixed at the TEST layer (the shipped code was already correct):
+- `testClockCloseUpAdvanceTriggersOneShotAtTwelve_D5` asserted the removed D5 cuckoo
+  one-shot latch (`clockCuckooSpent` set on reaching XII). Per the Q3 cuckoo removal the
+  clock never latches state, so the test was obsolete. REMOVED and replaced with
+  `testAdvancingClockHandsNeverLatchesState_Q3`, which asserts the inverse — sweeping the
+  hands past XII writes no cuckoo state (complements `testClockIsInertReference`). No other
+  test/code references the retired cuckoo latch (`clockCuckooSpent` survives only as the
+  save-migration flag + its legacy-save render test at PuzzleEngineTests:277).
+- `testGatingCloseUpsRecordClueNodeIDs` tapped a `"triptych"` hotspot that no longer
+  exists: the R2-007 (CLUSTER F) batch split the triptych into three per-panel hotspots
+  (`triptych-1/2/3`). The retired id matched no `handleTap` case, recorded no clue, and the
+  `clu-triptych` assertion failed. This was a TEST bug from the R2-007 change, NOT a code
+  regression — the coordinator still records the shared `ClueID.triptych` from any panel
+  (`.triptych(panel:) -> id "triptych" -> gatingClues -> [ClueID.triptych]`). Fixed by
+  tapping the real right/3-crow panel `triptych-3`; the p01/p02/p03/p04/p14 clue-gate
+  mappings it asserts (markAir/markFire/markEarth/markWater/triptych/windowOrion) are
+  otherwise unchanged and correct.
+
+Fixing the two unit tests unblocked the job, which then reached the iPhone-SE UI-test
+step for the first time (the full-playthrough UI test runs on iPhone SE only; the earlier
+unit-test failure had aborted the job before any UI step ran). That step exposed a THIRD
+stale test — again a TEST fix, not a code bug:
+- `testFullPlaythroughWithScreenshots` + `testSaveResumeMidPlaythroughPersistsGate` sifted
+  the ash then immediately asserted `itm-gold-ring` was in the inventory bar. R2-003a made
+  sifting REVEAL the ring in the ash close-up (tap-to-collect), not auto-grant it, so the
+  ring was never in inventory at the assert. Fixed by inserting the explicit
+  `collect-itm-gold-ring` tap (the R2-003a reveal-then-collect flow already covered by the
+  unit test `testBareTapNeverAutoAppliesHeldItem_ashSift`) before the assert. The shipped
+  two-step ash/ring behavior is correct and unchanged.
+
+With the ash-ring collect in place the full-playthrough UI test ran end-to-end for the
+first time and surfaced a FOURTH stale test spot (again TEST-only, not a code bug):
+- `testFullPlaythroughWithScreenshots` performed the file+spoon combine by tapping
+  `inventory-itm-file` then `inventory-itm-spoon`. R2-028 gives a combinable cell a
+  "combine" affordance while another item is armed, and (InventoryBarView.swift:128) flips
+  that cell's accessibility id to `combine-<item>`. So once the file is armed the spoon
+  cell is `combine-itm-spoon`, not `inventory-itm-spoon`, and the old id no longer existed
+  ("inventory-itm-spoon must exist"). Fixed the test to tap `combine-itm-spoon` — the
+  shipped R2-028 combine gesture. file+spoon is the game's only combinable pair, so this is
+  the only combine spot affected.
+
+All four fixes are at the TEST layer; no shipped game code changed. Root cause pattern:
+the build-3 batch changed several interaction contracts (Q3 cuckoo removal, R2-007 triptych
+split, R2-003a reveal-then-collect ring, R2-028 combine affordance) but the corresponding
+unit/UI test assertions were not all updated, and the UI-playthrough failures were masked
+because the job aborted at the first failing unit step.
+
+CI GREEN run: https://github.com/shayma16/escape-room/actions/runs/28969620585 — all steps
+success: Build (iOS Simulator); Unit tests x3 (iPad 13-inch, iPhone SE, Dynamic Island
+iPhone); UI tests x3 (iPhone-SE full playthrough + smoke + save-resume, iPad smoke +
+save-resume, Dynamic Island safe-area screenshots). Predecessor failing run was
+28965195362 (2 unit tests); intermediate runs 28966543895 and 28967618579 surfaced the
+UI-playthrough staleness in sequence as each earlier failure was cleared.
+
+### Security checklist (re-run for build 3)
+- No development-time secrets in the shipped app. Grepped source + bundled resources for
+  fal/api/key/secret/token/Bearer/sk- - no hardcoded keys/credentials; the fal.ai key is used
+  only at asset-generation time and lives in the gitignored .env (never copied into any
+  bundle/build phase). PASS.
+- Minimal entitlements/permissions. No NS*UsageDescription strings and no camera/mic/location/
+  contacts capabilities; the app requests none. PASS.
+
+### Sound-source licensing table (build 3)
+| File | Source | License / rights |
+|---|---|---|
+| music-level1.wav | User-provided, fal.ai-generated | User-owned; commercial use OK (Producer-cleared 2026-07-08) |
+| sfx-*.wav, amb-z*.wav | Synthesized in tools/build_game_assets.py | Original work, no third-party license |
+
+### CI
+Round-2 build-3 CI run: https://github.com/shayma16/escape-room/actions/runs/28965195362
+(branch level1-rebuild-build3). Iterating to green before QA handoff.
+
+---
+
+## Build-3 consistency re-roll integration (2026-07-09, branch level1-rebuild-build3)
+
+Asset agent re-rolled several Level-1 close-ups/plates for wide↔close-up consistency
+(manifest block `build3_consistency_reroll_2026_07_09`; asset-progress "Build-3
+consistency re-roll"). This pass re-staged the corrected drop-in plates into the app
+bundle via the existing deterministic pipeline `tools/build_game_assets.py` (GameAssets
+is a folder reference, so no `.xcodeproj` edits were needed). No game logic changed.
+
+### Re-staged bundle files (14)
+- `z1/v-entry/cu-door-lock.jpg` (+ `cu-door-lock-basin-drained/-basin-filled/-vines-withered/-vines-gone/-bolt-slid.jpg`)
+  — beak-basin now GREY STONE (was warm-wood). **`cu-door-lock-vines-gone.jpg` specifically
+  flagged by the Asset agent as STALE build-2 painterly art in the bundle — now replaced
+  with the corrected grey-stone plate** (verified visually: grey-stone raven beak-basin).
+- `z2/v-cabinet/cu-slots-empty.jpg`, `cu-slots-seated.jpg` — now the TWO-DOOR ARMOIRE
+  (SUN recess left / crescent MOON recess right, ring pulls) instead of drawers. The game
+  loads the empty/seated STATE close-ups (RoomViewState.swift picks by `cabinetSunMoon`
+  solved); there is no standalone `cu-slots.jpg` target, so the re-rolled base
+  `cu-slots-nb` is consumed only through its empty/seated variants — matches Part-1 mapping.
+  (Color-blind-safe: sun vs crescent SHAPE is the primary cue, not colour.)
+- `z4/v-alcove/cu-statue-key.jpg`, `cu-statue-key-taken.jpg` — GOLD 5-pt star key on
+  plain grey stone (was silver + invented runes); taken state shows empty beak, consistent.
+- `z1/v-hearth/z1-hearth-rug-moved.jpg`, `overlays/ov-rug-moved.jpg`,
+  `overlays/ov-trapdoor-open.jpg`, `overlays.json` — see G1 below.
+
+### Pipeline judgment call: canonical-vs-`-nb` resolution order (JUDGMENT)
+The corrected close-up BASES shipped under `-nb` names (`cu-door-lock-nb`,
+`cu-statue-key-nb`, `cu-statue-key-taken-nb`), but STALE build-2 canonical `@3x` files
+(`cu-door-lock@3x`, `cu-statue-key@3x`, `cu-statue-key-taken@3x`) still exist on disk and
+are the ones the game actually loads (`cu-door-lock.jpg` / `cu-statue-key.jpg` /
+`cu-statue-key-taken.jpg`). The pipeline's `resolve_src` previously preferred any existing
+canonical, so it would have silently re-shipped the stale art. Fix: added these three paths
+to `SRC_OVERRIDE` **and** reordered `resolve_src` so an explicit override wins BEFORE the
+on-disk canonical (an override is a deliberate supersede, not a fallback). The other five
+door variants (basin-filled/-drained, vines-withered/-gone, bolt-slid) plus slots
+empty/seated already had FRESH re-rolled canonical `@3x` files, so a plain pipeline re-run
+picked them up automatically.
+
+### G1 rug-moved — no new state wiring needed (already present)
+The rug/trapdoor wide state machine ALREADY existed in `RoomSceneCoordinator.refreshHearth`
+(rug hotspot → `PuzzleEngine.moveRug` sets `rugMoved` flag → `ov-rug-moved` overlay renders
+over the base; trapdoor-dial → dial-panel close-up → on solve `ov-trapdoor-open` renders).
+Part-1 had SYNTHESIZED the rug-moved wide state by inpainting the lid out of the
+trapdoor-open plate (there was no real rug-moved art then). This pass swaps that synthetic
+derivation for the REAL re-rolled plate `z1-hearth-rug-moved-nb` (folded rug + CLOSED
+trapdoor + ring pull). So: the wide state was NOT missing and needed NO logic/state change —
+only the overlay SOURCE improved (synthetic → real art). Verified visually.
+
+Overlay-derivation judgment (JUDGMENT): the three hearth plates (base, rug-moved-nb,
+trapdoor-open-nb) are nano-banana region-edits and carry GLOBAL tonal drift (a full-frame
+diff trips everywhere even at threshold 90 — same class as build-3 gap G3), so the
+automatic diff-overlay cannot localise them. Moved `ov-rug-moved` / `ov-trapdoor-open` to
+the hand-rect crop mechanism (rects 0.14,0.70,0.60,0.30 and 0.30,0.68,0.44,0.32, measured
+from the plates and matching the rug / trapdoor-dial hotspot footprints). The resulting
+rects are within ~2% of the previously derived ones, confirming the geometry is unchanged.
+
+### Security checklist (re-run for this pass)
+- No development-time secrets in the shipped app: re-grepped source + bundled resources
+  for fal/api/key/secret/token/Bearer/sk- — none; fal.ai key remains only in gitignored
+  .env, never bundled. PASS.
+- Minimal entitlements/permissions: unchanged (no code/entitlement changes this pass); no
+  NS*UsageDescription strings, no camera/mic/location/contacts capabilities. PASS.
+
+### CI
+GREEN: https://github.com/shayma16/escape-room/actions/runs/28978252461 (branch
+level1-rebuild-build3, workflow_dispatch). All steps success: Build (iOS Simulator);
+Unit tests x3 (iPad 13-inch, smallest iPhone, Dynamic Island iPhone); UI tests x3
+(iPhone-SE full playthrough + smoke + save-resume, iPad smoke + save-resume, Dynamic
+Island safe-area screenshots). The player-style UI playthrough passes with the re-staged
+plates. No test or game code changed this pass -- asset re-staging only.
+
+---
+
+## QA-B3-001 / QA-B3-002 viewport fix (build 3.1, 2026-07-09)
+
+Presentation-layer-only fix on branch `level1-rebuild-build3` for the build-3 player-style
+NO-GO. No puzzle logic / art / spec change; engine, hotspot rects, close-ups, gating, and
+all puzzle values are untouched.
+
+### QA-B3-001 (CRITICAL) — investigation, root-cause verdict, and resolution
+**Verdict: the "square viewport / dead black band" is a CI-SIMULATOR SCREENSHOT
+RASTER-LETTERBOX ARTIFACT, not an in-app layout bug.** FLAG TO QA/PRODUCER: build-3 QA
+overturned build-2's "screenshot-fidelity limitation" ruling based on the CI screenshots;
+this pass RE-ESTABLISHES that ruling with a controlled multi-build experiment.
+
+- **Evidence (decisive):** the pixel content-fill measured on the CI screenshot was
+  **byte-identical (0.5622 = 750/1334 on iPhone SE) across SEVEN architecturally different
+  builds** — bare `SKView`; `SKView` sized from a `GeometryReader` full-proposal +
+  `autoresizingMask`; `SKView` re-presented only at non-empty bounds; a `FullWindowFrame`
+  that pins the level content to the true `UIWindow.bounds`; `GameRoomView`
+  `.frame(maxWidth:.infinity).ignoresSafeArea()`; a `requestGeometryUpdate(.landscape)` +
+  AppDelegate landscape lock; and a full UIKit `AppDelegate`/`SceneDelegate` +
+  landscape-locked `UIHostingController`. **Nothing the app code can change moved the
+  number.** In the final diagnostic ALL logical frames — the app window, the `room-scene`
+  SpriteKit element, and the whole screen — report the SAME full landscape width, while
+  only the RASTERISED screenshot is boxed to a 750 px (= screen-height) square. I.e. the
+  app lays out and renders full-width; the portrait-booted CI simulator's screenshot
+  compositor letterboxes the raster. Real devices are landscape-locked at springboard and
+  fill the screen — the user's on-device TestFlight spot-check is the final confirmation.
+- **Why it looked real in build-3 QA:** the CI screenshots genuinely show the boxed raster
+  (room art left, black band right; chrome text rotated). That is faithful to what the
+  simulator RASTERISES, but not to the app's logical composition or to a real device.
+- **Resolution (no app-side "fix" was warranted or possible):** all speculative
+  app-layout/orientation experiments were REVERTED back to the build-3 base. The only app
+  change kept in this pass is the QA-B3-002 chrome fix (below). The QA-B3-001 regression
+  guard was re-targeted to the harness-immune invariant the bug is really about (see "New
+  regression assertions"). A reliable headless simulator-rotate is not available on these
+  runner images, so screenshot-fidelity landscape rotation is deferred to the user's device
+  spot-check rather than a fragile AppleScript CI step.
+
+### QA-B3-002 (MAJOR) — a REAL fix (independent of the 001 raster artifact)
+The completion-card truncation and the pause-menu clipping ARE genuine layout bugs
+(reproducible independent of the 001 raster artifact), and this pass fixes them. Two fixes:
+- **Label truncation ("Main Men" / "Play Agai"):** `ChromePrimaryButtonStyle` had a min-width
+  but no line/width handling, so the `Label` truncated in narrow contexts. Added
+  `.lineLimit(1)` + `.fixedSize(horizontal: true, vertical: false)` so the capsule grows to
+  fit the text (min-width stays a lower bound).
+- **Pause menu crammed bottom-left / off-screen on Dynamic Island:** the pause menu was a
+  `.sheet`, which on a landscape iPhone / DI device composes as a narrow partial page. Moved
+  it to a FULL-SCREEN overlay inside the game ZStack (same pattern as the completion card),
+  with a full-window scrim and `.frame(maxWidth:.infinity, maxHeight:.infinity)` so the
+  button column centers within the safe area on every device.
+
+### Hotspot / coordinate re-verification (result)
+Hotspot rects are plate-normalized against the fixed 2732×1366 scene and are UNCHANGED; the
+UI-test `sceneCoordinate` full-frame `.aspectFill(2732×1366)` math is UNCHANGED. Because the
+app's LOGICAL composition was always full-width (the 001 boxing is a raster artifact, not a
+layout change), the scene/coordinate math needed no change. The scripted full playthrough was
+re-run (shared `solveLevelOne` helper) and completes end-to-end on iPhone SE — every scene
+tap lands on its hotspot and every `assertHolding` milestone passes, empirically confirming
+the hotspot/coordinate geometry is correct under the shipped composition.
+
+### New regression assertions
+Both in `EscapeRoomUITests.swift`:
+1. `testSceneContentFillsScreen_QA_B3_001` — asserts the harness-immune invariant QA-B3-001
+   is really about: the SpriteKit `room-scene` view spans the FULL landscape WINDOW (points)
+   on BOTH axes and is landscape (width ≥ height), never a square viewport. This FAILS loudly
+   on a genuine square-viewport / dead-band LAYOUT regression (the scene view collapsing to a
+   square) and PASSES on the correct full-window layout — independent of the CI raster
+   letterbox. The pixel content-fill fractions (whole screen + scene-frame crop) are recorded
+   as a diagnostic attachment (`b3-001-geometry-diagnostic`) documenting the raster artifact.
+   Runs on the iPhone-SE, iPad, and Dynamic-Island UI CI steps. NOTE: this is deliberately a
+   LOGICAL guard, not a raw-pixel screenshot check — a raw-pixel content-fill assertion is
+   unsatisfiable on the portrait-booted CI simulators (see the QA-B3-001 verdict) regardless
+   of app correctness, so it would false-fail forever; the logical guard is the truthful,
+   regression-catching equivalent.
+2. `testChromeFullyOnScreen_QA_B3_002` — asserts the pause-menu buttons and the completion-
+   card buttons (`complete-main-menu`, `complete-replay`) have frames fully inside the
+   window bounds (catches the clip; buttons resolve by accessibility id regardless of visible
+   position, so a frame check is what actually detects it). Runs the full solve, so it stays
+   on the unfiltered iPhone-SE UI step to respect the CI time budget. This guard was RED on
+   the pre-fix build and is GREEN after the QA-B3-002 chrome fix.
+
+### Security checklist (re-run for this pass)
+- No development-time secrets in the shipped app: re-grepped source + bundled resources for
+  fal/api/key/secret/token/Bearer/sk- — none; fal.ai key remains only in gitignored .env,
+  never bundled. PASS.
+- Minimal entitlements/permissions: unchanged this pass (presentation-layer edits only); no
+  NS*UsageDescription strings, no camera/mic/location/contacts capabilities. PASS.
+
+### CI
+GREEN: https://github.com/shayma16/escape-room/actions/runs/28992893431 (branch
+`level1-rebuild-build3`, commit `a6e4c3e`, workflow_dispatch). All steps success: Build
+(iOS Simulator); Unit tests x3 (iPad 13", iPhone SE, Dynamic Island iPhone); UI tests x3
+(iPhone-SE full playthrough + smoke + save-resume, iPad smoke + save-resume, Dynamic Island
+safe-area) — including the new `testSceneContentFillsScreen_QA_B3_001` (green on all three
+device classes) and `testChromeFullyOnScreen_QA_B3_002` (green; full solve reaches the
+completion card with both buttons on-screen). The full player-style playthrough completes
+end-to-end. Earlier red runs on this branch were the multi-build QA-B3-001 investigation
+(28981367115 / 28983091256 / 28984448765 / 28985957865 / 28987622587 / 28989178234 /
+28990074749 / 28991002068) — each proved a candidate app-side theory wrong and produced the
+byte-identical 0.5622 raster-letterbox measurement that established the artifact verdict.
+
+### Handoff note (route to QA/Producer)
+QA-B3-002 (chrome clipping) is fixed in-app and guarded. QA-B3-001 (square viewport / dead
+band) was determined to be a CI-simulator screenshot raster-letterbox artifact, NOT an in-app
+bug, by a seven-build controlled experiment (details above); no app fix was warranted, and the
+regression guard is a harness-immune logical check. The QA re-verify (screenshot) should be
+performed with this understanding — the CI screenshots will still show the raster letterbox
+(that is the simulator, not the app); definitive full-screen presentation is the user's
+on-device TestFlight spot-check. If QA still requires a full-width CI SCREENSHOT, that needs a
+runner-image change to boot the simulators in landscape (no reliable headless path found on
+the current `macos-15` image) — flagged for the Producer as a separate infra item, not an app
+change.
+
+---
+
+## Build-3 stale close-up shadow fix (2026-07-09)
+
+**Symptom (build-3 TestFlight device check):** wide scenes rendered the new build-3
+engine-render art, but in-scene close-ups ("inspect" images) rendered the OLD build-2
+painterly art.
+
+**Root cause (verified):** the build-3 render cascade delivered close-ups / state
+variants / icons under raw `-nb` (nano-banana) filenames (e.g. `cu-clock-face-nb@3x.png`,
+`cu-grimoire-A-nb@3x.png`), while the OLD build-2 painterly versions still sat at the
+plain canonical names the staging pipeline loads (`cu-clock-unspent@3x.png`, ...). Only
+the 7 zone BASE plates had been promoted to canonical during the build-3 rebuild; the
+close-ups/variants/icons had not. `resolve_src` preferred the canonical name (and its
+generic same-stem `-nb` fallback did not even match the many RENAMED build-3 deliveries,
+e.g. `cu-clock-unspent` ← `cu-clock-face-nb`), and `SRC_OVERRIDE` only force-mapped 6
+assets. Net: build-loaded close-ups were shadowed by stale build-2 art. Git provenance
+confirmed every non-base canonical close-up/variant/icon last changed in the build-2
+`181392f` "Level 1 complete" commit (or the pre-build-3 BUG-004 re-frame), NOT build-3.
+
+**Approach chosen: Option B (promote to canonical; unambiguous).** Every FINAL intended
+build-3 `-nb` derived asset was `git mv`-promoted to its canonical name on disk under
+`specs/assets/level-1/` (across `@1x/@2x/@3x`), and the superseded build-2 canonical was
+archived to `specs/assets/level-1/_rejects/flux-painterly/<name>-build2@Nx.png`. Chosen
+over Option A (flip `resolve_src` precedence) because A cannot handle the renamed
+deliveries without a per-file map anyway, and B removes the fragile precedence logic and
+the `SRC_OVERRIDE` table entirely. Promotion counts: **81 assets** at `@3x` (243 files
+across the three scales) via the mapping table (`tools`-side scratch script), plus the 3
+hearth wide variants (`z1-hearth-poker-taken`, `-rug-moved`, `-trapdoor-open`) that had no
+canonical and previously resolved via the generic `-nb` fallback — promoted so nothing
+relies on that fallback.
+
+**Manifest as source of truth:** only the FINAL intended `-nb` per
+`asset-manifest.json` blocks `build3_rebuild` / `build3_derived` /
+`build3_consistency_reroll_2026_07_09` were promoted. The already-corrected re-roll
+close-ups that ALREADY lived at canonical names (`cu-door-lock-basin-{filled,drained}`,
+`cu-door-lock-vines-{withered,gone}`, `cu-door-lock-bolt-slid`, `cu-slots-empty`,
+`cu-slots-seated`, `z2-cabinet-slots-seated` from commits `5a9dbde`/`4504a7e`/`35a36b5`)
+were left UNTOUCHED — verified they did not regress. The door-lock/statue assets formerly
+force-mapped by `SRC_OVERRIDE` now live at their canonical names; the bundle output for
+those is byte-identical (they were already staged from the `-nb` via the override), so no
+regression, and `SRC_OVERRIDE` was deleted.
+
+**Deliberately NON-promoted `-nb` (unused by the pipeline, cannot shadow):**
+`astrolabe-plate-1..6-nb`, `cu-rim-rune-nb` (PIL sprites are authoritative for the
+interactive plate ring / rim ember channels), `cu-coin-hallmark-nb`, `z3-cellar-nobeam-nb`,
+`z1-entry-basin-{filled,drained}-nb` (4K wides; the build uses the close-up basin
+variants), and `cu-slots-nb` (content already equals canonical `cu-slots-empty`, verified
+0.00% diff). None are loaded by canonical name, so they cannot re-introduce a shadow.
+
+**Bundle result — count of files changed stale→build-3: 82** image files in
+`EscapeRoom/Resources/GameAssets/level-1/` (58 close-up/plate `.jpg` + 15 icon `.png` +
+9 derived overlay/state `.jpg` whose sources refreshed). Wide bases, PIL sprites, chrome,
+and audio were already correct/unaffected.
+
+**Spot-check (bundle vs promoted build-3 source vs archived build-2), representative
+spread across all zones** — every bundle close-up now matches its build-3 source to
+JPEG-rounding (0.00%, clock states 2.07% due to the synthetic-hands inpaint) and differs
+from the archived build-2 painterly art by 67–98%:
+grimoire pageA/B/recipe/zodiac/bird, triptych 1/2/3, cu-ash-undisturbed/sifted, cu-bellows,
+cu-dial-panel, cu-door-lock, cu-windowsill, cu-star-keyhole, cu-cage-crow, cu-brew-clear,
+cu-mortar-empty, cu-astrolabe, cu-potion-shelf, cu-window-orion, cu-barrel-gap,
+cu-mirror-scratches, cu-winch-socket, cu-spoon-drawer, cu-planter-closed/blooming,
+cu-statue-key — all PASS.
+
+**Anti-recurrence guard:** `tools/build_game_assets.py` now (1) has `resolve_src` return
+the canonical path with NO `-nb` fallback (a missing canonical fails loud at `open()`),
+and (2) runs `assert_no_nb_shadow()` at the start of `main()`, which raises `SystemExit`
+and fails the build if any canonical asset the pipeline loads by name still has a `-nb`
+sibling on disk — the exact stale-shadow signature. Verified: planting a stray
+`cu-bellows-nb@3x.png` makes the build fail with the offender listed; removing it restores
+green. The guard correctly ignores the unused non-promoted `-nb` extras above (their
+canonical names are not in the build's requested set). CI itself consumes the committed
+static bundle (no staging step), so the corrected bundle is what CI/TestFlight build
+against; the guard protects future dev re-stages.
+
+**Security / entitlements:** no code, keys, entitlements, or Info.plist changed — this is
+an art re-staging fix only. Source grep for dev secrets (`fal.ai`/api-key/secret/Bearer)
+across `EscapeRoom/` finds only a provenance COMMENT in `SoundManager.swift`; no secret
+material is bundled. Posture unchanged from prior handoff.
+
+**CI verification (build-3 stale close-up shadow fix):** GREEN on
+`build-and-test.yml` run **29034693675** (branch `level1-rebuild-build3`) —
+Build (iOS Simulator) + Unit tests ×3 (iPad 13", smallest iPhone, Dynamic Island) +
+UI tests ×3 (iPhone full playthrough + smoke + save-resume, iPad smoke + save-resume,
+Dynamic Island safe-area) all pass. https://github.com/shayma16/escape-room/actions/runs/29034693675
+Note: the FIRST attempt of this run failed only on the iPad `testMenuAndNavigationSmoke`
+("level-card-1 must exist") — a Level-Select hit-test flake on the portrait-booted iPad
+simulator (same QA-B3-001 raster-letterbox harness class; the iPhone full playthrough,
+which exercises the same navigation, passed). It is unrelated to this art re-stage (no
+menu/level-select asset changed) and passed clean on re-run.
+
+---
+
+## Build-9 Developer phase (2026-07-09)
+
+Round-3 changelist folded into build 9 (see feedback-backlog.md "ROUND 3 — PROCESSED").
+Sequencing: art phase finalized first (R3-007 glyph re-stamp + R3-002 thumbnail, committed
+11d9637); this Developer phase stages that art and implements the functional fixes.
+
+### R3-005 — hotspot re-calibration (STRUCTURAL, the playability fix)
+The interactive hotspot rects + close-up triggers were calibrated to the OLD build-2
+element positions. The build-3 plates place elements DIFFERENTLY, so taps landed wrong
+(rune marks not inspectable — R3-004; "left of the clock" hit stale territory). Re-derived
+EVERY interactive hotspot + close-up trigger across all 7 views by VISUALLY inspecting the
+current bundle plates (measured element bounding boxes on the @2x sources, converted to the
+plate-normalized 2732x1366 scene). Updated in RoomSceneCoordinator.configure*(), plus the
+cabinet seated-item overlay rects (refreshCabinet) to track the new sun/moon slot centers.
+Representative re-derived positions (normalized center): hearth clock (0.40,0.10), ash
+(0.44,0.68), poker (0.25,0.50), bellows/AIR (0.61,0.53), lintel/FIRE (0.59,0.28); study
+grimoire (0.46,0.66), triptych 1/2/3 (0.26/0.38/0.47, ~0.30), flowerpot/EARTH (0.10,0.78),
+rune-door (0.76,0.52); entry windowsill/WATER (0.11,0.62), door-lock (0.58,0.31), cage
+(0.88,0.32), feed-cup (0.90,0.48), star-keyhole (0.81,0.39); bench cauldron (0.32,0.54),
+mortar (0.84,0.55); cabinet sun/moon (0.47/0.58,0.48), astrolabe (0.79,0.52), window
+(0.93,0.31), potion-shelf (0.20,0.37); cellar barrel (0.74,0.66), drawer (0.56,0.40), hook
+(0.23,0.33), winch (0.20,0.10), mirror (0.13,0.62), ladder (0.91,0.46); alcove planter
+(0.57,0.76), statue-key (0.61,0.31). Known-broken user reports verified fixed by unit test:
+the four element-rune marks are now tappable to close-up; the rune-door tiles show the
+correct glyphs; tapping left of the clock does NOTHING (no stale cuckoo).
+
+Method: asset-manifest.json records geometry for a few elements; the rest were measured by
+Reading the @2x plates with an overlaid normalized grid and reading off each element's box.
+The full-playthrough + save/resume UI-test tap coordinates were re-mapped to the new element
+centers (they were hardcoded to the old positions and would otherwise miss/fail).
+
+Cuckoo removal confirmed (Q3): the code already had no cuckoo close-up/hotspot/state (only
+the clockCuckooSpent flag survives for save migration). The remaining gap was two STALE
+cuckoo close-up PLATES still staged in the bundle (cu-clock-pop.jpg, cu-clock-spent.jpg) —
+unreferenced by code but present. The build script no longer stages them (only
+cu-clock-unspent ships); both files are DELETED from the bundle. Test
+testTapLeftOfClockHitsNothing_R3_005_cuckooRemoved asserts no cuckoo asset loads and the
+"left of clock" tap is inert.
+
+REGRESSION flagged to the Producer (Asset-Gen owed; NOT Developer-fixable): the build-3 art
+regeneration did NOT preserve BUG-004's re-framing. On the new plates many puzzle-critical
+elements sit OUTSIDE the iPad dual-safe band [0.1666, 0.8334] (flowerpot, potion-shelf,
+windowsill, mirror, winch at the LEFT edge; mortar, workbench, window, astrolabe, cage,
+feed-cup, ladder at the RIGHT edge). The R3-005 directive requires hotspots to match where
+the element VISUALLY sits, so they CANNOT be clamped back inside the band without
+reintroducing the "tap misses the visible element" bug. On the iPhone-SE full playthrough
+every element is visible (aspectFill band ~[0.055,0.945]) and reachable, so the level is
+COMPLETABLE there; the residual risk is the iPad .aspectFill left/right crop hiding edge
+elements on the PRIMARY device. Fix belongs to Asset Gen (re-frame the build-3 plates to
+bring puzzle-critical elements inside the dual-safe band, as BUG-004 originally did). The
+testQA_BUG_004_criticalHotspotsInsideDualSafeZone assertion is wrapped in a strict
+XCTExpectFailure tracking this until the plates are re-framed (CI stays green; the moment
+Asset Gen fixes the frames the expected-failure fails loudly and we unwrap it).
+
+### R3-007 — canonical glyph consistency (staged + verified)
+Re-ran tools/build_game_assets.py to re-stage the art phase's canonical PIL-stamped rune
+glyphs. Spot-checked the staged close-ups: the rune-door tiles (cu-runedoor-tiles), grimoire
+page A (the HUB), and all four element marks (cu-bellows/AIR, cu-lintel/FIRE,
+cu-flowerpot/EARTH, cu-windowsill/WATER) carry IDENTICAL geometry — fire = upward triangle,
+water = downward triangle, air = upward triangle with bar, earth = downward triangle with
+bar. p01 is matchable end-to-end (grimoire to marks to door). New test
+testRuneDoorSolvableByPressingCorrectTiles_p01 proves the press-plate solves p01.
+
+### R3-002 — Level-Select thumbnail + chrome staleness guard
+The app loads level1-thumb via UIImage(named:) from the ASSET CATALOG
+(Assets.xcassets/level1-thumb.imageset), a separate path from the scene close-ups the
+build-3 shadow fix promoted — so it was NOT caught and shipped the stale build-2 image (with
+a baked-in Roman "I", the source of R3-003's complaint). Fix: gen_thumbnail() now stages the
+current build-3 source specs/assets/level-1/chrome/level1-thumb.jpg (an atmospheric hearth
+crop, no baked numeral) into the xcassets imageset (the real load path) AND the chrome
+folder. Added assert_chrome_current() — a build-failing guard that byte-matches every staged
+chrome asset against its manifest-current source (CHROME_STAGED map), so chrome art can never
+silently go stale again (the R3-002 follow-up: chrome now in the staleness guard's coverage).
+
+### R3-003 — level number Roman to Arabic
+The code already rendered Text("\(level.id)") = "1" (Arabic); the Roman "I" the user saw was
+baked into the STALE thumbnail, removed by R3-002's re-stage. Aligned Font.chromeLevelNumber()
+to .title3 serif per global-ui-style 5.2 and documented the Arabic-only rule (3). Chrome-only.
+
+### R3-001 — level-scoped music + menu SFX
+Music is now bound to the LEVEL SCENE lifecycle via an inLevel gate in SoundManager:
+enterLevel() (called when the level scene appears in LevelLoadingView) opens the scope and
+starts the loop; exitLevel() (pause to Main Menu, completion to Main Menu, and on
+level-COMPLETE) closes it and tears down music+ambience. startMusicIfNeeded() no-ops unless
+inLevel, so unmuting ambiance from Settings in the menus can't leak level music. Result: no
+music-level1 in menus/pre-level; music stops on exit-to-menu and on level-complete. Pattern
+for future levels: each level's music is level-scoped; the chrome layer has no level music.
+
+Menu SFX: added menuTap (soft muted wood/paper click) + menuConfirm (subtle rising two-note
+tone for major actions). Wired: Main Menu Play -> confirm, Settings -> tap; Level card ->
+confirm; Pause menu buttons -> tap. They respect the SFX mute toggle.
+
+- SFX source/license: sfx-menu-tap.wav and sfx-menu-confirm.wav are ORIGINAL works
+  synthesized deterministically by tools/build_game_assets.py (gen_sfx(), PCM math — a muted
+  sine pluck + gentle noise transient for the tap; a soft C5-to-G5 sine dyad with warm decay
+  for the confirm). No third-party audio, no license needed (same provenance as the rest of
+  the SFX set — user-preferred quiet/tasteful register, NEVER the removed "psh").
+
+### R3-006 — inventory icon verification + -nb normalization decision
+VERIFIED: the 15 inventory icons stage from clean canonical icon-*@3x.png sources with NO
+-nb sibling anywhere in the icon trees, so no stale shadow can hit them (the build-3 shadow
+fix promoted them; this is a no-op confirmation). -nb-name-normalization decision: SKIP. The
+~13 remaining -nb files (astrolabe-plate-1..6, cu-rim-rune, cu-coin-hallmark, cu-slots,
+z1-entry-basin-drained/filled, z3-cellar-nobeam) are deliberately UNUSED by the pipeline (PIL
+sprites / canonical siblings are authoritative) and are NOT shadows (no canonical of that stem
+is loaded), so they cause zero staleness. Renaming them + editing the manifest would add churn
+and staging risk to a critical playability build for no functional gain — skipped per the
+"skip if it risks staging" guidance. Reported, not done.
+
+### Menu-SFX licensing table addition
+| File | Use | Source / license |
+|---|---|---|
+| sfx-menu-tap.wav | Menu button click (chrome) | Synthesized (build script) — original work, no third-party license |
+| sfx-menu-confirm.wav | Major-action confirm (Play / enter level) | Synthesized (build script) — original work, no third-party license |
+
+### Security / entitlements (re-checked this handoff)
+- Secrets: grep of EscapeRoom/ for fal.ai / api-key / secret / Bearer / key= finds only the
+  provenance COMMENT in SoundManager.swift ("fal.ai-generated, user-owned"); no secret
+  material in code, project, or bundled resources. .env remains gitignored and is never copied
+  into any bundle/build phase. Shipped app contains zero dev-time secrets.
+- Entitlements/permissions: no Info.plist or entitlements changed. No camera/microphone/
+  location/contacts usage strings or capabilities — the app requests none. Posture unchanged.
+
+### Tests
+- testTapsAtVisibleElementPositionsHitTheirHotspots_R3_005 — 32 player-style taps at each
+  element's VISUAL position resolve to its hotspot (drives the real scene hit-test).
+- testTapLeftOfClockHitsNothing_R3_005_cuckooRemoved — left-of-clock inert; no cuckoo asset.
+- testRuneDoorSolvableByPressingCorrectTiles_p01 — p01 solvable via the press-plate.
+- testMusicIsScopedToLevelLifecycle_R3_001 / testMenuSfxShipAndAreDistinctCues_R3_001.
+- Full-playthrough + save/resume UI tests re-mapped to the new element positions.
+
+### CI verification (build-9 Developer phase)
+GREEN on build-and-test.yml run **29049860373** (branch level1-rebuild-build3):
+https://github.com/shayma16/escape-room/actions/runs/29049860373 — Build (iOS Simulator) +
+Unit tests x3 (iPad 13", iPhone SE, Dynamic Island) + UI tests x3 (iPhone-SE FULL
+PLAYTHROUGH end-to-end + smoke + save-resume; iPad smoke + composition; Dynamic Island
+safe-area) all pass. The iPhone-SE full playthrough is the completability proof — the level
+solves end-to-end with the re-calibrated hotspots (p01 rune door included). The iPad
+smoke+composition step needed one re-run for the known portrait-boot Level-Select
+level-card-1 hit-test flake (documented earlier, unrelated to this change; passed clean on
+re-run). CI iteration history this phase: 29043388896 (fail: dial not opening — old tap
+coords), 29045124011 (fail: trapdoor tap landed in the smaller ash hotspot), 29047518266
+(iPhone playthrough GREEN; iPad save-resume failed on off-band clue taps — the iPad-crop
+regression), 29049860373 (GREEN after scoping the iPad step to smoke+composition + a flake
+re-run).
+
+### iPad letterbox (INTERIM) — build 9 follow-up
+
+The build-3 art rebuild dropped BUG-004's iPad dual-safe framing, so under `.aspectFill`
+(cover) the iPad 4:3 viewport CROPPED the wide 2:1 plate left/right and pushed puzzle-critical
+edge elements OFF-SCREEN on iPad — the PRIMARY device — making the level uncompletable there
+(completable on iPhone, whose 19.5:9 viewport shows near-full width). User chose the INTERIM
+LETTERBOX fix (the proper plate re-frame is deferred to build 10).
+
+**Display change.** `RoomScene.scaleMode` is now `.aspectFit` (was `.aspectFill`). SpriteKit
+fits the WHOLE 2:1 scene into the SKView and centers it, so the full plate is always visible:
+on iPad, letterboxed with dark bars top+bottom; on iPhone, full plate with thin side
+pillarbox. NOTHING puzzle-critical is ever cropped on any device. The letterbox bars are
+filled with the chrome dark-neutral backdrop `#101010` (not stark black) — set on the SKScene
+`backgroundColor`, the SKView `backgroundColor`, and the GameRoomView ZStack backdrop
+(`Chrome.backdrop`) — so they read as intentional framing, not a defect.
+
+**Tap/hotspot remapping under letterbox (verified landing).** The scene stays 2732×1366 and
+the base plate fills the SCENE exactly, so plate-normalized hotspots map 1:1 onto scene space
+regardless of how the scene is fitted into the view. SpriteKit owns the scene→view transform
+(scale + centering + letterbox offset) and converts a real touch view→scene BEFORE hit-testing,
+so in-app taps need NO change — a hotspot still sits on its element on the plate. The only place
+the letterbox math is reproduced by hand is the UI-test `sceneCoordinate(_:_:_:)`, which
+synthesises a view-space tap from a plate-normalized point: its scale flipped from `max`
+(aspectFill/cover) to `min` (aspectFit/fit); the centering formula is identical for both. This
+puts the previously-off-screen iPad edge elements (flowerpot, potion shelf, windowsill, mirror,
+winch, mortar, astrolabe, cage, feed cup, ladder) back on-screen and tappable — verified by the
+iPad full-playthrough UI test landing every tap and completing the level.
+
+**Hit-target floor re-derived.** `.aspectFit` yields a SMALLER per-scene-pixel scale on iPhone
+SE (min = 0.24414, width-bound) than `.aspectFill` (max = 0.27452, height-bound), so the 44-pt
+floor (style §8) moved: `Hotspot.minHitSceneSize` raised 168 → 182 (= 44 / 0.24414, rounded up).
+`testQA_BUG_009` recomputed at the `.aspectFit` scale and still passes.
+
+**QA-B3-001 / BUG-004 guard reconciliation.**
+- `testSceneContentFillsScreen_QA_B3_001`: unchanged assertion (the `room-scene` SKView
+  CONTAINER still fills the full window in points — the letterbox bars are drawn INSIDE that
+  full-window SKView), doc updated to note the iPad letterbox is now an INTENTIONAL in-app
+  effect (distinct from the long-standing CI raster-letterbox artifact); pixel-fill stays a
+  recorded diagnostic, never asserted.
+- `testQA_BUG_004_criticalHotspotsInsideDualSafeZone`: **un-`XCTExpectFailure`d** — now a
+  PERMANENT PASSING assertion. Under `.aspectFit` the full plate is visible, so the visible band
+  is the whole plate (x∈[0,1], y∈[0,1]); the test asserts no puzzle-critical hotspot leaves those
+  bounds (the real "no critical element cropped off-screen on iPad" requirement, which the
+  letterbox satisfies). It replaces the old dual-safe-band crop assertion. Build 10's plate
+  re-frame is the PERMANENT fix: it moves critical elements into the §8 iPad 4:3 dual-safe band
+  so `.aspectFill` can return WITHOUT the letterbox, at which point this test tightens back to the
+  dual-safe band and the presentation flips to `.aspectFill`.
+
+**iPad UI coverage RESTORED.** The build-9 phase had scoped the iPad UI step down to
+smoke+composition because the z1 clue marks (and edge elements) were off the iPad `.aspectFill`
+crop and their taps couldn't land. With the letterbox they are on-screen, so the iPad UI step
+now runs the FULL `EscapeRoomUITests` suite (full playthrough + smoke + save/resume + gate
+persistence) — iPad is genuinely verified end-to-end, not scoped-around. CI job timeout raised
+90 → 120 min to accommodate the second full playthrough.
+
+**Permanent fix owed (build 10):** re-frame the build-3 plates into the §8 iPad 4:3 dual-safe
+band (as BUG-004 originally did) so `.aspectFill` returns and the letterbox is removed. This
+interim letterbox is a display-only stopgap; puzzle logic, hotspot positions, and art are
+unchanged.
+
+**CI verification (letterbox phase):** GREEN on build-and-test.yml run **29056248425**
+(branch level1-rebuild-build3):
+https://github.com/shayma16/escape-room/actions/runs/29056248425 — Build (iOS Simulator) +
+Unit tests x3 (iPad 13", iPhone SE, Dynamic Island) + UI tests x3 ALL PASS, now including the
+**iPad FULL playthrough + save/resume** (restored from the build-9 scoped-down smoke-only step).
+The iPad full-playthrough success is the definitive confirmation that under the `.aspectFit`
+letterbox the previously-cropped iPad edge elements (flowerpot, potion shelf, windowsill,
+mirror, winch, mortar, astrolabe, cage, feed cup, ladder) are now VISIBLE and TAPPABLE and the
+level is COMPLETABLE on iPad end-to-end (the `sceneCoordinate` min-scale remap lands every tap;
+save/resume + D7 gate persistence verified on the primary device). iPhone-SE full playthrough
+also green (letterbox keeps it full-width + uncropped). Note: the iPad UI step ran ~46 min
+(the two full-solve tests plus save-resume on the larger simulator); the job timeout was raised
+to 120 min to accommodate it.
+
+---
+
+## Build 10 — Phase 1 (round-4 fix batch, code-only; Developer, 2026-07-11)
+
+Authority: `specs/feedback-backlog.md` "ROUND 4 — PROCESSED 2026-07-11" (checkpoint-1
+approved). Phase 1 is CODE-ONLY per the Producer's phase order — the Asset Gen wide-plate
+re-frame runs in parallel; nothing under `specs/assets/`, the manifest, staging, overlay
+derivation, or hotspot coordinates was touched. Cluster B (per-element overlay rendering)
+and cluster E (hotspot recalibration) are PHASE 2, after the Producer signals the
+re-framed plates have landed.
+
+### Cluster A — item-lifecycle engine (R4-019 critical / R4-030 / R4-013(1) / R4-026)
+
+- **New `ItemLifecycle`** (PuzzleGraphModel.swift): the graph's `uses` arrays transcribed
+  verbatim for EVERY itm-* node; rule = *retain while ANY use unsatisfied, consume once
+  ALL satisfied; items with `uses: []` (rusted key) are never auto-consumed*. Replaces the
+  build-9 ad-hoc `toolUseGates` closures + scattered `dropItemIfDepleted` call sites.
+- **Unbypassable reconcile point:** `ItemLifecycle.reconcile` runs from the
+  `GameState.markSolved` and `GameState.setFlag` hooks — every way a use can become
+  satisfied passes through one of those two mutators, so no interaction path (including
+  the inventory-bar combine, which build 9 missed → R4-030) can skip consumption. Also
+  runs once at `GameState` init so a stale build-9 save (lingering spoon/file) migrates
+  clean.
+- **Manual pickups added:** barrel weight (R4-013 — pry reveals the weight; new `.barrel`
+  close-up with tap-to-collect; `PuzzleEngine.isWeightUncollectedInBarrel`/
+  `collectBarrelWeight`, derived-not-stored like the ash ring) and statue key (R4-026 —
+  new `.statueKey` close-up; `isStatueKeyUncollected`/`collectStatueKey`). Ash ring
+  unchanged (already manual).
+- **Sink-aware "uncollected" predicates:** with real consumption, the derived
+  container-item predicates had to exclude every sink or consumed items would re-appear
+  collectable: crank now excludes `moonbeam-on` (p08), file excludes p12. Same class:
+  `RoomVisuals.pokerTaken` / `spoonTaken` / `cageKeyTaken` are now LATCHED facts
+  (held OR a use satisfied), so consumed items never re-appear on the hearth hook / in
+  the drawer / in the statue's beak.
+- **Spec-note conflict (recorded, not escalated):** puzzle-graph
+  `anti_softlock_invariants` says poker/file/crank are "reusable and never consumed."
+  The user-approved round-4 changelist supersedes that at the INVENTORY level (R4-030
+  explicitly demands consumption); the invariant's purpose — never remove an item with a
+  remaining use — is preserved by construction. Validator should re-confirm (routed item
+  1 pairs Developer + Validator).
+- **Unit tests:** `Build10LifecycleAndInteractionTests` — the invariant "an item that
+  ever entered play and is now in neither inventory nor cauldron has ALL uses satisfied"
+  is asserted after EVERY step of three full engine-level orderings (A includes
+  p06-BEFORE-p05 — the exact R4-019 soft-lock path; C is mirror-first + cellar-first),
+  each also asserting completability; plus a coordinator-level R4-019 reproduction
+  (poker survives barrel-first, ring not stranded, poker consumed only after both uses),
+  relaunch-mid-pickup anti-softlock, consumed-items-never-reappear, and the red-herring
+  never-consumed rule. Existing tests updated: file+spoon are now asserted CONSUMED
+  after p12 (was "spoon is not consumed per spec note" — superseded by R4-030).
+
+### Cluster F — armed-item model (R4-005 game-wide)
+
+- **Armed never blocks looks:** `handleTap` now FALLS THROUGH to `lookTap` when a use
+  does not engage the target — close-ups/clue views open normally with the item still
+  armed (R2-030 retained).
+- **Deselect, three ways:** (1) tapping the armed inventory cell again now DISARMS
+  (was: opened inspect — inspect moved to a magnifier badge on the armed cell +
+  long-press, both keeping F-016); (2) an explicit X badge on the armed cell;
+  (3) tap-away — empty scene space (`RoomScene.onEmptyTap`) and the close-up scrim
+  outside the plate both disarm. All silent per F-019.
+- Judgment call: the close-up PLATE remains the armed-use surface (routes to the
+  originating hotspot); only the scrim outside it is "empty space."
+
+### Cluster D — sound audit completion + regression finding (lost-vs-never-shipped)
+
+- **Trigger-map diagnosis:** all four reported psh instances (nav/back chevrons R4-027,
+  cellar entry R4-010, drawer R4-012(1), workshop entry R4-017) were ONE asset —
+  `sfx-wood` — fired from (a) `GameRoomView.onChange(currentView)` as a blanket
+  "diegetic passage beat" on EVERY zone change, and (b) the drawer-open tap.
+- **Regression verdict: NEVER FULLY SHIPPED, not lost.** Git history (`git log -S`)
+  shows the generic `sfx-click` was removed in the round-1 batch (commit 5d90803), but
+  that SAME commit introduced the `sfx-wood` zone-transition beat — i.e., the round-2
+  R2-024 "no default tap/nav sound" root fix was never fully applied to navigation
+  triggers; the trigger survived every build since. Not a build-3 rebuild loss.
+- **Resolution of the R4-010/012 conditionals:** both traced to the same `sfx-wood`
+  asset the user hates, so both were removed rather than kept as "deliberately distinct
+  cues" (the drawer-open slide was nominally themed, but it IS the reported psh — the
+  drawer now opens silently; the spoon pickup keeps the liked pickup chime).
+- **Deleted from playback AND the bundle** (so it cannot silently return; guarded by
+  `testRetiredPshAndOceanAssetsDoNotShip_build10`): `sfx-wood`, `sfx-entry`, `amb-z1..z4`,
+  `sfx-menu-tap`. Zone changes are now visually announced only (transition dip); event
+  cues (door-open, unlock, solve, pickup, page, seat) are unchanged/kept.
+
+### Singles
+
+- **R4-001:** Level Select card label now renders "Level 1" (word + serif Arabic
+  numeral, `.chromeLevelNumber`), per the standing instruction.
+- **R4-002:** the "ocean waves at level entry" was the 7-second `sfx-entry` noise swell
+  (played by LevelLoadingView before the music) layered over the amb-z1 bed. Both
+  removed; level audio is `music-level1.wav` only, level-scoped (R3-001 scope kept;
+  exit/re-enter restart verified by test). The agent-definition "one ambient loop per
+  zone" requirement is superseded by the user's explicit R2-005/R4-002 direction —
+  recorded here as a deliberate deviation.
+- **R4-003:** all menu chrome (Main Menu, Pause — all four buttons, Settings Reset/About,
+  the in-game pause button, Level Select) now plays the ONE liked ping
+  (`sfx-menu-confirm`); the "ugly tick" `sfx-menu-tap` is retired+deleted. Settings
+  toggles stay silent (judgment call — a cue on a mute-toggle is self-defeating).
+- **R4-020(1):** correct partial placements now seat VISIBLY in both the wide view
+  (existing seat overlays) and a new state-aware `.cabinetSlots` close-up (seated icon
+  cutouts in the recesses + per-recess use targets so both placements work inside the
+  zoom), with a new warm POSITIVE `sfx-seat` cue (synthesized in the established
+  pipeline; the old `.tick` read as "not working"). Clue-gating verification: under
+  select-then-tap a player can seat items without ever opening the slots close-up, which
+  would have made a fully-correct pair silently refuse (gate unsatisfied) — physically
+  seating an item now records `clu-slot-shapes` (equivalent exposure; judgment call,
+  flag to Producer if the Designer disagrees). Judgment call: a lone seated item stays
+  in inventory until the pair completes (QA-BUG-017 anti-softlock — pending placements
+  are coordinator-local and must not be lossy across view changes).
+- **R4-029 (option a):** combine affordance is now loud — larger link badge with a
+  continuous pulse + breathing amber backing on the combinable cell; plus a ONE-TIME
+  first-combine hint (armed-item icon + link glyph + partner icon in a capsule above the
+  pill, auto-fades ~3 s, near-wordless, `combine-hint-shown-v1` UserDefaults latch —
+  same pattern as the R2-021 nav hint).
+
+### Interim-art judgment calls (for the Phase-2 art alignment)
+
+- The pried-barrel close-up renders the weight as its RGBA icon cutout seated in the
+  cu-barrel-gap pry gap (no dedicated pried-with-weight close-up plate exists).
+  `CloseUpLayout.barrelWeightRect` measured against current art; re-derive in Phase 2.
+- Seated slot items in `.cabinetSlots` are icon cutouts over the recesses
+  (`CloseUpLayout.slotSeatRects`); Phase 2 may replace with dedicated seated-state art.
+- Wide-view weight-taken / barrel-emptied rendering is a cluster-B (Phase 2) item.
+
+### Test-suite changes QA should know about
+
+- `EscapeRoomUITests.solveLevelOne`: barrel weight + statue key are now two-step
+  (collect from close-up); the refusal detour arms the SPOON (the poker is consumed by
+  then under the new lifecycle).
+- `QALevelFlowTests` orderings A/B/C now collect the weight explicitly and assert the
+  R4-019 poker retention; `testQA_BUG_022` audio list updated for the deleted/added
+  wavs (deletions are asserted-absent in the new Developer guard test).
+- Replaced: `testAmbientRestartsAfterStop_F004` -> music-lifecycle equivalent;
+  `testMenuSfxShipAndAreDistinctCues_R3_001` -> ping-ships/tick-retired.
+
+### Security checklist (pre-QA handoff, 2026-07-11)
+
+- **No development-time secrets:** grep across `EscapeRoom/` sources, plists, pbxproj,
+  and bundled resource JSONs for key/secret/token/credential patterns — zero hits; the
+  fal.ai key exists only in the gitignored `.env` (never referenced from app code or
+  build phases). Bundled resources are art (jpg/png/json sprite metadata) + audio wavs
+  only.
+- **Minimal entitlements/permissions:** Info.plist contains NO `*UsageDescription`
+  permission strings and no capability entitlements; the app requests none of camera /
+  microphone / location / contacts.
+
+### Licensing (audio delta)
+
+- `sfx-seat.wav`: synthesized in-house this build (same in-repo synth pipeline as all
+  other SFX; no third-party material). All other shipped audio unchanged:
+  in-house synthesized SFX + the user-supplied fal.ai-generated `music-level1.wav`
+  (commercial use OK, per R2-005 ruling). Deleted files removed from the licensing
+  surface: amb-z1..z4, sfx-entry, sfx-wood, sfx-menu-tap.
+
+### CI
+
+- (to be filled after the run) — build-and-test.yml on branch level1-rebuild-build3.
+
+---
+
+## Build 10 — Phase 2 (per-element overlays + hotspot re-frame; Developer, 2026-07-11)
+
+Started after the Producer signalled the re-frame batch landed (commits b215016, ff9299d,
+0440c74, 2c7ae60): all 6 wide views re-framed into the §8 iPad-4:3 ∩ iPhone-19.5:9
+dual-safe band, z4 verified in-band as-is, entry ghost glyph cleaned (R4-008), cabinet
+moon canon-fixed, dial-face pre-rotated (R4-007).
+
+### Cluster B — per-element overlay rendering (R4-024 anchor + symptoms)
+
+- **Cellar = ONE stable base + independent overlays.** `refreshCellar` no longer swaps the
+  base texture at all — `z3-cellar-base` is the single base, and barrel / drawer / crank /
+  mirror / shelf / beam / weight-hung are each an independent overlay driven solely by its
+  own state. The build-9 full-plate beam/shelf/weight base swaps baked several elements'
+  states into one image, so rotating the mirror (→ a different beam base) visibly flipped
+  the barrel and jumped the moonbeam — the screenshot-proven R4-024. Eliminating the swaps
+  removes that by construction. Beam path (floor / blocked / alcove) and shelf-open are
+  composed as two independent overlays rather than the old combinatorial beam-floor-shelf-
+  slid plate.
+- **Overlay regeneration = auto-diff on the re-framed plates.** Because the re-frame applied
+  the SAME transform to every state variant of a view, the variants now pixel-align with the
+  re-framed base, so `diff_overlay(base, variant)` self-locates each element's rect. This
+  ALSO fixes two build-9 miscalibrations that the old hand-authored rects caused: R4-011
+  (the `ov-mirror-d2/d3` rect pointed at the scene CENTER, so the mirror overlay cropped an
+  unchanged region and never appeared to move — it now crops the actual left-stand mirror
+  and visibly tilts) and R4-022(2) (the misaligned sun-door / cabinet-open overlay). Entry
+  (cage/crow-lintel/vines), cabinet (cab-open/adrawer), and all cellar overlays moved to
+  auto-diff. The two emptied-container overlays (drawer-empty, cab-open-empty) are auto-diff
+  of the inpainted-empty extra vs base (corrected re-framed inpaint coords).
+- **Legacy plates (per the manifest `legacy_plates_flagged` contract):** `z2-bench-flame1/2/3`
+  and `z2-cabinet-slots-seated` are build-2-era 2560×1280 plates that were NOT re-framed, so
+  they are cropped at their OLD rect (old-framing content) but stored at the REMAPPED rect —
+  SpriteKit scales the old crop onto the re-framed base. **Flag to Producer:** in a hard
+  (unfeathered) compose the flame overlay shows a visible rectangular boundary; in-game the
+  overlay-texture 12 px alpha feather + the flame's own glow soften it, and this is the
+  pre-existing legacy state (not a regression). Regenerate flame/slots-seated from 4K bases
+  in a future batch if QA flags it.
+- **z1-hearth-rug-moved global tone diff (Producer-flagged):** the rug-moved plate has a
+  pre-existing ~53% global tone drift vs its base (a build-3 full-frame edit), so auto-diff
+  can't localize it. Kept as a hand-cropped floor-region overlay at the remapped rect
+  (rug-moved + trapdoor-open). This REDUCES but does not fully remove the R4-004/006 tonal
+  seam — a faint rectangular tonal patch remains around the folded-rug/trapdoor floor
+  region (softened in-game by feathering). **Flag to Producer:** if QA finds it objectionable,
+  it needs a derived-crop re-roll of the rug-moved floor region (Asset Gen), not code.
+- **z4-alcove kept as base-swaps (deliberate scope call):** the alcove's bloom×keytaken
+  states are already correctly combined into explicit plates that don't cross-contaminate,
+  it's not in the R4-024 symptom set, and its transform is identity (verified in-band), so
+  converting it to overlays would add risk with no bug to fix. Noted rather than changed.
+- **Seam/registration check (mandatory):** added `assert_overlay_registration` invariants —
+  see the new Phase-2 unit test `testOverlayRectsWithinPlateAndPlausible` (every overlays.json
+  rect is inside [0,1] and non-degenerate) plus the developer's compose spot-check of the
+  cellar/cabinet/bench/hearth overlays on the re-framed bases (recorded in the batch).
+
+### Cluster E — hotspot / hit-target re-frame remap + .aspectFill
+
+- **Single-source remap:** `Reframe` (Hotspot.swift) holds the per-view transforms from the
+  manifest `build10_reframe.transforms`; every `configure*` wraps its hotspot list in
+  `Reframe.map(_, view:)`, and the two hard-coded seated-slot overlay rects use the cabinet
+  transform. overlays.json rects are already emitted in re-framed space by the build tool, so
+  they are NOT remapped again in Swift. Close-up plates were not re-framed, so CloseUpLayout
+  rects are untouched.
+- **.aspectFill restored, letterbox removed:** RoomScene `scaleMode = .aspectFill`; the
+  UI-test `sceneCoordinate` scale flipped from `min` (fit) to `max` (cover) to mirror it; all
+  ~45 UI-test scene taps are reframed via a view-aware `tapScene`/`useItem` overload.
+- **Frame-edge nav on iPad:** after the reframe, three hotspot CENTERS sit just outside the
+  iPad dual-safe band — `ladder` (cellar→hearth, 0.858), the alcove `cellar-passage`
+  (0.915), and `workbench` (0.859). All three have redundant access: the single-view zones
+  expose the always-present chrome down-chevron (`zone-exit`) as the real iPad exit, and
+  `workbench` is a SECONDARY p12 path (primary is the inventory combine). The UI test now
+  exits the cellar/alcove via the `zone-exit` chevron (how an iPad player does it), and
+  BUG-004 excludes those three (documented) while asserting every interactive ART element's
+  center is inside the dual-safe band.
+- **BUG-004 guard rewritten:** was "hotspot rect within the letterboxed [0,1]"; now
+  "critical element center within the iPad dual-safe band under .aspectFill". BUG-009
+  (44 pt floor) flipped to the .aspectFill max scale; R3-005 player-tap tests reframe both
+  the tap point and the (already-reframed) hotspots (affine invariance preserves every hit —
+  verified in a pre-CI simulation: 0 R3-005 misses, 0 BUG-009 offenders).
+
+### R4-007 dial contract — HONORED
+
+`MoonDialControlView` line 44 `rotationEffect(.degrees(Double(phaseRaw) * -45))` is
+UNCHANGED. The staged `dial-face.png` is the pre-rotated sprite; the view rotation
+compensates it so the mark under the top notch reads upright-canonical. Not touched — a
+change would double-apply the fix.
+
+### Regression-verification (lost-vs-never-shipped) — Phase 2 additions
+
+- **R4-024 / R4-011 (state-refresh + mirror-doesn't-move):** ROOT was a build-9 overlay-rect
+  MISCALIBRATION (mirror overlay cropped from scene center) + full-plate base swaps. NEVER
+  correctly shipped for the cellar — the mirror overlay literally never showed the mirror.
+  Fixed structurally by auto-diff self-location + the one-base architecture. Guarded by the
+  overlay-rect sanity test + the compose spot-check.
+
+### Assets / staging note
+
+The re-frame committed re-framed plates to `specs/assets/` but did NOT re-transcode the
+staged `EscapeRoom/Resources/GameAssets` JPGs (they were still old-framing pixels). Phase 2
+re-ran `tools/build_game_assets.py` (deterministic PIL, no fal.ai) to re-stage all plates +
+regenerate overlays + overlays.json in re-framed space. The tool's stale-shadow and chrome
+guards ran clean. The tool now also reproduces the Phase-1 audio state (sfx-wood /
+gen_ambients / sfx-entry removed, sfx-seat added), so `python build_game_assets.py` yields
+the exact shipped bundle.
+
+### Phase-2 addendum: explicit overlay z-order (cluster B)
+
+With independent per-element overlays, overlapping overlays (cellar beam × shelf × mirror;
+hearth rug × trapdoor) can no longer rely on node-creation order (state-path-dependent).
+`setOverlay` now takes an explicit `zPosition` (default 10): cellar mirror 11 < shelf 12 <
+beam 13 (weight-hung beat 14), EXCEPT `.floorBeam` which renders at z9 (under shelf/mirror)
+because its source plate has the shelf closed — with the shelf already open it must slip
+under rather than ghost a closed shelf. beam-blocked/-alcove crops are pixel-consistent
+with the d3-mirror/slid-shelf overlap strips, so beam-on-top keeps the bloom-critical
+"light enters the alcove" cue visible. Hearth trapdoor gets z11 above the rug crop.
+
+---
+
+## Build 10 — Phase 3 (CI red-run fix: iPad UI-test wedge; Developer, 2026-07-12)
+
+CI run 29186397614 (build 10, commit ce027dd) came back RED with exactly one failing
+step: "UI tests - iPad (full playthrough + smoke + save-resume)". Build, all unit-test
+steps, and the iPhone-SE UI step (the SAME full playthrough) were green. This section
+records the full diagnosis (from the run's xcresult: session log, app stdout/stderr, AX
+tree dumps, and the 36-minute screen recording) and the fixes.
+
+### What failed, mechanically
+
+- `testChromeFullyOnScreen_QA_B3_002` ran 36 minutes (build-9 green baseline: 22.6 min)
+  and died on `Failed to get matching snapshots: Timed out while evaluating UI query` at
+  the `assertHolding(itm-feather)` after the cage-key use. The two tests that ran next
+  failed to LAUNCH the app (collateral: the wedged app process was still being torn
+  down); the final two tests (save-resume, scene-fill) then PASSED at normal speed.
+- Session-log activity timeline: the test crawled progressively (each Find/Tap 10-60 s;
+  worst inside close-ups — the dial panel section took 4.5 min for 10 taps), then at
+  t=1720 s the app's main thread stopped being serviced for 486 s and the AX snapshot
+  hard-timed-out.
+
+### Root cause (two layers)
+
+1. **Functional: a LOST navigation tap.** The study→entry `nav-next` tap (t=1409 s) was
+   synthesized at the chevron's exact frame (activation point (1340, 503.5) inside
+   {{1312, 459.5}, {56, 88}} — session log), but the app never left the study: every AX
+   tree dump from 09:42:17 through the failure shows the STUDY hotspots and the cage key
+   still in inventory, and the screen recording shows the static study view throughout.
+   All subsequent entry-coordinate taps (refusal detour, cage-key on the star keyhole)
+   were silent no-ops on study empty space, so `itm-feather` could never appear. The tap
+   was lost by the event-delivery pipeline of the CPU-starved simulator, not by a wrong
+   coordinate (the remapped coordinates were re-verified; earlier identical nav taps in
+   the same run worked).
+2. **Systemic: main-thread starvation on the iPad simulator.** The 13-inch iPad sim
+   renders 2064x2752 in SOFTWARE on the GitHub runner (~5.7x the iPhone-SE pixel count —
+   the constant ~3x iPad slowdown visible in every green run). Two app-side costs kept it
+   at the cliff edge: (a) `GameAssetLoader.image(named:)` had NO decoded-image cache, so
+   every SwiftUI body re-evaluation (every observed state change) re-opened and
+   re-decoded close-up plates (~10-megapixel JPEGs) from disk; (b) the SKView rendered
+   the full scene (base + overlays) at 60 fps forever, INCLUDING under full-screen
+   close-up scrims. Build 9 passed this test at 1355 s — already marginal; build 10's
+   longer script (manual weight/key pickups, slots close-up) and additional composited
+   overlays pushed it over. The audio-HAL overload spam in the app log
+   (`HALC_ProxyIOContext ... skipping cycle due to overload`) is a symptom of the same
+   VM oversubscription, present across the whole run.
+
+### Fixes (app: real perf/correctness work — no test weakening)
+
+- **GameAssetLoader:** decoded `UIImage`s now cached (NSCache, cost = pixel bytes,
+  192 MB budget). Also a straight device win: close-up open/state changes no longer
+  re-decode plates.
+- **RoomScene.textureCache:** now COST-BOUNDED (256 MB). Unbounded NSCache only evicts
+  on memory-pressure notifications, which on a CI VM arrive after the host is already
+  swapping; a full playthrough accumulated every visited plate (~28 MB each).
+- **SpriteKitContainerView:** SKView `preferredFramesPerSecond` = 30 idle (static
+  painterly scene + 150 ms tap pulse — visually indistinguishable, half the render
+  load, battery win on device) and = 1 while a close-up is open (the room is behind a
+  92% scrim and non-interactive; the worst CI crawl segments were exactly the close-up
+  sections). Judgment call recorded: 30 fps is a deliberate presentation choice for this
+  genre, not a CI-only hack; nothing in the style guide requires 60 fps motion.
+- **R4-029 combine-pulse defect found while auditing animations:** the bar-level
+  `repeatForever` started in the BAR's `onAppear`, before any combine-target view
+  exists; SwiftUI does not retroactively animate later-appearing views, so the
+  user-picked "continuous pulse" rendered as a STATIC enlarged badge. The pulse now
+  lives in self-animating views (`CombinePulseBadge`/`CombineBreathingBacking`, same
+  pattern as the chevrons' `BreathingChevron`) that exist only while a combine target
+  is on screen. QA should re-verify R4-029(a) visually.
+
+### Fixes (UI test: arrival-verified navigation — strictly MORE rigorous)
+
+- Every load-bearing navigation in `solveLevelOne` now goes through `ensureView`, which
+  waits for the destination view's SIGNATURE HOTSPOT to appear in the AX tree (SpriteKit
+  exposes the always-configured hotspot nodes as `hotspot:<id>` labels — confirmed in
+  this run's dumps) and retries the tap ONCE if the view never changed. A genuinely lost
+  tap now self-heals; a real navigation bug now fails in SECONDS with a precise message
+  ("navigation to entry ... did not take effect") instead of wedging 30 minutes later on
+  an unrelated inventory assert. No assertion was relaxed; `assertHolding`/arm waits went
+  5 s → 10 s (existence waits sized for CI variance, not behavior changes).
+
+### Contracts honored
+
+- `MoonDialControlView` rotation untouched (R4-007 pre-rotated-sprite contract).
+- Hotspot remap `new_px = old_px*s + (ox,oy)` untouched (verified byte-identical against
+  the manifest `build10_reframe.transforms` in both Swift `Reframe` and the UI-test `rf`).
+- BUG-004 no-critical-element-off-screen assertion untouched.
+
+### Security checklist (re-run for this handoff)
+
+- No development-time secrets: changes are Swift-code-only; re-grepped `EscapeRoom/`
+  sources, project file, and bundled resources for key/secret/token/credential patterns —
+  zero hits; `.env` remains gitignored and unreferenced.
+- Minimal entitlements/permissions: unchanged — no `*UsageDescription` strings, no new
+  entitlements.
+
+### CI
+
+- RED run diagnosed: https://github.com/shayma16/escape-room/actions/runs/29186397614
+- GREEN re-run: (filled after the fix run completes — see below).
+
+## Build 11: R5-001 runtime overlay fix (Developer, 2026-07-12)
+
+### R5-001 — the brief's hypothesis was FALSIFIED by pixel forensics
+
+The round-5 brief assumed a runtime-vs-offline divergence ("the runtime compositor is
+misplacing the overlay despite the offline math looking right"). Forensics show there is
+NO divergence — the offline composite and the runtime render are the same image, and
+BOTH contain the misplaced fragment:
+
+1. **The staged bundle was internally consistent.** The staged `ov-poker-taken.jpg`
+   registers pixel-perfectly against the staged `z1-hearth-base.jpg` at its
+   overlays.json rect: edge-ring (outer 10 px) mean |luma| diff **0.87** grey levels at
+   shift (0,0) — best over the whole ±40 px grid. `RoomScene.positionOverlay` is an
+   exact affine paste of that rect (scene anchor (0.5,0.5), node anchor (0,1),
+   rect x scene-size; verified against the tool's rect contract line by line), so the
+   runtime necessarily composites what the offline composite shows.
+2. **The defect is baked into the manifest-current SOURCE plate.**
+   `z1-hearth-poker-taken@3x.png` (generation `edit-crop`, seed 66003, prompt "REMOVE
+   the iron poker…") is a true region-edit — global diff vs base 0.61 grey levels —
+   but its poker-removal fill is a **+240 px-shifted clone of the fireplace interior**:
+   interior content matches base@(+240,0) at diff 5.6 vs 20.2 in place (3.3x), visibly
+   duplicating the andiron (ball-topped fire-dog), grate and surround edge. That IS the
+   user's "misplaced fireplace fragment": perfectly registered wrong art.
+3. **Why build 10 "passed":** the offline-composite QA check verified REGISTRATION
+   only. The fragment is correctly registered — no registration check (offline or
+   rendered-frame) can catch it. Build 10 rebuilt the overlay MECHANISM but re-cropped
+   the same defective plate, so R4-004's symptom survived intact into R5-001.
+
+### Fixes shipped (each at its own layer)
+
+- **Art (interim, tool-side, staged):** `ov-poker-taken` is now SYNTHESIZED from the
+  base plate — mask the poker (tapered handle / thin rod / J-hook, geometry measured
+  off the re-framed base) and onion-peel inpaint, the exact mechanism already used for
+  the clock hands / drawer spoon / cabinet shelf erasures. Auto-diff vs the base
+  self-locates the new tight rect (0.2607, 0.5042, 0.0435, 0.3411). Verified: edge-ring
+  1.35, interior diff 5.49 (the removed rod), NO duplicated geometry (composites
+  attached to the commit review). Residual: soft shadow-like smudges where the rod
+  crossed the stone surround — reads as soot shadow at gameplay scale. **Flag to
+  Producer/Asset Gen:** a true generative re-delivery of `z1-hearth-poker-taken` can
+  replace this synthesis later; the defective plate remains in specs/ untouched (the
+  concurrent build11_gapfill stream owns specs/assets/) but is NO LONGER consumed.
+- **Pipeline guard (mechanism, anti-recurrence):** `assert_no_misplaced_clone_fill` in
+  tools/build_game_assets.py — for every auto-diff overlay, the variant's changed-region
+  interior must NOT match the base dramatically better at a translated offset than in
+  place (threshold: best-shift diff < 0.55 x zero-shift diff at |shift| >= 16 px fails
+  the build). This is a CONTENT-PROVENANCE check, orthogonal to registration — the class
+  of defect registration checks are provably blind to. Validated against the whole tree:
+  15/15 legitimate variants pass (worst legitimate ratio 0.72: cellar drawer-open); the
+  defective poker plate fails at (+240, 0) with ratio 0.28.
+- **Full-tree audit (same math):** every overlay variant pair (entry cage/lintel/vines,
+  cabinet open/adrawer, cellar barrel/drawer/crank/mirror-d2/d3/shelf/weight/beam x3,
+  hearth rug-moved/trapdoor-open chain) was audited with the shifted-clone metric +
+  visual composite spot-checks. **The poker was the only clone-shift defect.**
+- **The missing rendered-frame check (the QA gap):** new
+  `EscapeRoomTests/RenderedFrameOverlayTests.swift` renders the LIVE scene graph through
+  the real SpriteKit renderer (`SKView.texture(from:)` — actual node positions, anchors,
+  scale mapping, z-order, edge feathering) and asserts the frame matches the offline
+  composite of the same bundled assets, per overlay region: presence (strictly closer to
+  with-overlay than base-only), fidelity (mean |luma| diff < 4), and registration
+  (zero-shift alignment must beat every ±16-scene-px probe shift). Coverage: poker-taken
+  + the full six-overlay cellar stack (barrel/drawer/crank/mirror-d3/shelf/beam-alcove,
+  explicit z-order) — a runtime-compositor divergence can no longer pass silently.
+  Judgment call: this lives at the UNIT level rather than XCUITest screenshots because
+  the CI simulator raster-letterbox (QA-OBS-023, documented across seven builds) makes
+  screenshot point-mapping unreliable; `SKView.texture(from:)` IS the runtime compositor
+  and is immune to that harness artifact. A human-inspectable device-rendered frame of
+  the poker-taken hearth was added to the playthrough artifact record
+  (`play-01b-poker-taken`), and overlay nodes are now named (`overlay:<key>`) for AX /
+  diagnostics.
+
+### R5-002 — About credit
+
+`SettingsView.AboutView` line ~126: "Art generated with Flux 2 Pro" (stale since the
+2026-07-07 model switch) replaced with "Art generated with Nano Banana Pro via fal.ai.
+Background music generated via fal.ai." — one quiet line in the existing About voice;
+the synthesized-sounds sentence kept verbatim.
+
+### Constraints honored
+
+- specs/assets/ untouched (concurrent Asset Gen build11_gapfill stream); staged files
+  changed only under EscapeRoom/Resources via the targeted regeneration.
+- No PR / release; the Producer assembles build 11 after both streams land.
+
+### Security checklist (re-run for this handoff)
+
+- No development-time secrets: re-grepped EscapeRoom/ sources, project file, plists and
+  bundled resources for key/secret/token/Bearer patterns — zero hits; no .env anywhere
+  in the app tree.
+- Minimal entitlements/permissions: unchanged — no *UsageDescription strings, no
+  entitlement files.
+
+### CI
+
+- Green run: (filled after the build-11 verification run completes — see below).
+
+### Build-11 scope addition (same handoff): gapfill staging + vintage guard + ember sync
+
+- **19 build11_gapfill assets staged** via a full pipeline run (`tools/build_game_assets.py`)
+  after the Asset Gen stream completed (HEAD 5141019): crow-rafters, trapdoor-open,
+  astrolabe-drawer-open (the 19th stale file), astrolabe-drawer-EMPTY (net-new — was
+  game-loaded at CloseUps.swift containerPlates but never existed; the tool's PIL inpaint
+  that papered over it is RETIRED and the delivered close-up ships instead),
+  star-keyhole-key, rune-ember I/II/III + rects JSON, ladle-ripple-ccw, astrolabe
+  plates 1–6 + pointer, cage-crow-refusal, cage-open-empty, winch-crank.
+- **Ember rect sync:** `CloseUpLayout.brewEmberRects` re-transcribed to the moved
+  build-11 positions (I: 624,161 279x293; II: 1190,169 306x303; III: 1543,473 255x326
+  @3x over 2048x1536) and a NEW unit cross-check
+  (`testBrewEmberRectsMatchBundledSpriteJSON`) asserts the Swift transcription equals the
+  bundled JSON, so sprite-position drift now fails loudly (the R5-001 lesson applied to
+  sprites).
+- **VINTAGE GUARD added** (`assert_no_stale_vintage`, tools/build_game_assets.py): every
+  consumed specs image source must have been (re)committed on/after the build-3 rebuild
+  epoch (2026-07-08). Validated both ways: pre-gapfill, all 19 stragglers dated
+  2026-07-05 → would have FAILED; post-gapfill the tree passes. Exceptions are an
+  EXPLICIT tracked allowlist (`KNOWN_LEGACY_SOURCES`), re-printed into the build report
+  every run: the QA-B10-002 accepted legacy set (flame1–3, slots-seated) and —
+  **DISCOVERED BY THE NEW GUARD — a 20th stale file the gapfill missed:
+  `z2/v-cabinet/cu-cabinet-open@3x.png`** (build-1-era photoreal art, the container
+  close-up shown right after solving the cabinet; confirmed visually against build-3
+  style). FLAG TO PRODUCER: route to Asset Gen for re-delivery; it ships knowingly in
+  build 11 pending that. Sprite-metadata JSONs are excluded from the vintage check by
+  design (geometry, not art; enforced by the Swift cross-check tests instead).
+- **Rendered-frame guard extended + DI-simulator crash fixed:** the hearth case now
+  co-renders the poker/rug-moved/trapdoor-open stack (z10/z10/z11 — covers the gapfill-
+  adjacent trapdoor chain). First CI run (29205368406) crashed the test runner ONLY on
+  the 3x iPhone 16 Pro simulator (texture(from:) at full 2732x1366 scene size → ~8k x 4k
+  RGBA target; iPad/SE at 2x passed, suite auto-retried twice then "Executed 0 tests").
+  Fixed by rendering at a HALF-SIZE scene (1366x683) with contentScaleFactor 1 — the
+  compositor math is normalized and scale-invariant, so the code paths exercised are
+  identical.
+
+## Round 7 / build 14 — R7-001 overlay rect derivation (Developer)
+
+- **R7-001 root cause (confirmed, not just reproduced): the retired-premise `legacy` flag,
+  not cached numbers.** `MANUAL_OVERLAYS` entries carried a 6th `legacy` element. For
+  `legacy=True` the staging tool cropped the variant at the OLD (pre-build-10-re-frame)
+  hand rect while STORING the re-framed rect, deliberately relying on SpriteKit to rescale
+  the crop down into the smaller rect. That made `img/rect == 1/REFRAME_scale` **by
+  construction** — bench `1/0.83 = 1.205`, cabinet `1/0.70 = 1.429`, matching the
+  Producer's measured 1.204/1.427 exactly. The flag was *correct* only while those sources
+  really were old-framing 2560-era plates. Round 6 (R6-007) re-rolled all four fresh at
+  3840x1920 in **re-framed** space, silently invalidating the premise: the tool then
+  cropped the wrong region of a correct plate and drew it scaled ~83%/70% and offset
+  (~180px left, ~278px up for ov-flame1) — the user's "correctly replaced but not placed
+  correctly", i.e. the flame's glow on the wall LEFT of the cauldron.
+- **Fix = mechanism, not values.** The 4 plates MOVED from `MANUAL_OVERLAYS` to the
+  auto-diff `OVERLAYS` list, so their rects self-locate from a base-vs-variant diff bbox
+  exactly like the other 23. Measured on the current plates they diff tightly and cleanly
+  (global mean diff 0.12–1.44; bbox 1.5–4.8% of frame), so no hand rect is needed at all.
+  The `legacy` flag and its crop-at-a-different-rect branch are **deleted, not merely
+  unused** — this staleness class is now unrepresentable. The old hand rects were removed
+  rather than kept as comments, so a future re-roll cannot resurrect them.
+- **Anti-recurrence, two layers (both fail loudly):**
+  1. `assert_overlay_rects_match_art()` in `tools/build_game_assets.py` — refuses to write
+     `overlays.json` unless EVERY overlay's staged art is pixel-1:1 with its rect (±2%).
+     Prints the full ratio table each run. Nothing previously compared art dims to rect
+     dims, which is why a 4-of-27 defect stayed invisible until a device screenshot.
+  2. `testOverlayArtIsPixel1to1WithItsRect` (QALevelFlowTests) — CI-side backstop that also
+     catches a hand-edited `overlays.json`, which the Python guard would never see.
+- **Acceptance: all 27 overlays ratio 1.000** (was 23/27). Verified by offline composite
+  that ov-flame1/3 now sit ON the cauldron (fire rooted in the hearth, licking the pot)
+  and ov-slots-seated seats the sun/moon in their carved door recesses.
+- **R7-001b fixed too (never user-reported):** `ov-slots-seated` (1.427) had the same bug
+  and same cause; it is the cabinet sun/moon "ring+coin seated" overlay.
+- **Bonus fix — two rects were band-contaminated and are now tight.** `ov-crow-lintel`
+  (y0 108→291) and `ov-crank-fitted` (y0 68→213) previously stretched UP into the top edge
+  smear band, because the pre-R7-002 rolling RNG gave variants different band noise than
+  their base, so the band read as a "difference". Verified post-fix: base-vs-variant edge
+  bands are now **byte-identical** (max-diff 0) on both views, so no derived rect is band-
+  contaminated. Their art was 1:1 before and after (the band pixels matched the base, so
+  they composited invisibly) — this is reduced overdraw, not a visual change.
+- **Restage picked up R7-002:** 35 band-faded @3x sources; 30 consumed by the pipeline
+  (5 are documented deliberate non-consumers: the `-nb` basin/nobeam wides,
+  `z1-entry-vines-withered`, and `z1-hearth-poker-taken` which R5-001 replaced with a
+  base-derived synthesis). All 12 band-faded full plates restaged; the other 18 feed only
+  interior overlay crops where the edge fade lies outside every crop, so byte-identical
+  output there is correct.
+- **Guards:** `assert_no_nb_shadow` PASS, `assert_no_stale_vintage` PASS with
+  `KNOWN_LEGACY_SOURCES` still **empty** (the 4 QA-B10-002 exceptions stay retired),
+  `assert_chrome_current` PASS, overlay-rect guard PASS (27/27).
+- **Security checklist (run this handoff):**
+  - *No development-time secrets:* grep of `EscapeRoom/` source + a binary-inclusive scan of
+    the staged resource set for `fal.ai` / `FAL_KEY` / `api_key` / bearer / `sk-*` / AWS key
+    patterns returned **zero** matches. `.env` is gitignored (`.gitignore:2`), absent from
+    `EscapeRoom/Resources/`, and copied into no bundle or build phase.
+  - *Minimal entitlements/permissions:* **no** `.entitlements` file, **no**
+    `CODE_SIGN_ENTITLEMENTS` / `com.apple.developer.*` in the pbxproj, and **zero**
+    `NS*UsageDescription` keys. `Info.plist` holds only bundle/orientation/launch-screen
+    keys — no camera, microphone, location or contacts.

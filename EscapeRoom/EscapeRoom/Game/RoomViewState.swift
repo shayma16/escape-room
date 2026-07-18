@@ -12,25 +12,26 @@ enum RoomVisuals {
         "z1-hearth-base"
     }
 
+    /// R2-003a manual pickup: undisturbed before sifting; sifted-with-ring while the ring
+    /// is revealed-but-uncollected; cleared once the ring is taken. Purely state-derived.
     static func ashState(_ s: GameState) -> String {
-        if s.hasItem(PuzzleGraph.ItemID.goldRing) || s.hasSolved(PuzzleGraph.PuzzleID.ashSift) {
-            return "cu-ash-ring-taken"
-        }
+        if PuzzleEngine.isRingUncollectedInAsh(s) { return "cu-ash-sifted" }   // ring visible
+        if s.hasSolved(PuzzleGraph.PuzzleID.ashSift) { return "cu-ash-ring-taken" } // cleared
         return "cu-ash-undisturbed"
     }
 
-    /// QA-BUG-016: the sifted-with-glint state (p05's secondary discoverability cue) is
-    /// shown as the sift-success close-up moment; afterwards the ash close-up shows the
-    /// ring-taken state (the engine grants the ring at the sift itself).
-    static func ashCloseUp(_ s: GameState, justSifted: Bool) -> String {
-        if justSifted { return "cu-ash-sifted" }
-        return ashState(s)
+    /// The ash close-up is a plain state-resolved plate now (no transient beat): the ring
+    /// shows in the sifted plate until collected, then the cleared plate renders. The
+    /// close-up layer overlays a tappable ring target while `isRingUncollectedInAsh`.
+    static func ashCloseUp(_ s: GameState) -> String {
+        ashState(s)
     }
 
-    /// D5: one-shot cuckoo pop, then permanently spent. Never gates progression.
-    static func clockState(_ s: GameState, justPopped: Bool) -> String {
-        if justPopped { return "cu-clock-pop" }
-        return s.hasFlag(PuzzleGraph.StateFlag.clockCuckooSpent) ? "cu-clock-spent" : "cu-clock-unspent"
+    /// Q3 (user decision 2026-07-08): the cuckoo is removed — the clock is now purely the
+    /// p01 numeral-ring reference and has a single inert face state. (`cu-clock-unspent`
+    /// remains the shipped face+numeral-ring plate; the pop/spent states are retired.)
+    static func clockState(_ s: GameState) -> String {
+        "cu-clock-unspent"
     }
 
     static func rugMoved(_ s: GameState) -> Bool {
@@ -46,7 +47,12 @@ enum RoomVisuals {
     }
 
     static func pokerTaken(_ s: GameState) -> Bool {
+        // Build 10: "taken" is a latched fact, not "currently held" — once the poker's
+        // uses are depleted it leaves inventory (cluster A), but it must NOT re-appear
+        // on the hearth hook. Either poker use implies it was picked up.
         s.hasItem(PuzzleGraph.ItemID.poker)
+            || s.hasSolved(PuzzleGraph.PuzzleID.ashSift)
+            || s.hasSolved(PuzzleGraph.PuzzleID.barrelPry)
     }
 
     // MARK: z1 v-entry
@@ -124,6 +130,27 @@ enum RoomVisuals {
         s.hasSolved(PuzzleGraph.PuzzleID.astrolabeOrion)
     }
 
+    /// True iff a game-art asset is actually staged in the bundle. Used by the Round 6
+    /// wide taken-state resolvers to prefer a clean "emptied" overlay when its art exists
+    /// and fall back safely when it does not (the empty-variant art is a JOIN-pass
+    /// dependency — see barrelOverlay / astrolabeDrawerOverlay).
+    static func assetAvailable(_ name: String) -> Bool {
+        GameAssetLoader.shared.url(for: name) != nil
+    }
+
+    /// Astrolabe drawer WIDE taken-state (R6-008-wide, Round 6 Cluster A): the drawer shows
+    /// its contents (ov-adrawer-open bakes the coin + crank) while anything is uncollected;
+    /// once BOTH are taken it must no longer show them. If an emptied-drawer overlay
+    /// (`ov-adrawer-empty`) is staged, use it; otherwise hide the overlay so the small corner
+    /// drawer simply reads closed (its close-up still opens the empty container) — either way
+    /// the stale contents no longer linger in the wide.
+    static func astrolabeDrawerOverlay(_ s: GameState) -> String? {
+        guard astrolabeDrawerOpen(s) else { return nil }
+        let anyLeft = !PuzzleEngine.uncollectedItems(in: .astrolabeDrawer, state: s).isEmpty
+        if anyLeft { return "ov-adrawer-open" }
+        return assetAvailable("ov-adrawer-empty") ? "ov-adrawer-empty" : nil
+    }
+
     // MARK: z3 v-cellar
 
     /// Barrel overlay (BUG-004 integration fix): the base plate carries the NAILED
@@ -131,21 +158,35 @@ enum RoomVisuals {
     /// state shows ("barrel (nailed / pried, weight visible inside)" —
     /// visually_necessary_elements). The previous mapping overlaid pried art
     /// pre-solve — a latent visual bug masked by QA-BUG-022's black scenes.
+    ///
+    /// Round 6 (R6-005): apply the WIDE taken-state — ov-barrel-pried BAKES the weight, so it
+    /// must stop showing once the weight is collected. Prefer an emptied-pried overlay
+    /// (`ov-barrel-pried-empty`) when its art is staged; until then keep the pried overlay
+    /// (the barrel must never re-nail itself) so the weight lingers only until the JOIN art
+    /// pass lands the empty variant. Flagged as a JOIN-pass art dependency.
     static func barrelOverlay(_ s: GameState) -> String? {
-        s.hasSolved(PuzzleGraph.PuzzleID.barrelPry) ? "ov-barrel-pried" : nil
+        guard s.hasSolved(PuzzleGraph.PuzzleID.barrelPry) else { return nil }
+        if PuzzleEngine.isWeightUncollectedInBarrel(s) { return "ov-barrel-pried" }
+        return assetAvailable("ov-barrel-pried-empty") ? "ov-barrel-pried-empty" : "ov-barrel-pried"
     }
 
     /// Cellar drawer (feedback round 1 fix): graph states are shut / open-with-spoon /
     /// open-empty. The previous mapping was inverted AND always overlaid an open
     /// drawer from the first frame. `nil` = shut (the base plate's own art).
     /// Saves from older builds (spoon held, no opened flag) migrate by implication.
+    /// Build 10: "spoon taken" is latched — the consumed spoon (post-p12, cluster A)
+    /// must not re-appear in the drawer (the exact R4-012(2)/R2-014 recurrence class).
+    static func spoonTaken(_ s: GameState) -> Bool {
+        s.hasItem(PuzzleGraph.ItemID.spoon) || s.hasSolved(PuzzleGraph.PuzzleID.fileShavings)
+    }
+
     static func cellarDrawerOpened(_ s: GameState) -> Bool {
-        s.hasFlag(PuzzleGraph.StateFlag.cellarDrawerOpened) || s.hasItem(PuzzleGraph.ItemID.spoon)
+        s.hasFlag(PuzzleGraph.StateFlag.cellarDrawerOpened) || spoonTaken(s)
     }
 
     static func drawerOverlay(_ s: GameState) -> String? {
         guard cellarDrawerOpened(s) else { return nil }
-        return s.hasItem(PuzzleGraph.ItemID.spoon) ? "ov-drawer-empty" : "ov-drawer-open"
+        return spoonTaken(s) ? "ov-drawer-empty" : "ov-drawer-open"
     }
 
     static func shelfSlid(_ s: GameState) -> Bool {
@@ -179,6 +220,8 @@ enum RoomVisuals {
     }
 
     static func cageKeyTaken(_ s: GameState) -> Bool {
-        s.hasItem(PuzzleGraph.ItemID.cageKey)
+        // Build 10: latched — the key is consumed at p11 (cluster A), and a consumed
+        // key must not re-appear in the statue's beak.
+        s.hasItem(PuzzleGraph.ItemID.cageKey) || s.hasFlag(PuzzleGraph.StateFlag.crowFreed)
     }
 }

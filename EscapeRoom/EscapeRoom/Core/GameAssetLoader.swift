@@ -17,6 +17,21 @@ final class GameAssetLoader {
 
     private var index: [String: URL] = [:]
 
+    /// Decoded-image cache (build 10 CI-perf fix, run 29186397614): `image(named:)` is
+    /// called from SwiftUI `body` evaluations (GameImage), which re-run on EVERY observed
+    /// state change — without a cache each re-render re-opened and re-decoded the file
+    /// (close-up plates are ~10-megapixel JPEGs). Handing back the SAME UIImage instance
+    /// also lets UIKit reuse its internally-decoded bitmap instead of decoding per draw.
+    /// On the software-rendered CI simulator this decode churn (together with the 60 fps
+    /// SKView, see SpriteKitContainerView) starved the main thread badly enough on iPad
+    /// that XCUITest event delivery broke down. Cost-bounded so a long session on a real
+    /// device degrades gracefully back to disk loads instead of growing without bound.
+    private let imageCache: NSCache<NSString, UIImage> = {
+        let cache = NSCache<NSString, UIImage>()
+        cache.totalCostLimit = 192 * 1024 * 1024   // ~192 MB of decoded pixels
+        return cache
+    }()
+
     private init() {
         buildIndex()
     }
@@ -41,7 +56,11 @@ final class GameAssetLoader {
     }
 
     func image(named name: String) -> UIImage? {
+        if let cached = imageCache.object(forKey: name as NSString) { return cached }
         guard let url = index[name] else { return nil }
-        return UIImage(contentsOfFile: url.path)
+        guard let image = UIImage(contentsOfFile: url.path) else { return nil }
+        let pixelCost = Int(image.size.width * image.scale * image.size.height * image.scale) * 4
+        imageCache.setObject(image, forKey: name as NSString, cost: pixelCost)
+        return image
     }
 }

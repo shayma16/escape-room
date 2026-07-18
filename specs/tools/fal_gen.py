@@ -1,20 +1,33 @@
 #!/usr/bin/env python3
-"""Flux 2 Pro batch driver for escape-room asset generation.
+"""Nano Banana Pro batch driver for escape-room asset generation.
+
+Model switch (user decision 2026-07-07): Flux 2 Pro produced a painterly/matte look
+the user rejected; replaced by Nano Banana Pro (fal-ai/nano-banana-pro). Engine-render
+style is enforced by the mandatory style template composed into every prompt by the
+caller (see .claude/agents/asset-generation.md). This driver only transports prompts,
+reference images (up to 14), and size, then saves @3x/@2x/@1x.
 
 Usage: python fal_gen.py <jobs.json>
 
 jobs.json = list of job objects:
 {
-  "name": "sky-master",            # output base name
-  "out_dir": "masters",            # relative to ASSET_ROOT
-  "endpoint": "t2i" | "edit",
+  "name": "z1-hearth-base",         # output base name
+  "out_dir": "z1/v-hearth",         # relative to ASSET_ROOT
+  "endpoint": "t2i" | "edit",       # edit = image-to-image / inpaint-style with refs
   "prompt": "...",
-  "width": 2752, "height": 1376,
-  "refs": ["abs/path/img.png", ...]   # only for edit
-  "seed": 12345                        # optional
+  "width": 3840, "height": 1920,     # exact target px; saved by center-crop+resize
+  "refs": ["abs/path/img.png", ...],  # up to 14 anchors (both t2i and edit accept refs)
+  "resolution_tier": "4k" | "std",   # pricing/quality; "4k" => $0.30, else $0.15
+  "seed": 12345,                      # optional
+  "keep_rgba": true                   # optional (icons/sprites cut out later)
 }
 
+Nano Banana Pro takes a NAMED aspect_ratio enum (not raw px) and resolution "1K/2K/4K".
+The driver maps target w:h to the nearest allowed aspect, requests it, then
+center-crops + resizes the returned image to the EXACT target pixels (no distortion).
+
 Never prints the API key. Appends results to results.jsonl in scratchpad.
+Pricing: $0.15/image standard, $0.30 at 4K (verified 2026-07-08).
 """
 import base64
 import io
@@ -27,22 +40,34 @@ import urllib.error
 
 from PIL import Image
 
-# Scratchpad for the RESULTS log. Overridable via FALGEN_SCRATCH so the driver
-# survives session-specific scratch paths (the committed default is a fallback).
 SCRATCH = os.environ.get(
     "FALGEN_SCRATCH",
-    r"C:\Users\shaim\AppData\Local\Temp\claude\C--Users-shaim\d551cf43-749e-4f4a-81be-1d18a3d3b5ca\scratchpad",
+    r"C:\Users\shaim\AppData\Local\Temp\claude\C--Users-shaim-escape-room\8c048282-9ce7-4b1a-b54a-04e2ba948c25\scratchpad",
 )
 os.makedirs(SCRATCH, exist_ok=True)
 ASSET_ROOT = r"C:\Users\shaim\escape-room\specs\assets\level-1"
 ENV_PATH = r"C:\Users\shaim\escape-room\.env"
 RESULTS = os.path.join(SCRATCH, "results.jsonl")
-PRICE_PER_MP = 0.03  # USD, Flux 2 Pro published output rate
+
+PRICE_STD = 0.15
+PRICE_4K = 0.30
+MAX_REFS = 14
 
 ENDPOINTS = {
-    "t2i": "https://queue.fal.run/fal-ai/flux-2-pro",
-    "edit": "https://queue.fal.run/fal-ai/flux-2-pro/edit",
+    "t2i": "https://queue.fal.run/fal-ai/nano-banana-pro",
+    "edit": "https://queue.fal.run/fal-ai/nano-banana-pro/edit",
 }
+
+# Allowed aspect_ratio enum -> numeric w/h ratio.
+ALLOWED_AR = {
+    "21:9": 21 / 9, "16:9": 16 / 9, "3:2": 3 / 2, "4:3": 4 / 3, "5:4": 5 / 4,
+    "1:1": 1.0, "4:5": 4 / 5, "3:4": 3 / 4, "2:3": 2 / 3, "9:16": 9 / 16,
+}
+
+
+def nearest_ar(w, h):
+    target = w / h
+    return min(ALLOWED_AR, key=lambda k: abs(ALLOWED_AR[k] - target))
 
 
 def load_key():
@@ -79,7 +104,7 @@ def api(url, payload=None, method=None):
             raise
 
 
-def ref_to_data_uri(path, max_side=2752):
+def ref_to_data_uri(path, max_side=1536):
     im = Image.open(path).convert("RGB")
     if max(im.size) > max_side:
         im.thumbnail((max_side, max_side), Image.LANCZOS)
@@ -89,23 +114,49 @@ def ref_to_data_uri(path, max_side=2752):
 
 
 def submit(job):
+    w, h = job["width"], job["height"]
+    tier = job.get("resolution_tier", "4k" if max(w, h) >= 3000 else "std")
+    ar = job.get("aspect_ratio") or nearest_ar(w, h)
     payload = {
         "prompt": job["prompt"],
         "output_format": "png",
-        "safety_tolerance": "2",
-        "image_size": {"width": job["width"], "height": job["height"]},
+        "num_images": 1,
+        "aspect_ratio": ar,
+        "resolution": "4K" if tier == "4k" else "2K",
     }
     if "seed" in job:
         payload["seed"] = job["seed"]
-    if job["endpoint"] == "edit":
-        payload["image_urls"] = [ref_to_data_uri(p) for p in job["refs"]]
+    refs = job.get("refs", [])[:MAX_REFS]
+    if refs:
+        payload["image_urls"] = [ref_to_data_uri(p) for p in refs]
     res = api(ENDPOINTS[job["endpoint"]], payload)
-    return res  # has status_url / response_url / request_id
+    return res, tier
 
 
-def save_scaled(png_bytes, out_dir, name):
+def fit_exact(im, tw, th):
+    """Center-crop to target aspect, then resize to exact target px. No distortion."""
+    sw, sh = im.size
+    tr = tw / th
+    sr = sw / sh
+    if abs(sr - tr) > 1e-3:
+        if sr > tr:  # source wider -> crop width
+            nw = int(round(sh * tr))
+            x0 = (sw - nw) // 2
+            im = im.crop((x0, 0, x0 + nw, sh))
+        else:        # source taller -> crop height
+            nh = int(round(sw / tr))
+            y0 = (sh - nh) // 2
+            im = im.crop((0, y0, sw, y0 + nh))
+    if im.size != (tw, th):
+        im = im.resize((tw, th), Image.LANCZOS)
+    return im
+
+
+def save_scaled(png_bytes, out_dir, name, target_w, target_h, keep_rgba=False):
     os.makedirs(out_dir, exist_ok=True)
-    im = Image.open(io.BytesIO(png_bytes)).convert("RGB")
+    im = Image.open(io.BytesIO(png_bytes))
+    im = im.convert("RGBA" if keep_rgba else "RGB")
+    im = fit_exact(im, target_w, target_h)
     w, h = im.size
     p3 = os.path.join(out_dir, f"{name}@3x.png")
     im.save(p3, "PNG")
@@ -117,7 +168,7 @@ def save_scaled(png_bytes, out_dir, name):
 
 
 def run(jobs):
-    inflight = {}  # name -> (job, status_url, response_url, t0)
+    inflight = {}
     results = []
     queue = list(jobs)
     MAX_INFLIGHT = 6
@@ -125,15 +176,15 @@ def run(jobs):
         while queue and len(inflight) < MAX_INFLIGHT:
             job = queue.pop(0)
             try:
-                res = submit(job)
-                inflight[job["name"]] = (job, res["status_url"], res["response_url"], time.time())
-                print(f"submitted {job['name']}")
+                res, tier = submit(job)
+                inflight[job["name"]] = (job, tier, res["status_url"], res["response_url"], time.time())
+                print(f"submitted {job['name']} ({tier})")
             except Exception as e:
                 print(f"SUBMIT FAIL {job['name']}: {e}")
                 results.append({"name": job["name"], "ok": False, "error": str(e)})
         time.sleep(4)
         for name in list(inflight):
-            job, surl, rurl, t0 = inflight[name]
+            job, tier, surl, rurl, t0 = inflight[name]
             try:
                 st = api(surl)
             except Exception as e:
@@ -147,14 +198,16 @@ def run(jobs):
                     with urllib.request.urlopen(img["url"], timeout=300) as r:
                         png = r.read()
                     out_dir = os.path.join(ASSET_ROOT, job["out_dir"])
-                    path3x, w, h = save_scaled(png, out_dir, name)
-                    mp = w * h / 1e6
+                    cost = PRICE_4K if tier == "4k" else PRICE_STD
+                    path3x, w, h = save_scaled(
+                        png, out_dir, name, job["width"], job["height"],
+                        keep_rgba=job.get("keep_rgba", False))
                     rec = {"name": name, "ok": True, "path": path3x, "w": w, "h": h,
-                           "mp": round(mp, 3), "est_cost": round(mp * PRICE_PER_MP, 4),
+                           "tier": tier, "est_cost": cost,
                            "seed": out.get("seed"), "endpoint": job["endpoint"],
                            "prompt": job["prompt"], "elapsed_s": round(time.time() - t0, 1)}
                     results.append(rec)
-                    print(f"DONE {name} {w}x{h} est ${rec['est_cost']}")
+                    print(f"DONE {name} {w}x{h} ({tier}) ${cost}")
                 except Exception as e:
                     results.append({"name": name, "ok": False, "error": str(e)})
                     print(f"FETCH FAIL {name}: {e}")
@@ -172,7 +225,7 @@ def run(jobs):
         for r in results:
             f.write(json.dumps(r) + "\n")
     total = sum(r.get("est_cost", 0) for r in results if r.get("ok"))
-    print(f"phase done: {sum(1 for r in results if r.get('ok'))}/{len(results)} ok, est ${total:.2f}")
+    print(f"phase done: {sum(1 for r in results if r.get('ok'))}/{len(results)} ok, spend ${total:.2f}")
 
 
 if __name__ == "__main__":

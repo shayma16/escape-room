@@ -30,6 +30,25 @@ You are the Developer Agent for an iOS point-and-click escape room game.
   entitlement check that currently always returns true) — but do NOT implement IAP now.
   The game ships free with no purchases.
 
+## Asset staging — always ship the CURRENT art, never a stale shadow (binding, user directive 2026-07-09)
+
+When you stage art from `specs/assets/` into the app bundle (`EscapeRoom/Resources/`):
+
+- **Never assume a canonical filename is the current asset.** Resolve every staged asset
+  to the version the manifest (`asset-manifest.json` — its latest per-asset block) marks as
+  current, and verify the staged file actually matches that source — not merely that *a*
+  file with the right name exists.
+- **Guard against "shadow" files:** an out-of-date file sitting at a canonical name that
+  shadows a newer generation (e.g. a stale `cu-x@3x.png` next to a fresh `cu-x-nb@3x.png`).
+  If both exist, the newer intended one (per manifest) MUST win; flag the stale shadow for
+  cleanup (archive to `_rejects/`) rather than silently shipping it.
+- **Add/keep a build check that FAILS LOUDLY** if a manifest-current asset is shadowed by
+  an out-of-date file, so stale art can never silently ship again. Prefer a resolution that
+  is unambiguous (canonical filename == current art) over fragile per-file override lists.
+- This exact failure shipped 70 stale build-2 close-ups in build 3 (the wide scenes were
+  new but the "inspect" close-ups were old) — do not let it recur. Spot-check representative
+  staged close-ups across zones against their sources before declaring the bundle correct.
+
 ## One-time scope: global UI chrome (theme-independent; user scope addition 2026-07-05)
 
 Implement the app's menu layer ONCE in SwiftUI, per the user-approved

@@ -14,32 +14,40 @@ struct PauseMenuView: View {
 
     var body: some View {
         ZStack {
+            // Full-window scrim (QA-B3-002): this view is now a full-screen overlay, not a
+            // `.sheet`, so the scrim covers the whole game and the button column centers
+            // in the safe area on every device (incl. landscape iPhone / Dynamic Island).
             Chrome.scrim.ignoresSafeArea()
+                .contentShape(Rectangle())
                 .onTapGesture { isPresented = false }
 
             VStack(spacing: 16) {
-                Button(action: { isPresented = false }) {
+                // R3-001: quiet tactile menu click on each pause-menu button.
+                Button(action: { SoundManager.shared.play(.menuConfirm); isPresented = false }) {
                     Label("Resume", systemImage: "play.fill")
                 }
                 .buttonStyle(.chromePrimary)
 
-                Button(action: { showRestartConfirm = true }) {
+                Button(action: { SoundManager.shared.play(.menuConfirm); showRestartConfirm = true }) {
                     Label("Restart Level", systemImage: "arrow.counterclockwise")
                 }
                 .buttonStyle(.chromePrimary)
 
-                Button(action: { presentSettings = true }) {
+                Button(action: { SoundManager.shared.play(.menuConfirm); presentSettings = true }) {
                     Label("Settings", systemImage: "gearshape")
                 }
                 .buttonStyle(.chromePrimary)
 
-                Button(action: exitToMainMenu) {
+                Button(action: { SoundManager.shared.play(.menuConfirm); exitToMainMenu() }) {
                     Label("Main Menu", systemImage: "house")
                 }
                 .buttonStyle(.chromePrimary)
                 .accessibilityIdentifier("pause-main-menu")
             }
+            // Keep the whole column inside the safe area on notch/Dynamic-Island devices.
+            .padding(.vertical, 24)
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .alert("Restart level?", isPresented: $showRestartConfirm) {
             Button("Cancel", role: .cancel) {}
             Button("Restart") {
@@ -61,7 +69,9 @@ struct PauseMenuView: View {
     /// the live game with a brand-new root; the level's ambient loop stops too. No
     /// confirmation, per J5 — every GameState mutation is already persisted.
     private func exitToMainMenu() {
-        SoundManager.shared.stopAmbient()
+        // R3-001: exitLevel() closes the level-music scope AND tears down music/ambience,
+        // so the menu we return to is music-free (only menu SFX play in the chrome).
+        SoundManager.shared.exitLevel()
         isPresented = false
         navigator.popToRoot()
     }

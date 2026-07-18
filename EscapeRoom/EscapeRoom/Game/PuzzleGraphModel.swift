@@ -176,6 +176,116 @@ enum MirrorSolution {
     static let detentCount = 3
 }
 
+// MARK: - Item lifecycle (build 10, cluster A — R4-019 🔴 / R4-030 / R2-020)
+//
+// ONE graph-driven rule replaces the old ad-hoc per-item drop closures:
+//
+//     An item is RETAINED while ANY entry in its puzzle-graph `uses` array is
+//     unsatisfied, and CONSUMED (removed from inventory) once ALL of them are
+//     satisfied. Items whose `uses` array is EMPTY (the rusted-key red herring)
+//     are NEVER auto-consumed.
+//
+// This fixes both directions of the build-9 lifecycle defect at once: R4-019
+// (a multi-use tool must never disappear while a use remains — the poker
+// soft-lock on barrel-before-ash orderings) and R4-030 (single-use items must
+// not linger after their only use — spoon + file after p12).
+//
+// PLACED items (gold ring / silver coin into the cabinet, blossom into the
+// mortar, ingredients into the cauldron, phial -> draught, draught -> basin)
+// keep their existing consume-on-placement in the engine; this table simply
+// AGREES with those placements (their single use is satisfied at the same
+// moment the engine removes them), so `reconcile` never fights the engine.
+//
+// The `uses` data below transcribes puzzle-graph.json rev 1.3 item nodes
+// verbatim (itm-* `uses` arrays); each use maps to the requirement-state fact
+// that proves that use is done. Spec-note conflict recorded in implementation
+// notes: the graph's anti_softlock_invariants text says poker/file/crank are
+// "never consumed" — the user-approved round-4 changelist (checkpoint 1,
+// 2026-07-11) supersedes that at the INVENTORY level with the uses-driven rule
+// above, which preserves the invariant's actual purpose (no removal while a
+// use remains).
+enum ItemLifecycle {
+    /// One entry of an item's puzzle-graph `uses` array: the use's puzzle id and
+    /// the pure state predicate that holds iff that use has been satisfied.
+    struct Use {
+        let puzzleID: String
+        let isSatisfied: (GameState) -> Bool
+    }
+
+    /// item id -> its graph `uses` entries. EVERY itm-* node is present so the
+    /// unit-test invariant can be asserted against the graph for every item.
+    static let uses: [String: [Use]] = [
+        PuzzleGraph.ItemID.poker: [
+            Use(puzzleID: PuzzleGraph.PuzzleID.ashSift) { $0.hasSolved(PuzzleGraph.PuzzleID.ashSift) },
+            Use(puzzleID: PuzzleGraph.PuzzleID.barrelPry) { $0.hasSolved(PuzzleGraph.PuzzleID.barrelPry) },
+        ],
+        PuzzleGraph.ItemID.rustedKey: [], // red herring: uses [] -> never consumed
+        PuzzleGraph.ItemID.goldRing: [
+            Use(puzzleID: PuzzleGraph.PuzzleID.cabinetSunMoon) { $0.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon) },
+        ],
+        PuzzleGraph.ItemID.crank: [
+            Use(puzzleID: PuzzleGraph.PuzzleID.shutterWinch) { $0.hasFlag(PuzzleGraph.StateFlag.moonbeamOn) },
+        ],
+        PuzzleGraph.ItemID.silverCoin: [
+            Use(puzzleID: PuzzleGraph.PuzzleID.cabinetSunMoon) { $0.hasSolved(PuzzleGraph.PuzzleID.cabinetSunMoon) },
+        ],
+        PuzzleGraph.ItemID.file: [
+            Use(puzzleID: PuzzleGraph.PuzzleID.fileShavings) { $0.hasSolved(PuzzleGraph.PuzzleID.fileShavings) },
+        ],
+        PuzzleGraph.ItemID.phial: [
+            Use(puzzleID: PuzzleGraph.PuzzleID.fillPhial) { $0.hasSolved(PuzzleGraph.PuzzleID.fillPhial) },
+        ],
+        PuzzleGraph.ItemID.spoon: [
+            Use(puzzleID: PuzzleGraph.PuzzleID.fileShavings) { $0.hasSolved(PuzzleGraph.PuzzleID.fileShavings) },
+        ],
+        PuzzleGraph.ItemID.shavings: [
+            Use(puzzleID: PuzzleGraph.PuzzleID.brew) { $0.hasSolved(PuzzleGraph.PuzzleID.brew) },
+        ],
+        PuzzleGraph.ItemID.weight: [
+            Use(puzzleID: PuzzleGraph.PuzzleID.shelfCounterweight) { $0.hasSolved(PuzzleGraph.PuzzleID.shelfCounterweight) },
+        ],
+        PuzzleGraph.ItemID.cageKey: [
+            Use(puzzleID: PuzzleGraph.PuzzleID.cageUnlock) { $0.hasFlag(PuzzleGraph.StateFlag.crowFreed) },
+        ],
+        PuzzleGraph.ItemID.blossom: [
+            Use(puzzleID: PuzzleGraph.PuzzleID.grindPaste) { $0.hasSolved(PuzzleGraph.PuzzleID.grindPaste) },
+        ],
+        PuzzleGraph.ItemID.paste: [
+            Use(puzzleID: PuzzleGraph.PuzzleID.brew) { $0.hasSolved(PuzzleGraph.PuzzleID.brew) },
+        ],
+        PuzzleGraph.ItemID.feather: [
+            Use(puzzleID: PuzzleGraph.PuzzleID.brew) { $0.hasSolved(PuzzleGraph.PuzzleID.brew) },
+        ],
+        PuzzleGraph.ItemID.phialDraught: [
+            Use(puzzleID: PuzzleGraph.PuzzleID.doorUnseal) { $0.hasFlag(PuzzleGraph.StateFlag.doorUnsealed) },
+        ],
+    ]
+
+    /// TRUE iff the item still has at least one unsatisfied use (must be retained).
+    static func hasRemainingUse(_ itemID: String, state: GameState) -> Bool {
+        guard let entries = uses[itemID] else { return true } // unknown item: never drop
+        guard !entries.isEmpty else { return true }           // uses [] (red herring): never drop
+        return entries.contains { !$0.isSatisfied(state) }
+    }
+
+    /// TRUE iff EVERY use of the item is satisfied (safe to consume).
+    static func isDepleted(_ itemID: String, state: GameState) -> Bool {
+        !hasRemainingUse(itemID, state: state)
+    }
+
+    /// Sweeps the whole inventory, removing every held item whose uses are ALL
+    /// satisfied. Called from the GameState markSolved/setFlag hooks (every way a
+    /// use can become satisfied passes through one of those two mutators), so no
+    /// interaction path can forget to reconcile — the R4-030 failure mode. It can
+    /// never violate the anti-softlock invariant by construction: an item with an
+    /// unsatisfied use always has `hasRemainingUse == true` and is left alone.
+    static func reconcile(_ state: GameState) {
+        for itemID in state.inventory where isDepleted(itemID, state: state) {
+            state.removeItem(itemID)
+        }
+    }
+}
+
 // MARK: - Clue-gating (puzzle-graph.json rev 1.3, F-012 user decision 2026-07-07)
 //
 // Code-entry puzzles do NOT accept their solution — even the correct one — until their

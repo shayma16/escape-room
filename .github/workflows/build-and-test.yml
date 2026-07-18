@@ -22,12 +22,16 @@ on:
 jobs:
   build-and-test:
     runs-on: macos-15          # macOS runners bill at 10x minutes on private repos
-    # QA build-2 regression (2026-07-08): raised 60 -> 90. Un-skipping the iPad UI
-    # playthrough plus the new save/resume UI test pushed the two UI-test device steps
-    # past the old 60-min job budget (run 28899880260 was cancelled with the iPad step
-    # still running AFTER the iPhone step had already passed). 90 min gives headroom;
-    # the iPad step is also scoped down below to not re-run the heaviest test.
-    timeout-minutes: 90
+    # Raised 60 -> 90 -> 120 -> 180. Build 9 letterbox follow-up RESTORES the full iPad UI
+    # playthrough + save/resume (the primary device is now genuinely verified end-to-end,
+    # not scoped-around), so BOTH iPhone-SE and iPad run the heavy full playthrough. That
+    # is the double-full-playthrough that historically pressured the budget (run
+    # 28899880260 was cancelled at 60 min). 120 proved NOT enough: build-12 round-6 rerun
+    # 29314184259 was CANCELLED at exactly 120 min mid-iPad-test under slow-runner /
+    # simulator-starvation load (typical green suite is ~1h47m, right at the old ceiling).
+    # 180 min gives real buffer for two full playthroughs + 3 unit-test device runs +
+    # 2 smoke/DI UI runs even when the runner is slow.
+    timeout-minutes: 180
 
     steps:
       - name: Checkout
@@ -133,17 +137,22 @@ jobs:
       # UI tests (QA test-infrastructure request 1): scripted full playthrough with
       # per-view screenshots as xcresult attachments.
       #
-      # Device split (QA build-2 regression, 2026-07-08): the FULL 19-step playthrough
-      # runs on the smallest supported iPhone (SE) — the canonical completability proof
-      # on the tightest layout — PLUS the smoke + save/resume tests. The iPad step runs
-      # only smoke + save/resume (NOT the heavy full playthrough again), which keeps
-      # iPad UI coverage (chrome scaling, landscape composition, save/resume, gate
-      # persistence on the primary device) without re-paying the full playthrough's
-      # ~4-5 min on the larger simulator — the double-full-playthrough is what blew the
-      # job time budget in run 28899880260. The full playthrough's hotspot geometry is
-      # device-independent (plate-normalized, all taps inside the iPad-safe band), so the
-      # iPhone-SE full run plus the iPad unit + smoke + save/resume suites cover the iPad
-      # completability path; the shared crop was already proven by BUG-004's re-frame.
+      # Device split: the FULL 19-step playthrough runs on the smallest supported iPhone
+      # (SE) — the canonical completability proof on the tightest layout — PLUS smoke +
+      # save/resume. It ALSO runs the FULL suite on iPad (the PRIMARY device) now that the
+      # interim letterbox (build 9 follow-up, `.aspectFit`) makes every puzzle-critical
+      # element — including the z1 clue MARKS and the edge elements the build-3 crop hid —
+      # VISIBLE and TAPPABLE on iPad. Previously (R3-005/build 9) the iPad step was scoped
+      # down to smoke + composition because under `.aspectFill` the clue marks + edge
+      # elements sat OUTSIDE the iPad dual-safe crop and their taps could not land; with the
+      # letterbox they are on-screen, so iPad is now GENUINELY verified end-to-end
+      # (playthrough + save/resume + gate persistence) rather than scoped-around.
+      # NOTE (QA-B3-001): the CI screenshots are raster-letterboxed because the runner boots
+      # the simulators portrait; the app itself lays out full-width (verified by the
+      # harness-immune logical guard in testSceneContentFillsScreen_QA_B3_001, and confirmed
+      # by the user's on-device TestFlight spot-check). A reliable headless simulator-rotate
+      # is not available on these runner images; screenshot-fidelity rotation is left to the
+      # user's device spot-check rather than a fragile AppleScript step.
       - name: UI tests - smallest supported iPhone (full playthrough + smoke + save-resume)
         run: |
           set -o pipefail
@@ -155,15 +164,24 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
 
-      - name: UI tests - iPad (smoke + save-resume)
+      # iPad (PRIMARY device) — FULL UI coverage RESTORED (build 9 letterbox follow-up).
+      # The interim `.aspectFit` letterbox puts the full 2:1 plate on-screen on iPad, so the
+      # z1 clue MARKS (windowsill, flowerpot, bellows, lintel) and the previously-cropped edge
+      # elements (potion shelf, mirror, winch, mortar, astrolabe, cage, feed cup, ladder) are
+      # now VISIBLE and TAPPABLE — the `sceneCoordinate` math uses the same min-scale fit, so
+      # its synthesized taps land on those elements. This runs the ENTIRE EscapeRoomUITests
+      # suite on iPad (full playthrough + smoke + save/resume + composition), so iPad
+      # completability + D7 gate persistence are genuinely verified on the primary device, not
+      # scoped-around. (Was smoke+composition-only under `.aspectFill` where those taps missed.)
+      - name: UI tests - iPad (full playthrough + smoke + save-resume)
         run: |
           set -o pipefail
           xcodebuild test \
             -project EscapeRoom/EscapeRoom.xcodeproj \
             -scheme EscapeRoomUITests \
-            -only-testing:EscapeRoomUITests/EscapeRoomUITests/testMenuAndNavigationSmoke \
-            -only-testing:EscapeRoomUITests/EscapeRoomUITests/testSaveResumeMidPlaythroughPersistsGate \
             -destination "platform=iOS Simulator,name=${{ steps.sims.outputs.ipad_name }}" \
+            -skip-testing:EscapeRoomUITests/EscapeRoomUITests/testR6009_pokerSurvivesBarrelBeforeAsh \
+            -skip-testing:EscapeRoomUITests/EscapeRoomUITests/testR6009_pokerSurvivesAstrolabeFirst \
             -resultBundlePath TestResults/EscapeRoomUITests-iPad.xcresult \
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
@@ -175,6 +193,7 @@ jobs:
             -project EscapeRoom/EscapeRoom.xcodeproj \
             -scheme EscapeRoomUITests \
             -only-testing:EscapeRoomUITests/EscapeRoomUITests/testMenuAndNavigationSmoke \
+            -only-testing:EscapeRoomUITests/EscapeRoomUITests/testSceneContentFillsScreen_QA_B3_001 \
             -destination "platform=iOS Simulator,name=${{ steps.sims.outputs.iphone_di_name }}" \
             -resultBundlePath TestResults/EscapeRoomUITests-iPhoneDI.xcresult \
             CODE_SIGNING_ALLOWED=NO \

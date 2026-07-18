@@ -30,9 +30,18 @@ enum ViewID: String, CaseIterable {
 /// Geometry note (QA fix pass): the 2:1 master plates (2560x1280) and the scene
 /// (2732x1366) share the same aspect ratio by construction (style guide Section 8), so
 /// the base plate is always rendered at exactly the scene's size. Normalized plate
-/// coordinates therefore map 1:1 onto normalized scene coordinates — no letterboxing,
-/// and hotspot layout never depends on whether a texture actually loaded (QA-BUG-022
-/// follow-up hardening: a missing texture must never kill input).
+/// coordinates therefore map 1:1 onto normalized SCENE coordinates — always, regardless
+/// of how the scene is fitted into the SKView. hotspot layout never depends on whether a
+/// texture actually loaded (QA-BUG-022 follow-up hardening: a missing texture must never
+/// kill input).
+///
+/// Presentation (build 9 follow-up): the scene is `.aspectFit` in the SKView, so on iPad
+/// the full 2:1 plate is LETTERBOXED (dark bars top+bottom) rather than cropped. SpriteKit
+/// owns the scene→view transform (scale + centering + letterbox offset), so scene-space
+/// coordinates — hotspots, overlays, and `touch.location(in: self)` — are unaffected by the
+/// letterbox: a touch is converted view→scene by UIKit/SpriteKit before hit-testing. The
+/// letterbox math only matters OUTSIDE the app (the UI-test `sceneCoordinate` that syntheses
+/// a view-space tap from a plate-normalized point must use the same min-scale fit).
 final class RoomScene: SKScene {
     let viewID: ViewID
     private(set) var hotspots: [Hotspot] = []
@@ -45,10 +54,28 @@ final class RoomScene: SKScene {
     /// armed inventory item is applied by tapping its target hotspot like any look.
     var onHotspotTap: ((String) -> Void)?
 
+    /// Build 10 (cluster F, R4-005): a tap on EMPTY scene space (no hotspot). The
+    /// coordinator uses it to disarm the armed inventory item — "tap away to deselect"
+    /// — one of the three always-available disarm affordances.
+    var onEmptyTap: (() -> Void)?
+
     init(viewID: ViewID, size: CGSize) {
         self.viewID = viewID
         super.init(size: size)
+        // BUILD 10 — `.aspectFill` RESTORED (the interim build-9 letterbox is removed).
+        // The Asset agent re-framed every wide plate into the §8 iPad-4:3 ∩ iPhone-19.5:9
+        // dual-safe band (asset-manifest build10_reframe), so under `.aspectFill` (cover)
+        // every puzzle-critical element is inside both devices' crops — nothing is cut off,
+        // and the scene fills the whole screen edge-to-edge with no dark bars. Hotspot rects
+        // are remapped by the same re-frame transform (see Reframe / RoomSceneCoordinator).
+        //
+        // The scene size stays 2732×1366 (2:1); `.aspectFill` scales it to COVER the SKView
+        // (max ratio), cropping the overscan band that lies outside the dual-safe zone. The
+        // UI-test `sceneCoordinate` mirror uses the SAME max-scale cover math. The BUG-004
+        // guard (`testCriticalHotspotsInsideDualSafeZone`) asserts no critical element leaves
+        // the dual-safe band, so a future framing regression fails loudly.
         scaleMode = .aspectFill
+        backgroundColor = SKColor(red: 0x10/255.0, green: 0x10/255.0, blue: 0x10/255.0, alpha: 1)
         anchorPoint = CGPoint(x: 0.5, y: 0.5)
         baseNode.anchorPoint = CGPoint(x: 0.5, y: 0.5)
         baseNode.zPosition = 0
@@ -61,6 +88,9 @@ final class RoomScene: SKScene {
         baseNode.texture = Self.texture(named: named)
         // Plates are authored 2:1 to match the 2:1 scene exactly (Section 8); always
         // fill the scene so plate-normalized coordinates == scene-normalized coordinates.
+        // The scene keeps this fixed 2732×1366 size; `.aspectFit` (build 9 follow-up)
+        // fits the whole scene into the SKView (letterboxed on iPad). Nothing here needs a
+        // runtime resize — the plate always fills the SCENE; the SKView fit is separate.
         baseNode.size = size
     }
 
@@ -72,22 +102,46 @@ final class RoomScene: SKScene {
         if let cached = textureCache.object(forKey: named as NSString) { return cached }
         guard let image = GameAssetLoader.shared.image(named: named) else { return nil }
         let texture = SKTexture(image: image)
-        textureCache.setObject(texture, forKey: named as NSString)
+        textureCache.setObject(texture, forKey: named as NSString, cost: pixelCost(of: image))
         return texture
     }
 
-    private static let textureCache = NSCache<NSString, SKTexture>()
+    /// Build 10 CI-perf fix (run 29186397614): the texture cache is now COST-BOUNDED.
+    /// An unbounded NSCache only evicts on memory-pressure notifications, which on the
+    /// CI simulator VM arrive after the host is already swapping — a full playthrough
+    /// visits every zone and accumulated every 3840x1920 plate + overlay decoded so far
+    /// (~28 MB each), contributing to the progressive iPad-simulator starvation that
+    /// wedged the build-10 chrome test. 256 MB comfortably holds a whole zone's textures
+    /// while forcing old zones out deterministically.
+    private static let textureCache: NSCache<NSString, SKTexture> = {
+        let cache = NSCache<NSString, SKTexture>()
+        cache.totalCostLimit = 256 * 1024 * 1024
+        return cache
+    }()
 
-    func setOverlay(_ key: String, imageNamed: String?, rectNormalized: CGRect) {
+    private static func pixelCost(of image: UIImage) -> Int {
+        Int(image.size.width * image.scale * image.size.height * image.scale) * 4
+    }
+
+    /// `zPosition` (build 10, cluster B): with independent per-element overlays, two
+    /// overlays can OVERLAP (cellar beam × shelf × mirror), and sibling order — set by
+    /// node-CREATION order, i.e. the order states happened to change in — is not a correct
+    /// stacking rule. Callers with overlapping overlays pass an explicit, state-derived
+    /// zPosition (see refreshCellar); non-overlapping overlays keep the default 10.
+    func setOverlay(_ key: String, imageNamed: String?, rectNormalized: CGRect,
+                    zPosition: CGFloat = 10) {
         if let imageNamed, rectNormalized != .zero {
             let node = overlayNodes[key] ?? {
                 let n = SKSpriteNode()
                 n.anchorPoint = CGPoint(x: 0, y: 1) // top-left origin to match normalized rects
-                n.zPosition = 10
+                // R5-001: named like the hotspot nodes so overlay sprites are identifiable
+                // in accessibility dumps / rendered-frame diagnostics.
+                n.name = "overlay:\(key)"
                 addChild(n)
                 overlayNodes[key] = n
                 return n
             }()
+            node.zPosition = zPosition
             node.texture = Self.overlayTexture(named: imageNamed, rectNormalized: rectNormalized)
             positionOverlay(node, rectNormalized: rectNormalized)
         } else {
@@ -122,8 +176,9 @@ final class RoomScene: SKScene {
         let cacheKey = "feathered:\(named):\(feather.cacheSuffix)" as NSString
         if let cached = textureCache.object(forKey: cacheKey) { return cached }
         guard let image = GameAssetLoader.shared.image(named: named) else { return nil }
-        let texture = SKTexture(image: featheredImage(image, edges: feather))
-        textureCache.setObject(texture, forKey: cacheKey)
+        let feathered = featheredImage(image, edges: feather)
+        let texture = SKTexture(image: feathered)
+        textureCache.setObject(texture, forKey: cacheKey, cost: pixelCost(of: feathered))
         return texture
     }
 
@@ -173,6 +228,11 @@ final class RoomScene: SKScene {
                             height: rectNormalized.height * baseSize.height)
     }
 
+    /// Hotspots are plate-normalized against the fixed 2732×1366 scene. Under `.aspectFit`
+    /// (build 9 follow-up letterbox), SpriteKit maps scene coordinates onto the SKView
+    /// uniformly (scale + letterbox offset), and a real touch is converted view→scene before
+    /// hit-testing, so these centers stay pixel-accurate to the art on every device — the
+    /// letterbox does not shift where a hotspot sits ON the plate.
     func configureHotspots(_ hotspots: [Hotspot]) {
         for node in hotspotNodes.values { node.removeFromParent() }
         hotspotNodes.removeAll()
@@ -208,9 +268,21 @@ final class RoomScene: SKScene {
             onHotspotTap?(hotspotID)
         } else {
             flashTapFeedback(at: point)
+            onEmptyTap?() // cluster F: tap-away disarms (no sound — visual pulse only)
         }
     }
     #endif
+
+    /// Test seam (R3-005 player-style verification): resolve a NORMALIZED plate point
+    /// (0…1, top-left origin — the coordinate a human "sees") to the hotspot id that a tap
+    /// there would trigger, applying the exact same node hit-test + smallest-area-wins rule
+    /// as a real touch. Lets unit tests assert that tapping where an element VISUALLY sits
+    /// hits the right hotspot (and that empty space hits nothing), without a live SKView.
+    func hotspotIDAtNormalized(_ nx: CGFloat, _ ny: CGFloat) -> String? {
+        let p = CGPoint(x: -size.width / 2 + nx * size.width,
+                        y: size.height / 2 - ny * size.height)
+        return hotspotID(at: p)
+    }
 
     /// Smallest-area hotspot wins where hotspots overlap (e.g. the star keyhole and
     /// feed cup sit inside the larger cage region; the trapdoor sits inside the rug).

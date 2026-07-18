@@ -37,12 +37,261 @@ XCASSETS = os.path.join(ROOT, "EscapeRoom", "Resources", "Assets.xcassets")
 JPEG_Q = 87
 
 
+# Build-3 stale close-up shadow fix (2026-07-09).
+# ROOT CAUSE (fixed): the build-3 render rebuild delivered close-ups / state variants
+# under raw "-nb" (nano-banana) filenames while the OLD build-2 painterly art still sat
+# at the plain canonical names. resolve_src used to prefer the canonical name (or fall
+# back to a generic same-stem "-nb"), so ~70 build-3 close-ups were SHADOWED by stale
+# build-2 canonical files and the bundle shipped the old painterly art for them.
+#
+# FIX (Option B): every FINAL intended build-3 "-nb" derived asset was PROMOTED to its
+# canonical name on disk (specs/assets/level-1/), and the superseded build-2 canonicals
+# were archived to specs/assets/level-1/_rejects/flux-painterly/*-build2@Nx.png. The tree
+# is now unambiguous: the canonical name IS the shipped build-3 art. That means:
+#   * no SRC_OVERRIDE table is needed (the door-lock/statue re-roll art now lives at its
+#     canonical name — the override was only a workaround for the stale shadow), and
+#   * resolve_src must NOT silently fall back to a "-nb" sibling anymore. A leftover "-nb"
+#     next to a canonical is the exact stale-shadow signature we just eliminated; if one
+#     re-appears we FAIL THE BUILD (assert_no_nb_shadow) instead of silently picking one.
+#
+# NON-PROMOTED "-nb" files remaining in specs/ are deliberately UNUSED by the pipeline
+# (astrolabe-plate-N / cu-rim-rune -> PIL sprites are authoritative; cu-coin-hallmark,
+# z3-cellar-nobeam, z1-entry-basin-* wides, cu-slots-nb whose content already equals the
+# canonical cu-slots-empty). They are not loaded by name here, so they cannot shadow.
+
+
+def resolve_src(path):
+    """Map a requested canonical asset path to the file that ships in specs/.
+
+    Build-3 fix: the canonical name is authoritative. We do NOT fall back to a "-nb"
+    sibling — that fallback is what allowed stale build-2 art to shadow build-3 deliveries.
+    A missing canonical now fails loudly at open() with a clear FileNotFoundError instead
+    of silently substituting art.
+    """
+    return path
+
+
+def pipeline_source_paths():
+    """Every specs/assets source path the pipeline consumes (canonical names), shared by
+    the stale-shadow and vintage guards. PLAIN_PLATES, RGBA_SPRITES, ICONS, SPRITE_JSONS,
+    the wide/close-up variant plates loaded by build_inpainted / OVERLAYS /
+    MANUAL_OVERLAYS, and the byte-copied chrome sources."""
+    requested = set(PLAIN_PLATES) | set(RGBA_SPRITES) | set(ICONS) | set(SPRITE_JSONS)
+    for (view, var, *_rest) in MANUAL_OVERLAYS:
+        requested.add(f"{view}/{var}@3x.png")
+    for view_base in MANUAL_OVERLAY_BASE.values():
+        requested.add(view_base)
+    for (view, base, var, *_rest) in OVERLAYS:
+        requested.add(f"{view}/{base}@3x.png")
+        requested.add(f"{view}/{var}@3x.png")
+    # variant plates loaded directly in build_inpainted() by canonical name
+    requested |= {
+        "z1/v-hearth/cu-clock-unspent@3x.png",  # Q3: cuckoo pop/spent no longer staged
+        "z1/v-hearth/z1-hearth-base@3x.png",    # poker-taken synthesis source (R5-001)
+        "z1/v-hearth/z1-hearth-rug-moved@3x.png",
+        "z1/v-hearth/z1-hearth-trapdoor-open@3x.png",
+        "z2/v-cabinet/cu-astrolabe-drawer-open@3x.png",
+        "z3/v-cellar/z3-cellar-drawer-open@3x.png",
+        "z3/v-cellar/z3-cellar-barrel-pried@3x.png",
+        "z2/v-cabinet/z2-cabinet-open@3x.png",
+    }
+    requested |= set(CHROME_STAGED)
+    return requested
+
+
+def assert_no_nb_shadow():
+    """Anti-recurrence guard: fail the build if any canonical asset that the pipeline
+    loads by name still has a "-nb" sibling on disk (the stale-shadow signature).
+
+    If a "-nb" sibling exists next to a requested canonical, staging is ambiguous
+    exactly the way build-3 shipped stale close-ups — so we refuse to build.
+    """
+    shadows = []
+    for rel in sorted(pipeline_source_paths()):
+        if not rel.endswith("@3x.png"):
+            continue
+        nb = rel.replace("@3x.png", "-nb@3x.png")
+        if os.path.exists(src(rel)) and os.path.exists(src(nb)):
+            shadows.append(f"{rel}  <-shadowed-by->  {nb}")
+    if shadows:
+        raise SystemExit(
+            "STALE-SHADOW GUARD FAILED: a build-loaded canonical asset still has a '-nb' "
+            "sibling on disk. Promote the intended art to the canonical name (Option B) or "
+            "delete the stray '-nb'. Offenders:\n  " + "\n  ".join(shadows))
+
+
+# Build-11 VINTAGE GUARD cutoff: the build-3 engine-render rebuild began 2026-07-08
+# (first canonical build-3 promotion commit e1ec056, 2026-07-08T17:24+04:00). Every
+# source the pipeline consumes must have been (re)committed on/after this date; the 19
+# build-1-era stragglers (last committed 2026-07-05, 181392f) shipped through THREE
+# builds because nothing checked source VINTAGE — the stale-shadow guard only catches
+# name AMBIGUITY, not a canonical file that simply was never regenerated.
+BUILD3_VINTAGE_CUTOFF = "2026-07-08T00:00:00+04:00"
+
+# EXPLICIT, tracked exceptions to the vintage guard — pre-build-3 sources that ship
+# KNOWINGLY. Every entry must carry its tracking reference; anything not listed here
+# fails the build. Silent acceptance is exactly what let 19 stale files ship — this
+# list makes acceptance loud, reviewable and revocable.
+KNOWN_LEGACY_SOURCES = {
+    # (Round 6 / build 12, 2026-07-14) R6-007 un-defer: the 4 QA-B10-002 exceptions
+    # (z2-bench-flame1/2/3 + z2-cabinet-slots-seated) are RETIRED. These plates are
+    # player-visible in normal play (bellows pump), so "deferred re-roll" was wrong;
+    # Asset-Gen re-rolled all four fresh in build-3 style at 3840x1920 (committed
+    # 2026-07-14, post-cutoff), so the vintage guard now enforces them like everything
+    # else. See specs/levels/level-1/round6-routed-changelist.md Cluster D.
+    #
+    # (build 11, 2026-07-13) cu-cabinet-open exception REMOVED: the 20th stale file was
+    # re-delivered by Asset Gen as gapfill item 20 ($0 PIL crop of the z2-cabinet-open
+    # wide), so its source is now build-3 canon and the vintage guard covers it normally.
+}
+
+
+def assert_no_stale_vintage(report=None):
+    """Fail the build if any consumed specs/assets IMAGE source predates the build-3
+    rebuild epoch per its last git commit (sprite-metadata JSONs are geometry, not art —
+    their correctness is enforced by the Swift cross-check tests, not by vintage).
+    Uncommitted files (a delivery staged mid-iteration) are treated as fresh — stale art
+    is by definition art nobody has touched since an old commit. KNOWN_LEGACY_SOURCES
+    are excepted explicitly and re-printed into the build report every run so they can
+    never go invisible. Requires git; a missing git fails loudly, never silently."""
+    import subprocess
+    from datetime import datetime
+    cutoff = datetime.fromisoformat(BUILD3_VINTAGE_CUTOFF)
+    offenders = []
+    for rel in sorted(pipeline_source_paths()):
+        if not rel.lower().endswith((".png", ".jpg", ".jpeg")):
+            continue
+        p = src(rel)
+        if not os.path.exists(p):
+            continue  # a genuinely missing source fails later at load(), loudly
+        gitpath = os.path.relpath(p, ROOT).replace(os.sep, "/")
+        out = subprocess.run(["git", "log", "-1", "--format=%cI", "--", gitpath],
+                             capture_output=True, text=True, cwd=ROOT, check=True)
+        stamp = out.stdout.strip()
+        if not stamp:
+            continue  # untracked/uncommitted: fresh delivery in progress
+        if datetime.fromisoformat(stamp) < cutoff:
+            if rel in KNOWN_LEGACY_SOURCES:
+                note = f"VINTAGE EXCEPTION (ships knowingly): {rel} — {KNOWN_LEGACY_SOURCES[rel]}"
+                print(f"   !! {note}")
+                if report is not None:
+                    report.append(note)
+            else:
+                offenders.append(f"{rel} (last committed {stamp})")
+    if offenders:
+        raise SystemExit(
+            "VINTAGE GUARD FAILED: the pipeline would stage art whose specs source has "
+            "not been touched since before the build-3 engine-render rebuild "
+            f"(cutoff {BUILD3_VINTAGE_CUTOFF}) — i.e. build-1/2-era art that was never "
+            "regenerated (the exact gap that shipped 19 stale files through three "
+            "builds until build-11 gapfill). Regenerate/re-deliver these sources, or "
+            "archive them to _rejects/ and remove them from the pipeline lists, or add "
+            "a TRACKED entry to KNOWN_LEGACY_SOURCES with QA/Producer sign-off:\n  "
+            + "\n  ".join(offenders))
+
+
 def src(path):
     return os.path.join(SRC, path.replace("/", os.sep))
 
 
+# Chrome assets that must always ship the manifest-current source (R3-002 follow-up).
+# Maps each canonical SOURCE (under specs/assets/level-1/) to every staged DESTINATION
+# that must byte-match it. Unlike the scene plates (which the pipeline transcodes to
+# JPEG), the thumbnail is copied verbatim, so a straight byte-equality check is exact and
+# unambiguous — chrome art can never silently go stale (the build FAILS if it does).
+CHROME_STAGED = {
+    "chrome/level1-thumb.jpg": [
+        os.path.join(XCASSETS, "level1-thumb.imageset", "level1-thumb.jpg"),
+        os.path.join(CHROME_OUT, "level1-thumb.jpg"),
+    ],
+}
+
+
+def assert_chrome_current():
+    """Fail the build if any staged chrome asset does not match its manifest-current
+    source. Runs AFTER staging so it validates what actually shipped. This is the chrome
+    analogue of assert_no_nb_shadow: the load-bearing thumbnail (the app reads the asset
+    catalog copy) can never be a stale build-2 image again (R3-002)."""
+    stale = []
+    for source_rel, dests in CHROME_STAGED.items():
+        s = src(source_rel)
+        if not os.path.exists(s):
+            raise SystemExit(f"CHROME GUARD: missing source {source_rel}")
+        want = open(s, "rb").read()
+        for d in dests:
+            if not os.path.exists(d):
+                stale.append(f"{d}  <-MISSING (source {source_rel})")
+            elif open(d, "rb").read() != want:
+                stale.append(f"{d}  <-STALE, differs from {source_rel}")
+    if stale:
+        raise SystemExit(
+            "CHROME STALENESS GUARD FAILED: a staged chrome asset does not match the "
+            "manifest-current source (would ship stale menu art). Offenders:\n  "
+            + "\n  ".join(stale))
+
+
+def assert_overlay_rects_match_art(overlays, report=None, tol=0.02):
+    """R7-001 anti-recurrence guard (build 13): every overlay's STAGED ART must be pixel-1:1
+    with the RECT it will be composited into.
+
+    THE INVARIANT: an overlay is a crop of a variant plate that the runtime draws back onto
+    the base plate at `rect`. If the crop's pixel dims != rect's dims in base-plate pixels,
+    SpriteKit necessarily rescales the art -> it lands at the wrong size AND (because rect
+    origin and art origin then disagree) the wrong place. That is a defect 100% of the time;
+    there is no legitimate reason for an overlay's art to be a different size than its rect.
+
+    WHAT SHIPPED WITHOUT THIS GUARD (R7-001): the 4 re-rolled QA-B10-002 plates carried
+    `legacy=True` rects cropped at the OLD pre-re-frame framing while storing re-framed rects,
+    giving img/rect == 1/REFRAME_scale (1.204 flame / 1.427 slots). The compositor faithfully
+    drew correct art into a wrong rectangle: the cauldron's fire rendered as a bright patch on
+    the WALL beside the pot. 23 of 27 overlays were fine — the bug was invisible precisely
+    because it was localized to the 4 plates an ART re-roll had touched. Nothing in the build
+    compared art dims to rect dims, so a re-roll could silently rot the rects again.
+
+    This check is cheap, total (ALL overlays incl. -dim variants), and unambiguous, so a
+    future re-roll that invalidates a rect FAILS THE BUILD instead of reaching a device.
+    """
+    rows = []
+    offenders = []
+    for view in sorted(overlays):
+        bw, bh = load(VIEW_BASE[view]).size
+        for name in sorted(overlays[view]):
+            entry = overlays[view][name]
+            x, y, w, h = entry["rect"]
+            rect_w, rect_h = w * bw, h * bh
+            for rel in [entry["file"]] + ([entry["dimFile"]] if "dimFile" in entry else []):
+                iw, ih = Image.open(out_path(rel)).size
+                rx = iw / max(rect_w, 1e-6)
+                ry = ih / max(rect_h, 1e-6)
+                bad = abs(rx - 1.0) > tol or abs(ry - 1.0) > tol
+                rows.append((view, os.path.basename(rel), f"{iw}x{ih}",
+                             f"{rect_w:.0f}x{rect_h:.0f}", f"{rx:.3f}/{ry:.3f}",
+                             "FAIL" if bad else "ok"))
+                if bad:
+                    offenders.append(
+                        f"{view}/{os.path.basename(rel)}: art {iw}x{ih} vs rect "
+                        f"{rect_w:.0f}x{rect_h:.0f} (ratio {rx:.3f}/{ry:.3f}) — art would be "
+                        f"rescaled {1/rx:.0%}/{1/ry:.0%} and land off-position")
+    print("\n   overlay art-vs-rect registration (R7-001 guard):")
+    print(f"   {'view':<14}{'overlay':<28}{'art px':>12}{'rect px':>12}{'ratio':>14}  {'':<4}")
+    for r in rows:
+        print(f"   {r[0]:<14}{r[1]:<28}{r[2]:>12}{r[3]:>12}{r[4]:>14}  {r[5]:<4}")
+    print(f"   {len(rows)} overlay images checked, {len(offenders)} misregistered")
+    if report is not None:
+        report.append(f"overlay rect guard: {len(rows)} checked, all pixel-1:1 with their rects")
+    if offenders:
+        raise SystemExit(
+            "OVERLAY RECT GUARD FAILED: staged overlay art is not pixel-1:1 with the rect it "
+            "composites into, so the runtime will rescale + misplace it (R7-001 class: the "
+            "cauldron flame drawn onto the wall). This normally means an ART re-roll changed a "
+            "plate's framing/size while its rect stayed stale — re-derive the rect from the new "
+            "plate (auto-diff) rather than editing numbers by hand. Offenders:\n  "
+            + "\n  ".join(offenders))
+    return rows
+
+
 def load(path):
-    return Image.open(src(path))
+    return Image.open(src(resolve_src(path)))
 
 
 def ensure(d):
@@ -71,7 +320,7 @@ def save_png(im, rel):
 
 # ---------------------------------------------------------------- inpainting
 
-def flatten_hue(rgb, mask, ring=70):
+def flatten_hue(rgb, mask, ring=25):  # was 70 — a 141px MaxFilter is O(minutes) on 4K
     """Recolour masked pixels to the average surround hue, keeping luminance."""
     grown = mask.filter(ImageFilter.MaxFilter(ring * 2 + 1))
     ring_mask = ImageChops.subtract(grown, mask)
@@ -218,26 +467,113 @@ def strip_poly(p0, p1, w0, w1, extend=0):
 
 # ------------------------------------------------------------- diff overlays
 
+def assert_no_misplaced_clone_fill(base_im, var_im, bbox, name,
+                                   max_shift=260, step=20, ratio=0.55, min_shift=16):
+    """R5-001 anti-recurrence guard (build 11): fail the build if a state-variant's
+    changed-region content matches the BASE much better at a translated offset than in
+    place — the signature of a "misplaced clone" fill.
+
+    Root case this catches: the manifest-current z1-hearth-poker-taken plate's
+    generative REMOVE-the-poker edit filled the poker area with a +240 px-shifted copy
+    of the fireplace interior (a second andiron + duplicated grate). The plate still
+    pixel-REGISTERS with the base (edge-ring diff < 1 grey level), so the auto-diff
+    crop + the runtime composite were both geometrically perfect — perfectly registered
+    WRONG art, which no registration check can see. Content provenance is checked here
+    instead: for the changed bbox's interior, if base@shift matches the variant's fill
+    dramatically better (< ratio x the in-place diff) at a non-trivial shift, the fill
+    is a misplaced clone of scene content and MUST NOT ship (R4-004 -> R5-001 lineage).
+
+    Measured separation on the current tree (interior mean-abs-diff, grey levels):
+    every legitimate variant scores best-shift/zero-shift >= 0.72; the defective poker
+    plate scores 0.28 at (+240, 0). Threshold 0.55 splits them with ~2x margin each way.
+    """
+    from PIL import ImageStat
+    x0, y0, x1, y1 = bbox
+    inset = 30
+    if (x1 - x0) <= 2 * inset + 40 or (y1 - y0) <= 2 * inset + 40:
+        return  # too small for a meaningful interior-content comparison
+    ix0, iy0, ix1, iy1 = x0 + inset, y0 + inset, x1 - inset, y1 - inset
+    base_l = base_im.convert("L")
+    var_l = var_im.convert("L")
+    if var_l.size != base_l.size:
+        var_l = var_l.resize(base_l.size, Image.LANCZOS)
+    # Quarter-scale search keeps this pure-PIL pass fast; a >= 16 px clone shift
+    # survives the downsample easily (the poker defect is 240 px).
+    ds = 4
+    bw, bh = base_l.size
+    base_s = base_l.resize((bw // ds, bh // ds), Image.BILINEAR)
+    var_s = var_l.resize((bw // ds, bh // ds), Image.BILINEAR)
+    sx0, sy0, sx1, sy1 = ix0 // ds, iy0 // ds, ix1 // ds, iy1 // ds
+    interior = var_s.crop((sx0, sy0, sx1, sy1))
+
+    def mean_diff(dx, dy):
+        ax0, ay0 = sx0 + dx // ds, sy0 + dy // ds
+        ax1, ay1 = ax0 + (sx1 - sx0), ay0 + (sy1 - sy0)
+        if ax0 < 0 or ay0 < 0 or ax1 > base_s.width or ay1 > base_s.height:
+            return None
+        region = base_s.crop((ax0, ay0, ax1, ay1))
+        return ImageStat.Stat(ImageChops.difference(region, interior)).mean[0]
+
+    zero = mean_diff(0, 0)
+    if zero is None or zero < 3.0:
+        return  # near-identical fill (nothing visibly changed inside) — nothing to clone
+    best = (zero, 0, 0)
+    for dy in range(-max_shift, max_shift + 1, step):
+        for dx in range(-max_shift, max_shift + 1, step):
+            if abs(dx) < min_shift and abs(dy) < min_shift:
+                continue
+            d = mean_diff(dx, dy)
+            if d is not None and d < best[0]:
+                best = (d, dx, dy)
+    if best[0] < ratio * zero:
+        raise SystemExit(
+            f"MISPLACED-CLONE GUARD FAILED for {name}: the variant's changed region "
+            f"matches the base {zero / max(best[0], 1e-6):.1f}x better when shifted by "
+            f"({best[1]}, {best[2]}) px (diff {best[0]:.1f} vs {zero:.1f} in place). "
+            "The state fill is a misplaced clone of scene content (R5-001 class: e.g. a "
+            "duplicated andiron where the poker was removed) and would composite as a "
+            "visibly wrong fragment despite perfect registration. Re-derive the variant "
+            "plate (Asset Gen) or synthesize the state from the base (build_inpainted).")
+
+
 def diff_overlay(base_im, var_im, pad=12, thresh=14, clamp=None):
-    """Return (bbox, crop) covering where var differs from base, or None."""
-    diff = ImageChops.difference(base_im.convert("RGB"), var_im.convert("RGB"))
+    """Return (bbox, crop) covering where var differs from base, or None.
+
+    Build-3 delivery gap G2 (2026-07-08): the build-3 rebuild shipped fresh 4K base
+    plates (3840x1920) but left the state-variant plates at the build-2 dimensions
+    (2560x1280). Both share the identical 2:1 framing (region-edits registered to the
+    same composition), so we resize the variant up to the base's pixel size before
+    diffing — otherwise ImageChops.difference errors / produces garbage full-frame
+    overlays. Flagged to the Producer in implementation-notes (gap G2).
+    """
+    base_rgb = base_im.convert("RGB")
+    var_rgb = var_im.convert("RGB")
+    if var_rgb.size != base_rgb.size:
+        var_rgb = var_rgb.resize(base_rgb.size, Image.LANCZOS)
+    diff = ImageChops.difference(base_rgb, var_rgb)
     gray = diff.convert("L")
     mask = gray.point(lambda v: 255 if v > thresh else 0)
     mask = mask.filter(ImageFilter.MinFilter(5))   # kill speckle
     mask = mask.filter(ImageFilter.MaxFilter(5))
     if clamp is not None:
+        # Clamp rects were authored in 2560x1280 (build-2) space; scale to the base's
+        # actual pixel size so they still clip the right region on 4K build-3 bases (G2).
+        sx, sy = base_rgb.size[0] / 2560.0, base_rgb.size[1] / 1280.0
+        scaled = (clamp[0] * sx, clamp[1] * sy, clamp[2] * sx, clamp[3] * sy)
         clip = Image.new("L", mask.size, 0)
-        ImageDraw.Draw(clip).rectangle(clamp, fill=255)
+        ImageDraw.Draw(clip).rectangle(scaled, fill=255)
         mask = ImageChops.multiply(mask, clip)
     bbox = mask.getbbox()
     if bbox is None:
         return None
-    w, h = base_im.size
+    w, h = base_rgb.size
     x0 = max(0, bbox[0] - pad)
     y0 = max(0, bbox[1] - pad)
     x1 = min(w, bbox[2] + pad)
     y1 = min(h, bbox[3] + pad)
-    return (x0, y0, x1, y1), var_im.convert("RGB").crop((x0, y0, x1, y1))
+    # Crop from the SIZE-MATCHED variant (var_rgb), so the bbox (computed in base pixels)
+    # indexes the right region regardless of the variant's original dimensions (gap G2).
+    return (x0, y0, x1, y1), var_rgb.crop((x0, y0, x1, y1))
 
 
 def ring_gain(base_im, target_im, bbox, ring=40):
@@ -318,11 +654,28 @@ PLAIN_PLATES = [
     "z2/v-bench/cu-mortar-blossom@3x.png",
     "z2/v-bench/cu-mortar-paste@3x.png",
     "z2/v-cabinet/z2-cabinet-base@3x.png",
+    # Round 6 R6-010 (Cluster A): clean EMPTY sun/moon cabinet close-up base. Once BOTH
+    # items are taken, ContainerCloseUpModel.plan swaps plan.base -> "cu-cabinet-empty"
+    # (partial state composites remaining icons over it). Delivered as a real close-up
+    # plate (2048x1536), staged verbatim like every other close-up so GameAssetLoader
+    # indexes it by basename "cu-cabinet-empty".
+    "z2/v-cabinet/cu-cabinet-empty@3x.png",
     "z2/v-cabinet/cu-slots-empty@3x.png",
     "z2/v-cabinet/cu-slots-seated@3x.png",
     "z2/v-cabinet/cu-potion-shelf@3x.png",
     "z2/v-cabinet/cu-astrolabe@3x.png",
     "z2/v-cabinet/cu-window-orion@3x.png",
+    # CLUSTER B (round-2 critical soft-lock fix): the two solved-container OPEN close-up
+    # plates. These are the backgrounds ContainerCloseUp renders behind the tappable
+    # coin/crank (p03) and file/phial (p04); they were MISSING from the bundle, so those
+    # close-ups rendered as the grey-box progression soft-lock (R2-018/019/025/026).
+    "z2/v-cabinet/cu-cabinet-open@3x.png",
+    "z2/v-cabinet/cu-astrolabe-drawer-open@3x.png",
+    # Build-11 gapfill: the emptied-drawer close-up is now a REAL delivered asset
+    # (was PIL-inpainted from the drawer-open plate by this tool; the batch also
+    # re-delivered cu-astrolabe-drawer-open itself, which had been the 19th stale
+    # build-1 file). Staged verbatim like every other close-up.
+    "z2/v-cabinet/cu-astrolabe-drawer-empty@3x.png",
     # z3 (beam matrix = full-plate selection)
     "z3/v-cellar/z3-cellar-base@3x.png",
     "z3/v-cellar/z3-cellar-shelf-slid@3x.png",
@@ -389,6 +742,60 @@ ICONS = [
     "z4/icons/icon-cage-key@3x.png",
 ]
 
+# Build-3 gap G3 (2026-07-08): the wide state-VARIANT plates are region-edits of a
+# SUPERSEDED base generation and do NOT pixel-align with the fresh build-3 4K base plates
+# — a full-frame diff (even at matched size / high threshold) still trips everywhere, so
+# the automatic diff-overlay can't localize them. Instead we crop each state's element by
+# a HAND-SPECIFIED normalized rect (from the known hotspot geometry) out of the size-
+# matched variant and composite that (feathered) over the base. This keeps the multi-state
+# overlay layering the coordinator relies on (slots + cabinet + drawer can co-render),
+# with only the intended element replaced. Flagged to the Producer (gap G3).
+#
+# (view_dir, variant, overlay_name, normalized_rect (x,y,w,h), needs_dim)
+# --------------------------------------------------- build-10 dual-safe re-frame
+# Per-view transform from asset-manifest build10_reframe.transforms (at @3x on
+# 3840x1920). new_norm = old_norm * s + off. Hotspot rects live in Swift and are
+# remapped there; here we remap the HAND-AUTHORED overlay rects (old framing) so the
+# staged overlays.json ships in re-framed space (developer_contract.rect_remap).
+REFRAME = {
+    "z1/v-hearth": (0.955, 86 / 3840, 86 / 1920),
+    "z1/v-study":  (0.86, 538 / 3840, 240 / 1920),
+    "z1/v-entry":  (0.74, 425 / 3840, 250 / 1920),
+    "z2/v-bench":  (0.83, 430 / 3840, 163 / 1920),
+    "z2/v-cabinet": (0.70, 630 / 3840, 288 / 1920),
+    "z3/v-cellar": (0.82, 445 / 3840, 173 / 1920),
+    "z4/v-alcove": (1.0, 0.0, 0.0),
+}
+
+
+def reframe_rect(view, rect):
+    s_, ox, oy = REFRAME[view]
+    x, y, w, h = rect
+    return (x * s_ + ox, y * s_ + oy, w * s_, h * s_)
+
+
+# R7-001 (build 13): the `legacy` flag is RETIRED — see the OVERLAYS comment below and
+# assert_overlay_rects_match_art. Entries are (view, variant, name, rect, dim); the crop is
+# ALWAYS taken at the same rect that ships in overlays.json, so art and rect cannot diverge.
+MANUAL_OVERLAYS = [
+    ("z4/v-alcove",  "z4-alcove-key-taken",     "ov-key-taken",     (0.48, 0.10, 0.22, 0.34), False),
+]
+
+# Canonical base plate per view — single source of truth, used by the manual-overlay crops,
+# the emptied-container overlays, the guards, and assert_overlay_rects_match_art (which needs
+# a base size for EVERY view that owns overlays, incl. the auto-diff-only ones).
+VIEW_BASE = {
+    "z1/v-hearth":  "z1/v-hearth/z1-hearth-base@3x.png",
+    "z1/v-study":   "z1/v-study/z1-study-base@3x.png",
+    "z1/v-entry":   "z1/v-entry/z1-entry-base@3x.png",
+    "z2/v-bench":   "z2/v-bench/z2-bench-base@3x.png",
+    "z2/v-cabinet": "z2/v-cabinet/z2-cabinet-base@3x.png",
+    "z3/v-cellar":  "z3/v-cellar/z3-cellar-base@3x.png",
+    "z4/v-alcove":  "z4/v-alcove/z4-alcove-base@3x.png",
+}
+
+MANUAL_OVERLAY_BASE = VIEW_BASE
+
 SPRITE_JSONS = [
     "z1/v-study/sprites/runedoor-tiles.json",
     "z2/v-bench/sprites/rune-ember-rects.json",
@@ -398,28 +805,76 @@ SPRITE_JSONS = [
 # Optional 6th element: clamp rect (x0, y0, x1, y1) restricting the diff, used where
 # a re-rendered variant carries low-level drift outside the intended element
 # (asset-manifest flag: cage re-render brightness shift).
+# Only the state variants that DO pixel-align with the current build-3 base still use the
+# automatic diff. Everything else moved to MANUAL_OVERLAYS (gap G3). ov-rug-moved /
+# ov-trapdoor-open are computed from build-3-derived extras in main() (gap G1).
+#
+# R5-001 (build 11): z1-hearth-poker-taken is NO LONGER consumed. It pixel-aligns with
+# the base, but its poker-removal fill is a +240 px-shifted clone of the fireplace
+# interior (duplicated andiron) — the user-visible "misplaced fireplace fragment".
+# ov-poker-taken is now SYNTHESIZED from the base in build_inpainted() (see the extras
+# auto-diff loop in main), and assert_no_misplaced_clone_fill guards the whole class.
+#
+# R7-001 (build 13): the flame1/2/3 + slots-seated plates MOVED HERE from MANUAL_OVERLAYS.
+# ROOT CAUSE of the user-reported "cauldron replaced but not placed where it used to be":
+# those 4 were the QA-B10-002 *legacy 2560-era* plates, and carried `legacy=True`, whose
+# code path cropped the variant at the OLD (pre-build-10-re-frame) rect while STORING the
+# re-framed rect — deliberately relying on SpriteKit to rescale the crop down into the
+# smaller rect. That made img/rect == 1/REFRAME_scale BY CONSTRUCTION (bench 1/0.83 = 1.205,
+# cabinet 1/0.70 = 1.429 — exactly the measured 1.204/1.427 mismatches). It was *correct*
+# only while the sources really were old-framing 2560 plates. Round 6 (R6-007) re-rolled all
+# four fresh at 3840x1920 in RE-FRAMED space, which silently invalidated the flag's premise:
+# the pipeline then cropped the wrong region of a correct plate and drew it, scaled ~83%/70%
+# and offset (~177px left / 271px up for the flame), onto the wall beside the cauldron.
+# Measured against the current plates, all four now diff tightly and cleanly against their
+# base (mean global diff 0.12-1.44; bbox 1.5-4.8% of frame, nowhere near the edge bands), so
+# they self-locate exactly like the other 23 overlays and no hand rect is needed at all.
+# The `legacy` flag and its crop-at-a-different-rect branch are DELETED, not just unused:
+# rect staleness of this class is now unrepresentable, and assert_overlay_rects_match_art
+# fails the build if any overlay's art ever stops being pixel-1:1 with its rect again.
 OVERLAYS = [
-    ("z1/v-hearth", "z1-hearth-base", "z1-hearth-poker-taken", "ov-poker-taken", False),
-    ("z1/v-hearth", "z1-hearth-base", "z1-hearth-rug-moved", "ov-rug-moved", False),
-    ("z1/v-hearth", "z1-hearth-rug-moved", "z1-hearth-trapdoor-open", "ov-trapdoor-open", False),
-    ("z1/v-entry", "z1-entry-base", "z1-entry-cage-open", "ov-cage-open", False,
-     (1620, 0, 2560, 1280)),
-    ("z1/v-entry", "z1-entry-base", "z1-entry-crow-lintel", "ov-crow-lintel", False),
-    ("z1/v-entry", "z1-entry-base", "z1-entry-vines-withered", "ov-vines-withered", False),
-    ("z1/v-entry", "z1-entry-base", "z1-entry-vines-gone", "ov-vines-gone", False),
+    # z2 bench — bellows-pumped flame states (R6-007 re-roll; auto-diff self-locating)
     ("z2/v-bench", "z2-bench-base", "z2-bench-flame1", "ov-flame1", False),
     ("z2/v-bench", "z2-bench-base", "z2-bench-flame2", "ov-flame2", False),
     ("z2/v-bench", "z2-bench-base", "z2-bench-flame3", "ov-flame3", False),
+    # z2 cabinet — sun/moon ring+coin seated (R6-007 re-roll; R7-001b, same bug/cause)
     ("z2/v-cabinet", "z2-cabinet-base", "z2-cabinet-slots-seated", "ov-slots-seated", False),
-    ("z2/v-cabinet", "z2-cabinet-base", "z2-cabinet-open", "ov-cab-open", False),
+    # z1 entry (re-framed variants align — self-locating rects)
+    ("z1/v-entry", "z1-entry-base", "z1-entry-cage-open",   "ov-cage-open",   False),
+    ("z1/v-entry", "z1-entry-base", "z1-entry-crow-lintel", "ov-crow-lintel", False),
+    ("z1/v-entry", "z1-entry-base", "z1-entry-vines-gone",  "ov-vines-gone",  False),
+    # z2 cabinet (re-framed variants align)
+    ("z2/v-cabinet", "z2-cabinet-base", "z2-cabinet-open",        "ov-cab-open",     False),
     ("z2/v-cabinet", "z2-cabinet-base", "z2-cabinet-drawer-open", "ov-adrawer-open", False),
-    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-barrel-pried", "ov-barrel-pried", True),
-    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-drawer-open", "ov-drawer-open", False),
-    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-mirror-d2", "ov-mirror-d2", False),
-    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-mirror-d3", "ov-mirror-d3", False),
+    # Round 6 R6-008-wide (Cluster A): emptied astrolabe-drawer WIDE overlay. Delivered as
+    # a fresh region-edit plate that removes the coin+crank from the open drawer; it aligns
+    # with the base like z2-cabinet-drawer-open, so we auto-diff/self-locate it exactly the
+    # same way. Covers the same drawer footprint as ov-adrawer-open, now empty. The Swift
+    # resolver (astrolabeDrawerOverlay) swaps to it once BOTH items are collected.
+    ("z2/v-cabinet", "z2-cabinet-base", "ov-adrawer-empty",       "ov-adrawer-empty", False),
+    # z3 cellar — the R4-024 fix: one base, independent element overlays, all self-located
+    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-barrel-pried", "ov-barrel-pried", False),
+    # Round 6 R6-005 (Cluster A): emptied pried-barrel WIDE overlay (weight removed). Same
+    # pried-barrel footprint as ov-barrel-pried, now without the weight; auto-diff'd against
+    # the closed base like ov-barrel-pried. barrelOverlay() swaps to it once the weight is
+    # collected so the barrel never re-nails yet no longer shows the taken weight.
+    ("z3/v-cellar", "z3-cellar-base", "ov-barrel-pried-empty",  "ov-barrel-pried-empty", False),
+    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-drawer-open",  "ov-drawer-open",  False),
     ("z3/v-cellar", "z3-cellar-base", "z3-cellar-crank-fitted", "ov-crank-fitted", False),
-    ("z4/v-alcove", "z4-alcove-base", "z4-alcove-key-taken", "ov-key-taken", False),
+    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-mirror-d2",    "ov-mirror-d2",    False),
+    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-mirror-d3",    "ov-mirror-d3",    False),
+    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-shelf-slid",   "ov-shelf-slid",   False),
+    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-weight-hung",  "ov-weight-hung",  False),
+    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-beam-floor",   "ov-beam-floor",   False),
+    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-beam-blocked", "ov-beam-blocked", False),
+    ("z3/v-cellar", "z3-cellar-base", "z3-cellar-beam-alcove",  "ov-beam-alcove",  False),
 ]
+
+# (R7-001, build 13: the three z2-bench flame hand-rect entries that used to live here are
+# GONE — they moved to the auto-diff OVERLAYS list above. Their hand rects were authored in
+# OLD pre-re-frame framing and were the stale half of the misregistration; keeping them as
+# "documentation" would only invite the next re-roll to resurrect them. z2/v-bench's base is
+# declared once in VIEW_BASE with every other view.)
 
 
 # ------------------------------------------------------- inpainted variants
@@ -447,7 +902,11 @@ def build_inpainted(report):
         (1290, 655, 85, 80),    # minute shadow remnant upper right
         (1150, 950, 95, 65),    # soft shadow lower right of boss
     ]
-    for name in ("cu-clock-unspent", "cu-clock-pop", "cu-clock-spent"):
+    # Q3 (user decision 2026-07-08): the D5 cuckoo is REMOVED. Only the inert numeral-ring
+    # face (cu-clock-unspent) is staged now; the cuckoo pop/spent states (cu-clock-pop /
+    # cu-clock-spent) are NO LONGER shipped, so no leftover cuckoo close-up can be reached
+    # (R3-005 cleanup: those stale plates sat in the bundle unreferenced by code).
+    for name in ("cu-clock-unspent",):
         im = load(f"z1/v-hearth/{name}@3x.png")
         mask = polygon_mask(im.size, polys, ellipses)
         fixed = inpaint(im, mask, blur=3.5, noise=6, recolor=True)
@@ -458,32 +917,65 @@ def build_inpainted(report):
     # spoon drawer or ingredient cabinet -- inpaint quality was not shippable there.
     # Instead those close-ups become inert once their item is collected.
 
-    # --- cu-astrolabe-drawer-open -> empty ---
-    im = load("z2/v-cabinet/cu-astrolabe-drawer-open@3x.png")
-    mask = polygon_mask(im.size,
-                        polys=[[(725, 1225), (1430, 1225), (1430, 1392), (725, 1392)]],
-                        ellipses=[(830, 1300, 125, 82)])
-    fixed = inpaint(im, mask, blur=4.0, noise=5, seed=12)
-    save_plate(fixed, "z2/v-cabinet/cu-astrolabe-drawer-empty.jpg")
-    report.append("inpaint drawer -> z2/v-cabinet/cu-astrolabe-drawer-empty.jpg")
+    # --- z1 hearth rug/trapdoor chain (build-3 consistency re-roll, 2026-07-09) ---
+    # SUPERSEDES the earlier build-3 gap-G1 synthetic derivation: the Asset agent now ships
+    # a REAL rug-moved wide plate (z1-hearth-rug-moved-nb, folded rug + CLOSED trapdoor +
+    # ring pull), a true 4K region-edit of z1-hearth-base and pixel-aligned with both it and
+    # z1-hearth-trapdoor-open-nb. We no longer inpaint the lid out of trapdoor-open; we load
+    # the real plate directly. The wide state machine (ov-rug-moved -> ov-trapdoor-open)
+    # already exists in RoomSceneCoordinator; only the overlay SOURCE improves.
+    rug_moved = load("z1/v-hearth/z1-hearth-rug-moved@3x.png").convert("RGB")  # resolves -nb
+    extras["z1/v-hearth#rug-moved"] = rug_moved
+    # Persist a full plate too, so ov-trapdoor-open can diff trapdoor-open against it.
+    save_plate(rug_moved, "z1/v-hearth/z1-hearth-rug-moved.jpg")
+    report.append("stage real rug-moved -> z1/v-hearth/z1-hearth-rug-moved.jpg (re-roll G1)")
 
-    # --- z3 wide: drawer-open without spoon (extra plate for overlay pass) ---
+    # (Build-11 gapfill: the cu-astrolabe-drawer-empty inpaint that used to live here is
+    # RETIRED — the batch delivered a real emptied-drawer close-up at the canonical name,
+    # staged via PLAIN_PLATES like every other plate.)
+
+    # --- z1 wide: poker removed, SYNTHESIZED from the base (R5-001, build 11) ---
+    # ROOT CAUSE of the "misplaced fireplace fragment" (R4-004 -> R5-001): the manifest-
+    # current z1-hearth-poker-taken plate's generative REMOVE-the-poker edit filled the
+    # poker area with a +240 px-shifted CLONE of the fireplace interior (a second
+    # andiron + duplicated grate). The plate pixel-REGISTERS with the base perfectly
+    # (edge-ring diff < 1 grey level), so build 10's auto-diff cropped it faithfully and
+    # the runtime composited it exactly where the rect says — perfectly registered wrong
+    # art. The runtime compositor was verified equal to the offline composite; the
+    # defect lives in the source plate. Until the Asset agent re-delivers that plate,
+    # the poker-taken state is synthesized here by inpainting the poker (tapered handle,
+    # thin rod, J-hook) out of the base directly — the same mechanism as the clock-hands
+    # / spoon / cabinet-shelf erasures above. Geometry measured off the re-framed base.
+    base_hearth = load("z1/v-hearth/z1-hearth-base@3x.png").convert("RGB")
+    poker_polys = [
+        strip_poly((1057, 1085), (1102, 1520), 16, 15),  # rod, leaning slightly right
+        strip_poly((1102, 1500), (1052, 1588), 17, 16),  # hook: lower sweep
+        strip_poly((1052, 1588), (1012, 1533), 15, 13),  # hook: tip curling up-left
+    ]
+    poker_ellipses = [
+        (1057, 1040, 30, 68),   # tapered wooden handle
+        (1075, 1580, 78, 34),   # hook curve + contact shadow on the hearth ledge
+        (1122, 1583, 38, 36),   # hook's rightmost tip resting on the ledge
+    ]
+    pmask = polygon_mask(base_hearth.size, poker_polys, poker_ellipses, grow=4)
+    extras["z1/v-hearth#poker-taken"] = inpaint(base_hearth, pmask, blur=3.0, noise=5, seed=21)
+    report.append("inpaint poker  -> wide hearth poker-taken (overlay source, R5-001)")
+
+    # --- z3 wide: drawer-open without spoon (build-10 re-framed coords) ---
+    # The spoon sits on the open drawer bottom in the RE-FRAMED z3-cellar-drawer-open
+    # plate at ~px (2130..2300, 790..875); mask + inpaint clean wood over it.
     im = load("z3/v-cellar/z3-cellar-drawer-open@3x.png")
-    mask = polygon_mask(im.size, polys=[[(830, 790), (1050, 790), (1050, 880), (830, 880)]])
+    mask = polygon_mask(im.size, polys=[[(2130, 790), (2300, 790), (2300, 878), (2130, 878)]])
     extras["z3/v-cellar#drawer-empty"] = inpaint(im, mask, blur=2.5, noise=5, seed=14)
-    report.append("inpaint spoon  -> wide drawer-empty (overlay source)")
+    report.append("inpaint spoon  -> wide drawer-empty (overlay source, re-framed)")
 
-    # --- z3 wide: barrel pried without weight (clone contents from left of weight) ---
-    im = load("z3/v-cellar/z3-cellar-barrel-pried@3x.png")
-    extras["z3/v-cellar#barrel-empty"] = clone_patch(
-        im, (1926, 618, 2136, 828), (2101, 618), feather=28)
-    report.append("clone weight   -> wide barrel-empty (overlay source)")
-
-    # --- z2 wide: cabinet open without file+phial ---
+    # --- z2 wide: cabinet open without file+phial (build-10 re-framed coords) ---
+    # File (knife) + phial sit on the middle shelf of the RE-FRAMED z2-cabinet-open plate
+    # at ~px (1750..2090, 780..1080).
     im = load("z2/v-cabinet/z2-cabinet-open@3x.png")
-    mask = polygon_mask(im.size, polys=[[(455, 540), (810, 540), (810, 680), (455, 680)]])
+    mask = polygon_mask(im.size, polys=[[(1750, 780), (2090, 780), (2090, 1080), (1750, 1080)]])
     extras["z2/v-cabinet#cab-open-empty"] = inpaint(im, mask, blur=2.5, noise=5, seed=16)
-    report.append("inpaint shelf  -> wide cab-open-empty (overlay source)")
+    report.append("inpaint shelf  -> wide cab-open-empty (overlay source, re-framed)")
 
     return extras
 
@@ -598,11 +1090,27 @@ def gen_app_icon():
 
 
 def gen_thumbnail():
-    im = load("z1/v-entry/z1-entry-base@3x.png")
-    # 4:3 crop centred on door + cage
-    crop = im.crop((760, 0, 2467, 1280)).resize((660, 495), Image.LANCZOS)
-    p = os.path.join(ensure(CHROME_OUT), "level1-thumb.jpg")
-    crop.convert("RGB").save(p, "JPEG", quality=85)
+    """R3-002 (build 9): stage the CURRENT build-3 Level-Select thumbnail.
+
+    The thumbnail is authored by the Asset agent and shipped at
+    specs/assets/level-1/chrome/level1-thumb.jpg (a build-3 hearth crop, no baked
+    level-number — the Roman "I" the user saw was a stale build-2 image). We stage that
+    exact file, NOT a re-derived crop, so the manifest-current art is authoritative
+    (same canonical-source discipline as the scene plates).
+
+    The app loads the thumbnail via UIImage(named: "level1-thumb") from the ASSET
+    CATALOG, so the load-bearing copy is the xcassets imageset. We also drop a copy in
+    CHROME_OUT so the stale-shadow guard can cover chrome art (R3-002 follow-up).
+    """
+    src_thumb = src("chrome/level1-thumb.jpg")
+    if not os.path.exists(src_thumb):
+        raise SystemExit("R3-002: missing specs/assets/level-1/chrome/level1-thumb.jpg")
+    # 1) the app's real load path — the asset catalog imageset
+    imageset = os.path.join(XCASSETS, "level1-thumb.imageset")
+    ensure(imageset)
+    shutil.copyfile(src_thumb, os.path.join(imageset, "level1-thumb.jpg"))
+    # 2) a chrome copy the staleness guard checks against the source (assert_chrome_current)
+    shutil.copyfile(src_thumb, os.path.join(ensure(CHROME_OUT), "level1-thumb.jpg"))
 
 
 # ------------------------------------------------------------------- audio
@@ -773,30 +1281,62 @@ def gen_sfx():
     ns = lp_noise(n, 800, 28, 2.6)
     write_wav("sfx-cloth.wav", [ns[i] * math.sin(math.pi * min(1.0, i / (n * 0.85))) * 0.45
                                 for i in range(n)])
-    # wood slide/settle (drawer, zone passage beat): two soft wooden pulses
-    n = int(0.3 * SR)
-    ns = lp_noise(n, 900, 29, 2.2)
-    tone = sine(n, 200, amp=0.5)
-    out = []
-    for i in range(n):
-        g = 0.0
-        for t0 in (0.02, 0.15):
-            j = i - int(t0 * SR)
-            if j > 0:
-                g += math.exp(-j / (0.035 * SR))
-        out.append((ns[i] * 0.5 + tone[i] * 0.5) * g * 0.5)
-    write_wav("sfx-wood.wav", out)
-    # level-entry swell (F-002: the one diegetic weather beat, then near-silence)
-    n = int(7.0 * SR)
-    ns = lp_noise(n, 250, 30, 4.0)
-    low = sine(n, 58, amp=0.10)
+    # (R4-010/012/017/027 / build 10: sfx-wood — the surviving default nav/passage "psh"
+    # fired on every zone change + the drawer — is REMOVED. Zone changes announce visually
+    # only; the drawer opens silently. No trigger references it anymore.)
+    # themed door opening (R2-015a): a low wooden creak that rises then a soft latch
+    # clunk — distinct from the stone zone-unlock rumble (sfx-unlock).
+    n = int(1.1 * SR)
+    creak_ns = lp_noise(n, 320, 41, 3.0)
+    groan = sine(n, 90, 140, 0.5)
     out = []
     for i in range(n):
         t = i / SR
-        swell = math.sin(math.pi * min(1.0, t / 4.0)) if t < 4.0 else 0.0
-        tail = math.exp(-(t - 4.0) / 1.2) if t >= 4.0 else 1.0
-        out.append((ns[i] + low[i]) * (0.06 + 0.22 * swell) * tail)
-    write_wav("sfx-entry.wav", out)
+        # creak body swells over the first ~0.7s
+        body = math.sin(math.pi * min(1.0, t / 0.7)) if t < 0.7 else max(0.0, 1.0 - (t - 0.7) / 0.4)
+        # wobble gives the "creak" character
+        wob = 0.6 + 0.4 * math.sin(2 * math.pi * 7 * t)
+        val = (creak_ns[i] * 0.5 + groan[i]) * body * wob * 0.5
+        # latch clunk near the end
+        j = i - int(0.82 * SR)
+        if j > 0:
+            val += math.sin(2 * math.pi * 150 * j / SR) * math.exp(-j / (0.03 * SR)) * 0.5
+        out.append(val)
+    write_wav("sfx-door.wav", out)
+    # ---- R3-001 menu / pre-level chrome SFX (quiet, tasteful; NEVER the psh) ----
+    # sfx-seat (build 10 R4-020(1)): warm POSITIVE "item seats into its recess" cue —
+    # a soft low wooden settle + a quiet rising major-third confirmation blip, in the
+    # register of the liked pickup chime (NOT the removed tick / the dull sfx-wrong).
+    n = int(0.42 * SR)
+    settle_tone = sine(n, 210, 165, 0.5)
+    settle_ns = lp_noise(n, 600, 71, 1.0)
+    blip_a = sine(n, 659.3, amp=0.32)
+    blip_b = sine(n, 830.6, amp=0.26)
+    out = []
+    for i in range(n):
+        g_settle = math.exp(-i / (0.045 * SR))
+        j = i - int(0.06 * SR)
+        g_a = math.exp(-j / (0.09 * SR)) if j > 0 else 0.0
+        k = i - int(0.13 * SR)
+        g_b = math.exp(-k / (0.11 * SR)) if k > 0 else 0.0
+        out.append((settle_tone[i] + settle_ns[i] * 0.35) * g_settle * 0.55
+                   + blip_a[i] * g_a * 0.55 + blip_b[i] * g_b * 0.55)
+    write_wav("sfx-seat.wav", out)
+        # menu-confirm: a subtle two-note rising confirm for major actions (Play / enter
+    # level) — soft sine dyad (C5 -> G5) with a short warm decay, unobtrusive. ~0.4 s.
+    n = int(0.42 * SR)
+    a = sine(n, 523.25, amp=0.4)
+    b = sine(n, 784.0, amp=0.32)
+    out = []
+    for i in range(n):
+        ga = math.exp(-i / (0.16 * SR))
+        j = i - int(0.09 * SR)
+        gb = math.exp(-j / (0.18 * SR)) if j > 0 else 0.0
+        out.append((a[i] * ga + b[i] * gb) * 0.4)
+    write_wav("sfx-menu-confirm.wav", out)
+
+    # (R4-002/build 10: sfx-entry — the reported "ocean waves at level entry" —
+    # is REMOVED. Level audio is the user-supplied music-level1.wav only.)
 
 
 def loopable(samples, fade=1.0):
@@ -872,6 +1412,8 @@ def gen_ambients():
 
 def main():
     report = []
+    assert_no_nb_shadow()            # build-3 stale-shadow anti-recurrence guard (fails loud)
+    assert_no_stale_vintage(report)  # build-11 vintage guard: no pre-build-3 sources (fails loud)
     if os.path.isdir(OUT):
         shutil.rmtree(OUT)
     ensure(OUT)
@@ -908,6 +1450,9 @@ def main():
             print(f"   !! no diff for {name}")
             continue
         bbox, crop = res
+        # R5-001 guard: a variant whose fill is a misplaced clone of scene content
+        # composites as a perfectly registered WRONG fragment — refuse to ship it.
+        assert_no_misplaced_clone_fill(base_im, var_im, bbox, name)
         rel = f"{view}/overlays/{name}.jpg"
         save_plate(crop, rel)
         w, h = base_im.size
@@ -924,32 +1469,99 @@ def main():
         overlays.setdefault(view, {})[name] = entry
         print(f"   {name}: bbox={bbox}")
 
-    # overlays from inpainted extras
-    for key, (viewbase, name) in {
-        "z3/v-cellar#drawer-empty": ("z3/v-cellar/z3-cellar-base", "ov-drawer-empty"),
-        "z3/v-cellar#barrel-empty": ("z3/v-cellar/z3-cellar-base", "ov-barrel-empty"),
-        "z2/v-cabinet#cab-open-empty": ("z2/v-cabinet/z2-cabinet-base", "ov-cab-open-empty"),
-    }.items():
-        view = key.split("#")[0]
-        base_im = base_cache.get(viewbase)
-        if base_im is None:
-            base_im = load(viewbase + "@3x.png").convert("RGB")
-        res = diff_overlay(base_im, extras[key])
+    # Manual hand-rect overlays (gap G3): crop each state's element region out of the
+    # size-matched variant and composite. The variant differs globally from the base, so
+    # we only take the intended element rect. Overlay texture feathering (SpriteKit side)
+    # softens the crop seam; a small tonal patch may remain (flagged, same class as the
+    # old ov-adrawer note). The rect goes straight into overlays.json.
+    # R7-001: the crop is taken at EXACTLY the rect that ships in overlays.json. There is no
+    # longer any path that crops one rect and stores another (the retired `legacy` flag) — the
+    # art is pixel-1:1 with its destination by construction, so SpriteKit never rescales it.
+    for view, var, name, rect, dim in MANUAL_OVERLAYS:
+        base_im = load(VIEW_BASE[view]).convert("RGB")
+        w, h = base_im.size
+        var_im = load(f"{view}/{var}@3x.png").convert("RGB")
+        if var_im.size != base_im.size:
+            var_im = var_im.resize(base_im.size, Image.LANCZOS)
+        store = reframe_rect(view, rect)          # overlays.json rect (re-framed space)
+        nx, ny, nw, nh = store
+        cx0, cy0 = int(nx * w), int(ny * h)
+        cx1, cy1 = int((nx + nw) * w), int((ny + nh) * h)
+        crop = var_im.crop((cx0, cy0, cx1, cy1))
+        rel = f"{view}/overlays/{name}.jpg"
+        save_plate(crop, rel)
+        entry = {"file": rel, "rect": [nx, ny, nw, nh]}
+        overlays.setdefault(view, {})[name] = entry
+        print(f"   {name} (manual): store_rect=({nx:.3f},{ny:.3f},{nw:.3f},{nh:.3f})")
+
+    # Emptied-container overlays (gap G3): inpainted from the 2560 variants, so crop by the
+    # SAME hand-rect as their filled counterparts (the empty state shows the same element
+    # region, now without the item). rect (view, extras-key, name, filled-rect, dim).
+    # + R5-001 (build 11): ov-poker-taken is now sourced from the base-derived inpaint
+    # extra (see build_inpainted) instead of the defective clone-fill variant plate; the
+    # auto-diff against the base self-locates the tight poker region exactly like the
+    # emptied-container overlays. (Synthesized-from-base extras cannot clone-shift, so
+    # the misplaced-clone guard applies only to the variant-plate loop above.)
+    for view, ekey, name in [
+        ("z1/v-hearth", "z1/v-hearth#poker-taken", "ov-poker-taken"),
+        ("z3/v-cellar", "z3/v-cellar#drawer-empty", "ov-drawer-empty"),
+        ("z2/v-cabinet", "z2/v-cabinet#cab-open-empty", "ov-cab-open-empty"),
+    ]:
+        base_im = load(MANUAL_OVERLAY_BASE[view]).convert("RGB")
+        w, h = base_im.size
+        ex = extras[ekey].convert("RGB")
+        if ex.size != base_im.size:
+            ex = ex.resize(base_im.size, Image.LANCZOS)
+        # Auto-diff the inpainted-empty extra against the (closed) base: this self-locates
+        # the opened-drawer / opened-cabinet region, so the empty overlay rect matches its
+        # auto-diff'd filled counterpart exactly (re-framed space).
+        res = diff_overlay(base_im, ex)
+        if res is None:
+            print(f"   !! no diff for {name}")
+            continue
         bbox, crop = res
         rel = f"{view}/overlays/{name}.jpg"
         save_plate(crop, rel)
-        w, h = base_im.size
-        entry = {"file": rel, "rect": [bbox[0] / w, bbox[1] / h,
-                                       (bbox[2] - bbox[0]) / w, (bbox[3] - bbox[1]) / h]}
-        if name == "ov-barrel-empty":
-            beam = load("z3/v-cellar/z3-cellar-beam-floor@3x.png")
-            gain = ring_gain(base_im, beam, bbox)
-            drel = f"{view}/overlays/{name}-dim.jpg"
-            save_plate(apply_gain(crop, gain), drel)
-            entry["dimFile"] = drel
-            entry["dimGain"] = round(gain, 3)
-        overlays.setdefault(view, {})[name] = entry
-        print(f"   {name}: bbox={bbox}")
+        overlays.setdefault(view, {})[name] = {
+            "file": rel,
+            "rect": [bbox[0] / w, bbox[1] / h, (bbox[2] - bbox[0]) / w, (bbox[3] - bbox[1]) / h],
+        }
+        print(f"   {name} (empty, auto): bbox={bbox}")
+
+    # z1 hearth rug/trapdoor chain overlays (build-3 consistency re-roll, 2026-07-09).
+    # The real re-rolled 4K plates (z1-hearth-rug-moved-nb, z1-hearth-trapdoor-open-nb) are
+    # nano-banana region-edits of z1-hearth-base and — like the other build-3 wide variants
+    # (gap G3) — carry global tonal drift, so a full-frame diff trips everywhere (verified:
+    # bbox = whole frame even at threshold 90). We therefore HAND-CROP each state's changed
+    # floor region (measured from the plates: the folded rug + exposed closed trapdoor for
+    # rug-moved; the raised lid + open hole + haze for trapdoor-open) and composite it over
+    # its background, exactly like MANUAL_OVERLAYS. This keeps the two-step wide state chain
+    # (base -> ov-rug-moved -> ov-trapdoor-open) that RoomSceneCoordinator already drives;
+    # only the intended lower-floor region is replaced. Rects cover the rug hotspot
+    # (0.14,0.72,0.56,0.28) / trapdoor-dial hotspot (0.23,0.72,0.39,0.25) footprints.
+    hearth_base = base_cache.get("z1/v-hearth/z1-hearth-base") \
+        or load("z1/v-hearth/z1-hearth-base@3x.png").convert("RGB")
+    rug_moved_im = extras["z1/v-hearth#rug-moved"]  # real re-rolled plate (see build_inpainted)
+    trapdoor_open_im = load("z1/v-hearth/z1-hearth-trapdoor-open@3x.png").convert("RGB")
+    hw, hh = hearth_base.size
+    for name, var_im, (nx, ny, nw, nh) in [
+        # base -> rug folded aside revealing the closed trapdoor + ring pull
+        ("ov-rug-moved",     rug_moved_im,     reframe_rect("z1/v-hearth", (0.14, 0.70, 0.60, 0.30))),
+        # locked -> lid thrown open (raised planks + hole + rising haze)
+        ("ov-trapdoor-open", trapdoor_open_im, reframe_rect("z1/v-hearth", (0.30, 0.68, 0.44, 0.32))),
+    ]:
+        vim = var_im if var_im.size == hearth_base.size else var_im.resize(hearth_base.size, Image.LANCZOS)
+        px0, py0 = int(nx * hw), int(ny * hh)
+        px1, py1 = int((nx + nw) * hw), int((ny + nh) * hh)
+        crop = vim.crop((px0, py0, px1, py1))
+        rel = f"z1/v-hearth/overlays/{name}.jpg"
+        save_plate(crop, rel)
+        overlays.setdefault("z1/v-hearth", {})[name] = {"file": rel, "rect": [nx, ny, nw, nh]}
+        print(f"   {name} (manual): rect=({nx},{ny},{nw},{nh})")
+
+    # R7-001: refuse to write overlays.json if any overlay's art is not pixel-1:1 with its
+    # rect (would rescale + misplace at runtime — the cauldron-flame-on-the-wall defect).
+    assert_overlay_rects_match_art(overlays, report)
 
     with open(out_path("overlays.json"), "w") as f:
         json.dump(overlays, f, indent=1, sort_keys=True)
@@ -963,7 +1575,10 @@ def main():
 
     print("== 6/6 audio ==", flush=True)
     gen_sfx()
-    gen_ambients()
+    # (R4-002/build 10: gen_ambients removed — no per-zone amb-z* beds ship.)
+
+    # R3-002: fail loudly if chrome art (the Level-Select thumbnail) shipped stale.
+    assert_chrome_current()
 
     print("\n".join(report))
     print("DONE")

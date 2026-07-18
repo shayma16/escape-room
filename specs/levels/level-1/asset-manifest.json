@@ -319,7 +319,8 @@
    "seed": 64003,
    "est_cost_usd": 0.0944,
    "prompt": "pre-rendered point-and-click adventure game close-up plate, painterly realism, moody 1990s Myst-style interior detail, muted warm-and-cool night palette, oil painting texture, highly detailed, no text, no letters, no people. An ancient grimoire lying open flat, straight-down view, double parchment spread filling frame, warm lamp light; a glossy BLACK CROW FEATHER lies across the page gutter as a b",
-   "note": "spiral top-down winding outward CCW with arrowhead - handedness locked to brew view (R3)"
+   "note": "spiral top-down winding outward CCW with arrowhead - handedness locked to brew view (R3)",
+   "round6_note": "R6-011: stir glyph corrected to 5 dots CCW."
   },
   {
    "file": "z1/v-study/cu-grimoire-zodiac@3x.png",
@@ -391,20 +392,21 @@
    "generation": "t2i",
    "seed": 64009,
    "est_cost_usd": 0.0944,
-   "prompt": "pre-rendered point-and-click adventure game close-up plate, painterly realism, moody 1990s Myst-style interior detail, muted warm-and-cool night palette, oil painting texture, highly detailed, no text, no letters, no people. Close-up of a dead potted plant on the corner of a dark oak writing desk in warm oil-lamp light: dry withered stems in a weathered TERRACOTTA CLAY flowerpot, the pot's smooth "
+   "prompt": "pre-rendered point-and-click adventure game close-up plate, painterly realism, moody 1990s Myst-style interior detail, muted warm-and-cool night palette, oil painting texture, highly detailed, no text, no letters, no people. Close-up of a dead potted plant on the corner of a dark oak writing desk in warm oil-lamp light: dry withered stems in a weathered TERRACOTTA CLAY flowerpot, the pot's smooth ",
+   "round6_note": "R6-002: EARTH bar moved to canon (through middle)."
   },
   {
    "file": "z1/v-study/cu-runedoor-tiles@3x.png",
    "zone": "z1",
    "view": "v-study",
-   "element": "workshop door brass plate, 4 rune tiles (display top-to-bottom: FIRE, WATER, AIR, EARTH)",
+   "element": "workshop door brass plate, 4 element-rune tiles (display top-to-bottom: FIRE, WATER, AIR, EARTH)",
    "state": "all unpressed",
-   "method": "t2i v3 + PIL 4-tile rebuild + rune stamps",
+   "method": "engine-render brass plate + build9 CANONICAL PIL glyph re-stamp (R3-007): old Elder-Futhark runes removed via brass clean-face; canonical element triangles engraved from ONE glyph_stamp source shared with grimoire + marks + pressed sprites",
    "generation": "t2i",
    "seed": 64444,
    "est_cost_usd": 0.0944,
    "prompt": "pre-rendered point-and-click adventure game close-up plate, painterly realism, moody 1990s Myst-style interior detail, muted warm-and-cool night palette, oil painting texture, highly detailed, no text, no letters, no people. Straight-on frontal close-up of a tall vertical BRASS PLATE mounted on a heavy iron-strapped dark oak door: the plate holds EXACTLY FOUR square brass tiles stacked in ONE vert",
-   "note": "p01 press order AIR,FIRE,EARTH,WATER = tiles 3,1,4,2; per-tile pressed sprites in sprites/"
+   "note": "R3-007 FIXED: tiles show canonical FIRE=up-tri / WATER=down-tri / AIR=up-tri+bar / EARTH=down-tri+bar, IDENTICAL geometry to grimoire pageA + the 4 element marks + the pressed sprites; match-by-shape acceptance gate + grayscale PASS. p01 press order AIR,FIRE,EARTH,WATER = tiles 3,1,4,2. Superseded Futhark version -> _rejects/R3-007-runedoor-futhark-*"
   },
   {
    "file": "z1/v-study/sprites/runedoor-tile1-pressed@3x.png",
@@ -412,7 +414,7 @@
    "view": "v-study",
    "element": "rune tile 1",
    "state": "pressed",
-   "method": "PIL",
+   "method": "PIL (build9 R3-007 canonical glyph re-stamp on existing pressed brass; same glyph_stamp source as base plate + grimoire)",
    "note": "paste rect in sprites/runedoor-tiles.json; any press combo composable"
   },
   {
@@ -421,7 +423,7 @@
    "view": "v-study",
    "element": "rune tile 2",
    "state": "pressed",
-   "method": "PIL",
+   "method": "PIL (build9 R3-007 canonical glyph re-stamp on existing pressed brass; same glyph_stamp source as base plate + grimoire)",
    "note": "paste rect in sprites/runedoor-tiles.json; any press combo composable"
   },
   {
@@ -430,7 +432,7 @@
    "view": "v-study",
    "element": "rune tile 3",
    "state": "pressed",
-   "method": "PIL",
+   "method": "PIL (build9 R3-007 canonical glyph re-stamp on existing pressed brass; same glyph_stamp source as base plate + grimoire)",
    "note": "paste rect in sprites/runedoor-tiles.json; any press combo composable"
   },
   {
@@ -439,7 +441,7 @@
    "view": "v-study",
    "element": "rune tile 4",
    "state": "pressed",
-   "method": "PIL",
+   "method": "PIL (build9 R3-007 canonical glyph re-stamp on existing pressed brass; same glyph_stamp source as base plate + grimoire)",
    "note": "paste rect in sprites/runedoor-tiles.json; any press combo composable"
   },
   {
@@ -677,7 +679,8 @@
    "batch": 2,
    "generation": "edit-crop",
    "seed": 75015,
-   "est_cost_usd": 0.0212
+   "est_cost_usd": 0.0212,
+   "round6_note": "R6-007: re-rolled build-3 on 3840 base (low flame)."
   },
   {
    "file": "z2/v-bench/z2-bench-flame2@3x.png",
@@ -689,7 +692,8 @@
    "batch": 2,
    "generation": "edit-crop",
    "seed": 75006,
-   "est_cost_usd": 0.0106
+   "est_cost_usd": 0.0106,
+   "round6_note": "R6-007: re-rolled build-3 on 3840 base (medium flame)."
   },
   {
    "file": "z2/v-bench/z2-bench-flame3@3x.png",
@@ -702,7 +706,8 @@
    "generation": "edit-crop",
    "seed": 75007,
    "est_cost_usd": 0.0106,
-   "note": "height ladder verified in grayscale gate; hue constant amber"
+   "note": "height ladder verified in grayscale gate; hue constant amber",
+   "round6_note": "R6-007: re-rolled build-3 on 3840 base (tall flame)."
   },
   {
    "file": "z2/v-bench/cu-brew-clear@3x.png",
@@ -839,7 +844,8 @@
    "batch": 2,
    "generation": "edit-crop",
    "seed": 75008,
-   "est_cost_usd": 0.0103
+   "est_cost_usd": 0.0103,
+   "round6_note": "R6-007: re-rolled build-3 on 3840 base (ring on sun + coin on moon)."
   },
   {
    "file": "z2/v-cabinet/z2-cabinet-open@3x.png",
@@ -917,7 +923,8 @@
    "batch": 2,
    "generation": "t2i",
    "seed": 70104,
-   "est_cost_usd": 0.0944
+   "est_cost_usd": 0.0944,
+   "superseded_by": "build11_gapfill item 20 (2026-07-13): re-derived from build-3 wide z2-cabinet-open; build-1 t2i original -> _rejects/flux-painterly/"
   },
   {
    "file": "z2/v-cabinet/cu-potion-shelf@3x.png",
@@ -1961,5 +1968,595 @@
   },
   "spend_usd": 0.1201,
   "note": "AF-1 (3 wide plates + variants) deferred pending ruling; rows 2-4 in asset-progress.md remain pending."
+ },
+ "build3_rebuild": {
+  "engine": "fal-ai/nano-banana-pro",
+  "style": "clearly stylized real-time 3D game render (mandatory template, verbatim); seed=z1-hearth-base candidate B, user-approved 2026-07-08",
+  "note": "Full engine-render rebuild replacing painterly Flux plates. All 7 base plates FRESH at 4K, anchored to the locked seed (+ up to 13 refs). Superseded painterly plates -> _rejects/flux-painterly/. Raw pre-PIL-fix takes -> _rejects/build3-takes/. Puzzle logic + fixed solution values UNCHANGED (render-style swap only).",
+  "bases_done": {
+   "z1/v-hearth/z1-hearth-base": "CANONICAL SEED. Camera/composition per style-guide 5.1 unchanged. GEOMETRY CHANGE vs painterly: lintel now upward-triangle FIRE glyph + numeral II (was English 'FIRE'); bellows now triangle-with-bar AIR glyph + numeral I (was slash); single mantel clock (numeral ring I-XII + cuckoo door above XII).",
+   "z1/v-entry/z1-entry-base": "AF-1 RESOLVED: crow's-head where open beak IS the rune basin (unified, one carved piece; NOT skull+separate-bowl). Sill WATER rune = downward triangle + numeral IV (was 'W' letter). Window: moon+Orion present (model-drawn, not canonical-stamped in base wide; authoritative Orion read is z2 window + astrolabe plate-2).",
+   "z1/v-study/z1-study-base": "Flowerpot EARTH rune = downward-triangle-with-bar + numeral III (bar PIL-added; distinct from WATER plain triangle). Door 4 rune tiles show generic runes (no code leak). Grimoire/triptych framing per 5.2.",
+   "z2/v-bench/z2-bench-base": "JC-fb1: painted diegetic return-passage (arched doorway center-back to main cabin) added -> no UI exit chevron needed. Cauldron/firepit/bellows/mortar per 5.4.",
+   "z2/v-cabinet/z2-cabinet-base": "Window sky = CANONICAL: waxing-gibbous moon lit-right (from sky-master) + 7-dot Orion belt stamped from orion-canonical.json (35deg). NOTE: sunburst+crescent render as raised medallions at wide scale; recess geometry carried by cu-slots close-up.",
+   "z3/v-cellar/z3-cellar-base": "All mechanism elements per 5.6 (barrel/drawer/sliding-shelf+pulley+hook+rope/winch-socket/mirror+scratches/ladder+lantern).",
+   "z4/v-alcove/z4-alcove-base": "Planter buds-closed + folk-art crow statue holding 5-point star-bit key (matches cage keyhole) per 5.7."
+  },
+  "spend_running": 4.8,
+  "cap": 18.9,
+  "status": "BASES COMPLETE. Derived assets (close-ups/icons/sprites/state variants) pending; user reviews bases per-zone before integration."
+ },
+ "build3_derived": {
+  "engine": "fal-ai/nano-banana-pro (t2i + edit)",
+  "style": "clearly stylized engine-render (mandatory template verbatim); per-scene consistency: each derived asset anchored to ITS OWN zone base + up to 13 refs",
+  "method": {
+   "close_ups": "fresh t2i std anchored to zone base; free PIL crops where true zoom-in",
+   "state_variants": "region_edit.py = crop region -> nano-banana edit (state prompt) -> feathered composite back onto fresh base => ZERO drift outside region, pixel-aligned; PIL removals/overlays for simple states",
+   "precision": "PIL geometry stamp on clean render substrate: moon-phase dials (moon_dials.py), canonical Orion astrolabe plate-2 (orion_stamp.py from orion-canonical.json), crescent hallmark on coin+spoon (crescent_stamp.py), z3 beam matrix (beam_engine_v3.py, #DCE8F2 core)"
+  },
+  "counts": {
+   "fresh_close_ups": 30,
+   "icons": 15,
+   "astrolabe_plates": 6,
+   "wide_and_cu_state_variants": 38,
+   "total_nb_derived": 95
+  },
+  "coverage": "ALL puzzle-graph visually_necessary_elements present across the finished set (verified). Grayscale 2.3 gate PASS on all glyph/precision assets (dial phases, element runes, star keyhole, cabinet recesses, Orion plate, potion glyphs, crescent hallmarks, triptych crow-counts/moons, CCW brew spiral, radial bloom).",
+  "canonical_geometry": {
+   "orion": "masters/orion-canonical.json (belt 35deg, 7 dots)",
+   "crescent": "masters/crescent-hallmark.json (horns RIGHT) reused on coin+spoon+cu-slots+cu-coin",
+   "moon_phases": "waxing lit-RIGHT / waning lit-LEFT"
+  },
+  "spend": {
+   "baseline_bases": 4.8,
+   "derived_session": 11.25,
+   "grand_total": 16.05,
+   "cap": 18.9
+  },
+  "flags": [
+   "z2-bench flame1/2/3 are retained build-2 painterly plates (flame HEIGHT stages + rim ember). If a style-jump vs fresh bench base is flagged in QA, re-derive via region-edit (est ~$0.45, budget available).",
+   "z3 beam matrix landing spots are PIL glow (functional, R4-correct: each shutter x detent x shelf combo reads distinctly; beam-blocked reads look-here not bugged). Refine to volumetric if QA flags.",
+   "z1-entry crow-rafters state not separately rendered (crow-lintel covers the endgame nudge; rafters = animation beat off cu-cage-crow if Developer needs it)."
+  ]
+ },
+ "build3_consistency_reroll_2026_07_09": {
+  "rule": "R2-031 scene->close-up EXACT recreation: close-ups re-derived by cropping the canonical 4K base region and using it as the edit base; state on top only.",
+  "branch": "level1-rebuild-build3",
+  "model": "fal-ai/nano-banana-pro",
+  "part1_closeups": {
+   "cu-door-lock-nb": {
+    "base": "z1/v-entry/z1-entry-base",
+    "fix": "grey stone beak-basin (was brown wood); beak opens down-right; iron bolt + thorny vine below",
+    "seed": 60311,
+    "cost": 0.15
+   },
+   "cu-slots-nb": {
+    "base": "z2/v-cabinet/z2-cabinet-base",
+    "fix": "two-door armoire, SUN recess LEFT door + crescent MOON recess RIGHT door, ring pulls kept (was a bank of drawers)",
+    "seed": 60322,
+    "cost": 0.15
+   },
+   "cu-statue-key-nb": {
+    "base": "z4/v-alcove/z4-alcove-base",
+    "fix": "GOLD 5-point star key hanging from beak + plain grey stone (was silver key + invented rune arch)",
+    "seed": 60344,
+    "cost": 0.15
+   }
+  },
+  "part1_variants": {
+   "cu-slots-empty": "copy of corrected cu-slots-nb (both recesses empty)",
+   "cu-slots-seated": {
+    "method": "edit on corrected cu-slots-nb",
+    "fix": "gold ring in SUN recess + silver crescent-hallmark coin in MOON recess, embedded",
+    "seed": 60377,
+    "cost": 0.15
+   },
+   "cu-statue-key-taken-nb": "PIL stone-clone over key (empty beak); re-derived from corrected plate (old was a misaligned crop of the wrong close-up)",
+   "cu-door-lock-basin-drained": "copy of corrected cu-door-lock-nb (empty basin)",
+   "cu-door-lock-basin-filled": {
+    "method": "edit on corrected cu-door-lock-nb",
+    "fix": "pearlescent #DCE8F2 pool inside beak bowl",
+    "seed": 60391,
+    "cost": 0.15
+   },
+   "cu-door-lock-vines-withered": "PIL transient tonal frame (vines are cool-grey; withered is not a persisted state per RoomViewState)",
+   "cu-door-lock-vines-gone": {
+    "method": "edit on corrected cu-door-lock-nb",
+    "fix": "vines removed, clean iron bolt; REPLACES old build-2 painterly art (this file is game-loaded)",
+    "seed": 60412,
+    "cost": 0.15
+   },
+   "cu-door-lock-bolt-slid": "= corrected cu-door-lock-vines-gone (unsealed close-up; wide-scene overlay carries the slide motion)"
+  },
+  "part2": {
+   "G1_rug_moved": {
+    "asset": "z1/v-hearth/z1-hearth-rug-moved-nb",
+    "method": "4K edit on z1-hearth-base",
+    "fix": "rug folded back revealing CLOSED trapdoor + ring pull",
+    "seed": 60433,
+    "cost": 0.3
+   },
+   "G1_poker_trapdoor": "z1-hearth-poker-taken-nb + z1-hearth-trapdoor-open-nb verified already fresh-base-aligned (canonical build-3 -nb plates); no re-derive needed",
+   "G2_G3": "VERIFIED NO-OP: build-3 -nb cellar state plates (barrel-pried/weight-hung/shelf-slid/crank-fitted/drawer-open/mirror-d2/d3) already exist at 4K 3840x1920 derived from the fresh 4K base; diff-check shows each changes only its local mechanism region (0.8-2.5% px) and is pixel-identical elsewhere. The 2560x1280 plain-named plates are superseded legacy (Developer stages the -nb 4K versions)."
+  },
+  "spend_this_pass": 1.65,
+  "running_total": 17.25,
+  "cap": 18.9
+ },
+ "build9_glyph_consistency_2026_07_09": {
+  "branch": "level1-rebuild-build3",
+  "scope": "R3-007 (element-rune glyph consistency, unblocks p01) + R3-002 (Level-Select thumbnail). Deterministic PIL only; NO fal.ai generation.",
+  "spend_usd": 0.0,
+  "cap": 18.9,
+  "canonical_glyph_geometry": {
+   "source": "puzzle-graph clu-grimoire-elements; defined ONCE as PIL geometry (scratchpad glyph_stamp.glyph_mask), stamped identically everywhere",
+   "FIRE": "upward triangle (plain)",
+   "WATER": "downward triangle (plain)",
+   "AIR": "upward triangle + horizontal bar at mid-height",
+   "EARTH": "downward triangle + horizontal bar at mid-height",
+   "colorblind": "distinguishable by SHAPE alone (apex up/down + bar present/absent); grayscale gate PASS",
+   "anchor": "grimoire cu-grimoire-pageA is the canonical player source of truth; marks + door made to match it by shape"
+  },
+  "R3_007": {
+   "root_cause": "cu-runedoor-tiles base plate (and its pressed sprites) showed Elder-Futhark runes, NOT the element triangles used by the grimoire + the 4 element marks -> door glyphs did not match clues -> p01 unsolvable.",
+   "finding": "grimoire pageA + all four element marks (cu-bellows AIR+I, cu-lintel FIRE+II, cu-flowerpot EARTH+III, cu-windowsill WATER+IV) ALREADY used the correct canonical triangle system; ONLY the door plate + pressed sprites were wrong.",
+   "fix": "removed Futhark runes via brass clean-face inpaint (lighting-gradient preserving); engraved canonical triangles from the single glyph_stamp source. Re-stamped the 4 pressed sprites from the SAME geometry (existing pressed border/inset kept, only glyph corrected).",
+   "files_restamped_in_place": [
+    "z1/v-study/cu-runedoor-tiles@{3x,2x,1x}.png",
+    "z1/v-study/sprites/runedoor-tile{1,2,3,4}-pressed@{3x,2x,1x}.png"
+   ],
+   "tile_map_confirmed": "runedoor-tiles.json unchanged: tile1=FIRE, tile2=WATER, tile3=AIR, tile4=EARTH (top-to-bottom). Press order AIR,FIRE,EARTH,WATER = tiles 3,1,4,2 (numeral I-IV).",
+   "acceptance_gate": "grimoire pageA vs element mark vs door tile placed side by side for all 4 elements: MATCH by shape confirmed. Grayscale check: all 4 mutually distinct.",
+   "grimoire_audit": "pageA rune<->pictogram map CORRECT; pageB sun+ring / crescent+coin (p04) CORRECT; recipe page (p14) CORRECT (blossom+pestle, crescent-metal+file, feather-into-hand, flame+III, CCW 5-dot outward spiral w/ arrowhead, black-feather bookmark); decoys zodiac (full 12-sign wheel, no highlight) + bird study (no callouts) non-systematic. All legible.",
+   "superseded": "_rejects/R3-007-runedoor-futhark-<timestamp>/ (both plate + pressed sprites, all scales)",
+   "shadows": "NONE created; all edits IN PLACE at canonical names."
+  },
+  "R3_002": {
+   "asset": "chrome/level1-thumb.jpg (delivered under specs/assets/level-1/chrome/ for Developer to stage to EscapeRoom/Resources/GameAssets/chrome/level1-thumb.jpg)",
+   "source": "z1/v-hearth/z1-hearth-base@3x (build-3 engine render); PIL 4:3 crop (top-aligned to keep full mantel clock, biased to catch warm right-lamp glow) -> 660x495 JPG q90",
+   "reads": "fireplace + mantel clock + warm lamp glow + leather armchair; recognizable as new engine-style Level 1 at card size (card is 4:3, 220x165pt).",
+   "cost_usd": 0.0
+  }
+ },
+ "build10_reframe": {
+  "date": "2026-07-11",
+  "purpose": "Round-4 BUG-004-class dual-safe-zone re-frame of all wide plates + R4-007 dial pre-rotation + R4-008 ghost clean + cabinet moon canon fix",
+  "dual_safe_band_at_3x": {
+   "ipad_4_3_x": [
+    640,
+    3200
+   ],
+   "iphone_19_5_9_y": [
+    74,
+    1846
+   ]
+  },
+  "technique": {
+   "content": "uniform scale s + offset (ox,oy) on 3840x1920; single LANCZOS resample; identical transform for base and EVERY wide state variant of the view, so state swaps stay pixel-aligned by construction",
+   "border_band": "deterministic PIL edge-replicate smear + progressive blur/darken vignette + grain (specs/tools/reframe_b10.py); atmosphere-only overscan per style-guide S8 -- SUPERSEDED 2026-07-17 by round7_band_fade: this edge-replicate smear is the root cause of R7-002; the band is now a true fade to black (specs/tools/band_fade_r7.py).",
+   "outpaint_postmortem": "nano-banana-pro edit border outpaint attempted (7 x 4K, $2.10) and REJECTED: the endpoint re-renders the full scene (registration >=13.5 mean-abs after shift search), violating the content-IDENTICAL constraint. Outputs archived in specs/assets/level-1/_work-build10/reframe/."
+  },
+  "transforms": {
+   "z1/v-hearth": {
+    "scale": 0.955,
+    "ox": 86,
+    "oy": 86,
+    "plates": [
+     "z1-hearth-base",
+     "z1-hearth-poker-taken",
+     "z1-hearth-rug-moved",
+     "z1-hearth-trapdoor-open"
+    ]
+   },
+   "z1/v-study": {
+    "scale": 0.86,
+    "ox": 538,
+    "oy": 240,
+    "plates": [
+     "z1-study-base"
+    ]
+   },
+   "z1/v-entry": {
+    "scale": 0.74,
+    "ox": 425,
+    "oy": 250,
+    "plates": [
+     "z1-entry-base",
+     "z1-entry-basin-drained-nb",
+     "z1-entry-basin-filled-nb",
+     "z1-entry-cage-open",
+     "z1-entry-crow-lintel",
+     "z1-entry-vines-gone",
+     "z1-entry-vines-withered"
+    ]
+   },
+   "z2/v-bench": {
+    "scale": 0.83,
+    "ox": 430,
+    "oy": 163,
+    "plates": [
+     "z2-bench-base"
+    ]
+   },
+   "z2/v-cabinet": {
+    "scale": 0.7,
+    "ox": 630,
+    "oy": 288,
+    "plates": [
+     "z2-cabinet-base",
+     "z2-cabinet-drawer-open",
+     "z2-cabinet-open"
+    ]
+   },
+   "z3/v-cellar": {
+    "scale": 0.82,
+    "ox": 445,
+    "oy": 173,
+    "plates": [
+     "z3-cellar-base",
+     "z3-cellar-barrel-pried",
+     "z3-cellar-beam-alcove",
+     "z3-cellar-beam-blocked",
+     "z3-cellar-beam-floor-shelf-slid",
+     "z3-cellar-beam-floor",
+     "z3-cellar-crank-fitted",
+     "z3-cellar-drawer-open",
+     "z3-cellar-mirror-d2",
+     "z3-cellar-mirror-d3",
+     "z3-cellar-nobeam-nb",
+     "z3-cellar-shelf-slid",
+     "z3-cellar-weight-hung"
+    ]
+   },
+   "z4/v-alcove": {
+    "scale": 1.0,
+    "ox": 0,
+    "oy": 0,
+    "note": "verified PASS as-is, no edit: statue+key x~[2070,2670], planter core central, all puzzle-critical elements inside the dual-safe band"
+   }
+  },
+  "developer_contract": {
+   "aspect_fill": "restore .aspectFill for wide scenes; every puzzle-critical element now sits inside the dual-safe band",
+   "rect_remap": "ALL hotspot rects and overlays.json rects defined against the OLD framing must be remapped: new_px = old_px * scale + (ox,oy) at @3x, i.e. new_norm_x = old_norm_x*scale + ox/3840, new_norm_y = old_norm_y*scale + oy/1920, new_norm_w = old_norm_w*scale, new_norm_h = old_norm_h*scale",
+   "overlays": "re-cut overlay JPGs from the re-framed plates using the remapped rects (preferred), or keep existing overlay images and only remap rects (content stays consistent since interior art is the same, just scaled by s)",
+   "legacy_plates_flagged": "z2-bench-flame1/2/3 and z2-cabinet-slots-seated are 2560x1280 LEGACY-ART plates whose content does NOT match the build-3 bases (outside-region diff ~40); they were NOT re-framed. The staged ov-flame1/2/3 and ov-slots-seated overlays keep their current art with remapped rects; regenerate those states from the 4K bases in a future batch if QA flags them",
+   "R4_007_dial_sprite": "dial-face sprite marks are now PRE-ROTATED clockwise by +45deg*k (k = clockwise phase index from top). MoonDialControlView MUST KEEP its existing rotationEffect(.degrees(Double(phaseRaw) * -45)) EXACTLY as-is - the sprite pre-rotation compensates the view rotation so the mark under the top notch presents upright canonical (wanG dark-bite-RIGHT at detent p=5, verified by simulated-rotation centroid test on all 8 detents). Do NOT change the view rotation or add compensation, or the fix double-applies. Staged copy already updated: Resources/GameAssets/level-1/z1/v-hearth/sprites/dial-face.png"
+  },
+  "content_fixes": {
+   "R4_008_ghost_clean": "z1-entry wide plates: ghost glyph overlap removed from windowsill tablet+glass; ONE canonical WATER down-triangle + numeral IV retained; patch (240,900)+(460x520) applied to base + 6 variants before re-frame; cu-windowsill close-up verified already clean",
+   "cabinet_moon_canon": "z2-cabinet wide plates: window moon was MIRROR-FLIPPED vs canonical sky-master and had a second-moon arc + banding at the top edge; artifacts diffusion-inpainted, canonical waxing-gibbous (lit-RIGHT) disc re-stamped from masters/sky-master (circle-fit source (1014.7,337.0) r145.2 -> dest (3561,170) r76) before re-frame; propagated to drawer-open + open"
+  },
+  "gates": {
+   "safe_zone": "all 10 previously-violating elements now inside band (study flowerpot 671, entry tablet 666 / cage 3170, bench bellows 654 / mortar 3161, cabinet bottles 662 / moon 3174, cellar mirror 675 / winch 896 / ladder 3159, hearth clock crown y96) - PASS",
+   "variant_alignment": "re-framed variants diff only in local state regions (0.2-10.9%), except z1-hearth-rug-moved which had a PRE-EXISTING global tone diff (53% pre-reframe, unchanged) from its build-3 full-frame G1 edit",
+   "grayscale": "all 6 re-framed bases pass grayscale squint (sun vs crescent by shape, gibbous readable, entry mechanisms legible)",
+   "dial_detent_simulation": "all 8 phases present upright canonical at detent; waxG/wanG asymmetry +30.4/-56.2 (opposite, distinct); triptych-3 verified waning-gibbous dark-bite-RIGHT (left 107.9 vs right 50.9) - no fix needed"
+  },
+  "rejects": "90 superseded files archived in specs/assets/level-1/_rejects/build10-pre-reframe/ (29 plates x3 scales pre-batch + dial-face-marks-not-prerotated x3); no shadow files at canonical slots",
+  "spend_this_batch_usd": 2.1
+ },
+ "build11_gapfill": {
+  "date": "2026-07-12",
+  "purpose": "Rebuild of the 18 build-1-era straggler assets never regenerated in build 3 (+ the discovered 19th stale file cu-astrolabe-drawer-open, and cu-astrolabe-drawer-empty which was MISSING entirely despite being game-loaded at CloseUps.swift:139). All derived per R2-031 from named build-3 canonical plates; originals archived to _rejects/flux-painterly/. ITEM 20 added 2026-07-13: vintage guard caught a 20th stale build-1 file (cu-cabinet-open, previously shipping via KNOWN_LEGACY_SOURCES exception) missed by the original 19-item batch; re-delivered same method ($0 PIL).",
+  "spend": {
+   "api_usd": 0.45,
+   "detail": "3 nano-banana-pro std region edits ($0.15 each: cage-crow-refusal, cage-open-empty, winch-crank); all other 16 files $0 deterministic PIL; item 20 (cu-cabinet-open, 2026-07-13) $0 PIL - no spend change",
+   "batch_total_usd": 0.45,
+   "project_total_usd": 19.8,
+   "hard_cap_usd": 23.0
+  },
+  "assets": {
+   "z1/v-entry/cu-crow-rafters": {
+    "method": "PIL crop",
+    "source": "z1-entry-crow-lintel@3x",
+    "geometry": "crop (1400,0,2600,900) -> 2048x1536",
+    "note": "freed crow on door-lintel hinge strap above beak-basin (b3 canon perch)"
+   },
+   "z1/v-hearth/cu-trapdoor-open": {
+    "method": "PIL crop",
+    "source": "z1-hearth-trapdoor-open@3x",
+    "geometry": "crop (1800,1100,2893,1920) -> 2048x1536",
+    "note": "open lid + dark misty mouth + rug edge"
+   },
+   "z2/v-cabinet/cu-astrolabe-drawer-open": {
+    "method": "PIL crop + unsharp(r3,70%)",
+    "source": "z2-cabinet-drawer-open@3x",
+    "geometry": "crop (2400,1150,3100,1675) -> 2048x1536 (2.93x)",
+    "note": "19th stale file; coin crescent-hallmark + Z-crank crisp, paid detail-enhance not needed"
+   },
+   "z2/v-cabinet/cu-astrolabe-drawer-empty": {
+    "method": "PIL row-interp inpaint + felt grain re-tex on drawer-open crop",
+    "source": "cu-astrolabe-drawer-open (this batch)",
+    "geometry": "coin removed (838,928)-(1074,1068); crank removed (1126,958)-(1350,1100); crank front-face cast shadow removed (1050,1070)-(1300,1195)",
+    "note": "NET-NEW file; game-loaded (CloseUps.swift:139) but never existed - fixed a live missing-image defect"
+   },
+   "z1/v-entry/cu-star-keyhole-key": {
+    "method": "PIL composite",
+    "source": "cu-star-keyhole@3x + z4/icons/icon-cage-key@3x",
+    "geometry": "icon rotated 140.2deg (shaft horizontal +12deg gravity droop), cut at 62% bow->bit (inserted portion hidden), anchored cut-end (1060,736)@3x in star keyway; gold LUT from cu-statue-key canon + 10% cool ambient; soft shadow (+22,+34)",
+    "note": "grayscale PASS"
+   },
+   "z2/v-bench/sprites/rune-ember-I": {
+    "method": "PIL plaque cutout + glow",
+    "source": "cu-brew-clear@3x",
+    "geometry": "rect_3x (624,161) 279x293",
+    "note": "white-hot channel boost + orange halo; overlay pixel-aligned over cu-brew-* plates"
+   },
+   "z2/v-bench/sprites/rune-ember-II": {
+    "method": "PIL plaque cutout + glow",
+    "source": "cu-brew-clear@3x",
+    "geometry": "rect_3x (1190,169) 306x303"
+   },
+   "z2/v-bench/sprites/rune-ember-III": {
+    "method": "PIL plaque cutout + glow",
+    "source": "cu-brew-clear@3x",
+    "geometry": "rect_3x (1543,473) 255x326"
+   },
+   "z2/v-bench/sprites/rune-ember-rects.json": {
+    "note": "UPDATED - numeral positions MOVED vs build-1; Swift CloseUpLayout.brewEmberRects is a transcription and MUST be synced by Developer (unit test cross-check will flag). Grayscale PASS (stage = stroke count I/II/III)"
+   },
+   "z2/v-bench/sprites/ladle-ripple-ccw": {
+    "method": "PIL draw",
+    "source": "matched to b3 brew liquid tone",
+    "geometry": "900x700 RGBA; tapered comet arc quad-bezier (95,575)-(430,415)-(815,470) + glow + echo arc; same handedness as build-1 (game mirrors x for CW)"
+   },
+   "z2/v-cabinet/sprites/astrolabe-plate-1..6": {
+    "method": "PIL: ONE clean disc base + ONE canonical dot stamp",
+    "source": "disc: plate-6-nb@3x polar-interp fill (dots/hub/needle/ghost-dimples removed); dot stamp: plate-6-nb dot (1035,469) r29; dot positions: each plate's 7 detected dark dots from its own -nb close-up; plate-2: EXACT masters/orion-canonical.json offsets+scales, belt-centered",
+    "geometry": "540x540 RGBA, disc dia 510, close-up->sprite scale 510/870",
+    "note": "GHOST-DIMPLE artifact in all -nb close-ups (faint imprints of other plates' holes) EXCLUDED from sprites to keep the star-match puzzle unambiguous; plate-2-nb close-up itself shows a DRIFTED Orion (reference-only, not game-loaded) - flagged to Producer. Window-clue vs plate-2 side-by-side shape match PASS; grayscale PASS"
+   },
+   "z2/v-cabinet/sprites/astrolabe-pointer": {
+    "method": "PIL draw 4x supersampled",
+    "source": "palette sampled from cu-astrolabe needle cross-section",
+    "geometry": "900x90 RGBA; hub boss+ring+pin at x=52, kite needle 95->885"
+   },
+   "z1/v-entry/cu-cage-crow-refusal": {
+    "method": "nano-banana-pro region edit ($0.15, seed 61001)",
+    "source": "cu-cage-crow@3x",
+    "geometry": "region (940,180,1700,1200), feather 42; outside-region pixels byte-identical",
+    "note": "crow turned away, back to camera, head lowered - refusal beat; perch/cup/bars unchanged"
+   },
+   "z1/v-entry/cu-cage-open-empty": {
+    "method": "nano-banana-pro region edit ($0.15, seed 61010)",
+    "source": "cu-cage-crow@3x, ref z1-entry-cage-open@3x",
+    "geometry": "region (620,120,1980,1420), feather 42",
+    "note": "crow gone, right-side barred door ajar (matches wide plate), perch+cup intact"
+   },
+   "z3/v-cellar/cu-winch-crank": {
+    "method": "nano-banana-pro region edit ($0.15, seed 61020) + $0 PIL grip recolor",
+    "source": "cu-winch-socket@3x, ref z2/icons/icon-crank@3x",
+    "geometry": "region (600,480,1780,1500), feather 42; grip wood->steel recolor bbox (1150,1100,1650,1330)",
+    "note": "Z-crank seated in square socket, grip toward viewer; recolored to all-steel per icon + wide z3-cellar-crank-fitted canon"
+   },
+   "z2/v-cabinet/cu-cabinet-open": {
+    "method": "PIL crop + unsharp(r2,35%)",
+    "source": "z2-cabinet-open@3x (build-3 canonical wide open-state)",
+    "geometry": "crop (1112,300,2952,1680) -> 2048x1536 (1.11x)",
+    "note": "item 20 (2026-07-13, vintage-guard catch): full armoire standing open - sun medallion on swung-open left door, crescent + ring pull on right door, FILE (cross-hatch rasp) + corked PHIAL on middle inner shelf, grey-blue wall, moonbeam; supersedes build-1 t2i photoreal close-up (seed 70104) -> _rejects/flux-painterly/. Consistency: pixel-derived from wide (exact by construction); door-face geometry agrees with cu-slots-seated; grayscale file+phial silhouettes PASS. Batch-2 note (wide busier than cu) OBSOLETE - cu now identical to wide by derivation. Developer: KNOWN_LEGACY_SOURCES exception for this path can be removed + restage into Resources/GameAssets."
+   }
+  },
+  "quality_gates": {
+   "style_consistency": "every asset A/B'd against its parent build-3 plate during production (crops derived directly; edits feather-composited so unchanged pixels are byte-identical); item 20 A/B strip vs wide open-state + cu-slots-seated PASS",
+   "grayscale_2_3": "PASS on glyph/pattern-bearing items: star-keyhole-key, rune-ember I/II/III (stroke count), astrolabe plates (dot patterns), window-Orion vs plate-2 match",
+   "canonical_filename_discipline": "all 20 at canonical paths; 19 superseded originals -> _rejects/flux-painterly/; shadow-scan clean (no _work/-v2 strays)",
+   "scale_variants": "@3x/@2x/@1x emitted for all 20"
+  }
+ },
+ "round6_art_track": {
+  "date": "2026-07-14",
+  "branch": "build-12-round6-fixes (worktree; reset from a wrong build-2 base to correct f4fd52c)",
+  "items": {
+   "R6-002_earth_glyph": {
+    "file": "z1/v-study/cu-flowerpot@3x.png",
+    "fix": "carved EARTH bar moved to canon: single horizontal bar THROUGH the triangle middle (door tile-4), stray marks healed",
+    "method": "deterministic PIL heal+carve",
+    "cost_usd": 0.0
+   },
+   "R6-011_recipe_spiral": {
+    "file": "z1/v-study/cu-grimoire-recipe@3x.png",
+    "fix": "stir glyph corrected to 5 dots + COUNTER-CLOCKWISE (was 6 CW): horizontal-mirror of the spiral region flips winding+arrow to CCW keeping organic ink/parchment, then one dot removed",
+    "method": "deterministic PIL mirror+heal",
+    "cost_usd": 0.0
+   },
+   "R6-004_band_sweep": {
+    "views": [
+     "z1/v-hearth",
+     "z1/v-study",
+     "z1/v-entry",
+     "z2/v-bench",
+     "z2/v-cabinet",
+     "z3/v-cellar"
+    ],
+    "edges": "top+bottom (short) padded edges + state variants",
+    "fix": "blurry/stretched reframe edge-band replaced with clean content-preserving fill (short reflect + dark atmospheric vignette; no blur, no streak, no object duplication). Left/right overscan bands NOT flagged - left as-is. z4-alcove was never reframed (no band).",
+    "method": "deterministic PIL, content interior byte-identical, base+variant bands identical (clean overlays)",
+    "cost_usd": 0.0,
+    "SUPERSEDED_2026_07_17": "R7-002: this sweep did NOT remove the smear - measurement on the delivered pixels showed the band still carried real scene structure (top-band horizontal detail 0.55-1.24, left-band vertical detail 1.10-1.21), i.e. the build-10 smear survived under a darker vignette. It also scoped only top+bottom, leaving the left/right bands (the worst: 430-630px on bench/cabinet) untouched. The user reported the same defect twice. Replaced by round7_band_fade."
+   },
+   "R6-007_flames_slots": {
+    "files": [
+     "z2/v-bench/z2-bench-flame1@3x.png",
+     "z2/v-bench/z2-bench-flame2@3x.png",
+     "z2/v-bench/z2-bench-flame3@3x.png",
+     "z2/v-cabinet/z2-cabinet-slots-seated@3x.png"
+    ],
+    "fix": "re-rolled in build-3 engine style, crop-scoped off the fresh 3840x1920 base plates (were stale 2560 dark plates, wrong style + resolution-mismatched to base). Flames = progressive low/medium/tall; slots = gold ring on sun + silver moon-coin on moon. Byte-identical to base outside the edited region (clean overlays).",
+    "method": "nano-banana-pro /edit crop-scoped composite",
+    "cost_usd": 1.05,
+    "note": "cost includes 2 wasted gens on the wrong build-2 plate before the base-reset was discovered + a flame3 preview gen"
+   },
+   "R6-JOIN_emptied_container_plates": {
+    "date": "2026-07-14",
+    "purpose": "Developer container-render fix loads these by exact logical base-name (existence-guarded). 'Erase the item, show empty interior' state variants. All $0 deterministic PIL: tight item-shaped mask + per-row per-run horizontal linear interpolation between adjacent clean pixels; run independently per scale so @2x/@1x stay byte-identical to their own base plate outside the mask. No nano spend.",
+    "method": "deterministic PIL horizontal-interp inpaint",
+    "cost_usd": 0.0,
+    "plates": {
+     "z2/v-cabinet/cu-cabinet-empty": {
+      "file": "z2/v-cabinet/cu-cabinet-empty@3x.png",
+      "zone": "z2",
+      "view": "v-cabinet",
+      "element": "open sun/moon cabinet interior close-up",
+      "state": "doors open, BOTH shelves empty",
+      "source": "cu-cabinet-open@{1,2,3}x (build-11 canonical)",
+      "geometry_3x": "erased file/rasp (diag line 806,514->839,822 w58) + corked phial (belly ellipse c(952,742) rx71 ry102 + neck 910,600,990,662 + cork 914,588,974,628); dilate4; changed bbox x773-1027 y481-855",
+      "scales": [
+       "@1x 683x512",
+       "@2x 1365x1024",
+       "@3x 2048x1536"
+      ],
+      "note": "open doors, interior wood, sun/moon emblems, shelf lips all intact; outside erase region byte-identical to base"
+     },
+     "z3/v-cellar/ov-barrel-pried-empty": {
+      "file": "z3/v-cellar/ov-barrel-pried-empty@3x.png",
+      "zone": "z3",
+      "view": "v-cellar",
+      "element": "cellar barrel wide, pried open",
+      "state": "iron weight GONE, empty barrel interior (R6-005 barrel-weight duplication fix)",
+      "source": "z3-cellar-barrel-pried@{1,2,3}x (build-11 canonical)",
+      "geometry_3x": "erased trapezoid iron weight + ring handle (uniform rect 2658,1266,2786,1404); dilate4; changed bbox x2654-2790 y1262-1408",
+      "scales": [
+       "@1x 1280x640",
+       "@2x 2560x1280",
+       "@3x 3840x1920"
+      ],
+      "note": "pried lid, staves, both metal bands, front ledge, hexagonal floor all intact; outside erase region byte-identical to base"
+     },
+     "z2/v-cabinet/ov-adrawer-empty": {
+      "file": "z2/v-cabinet/ov-adrawer-empty@3x.png",
+      "zone": "z2",
+      "view": "v-cabinet",
+      "element": "astrolabe base drawer wide, sprung open",
+      "state": "moon coin + crank GONE, empty drawer floor",
+      "source": "z2-cabinet-drawer-open@{1,2,3}x (build-11 canonical)",
+      "geometry_3x": "erased moon coin (ellipse c(2712,1499) rx44 ry26) + Z-crank (rect 2778,1481,2872,1527), both kept below lit back rim; dilate4; changed bbox x2664-2876 y1469-1531",
+      "scales": [
+       "@1x 1280x640",
+       "@2x 2560x1280",
+       "@3x 3840x1920"
+      ],
+      "note": "OPTIONAL item delivered (clean); drawer already functionally hides via code. Lit back rim, drawer front/sides, astrolabe base intact; outside erase region byte-identical to base"
+     }
+    }
+   }
+  },
+  "round6_nano_spend_usd": 1.05,
+  "cumulative_level1_art_usd": 20.85
+ },
+ "round7_band_fade": {
+  "date": "2026-07-17",
+  "branch": "build-12-round6-fixes",
+  "item": "R7-002 - blurry/stretched scene edges (user-reported TWICE; R6-004 failed to fix)",
+  "root_cause": "build-10 ff9299d re-framed each view into the S8 dual-safe zone: content = uniform scale s + offset (ox,oy) on 3840x1920. The exposed border was filled by PIL edge-replicate padding (np.pad mode='edge') = literally stretching the boundary pixel outward, after an outpaint was rejected. R6-004 then vignetted ON TOP of that stretch, so the smeared pixels survived, merely dimmed.",
+  "user_decision": "'Try outpaint, fall back' (2026-07-16). Outpaint attempted and rejected -> clean fade shipped.",
+  "outpaint_attempt": {
+   "technique": "CROP-SCOPED strip edit - the one variant build 10 never tried (it fed the WHOLE canvas). z2-cabinet TOP band as an exact 21:9 slice y[0,1646) so the model saw mostly real content.",
+   "endpoint": "fal-ai/nano-banana-pro/edit, 4K, seed 72001, mandatory style template verbatim",
+   "result": "REJECTED. The band art itself was excellent and on-style (dark timber ceiling beams, wall + window arch continuation) - the model CAN render the extension. But it re-rendered the whole strip: cabinet reshaped, shelf/bottles moved, floor replaced, left/right bands dropped by re-framing. Registration vs the canonical interior = 21.25 mean-abs with NO alignment optimum (shift search saturates), so its invented ceiling belongs to its own wall geometry and cannot meet our seam.",
+   "architectural_root_cause": "nano-banana-pro/edit is NOT a masked inpaint: no mask parameter, and refs are downscaled to 1536px max side, so byte-identical interior preservation is impossible IN PRINCIPLE. This is a property of the endpoint, not of the prompt.",
+   "cumulative_cost_of_this_rejected_approach_usd": 2.4,
+   "attempts_to_date": "8 (build-10 waveA 3x + waveB 3x + job-test2 prefill 1x = $2.10; build-12 crop-scoped 1x = $0.30)",
+   "DO_NOT_RETRY": "Border outpaint on these plates has now failed 8/8 across 3 distinct framings. The only route that could work is adopting a re-rendered plate WHOLESALE and re-deriving every hotspot rect, overlay and close-up for that view - a full per-view re-roll, far beyond the remaining cap.",
+   "archive": "specs/assets/level-1/_rejects/R7-002-outpaint-probe/ (+ README.md)",
+   "cost_usd": 0.3
+  },
+  "shipped_method": {
+   "tool": "specs/tools/band_fade_r7.py (committed, deterministic, $0 PIL)",
+   "fill": "band pixels ERASED and rebuilt: ~120px falloff from the content seam (GAMMA 1.5), then literal #000 for the remainder of the band. The falloff runs from the true edge pixel (C0-continuous, no hard cut) through a 16px feather into a low-frequency field blurred at radius 110, which destroys ALL structure. No grain, no dither (verified no contouring: 62 distinct levels across the ramp, mean step 0.305/row).",
+   "scope": "ALL FOUR EDGES of every re-framed view - not just top/bottom. This is why R6-004 failed. z1-hearth added 2026-07-17 on Producer decision (see hearth_addendum).",
+   "band_geometry_source": "the applied build-10 transform (authoritative + visually confirmed: seam sits exactly at x=430 on the bench, x=630 on the cabinet). NOT a streak/darkness detector - that detector only sees the dark CLIPPED part of the band, reports 0 on left/right where the smear is worst but not dark enough to clip, and reports phantom bands on soft close-ups.",
+   "plates": 35,
+   "files": 105,
+   "cost_usd": 0.0
+  },
+  "true_band_geometry_at_3x": {
+   "z1/v-hearth": {
+    "L": 86,
+    "T": 86,
+    "R": 87,
+    "B": 0
+   },
+   "z1/v-study": {
+    "L": 538,
+    "T": 240,
+    "R": 0,
+    "B": 29
+   },
+   "z1/v-entry": {
+    "L": 425,
+    "T": 250,
+    "R": 573,
+    "B": 249
+   },
+   "z2/v-bench": {
+    "L": 430,
+    "T": 163,
+    "R": 223,
+    "B": 163
+   },
+   "z2/v-cabinet": {
+    "L": 630,
+    "T": 288,
+    "R": 522,
+    "B": 288
+   },
+   "z3/v-cellar": {
+    "L": 445,
+    "T": 173,
+    "R": 246,
+    "B": 173
+   }
+  },
+  "verification": {
+   "interior_byte_identical": "PASS 31/31 vs git HEAD - only pixels strictly OUTSIDE the content rect are ever assigned",
+   "smear_removed": "PASS - structure measured on the axis the smear PRESERVED: top-band horizontal detail 0.55-1.24 -> 0.006-0.016; left-band vertical detail 1.10-1.21 -> 0.001-0.005 (~100x)",
+   "pure_black_coverage": "52-75% of every band is exactly #000; outermost row and column are exactly 0",
+   "base_variant_band_identical": "PASS 31/31 - band computed ONCE per view from the BASE and composited onto every variant, so the band diff between base and variant is EXACTLY 0 by construction",
+   "latent_bug_fixed": "reframe_b10.py drew grain from ONE rolling rng across plates, so base and variant bands had DIFFERENT noise (18 of 22 variants mismatched their base). The auto-derived overlay rects could pick that band noise up as a 'difference'. Now byte-identical.",
+   "seam_safe": "every variant is byte-identical to its base in the 20px ring just inside the content rect (maxdiff=0, all 31 plates), so one shared band per view is provably seam-correct"
+  },
+  "excluded": {
+   "z1/v-hearth": "NO LONGER EXCLUDED - swept 2026-07-17 on Producer decision. See hearth_addendum.",
+   "z1/v-hearth/cu-lintel": "FALSE POSITIVE - excluded. No edge band exists. dy/dx ratio is 0.6-0.9 THROUGHOUT; only row y=0 is a 1px artifact. The plate is uniformly SOFT (detail ~0.5 vs ~1.4 on sharp content), and the apparent left-edge 'streaks' are the lintel beam's WOOD GRAIN. The 394/208 reading came from a detector that counts consecutive rows with mean diff < 1.5, which on a soft dark close-up runs for hundreds of rows - it measures softness, not smear. Fading 394+208px would have blacked out half of a puzzle-load-bearing clue (FIRE triangle + numeral II).",
+   "z1/v-study/cu-flowerpot": "FALSE POSITIVE - excluded. Same cause; only row y=0 is a 1px duplicate (dy=0.004).",
+   "z4/v-alcove": "never re-framed, no band (confirmed)",
+   "other_cu_closeups": "measured clean"
+  },
+  "observations_for_producer": {
+   "cu-lintel_ghost_rect": "NOT R7-002 and NOT fixed: cu-lintel has a visible translucent RECTANGLE around the FIRE triangle (a region-edit composite artifact with slightly different exposure), and the whole plate is soft/low-detail. It is a puzzle clue. Flagging for a separate decision.",
+   "cabinet_inset": "z2-cabinet content occupies only 70% of the canvas (s=0.70), so an honest fade necessarily yields a wide black frame (30% of width). If the user dislikes the inset look, the fix is the re-frame/aspect handling (Developer-side), not the band art.",
+   "hearth_rug_moved_tone": "RE-SURFACED (pre-existing, NOT introduced here, out of scope): z1-hearth-rug-moved is globally warmer/brighter than z1-hearth-base - 71.1% of interior pixels differ, mean 23.61. It is staged as a full background plate, so the base -> rug-moved state swap will visibly flash in tone. Flagged in build 10 as a build-3 full-frame-edit artifact and still unfixed; it is also why every diff bbox involving that plate is already maximal."
+  },
+  "spend_this_item_usd": 0.3,
+  "cumulative_level1_art_usd": 21.15,
+  "cap_usd": 23.0,
+  "headroom_remaining_usd": 1.85,
+  "hearth_addendum": {
+   "date": "2026-07-17",
+   "decision": "Producer: fix z1-hearth too. It carries the same defect (86px band); once the other five views were cleanly faded, leaving the hearth smeared made it the one inconsistent scene, and this bug class has already been reported twice because each pass was scoped too narrowly. $0.",
+   "plates_covered": [
+    "z1-hearth-base",
+    "z1-hearth-poker-taken",
+    "z1-hearth-rug-moved",
+    "z1-hearth-trapdoor-open"
+   ],
+   "close_ups_excluded": "All 10 cu-* plates in v-hearth measured band-free (top dx/dy 0.91-1.57, left dy/dx 0.74-1.71; a real smear band reads >>3). cu-ash-undisturbed / cu-ash-sifted / cu-ash-ring-taken / cu-bellows / cu-clock-unspent / cu-clock-pop / cu-clock-spent / cu-dial-panel / cu-trapdoor-open / cu-lintel. cu-lintel exclusion stands per Producer.",
+   "rug_moved_exception": {
+    "what": "z1-hearth-rug-moved derives its band from ITSELF, not from the shared base band. It is the only plate in the level with this exception.",
+    "why": "Its ring differs from the base by mean 27.9 / max 216 - the pre-existing global tone diff from a build-3 full-frame edit, already flagged in build10_reframe.gates.variant_alignment. MEASURED counterfactual: forcing the shared band gives a left seam step of 27.82 and top 15.54 = a visible hairline around the frame. Its own band gives 2.89 / 1.28, matching the other three plates (3.05 / 1.08).",
+    "why_this_costs_nothing": "build_game_assets.py stages rug-moved as a FULL background plate (save_plate -> z1-hearth-rug-moved.jpg), so its seam is seen directly by the player. And band identity buys nothing for rect derivation on this plate: its INTERIOR already differs from the base across 71.1% of pixels (mean 23.61), and trapdoor-open-vs-rug-moved (the pair that feeds ov-trapdoor-open) already differs across 70.5% (mean 22.78) - those diff bboxes are already maximal with or without an identical band.",
+    "band_identity_preserved_where_it_matters": "base / poker-taken / trapdoor-open all have ring maxdiff=0 and share ONE byte-identical band. trapdoor-open vs base is a genuine LOCAL diff (14.1% of px > 8), so band identity matters for that pair and is preserved exactly.",
+    "note_poker_taken": "z1-hearth-poker-taken is no longer consumed (R5-001 synthesizes ov-poker-taken from the base), but the plate was swept anyway so the source set is uniform."
+   },
+   "verification": {
+    "interior_byte_identical": "PASS 4/4 vs git HEAD",
+    "smear_removed": "PASS - top-band horizontal detail 0.83-1.03 -> 0.012-0.013; left-band vertical detail 1.11-1.12 -> 0.029-0.031",
+    "band_identical_to_base": "PASS for base/poker-taken/trapdoor-open; rug-moved by design uses its own band (justified above)",
+    "outer_row_col_pure_black": "PASS 4/4",
+    "seam_step": "1.08-1.28 top / 2.89-3.05 left on all 4 plates",
+    "scales": "PASS 4/4 @1x 1280x640, @2x 2560x1280, @3x 3840x1920"
+   },
+   "cost_usd": 0.0
+  }
  }
 }

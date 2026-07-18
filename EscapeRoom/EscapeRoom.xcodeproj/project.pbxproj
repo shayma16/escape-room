@@ -37,6 +37,7 @@
 		B866D936880CC13B4F75A8AB /* SpriteKitContainerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4C517A0FFBB7B1C1B8B5F4D5 /* SpriteKitContainerView.swift */; };
 		E4E7AC3FC3B4FC0DDB9D85F9 /* PuzzleEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30DA02CBB2F8E11CDA407A87 /* PuzzleEngineTests.swift */; };
 		AB12CD34EF56AB78CD90EF12 /* QALevelFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB12CD34EF56AB78CD90EF11 /* QALevelFlowTests.swift */; };
+		AB12CD34EF56AB78CD90EF22 /* RenderedFrameOverlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB12CD34EF56AB78CD90EF21 /* RenderedFrameOverlayTests.swift */; };
 		AA20000000000000000000B1 /* CloseUps.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000000000000000000A1 /* CloseUps.swift */; };
 		AA20000000000000000000B2 /* CloseUpView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA20000000000000000000A2 /* CloseUpView.swift */; };
 		AA40000000000000000000B1 /* NavChevron.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA40000000000000000000A1 /* NavChevron.swift */; };
@@ -80,6 +81,7 @@
 		4C517A0FFBB7B1C1B8B5F4D5 /* SpriteKitContainerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpriteKitContainerView.swift; sourceTree = "<group>"; };
 		30DA02CBB2F8E11CDA407A87 /* PuzzleEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleEngineTests.swift; sourceTree = "<group>"; };
 		AB12CD34EF56AB78CD90EF11 /* QALevelFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QALevelFlowTests.swift; sourceTree = "<group>"; };
+		AB12CD34EF56AB78CD90EF21 /* RenderedFrameOverlayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RenderedFrameOverlayTests.swift; sourceTree = "<group>"; };
 		AA20000000000000000000A1 /* CloseUps.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloseUps.swift; sourceTree = "<group>"; };
 		AA20000000000000000000A2 /* CloseUpView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloseUpView.swift; sourceTree = "<group>"; };
 		AA40000000000000000000A1 /* NavChevron.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavChevron.swift; sourceTree = "<group>"; };
@@ -212,6 +214,7 @@
 			children = (
 				30DA02CBB2F8E11CDA407A87 /* PuzzleEngineTests.swift */,
 				AB12CD34EF56AB78CD90EF11 /* QALevelFlowTests.swift */,
+				AB12CD34EF56AB78CD90EF21 /* RenderedFrameOverlayTests.swift */,
 			);
 			path = EscapeRoomTests;
 			sourceTree = "<group>";
@@ -381,6 +384,7 @@
 			files = (
 				E4E7AC3FC3B4FC0DDB9D85F9 /* PuzzleEngineTests.swift in Sources */,
 				AB12CD34EF56AB78CD90EF12 /* QALevelFlowTests.swift in Sources */,
+				AB12CD34EF56AB78CD90EF22 /* RenderedFrameOverlayTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

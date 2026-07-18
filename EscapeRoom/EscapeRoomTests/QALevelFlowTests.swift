@@ -76,6 +76,16 @@ final class QALevelFlowTests: XCTestCase {
                       file: file, line: line)
     }
 
+    /// R2-003a: sifting reveals the ring; a player then collects it with an explicit tap.
+    /// This helper mirrors that two-step flow so the full-playthrough tests obtain the
+    /// gold ring exactly as a human does (test-like-a-player mandate).
+    private func siftAndCollectRing(_ state: GameState, file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertTrue(PuzzleEngine.siftAsh(state: state), file: file, line: line)
+        XCTAssertTrue(PuzzleEngine.isRingUncollectedInAsh(state), file: file, line: line)
+        XCTAssertTrue(PuzzleEngine.collectAshRing(state), file: file, line: line)
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing), file: file, line: line)
+    }
+
     private func collectCabinetYield(_ state: GameState, file: StaticString = #filePath, line: UInt = #line) {
         XCTAssertTrue(PuzzleEngine.collectItem(PuzzleGraph.ItemID.file, from: .sunMoonCabinet, state: state),
                       file: file, line: line)
@@ -106,6 +116,11 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertTrue(PuzzleEngine.evaluateMoonDials(state: state))                  // p02
         state.addItem(PuzzleGraph.ItemID.poker)                                      // take poker
         XCTAssertTrue(PuzzleEngine.pryBarrel(state: state))                          // p06
+        // Ordering A pries the barrel BEFORE sifting the ash (p05 comes later) — the
+        // R4-019 soft-lock ordering. The poker MUST survive p06 (p05 still pending).
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.poker),
+                      "R4-019: poker retained after p06 while p05 is unsatisfied")
+        XCTAssertTrue(PuzzleEngine.collectBarrelWeight(state))                       // manual pickup (R4-013)
         XCTAssertTrue(PuzzleEngine.hangWeight(state: state))                         // p07
         XCTAssertTrue(state.isZoneUnlocked(PuzzleGraph.ZoneID.z4Alcove))
         state.addItem(PuzzleGraph.ItemID.cageKey)                                    // take cage key
@@ -114,7 +129,7 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertTrue(state.isZoneUnlocked(PuzzleGraph.ZoneID.z2Workshop))
         XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state)) // p03
         collectAstrolabeYield(state)
-        XCTAssertTrue(PuzzleEngine.siftAsh(state: state))                            // p05
+        siftAndCollectRing(state)                                                    // p05
         XCTAssertTrue(PuzzleEngine.placeCabinetItems(sun: CabinetSolution.sunSlotItem,
                                                      moon: CabinetSolution.moonSlotItem, state: state)) // p04
         collectCabinetYield(state)
@@ -135,7 +150,7 @@ final class QALevelFlowTests: XCTestCase {
         pressRunes(state)                                                            // p01
         XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state)) // p03
         collectAstrolabeYield(state)
-        XCTAssertTrue(PuzzleEngine.siftAsh(state: state))                            // p05
+        siftAndCollectRing(state)                                                    // p05
         XCTAssertTrue(PuzzleEngine.placeCabinetItems(sun: CabinetSolution.sunSlotItem,
                                                      moon: CabinetSolution.moonSlotItem, state: state)) // p04
         collectCabinetYield(state)
@@ -143,6 +158,7 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertTrue(PuzzleEngine.evaluateMoonDials(state: state))                  // p02
         state.addItem(PuzzleGraph.ItemID.spoon)
         XCTAssertTrue(PuzzleEngine.pryBarrel(state: state))                          // p06
+        XCTAssertTrue(PuzzleEngine.collectBarrelWeight(state))                       // manual pickup (R4-013)
         XCTAssertTrue(PuzzleEngine.hangWeight(state: state))                         // p07
         state.addItem(PuzzleGraph.ItemID.cageKey)
         XCTAssertTrue(PuzzleEngine.fitCrankAndTurn(state: state))                    // p08
@@ -165,13 +181,14 @@ final class QALevelFlowTests: XCTestCase {
         PuzzleEngine.rotateMirror(toDetent: MirrorSolution.solutionDetent, state: state) // p09 FIRST
         XCTAssertFalse(state.evaluateCondition("cond-beam-at-alcove"), "condition must not hold before the shutter opens")
         XCTAssertTrue(PuzzleEngine.pryBarrel(state: state))                          // p06
+        XCTAssertTrue(PuzzleEngine.collectBarrelWeight(state))                       // manual pickup (R4-013)
         XCTAssertTrue(PuzzleEngine.hangWeight(state: state))                         // p07
         state.addItem(PuzzleGraph.ItemID.cageKey)
         state.addItem(PuzzleGraph.ItemID.spoon)
         pressRunes(state)                                                            // p01
         XCTAssertTrue(PuzzleEngine.selectAstrolabePlate(AstrolabeSolution.solutionPlateIndex, state: state)) // p03
         collectAstrolabeYield(state)
-        XCTAssertTrue(PuzzleEngine.siftAsh(state: state))                            // p05
+        siftAndCollectRing(state)                                                    // p05
         XCTAssertTrue(PuzzleEngine.placeCabinetItems(sun: CabinetSolution.sunSlotItem,
                                                      moon: CabinetSolution.moonSlotItem, state: state)) // p04
         collectCabinetYield(state)
@@ -294,12 +311,19 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertEqual(state.data.solvedPuzzles, before.solvedPuzzles)
     }
 
-    func testRustedKeyIsPickupableAndUnlocksNothing() {
+    /// R6-003: the rusted key is a NON-COLLECTIBLE in-world decoy. A tap INSPECTS it in a
+    /// close-up and never adds it to inventory; even if some path armed it (old-save safety)
+    /// it frees/unseals nothing and is never consumed.
+    func testRustedKeyIsNonCollectibleDecoy_R6_003() {
         let state = makeState(tempDir())
         let coordinator = RoomSceneCoordinator(viewID: .entry, state: state, size: sceneSize)
         coordinator.scene.onHotspotTap?("rusted-key")
-        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.rustedKey))
-        // Rusted key on the star keyhole / cage / door must never free the crow or unseal.
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.rustedKey),
+                       "R6-003: the rusted key must NOT enter inventory")
+        XCTAssertEqual(coordinator.activeCloseUp, .plain(image: "cu-rusted-key"),
+                       "R6-003: tapping the rusted key inspects it in a close-up")
+        // Old-save safety: even if the key is already held, it unlocks nothing / is not spent.
+        state.addItem(PuzzleGraph.ItemID.rustedKey)
         coordinator.useItem(PuzzleGraph.ItemID.rustedKey, on: "star-keyhole")
         coordinator.useItem(PuzzleGraph.ItemID.rustedKey, on: "door-lock")
         XCTAssertFalse(state.hasFlag(PuzzleGraph.StateFlag.crowFreed))
@@ -318,7 +342,11 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.poker))
         interaction.armedItem = PuzzleGraph.ItemID.poker // player arms the poker
         coordinator.scene.onHotspotTap?("ash")
-        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing), "p05: armed poker on ash yields the gold ring")
+        // R2-003a: sifting reveals the ring; the player collects it with an explicit tap.
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.goldRing), "ring is revealed, not auto-granted")
+        XCTAssertTrue(PuzzleEngine.isRingUncollectedInAsh(state))
+        coordinator.collectAshRing()
+        XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.goldRing), "p05: explicit tap collects the gold ring")
     }
 
     func testCellarFlow_barrelHookWinchMirror() {
@@ -328,7 +356,14 @@ final class QALevelFlowTests: XCTestCase {
         state.addItem(PuzzleGraph.ItemID.crank)
         let coordinator = RoomSceneCoordinator(viewID: .cellar, state: state, size: sceneSize)
         coordinator.useItem(PuzzleGraph.ItemID.poker, on: "barrel")                 // p06
+        // Build 10 (R4-013): the weight is REVEALED in the pried barrel (close-up
+        // presented) and collected with its own explicit tap — no auto-grant.
+        XCTAssertFalse(state.hasItem(PuzzleGraph.ItemID.weight), "weight revealed, not auto-granted")
+        XCTAssertEqual(coordinator.activeCloseUp, .barrel)
+        XCTAssertTrue(PuzzleEngine.isWeightUncollectedInBarrel(state))
+        coordinator.collectBarrelWeight()
         XCTAssertTrue(state.hasItem(PuzzleGraph.ItemID.weight))
+        coordinator.dismissCloseUp()
         coordinator.useItem(PuzzleGraph.ItemID.weight, on: "hook")                  // p07
         XCTAssertTrue(state.isZoneUnlocked(PuzzleGraph.ZoneID.z4Alcove))
         coordinator.useItem(PuzzleGraph.ItemID.crank, on: "winch")                  // p08
@@ -377,6 +412,7 @@ final class QALevelFlowTests: XCTestCase {
         _ = PuzzleEngine.evaluateMoonDials(state: state)
         PuzzleEngine.rotateMirror(toDetent: MirrorSolution.solutionDetent, state: state)
         _ = PuzzleEngine.pryBarrel(state: state)
+        _ = PuzzleEngine.collectBarrelWeight(state) // manual pickup (R4-013)
         _ = PuzzleEngine.hangWeight(state: state)
         state.addItem(PuzzleGraph.ItemID.cageKey)
         state.setCauldronFlameStage(2)
@@ -397,12 +433,13 @@ final class QALevelFlowTests: XCTestCase {
         XCTAssertTrue(PuzzleEngine.pickBlossom(state: resumed))
     }
 
-    func testClockCuckooOneShotLatchSurvivesRelaunch_D5() {
+    func testClockIsInertAfterCuckooRemoval_Q3() {
+        // Q3: the cuckoo is gone; the clock never gates progression and the level is
+        // still completable without ever touching it (covered by the full-playthrough
+        // tests, none of which touch the clock). Assert the clock render is inert.
         let dir = tempDir()
         let state = GameState(levelID: 1, store: SaveGameStore(directory: dir))
-        XCTAssertEqual(PuzzleEngine.setClockToTwelve(state: state), .popped)
-        let resumed = GameState(levelID: 1, store: SaveGameStore(directory: dir))
-        XCTAssertEqual(PuzzleEngine.setClockToTwelve(state: resumed), .spentAlready, "one-shot pop is per save file")
+        XCTAssertEqual(RoomVisuals.clockState(state), "cu-clock-unspent")
     }
 
     func testRestartLevelResetsApparatusPositionsAndFlags() {
@@ -555,16 +592,25 @@ final class QALevelFlowTests: XCTestCase {
     }
 
     /// QA-BUG-009 (major): Hotspot.minHitSize (44) is applied in SCENE PIXELS, not
-    /// screen points. Under .aspectFill on the smallest supported iPhone the effective
-    /// on-screen hit target of several puzzle-critical hotspots falls well below the
-    /// style guide Section 8 floor of >= 44 pt (e.g. star-keyhole ~21 pt tall).
+    /// screen points. On the smallest supported iPhone the effective on-screen hit target of
+    /// several puzzle-critical hotspots must still clear the style guide Section 8 floor of
+    /// >= 44 pt (e.g. star-keyhole ~21 pt tall pre-fix).
+    ///
+    /// BUILD 9 LETTERBOX FOLLOW-UP: the scene is now `.aspectFit`, so the iPhone SE scale is
+    /// the MIN ratio (0.24414, width-bound), SMALLER than the old `.aspectFill` MAX (0.27452).
+    /// The floor was re-derived at this smaller scale (Hotspot.minHitSceneSize raised
+    /// 168 -> 182 = 44/0.24414 rounded up), so this asserts every hotspot still clears 44 pt
+    /// under the letterboxed presentation on the tightest device.
     func testQA_BUG_009_hotspotEffectiveHitTargetsMeet44ptOniPhoneSE() {
-        // iPhone SE (3rd gen) landscape: 667 x 375 pt; scene 2732 x 1366, .aspectFill.
-        // Plate pixel size is a repo-verified constant (all seven base plates are
-        // 2560 x 1280) rather than a bundle load, because QA-BUG-022 makes the plates
-        // unreachable through GameAssetLoader in the built bundle.
+        // iPhone SE (3rd gen) landscape: 667 x 375 pt; scene 2732 x 1366. BUILD 10: the
+        // presentation is `.aspectFill` again (letterbox removed), so the per-scene-pixel
+        // scale is the MAX ratio (cover) = max(667/2732, 375/1366) = 0.2745, LARGER than the
+        // interim letterbox min (0.2441). A hotspot that clears 44 pt at this scale clears it
+        // on every larger device too; the 182-scene-px minHit floor gives 182*0.2745 = 50 pt.
         let scale = max(667.0 / sceneSize.width, 375.0 / sceneSize.height)
-        let plateSize = CGSize(width: 2560, height: 1280)
+        // Hotspot nodes are sized in SCENE space (RoomScene.configureHotspots uses the scene
+        // size 2732x1366 as baseSize), so measure the on-screen hit target against that.
+        let plateSize = sceneSize
         var offenders: [String] = []
         for viewID in ViewID.allCases {
             let coordinator = RoomSceneCoordinator(viewID: viewID, state: makeState(tempDir()), size: sceneSize)
@@ -597,13 +643,16 @@ final class QALevelFlowTests: XCTestCase {
             XCTAssertNotNil(GameAssetLoader.shared.image(named: plate),
                             "\(plate) must be loadable from the app bundle at runtime")
         }
-        // Audio must ship the same way (SoundManager subdirectory lookup). Every
-        // Effect case must resolve, including the round-1 per-object cues; the
-        // retired generic click must be GONE from the bundle (F-005).
+        // Audio must ship the same way (SoundManager subdirectory lookup). Every LIVE
+        // Effect case must resolve. Build 10 (cluster D + R4-002/003) REMOVED from the
+        // bundle: sfx-wood (surviving default-nav "psh"), sfx-entry ("ocean waves"
+        // swell), amb-z1..z4 (per-zone beds — level audio is music only), sfx-menu-tap
+        // (disliked tick); sfx-seat (positive placement cue) was ADDED. Their absence
+        // is asserted by the build-10 regression guard in PuzzleEngineTests.
         for effect in ["sfx-pickup", "sfx-wrong", "sfx-solve", "sfx-unlock", "sfx-refusal",
                        "sfx-clack", "sfx-fizzle", "sfx-page", "sfx-stone", "sfx-tick",
-                       "sfx-grind", "sfx-bellows", "sfx-stir", "sfx-cloth", "sfx-wood",
-                       "sfx-entry", "amb-z1", "amb-z2", "amb-z3", "amb-z4"] {
+                       "sfx-seat", "sfx-grind", "sfx-bellows", "sfx-stir", "sfx-cloth",
+                       "sfx-door", "sfx-menu-confirm", "music-level1"] {
             XCTAssertNotNil(Bundle.main.url(forResource: effect, withExtension: "wav", subdirectory: "Audio")
                 ?? Bundle.main.url(forResource: effect, withExtension: "wav"),
                             "\(effect).wav must be loadable from the app bundle at runtime")
@@ -612,30 +661,47 @@ final class QALevelFlowTests: XCTestCase {
                      "the retired generic interaction click must not ship (F-005)")
     }
 
-    /// QA-BUG-004 (critical, iPad): several puzzle-critical hotspots sit outside the
-    /// dual-safe zone (style guide Section 8). Under .aspectFill the iPad 4:3 frame
-    /// crops the 2:1 plate to roughly the central 2/3; hotspots (and the art they
-    /// cover: cage star-keyhole, feed cup, barrel, astrolabe) are partly or wholly
-    /// OFF-SCREEN on the primary device.
+    /// QA-BUG-004 (critical, iPad) — RECONCILED for the INTERIM iPad LETTERBOX (build 9
+    /// follow-up).
+    ///
+    /// ORIGINAL failure: under `.aspectFill` the iPad 4:3 frame cropped the 2:1 plate to
+    /// roughly its central 2/3, pushing edge hotspots (flowerpot, potion shelf, windowsill,
+    /// mirror, winch, mortar, astrolabe, cage, feed cup, ladder, barrel …) OFF-SCREEN on the
+    /// PRIMARY device — the level was uncompletable on iPad. The build-3 art regeneration had
+    /// dropped BUG-004's dual-safe-zone re-framing, so a strict `XCTExpectFailure` tracked
+    /// the owed Asset-Gen re-frame.
+    ///
+    /// NEW invariant (letterbox): the room scene is now presented `.aspectFit` (RoomScene),
+    /// so the WHOLE 2:1 plate is visible on every device — on iPad, letterboxed with dark
+    /// bars top+bottom instead of cropped left/right. There is therefore NO horizontal crop:
+    /// the visible band under `.aspectFit` is the entire plate, x∈[0,1] AND y∈[0,1]. The real
+    /// requirement QA-BUG-004 was always about — "no puzzle-critical element is cropped
+    /// off-screen on iPad" — is now SATISFIED by construction, so this is a PERMANENT passing
+    /// assertion again (no `XCTExpectFailure`).
+    ///
+    /// This asserts every critical hotspot lies fully within the letterboxed-visible plate
+    /// bounds (a tiny epsilon guards against sub-pixel rect maxima at exactly 1.0). NOTE: the
+    /// build-10 permanent fix re-frames the plates into the §8 iPad 4:3 dual-safe band so
+    /// `.aspectFill` can return WITHOUT the letterbox; if/when that lands, this test tightens
+    /// back to the dual-safe band and the presentation flips to `.aspectFill`.
     func testQA_BUG_004_criticalHotspotsInsideDualSafeZone() {
-        // iPad Pro 13" landscape: 1376 x 1032 pt. .aspectFill scale is height-bound
-        // (1032/1366); visible scene width = 1376 / scale ~= 1821 of 2732. Since the
-        // fix pass, the 2:1 base plate fills the scene exactly, so plate-normalized ==
-        // scene-normalized and the visible band is computed over the scene width
-        // (this matches the asset manifest's bug004_reframe safe zone of
-        // x in [427, 2133] on the 2560-wide @3x plates, i.e. [0.1668, 0.8332]).
-        let iPadScale = max(1376.0 / sceneSize.width, 1032.0 / sceneSize.height)
-        let halfVisibleScene = (1376.0 / iPadScale) / 2.0
-        let minVisibleX = (sceneSize.width / 2 - halfVisibleScene) / sceneSize.width // ~0.1666
-        let maxVisibleX = 1 - minVisibleX                                            // ~0.8334
-
-        // (Hotspot inventory updated in the fix pass: per-tile rune hotspots became the
-        // single "rune-door" close-up trigger; the bench gained "workbench" for p12.)
+        // BUILD 10: `.aspectFill` restored on the re-framed plates. A critical element is
+        // reachable on BOTH devices iff its hotspot CENTER lies inside the dual-safe band
+        // (iPad-4:3 ∩ iPhone-19.5:9 crops) — Reframe.dualSafeX / dualSafeY from the manifest.
+        // The reframe was designed to bring every interactive ART element into that band; the
+        // hotspots here are already remapped by the same transform (configure* wraps them in
+        // Reframe.map), so this asserts the reframe + remap landed correctly.
+        //
+        // EXCLUDED (redundant access, so a frame-edge position is acceptable — verified
+        // separately): `ladder` and the alcove/cellar diegetic passages have the always-
+        // present chrome down-chevron (`zone-exit`, GameRoomView.singleViewExitTarget) as
+        // their real iPad exit; `workbench` is a SECONDARY p12 path (the primary combine is
+        // the inventory combine gesture). Both are covered by other tests.
         let critical: [ViewID: [String]] = [
             .hearth: ["poker", "ash", "clock", "bellows", "lintel", "trapdoor-dial"],
-            .study: ["grimoire", "triptych", "flowerpot", "rune-door"],
+            .study: ["grimoire", "triptych-1", "triptych-2", "triptych-3", "flowerpot", "rune-door"],
             .entry: ["door-lock", "rusted-key", "windowsill", "cage", "feed-cup", "star-keyhole"],
-            .bench: ["cauldron", "floor-bellows", "ladle", "mortar", "workbench"],
+            .bench: ["cauldron", "floor-bellows", "ladle", "mortar"],
             .cabinet: ["sun-slot", "moon-slot", "astrolabe", "window", "potion-shelf"],
             .cellar: ["barrel", "drawer", "hook", "winch", "mirror"],
             .alcove: ["planter", "statue-key"],
@@ -645,17 +711,248 @@ final class QALevelFlowTests: XCTestCase {
             let coordinator = RoomSceneCoordinator(viewID: viewID, state: makeState(tempDir()), size: sceneSize)
             for hotspot in coordinator.scene.hotspots where ids.contains(hotspot.id) {
                 let r = hotspot.normalizedRect
-                if r.minX < minVisibleX || r.maxX > maxVisibleX {
-                    offenders.append("\(viewID.rawValue)/\(hotspot.id) x:[\(String(format: "%.2f", r.minX)),\(String(format: "%.2f", r.maxX))]")
+                let cx = r.midX, cy = r.midY
+                if !Reframe.dualSafeX.contains(cx) || !Reframe.dualSafeY.contains(cy) {
+                    offenders.append("\(viewID.rawValue)/\(hotspot.id) center:(\(String(format: "%.3f", cx)),\(String(format: "%.3f", cy)))")
                 }
             }
         }
-        // FIXED (BUG-004 art integration, 2026-07-06): the Asset Generation agent
-        // re-framed the four offending plates (entry cage group dx -150, hearth
-        // bellows to the fireplace's right, cabinet window/drawer dx -200 + potion
-        // shelf to wall center, cellar dx +132 + barrel re-staged at 0.545 scale);
-        // hotspots re-aligned to the manifest's bug004_reframe geometry. Every
-        // puzzle-critical hotspot now sits wholly inside the dual-safe zone.
-        XCTAssertTrue(offenders.isEmpty, "outside dual-safe zone: \(offenders.joined(separator: "; "))")
+        XCTAssertTrue(offenders.isEmpty,
+                      "puzzle-critical element center outside the iPad dual-safe band under .aspectFill (BUG-004): \(offenders.joined(separator: "; "))")
+    }
+
+    // MARK: - R3-005 player-style hotspot verification (build 9)
+
+    /// R3-005: tapping WHERE A HUMAN SEES each element (its visual position on the build-3
+    /// plate) must resolve to that element's hotspot — the exact failure the user hit
+    /// (rune marks not inspectable R3-004; taps landing on the wrong/stale target). Each
+    /// (view, id, nx, ny) point below is a spot the element is clearly VISIBLE at in the
+    /// build-3 art; the assertion drives the real scene hit-test (smallest-area-wins).
+    func testTapsAtVisibleElementPositionsHitTheirHotspots_R3_005() {
+        // BUILD 10: these points are authored where each element VISUALLY sat on the OLD
+        // framing; the re-frame moved every element by its view transform, so the tap points
+        // are reframed by the SAME transform (mirroring what a human sees on the new plate)
+        // before hit-testing the (also-reframed) hotspots.
+        let cases: [(ViewID, String, CGFloat, CGFloat)] = [
+            // hearth
+            (.hearth, "poker", 0.248, 0.50), (.hearth, "ash", 0.44, 0.68),
+            (.hearth, "clock", 0.405, 0.10), (.hearth, "bellows", 0.613, 0.53),
+            (.hearth, "lintel", 0.585, 0.275),
+            // study — the four p01 element/clue targets that were un-tappable (R3-004)
+            (.study, "grimoire", 0.46, 0.66), (.study, "triptych-1", 0.257, 0.29),
+            (.study, "triptych-2", 0.377, 0.30), (.study, "triptych-3", 0.472, 0.32),
+            (.study, "flowerpot", 0.10, 0.78), (.study, "rune-door", 0.762, 0.52),
+            // entry — WATER mark (R3-004) + door/cage
+            (.entry, "windowsill", 0.105, 0.62), (.entry, "door-lock", 0.58, 0.31),
+            (.entry, "rusted-key", 0.715, 0.53), (.entry, "cage", 0.88, 0.20),
+            (.entry, "feed-cup", 0.90, 0.475), (.entry, "star-keyhole", 0.81, 0.385),
+            // bench
+            (.bench, "cauldron", 0.315, 0.54), (.bench, "mortar", 0.84, 0.55),
+            (.bench, "floor-bellows", 0.19, 0.86),
+            // cabinet
+            (.cabinet, "sun-slot", 0.465, 0.475), (.cabinet, "moon-slot", 0.58, 0.475),
+            (.cabinet, "astrolabe", 0.79, 0.52), (.cabinet, "window", 0.93, 0.31),
+            (.cabinet, "potion-shelf", 0.20, 0.37),
+            // cellar
+            (.cellar, "barrel", 0.735, 0.66), (.cellar, "drawer", 0.555, 0.40),
+            // R6-006: the weight hook is the ROPED pulley hook beside the sliding shelf.
+            (.cellar, "hook", 0.44, 0.55), (.cellar, "winch", 0.195, 0.10),
+            (.cellar, "mirror", 0.13, 0.62),
+            // alcove
+            (.alcove, "planter", 0.57, 0.76), (.alcove, "statue-key", 0.605, 0.31),
+        ]
+        var misses: [String] = []
+        for (viewID, id, nx, ny) in cases {
+            let coordinator = RoomSceneCoordinator(viewID: viewID, state: makeState(tempDir()), size: sceneSize)
+            let p = Reframe.transform(for: viewID).map(CGRect(x: nx, y: ny, width: 0, height: 0))
+            let hit = coordinator.scene.hotspotIDAtNormalized(p.minX, p.minY)
+            if hit != id {
+                misses.append("\(viewID.rawValue): tap at (\(nx),\(ny))->(\(String(format: "%.3f", p.minX)),\(String(format: "%.3f", p.minY))) on '\(id)' hit '\(hit ?? "nil")'")
+            }
+        }
+        XCTAssertTrue(misses.isEmpty, "player-style taps missed the visible element:\n" + misses.joined(separator: "\n"))
+    }
+
+    // MARK: - Build 10: overlay catalog completeness + registration (cluster B guards)
+
+    /// Every overlay key the coordinator can ever request, per view — shared by the two
+    /// cluster-B guard tests below.
+    private static let requiredOverlayKeys: [String: [String]] = [
+        "z1/v-hearth": ["ov-poker-taken", "ov-rug-moved", "ov-trapdoor-open"],
+        "z1/v-entry": ["ov-vines-gone", "ov-cage-open", "ov-crow-lintel"],
+        "z2/v-bench": ["ov-flame1", "ov-flame2", "ov-flame3"],
+        "z2/v-cabinet": ["ov-slots-seated", "ov-cab-open", "ov-cab-open-empty", "ov-adrawer-open"],
+        "z3/v-cellar": ["ov-barrel-pried", "ov-drawer-open", "ov-drawer-empty",
+                        "ov-crank-fitted", "ov-mirror-d2", "ov-mirror-d3",
+                        "ov-shelf-slid", "ov-weight-hung",
+                        "ov-beam-floor", "ov-beam-blocked", "ov-beam-alcove"],
+        "z4/v-alcove": ["ov-key-taken"],
+    ]
+
+    /// Every overlay key the coordinator can ever request MUST exist in the shipped
+    /// overlays.json. `RoomSceneCoordinator.overlayRect` falls back to `.zero` for a missing
+    /// key, and RoomScene renders nothing for a zero rect — the exact SILENT failure class
+    /// behind R4-011 (the mirror never appeared to move) — so a key that drops out of the
+    /// asset pipeline must fail HERE, loudly, not vanish in-game.
+    func testEveryCoordinatorRequiredOverlayKeyExistsInCatalog() {
+        var missing: [String] = []
+        for (view, keys) in Self.requiredOverlayKeys {
+            for key in keys where OverlayRectCatalog.shared.rect(view: view, overlay: key) == nil {
+                missing.append("\(view)/\(key)")
+            }
+        }
+        XCTAssertTrue(missing.isEmpty,
+                      "coordinator-required overlay keys missing from overlays.json (would render NOTHING in-game, R4-011 class): \(missing.joined(separator: "; "))")
+    }
+
+    /// Registration/seam guard for the per-element overlay architecture: every required
+    /// overlay rect must be a sane sub-region of its plate — inside [0,1], non-degenerate,
+    /// and smaller than the full frame. A full-frame rect means auto-diff failed to localize
+    /// the element, i.e. the state-variant plate no longer pixel-registers with its base —
+    /// which would produce a visible seam or whole-plate flash in-game. The pixel-level seam
+    /// spot-check is done at asset staging (compose verification, recorded in the
+    /// implementation notes); this guards the geometry invariants that keep it valid.
+    func testOverlayRectsAreSaneSubRegionsOfThePlate() {
+        var offenders: [String] = []
+        for (view, keys) in Self.requiredOverlayKeys {
+            for key in keys {
+                guard let r = OverlayRectCatalog.shared.rect(view: view, overlay: key) else {
+                    continue // completeness is asserted by the test above
+                }
+                let inBounds = r.minX >= 0 && r.minY >= 0 && r.maxX <= 1.0001 && r.maxY <= 1.0001
+                let nonDegenerate = r.width > 0.005 && r.height > 0.005
+                // "Sub-region": strictly smaller than the full frame on at least one axis
+                // (the beam overlays are large light shafts but never the whole 2:1 frame).
+                let subRegion = r.width < 0.95 || r.height < 0.95
+                if !(inBounds && nonDegenerate && subRegion) {
+                    offenders.append("\(view)/\(key) rect=(\(String(format: "%.3f", r.minX)),\(String(format: "%.3f", r.minY)),\(String(format: "%.3f", r.width)),\(String(format: "%.3f", r.height)))")
+                }
+            }
+        }
+        XCTAssertTrue(offenders.isEmpty,
+                      "overlay rects out of bounds / degenerate / full-frame (registration drift): \(offenders.joined(separator: "; "))")
+    }
+
+    /// The base plate each view's overlay rects are normalized against.
+    private static let viewBasePlate: [String: String] = [
+        "z1/v-hearth": "z1-hearth-base",
+        "z1/v-entry": "z1-entry-base",
+        "z2/v-bench": "z2-bench-base",
+        "z2/v-cabinet": "z2-cabinet-base",
+        "z3/v-cellar": "z3-cellar-base",
+        "z4/v-alcove": "z4-alcove-base",
+    ]
+
+    /// R7-001 regression guard: every overlay's shipped ART must be pixel-1:1 with the RECT
+    /// it composites into. An overlay is a crop of a variant plate that RoomScene draws back
+    /// onto the base at `rect`; if the art's pixel dims differ from the rect's dims in
+    /// base-plate pixels, SpriteKit rescales it and it lands at the wrong size AND the wrong
+    /// place. There is no legitimate reason for the two to disagree.
+    ///
+    /// WHAT THIS CAUGHT (build 13, user-reported on device): the 4 plates the round-6 ART
+    /// track re-rolled (ov-flame1/2/3 + ov-slots-seated) kept rects derived from the OLD
+    /// pre-re-frame framing, giving art/rect == 1/reframe-scale (1.204 flame / 1.427 slots).
+    /// The compositor faithfully drew CORRECT art into a WRONG rectangle: the cauldron's fire
+    /// rendered ~180px left and ~280px up of the pot, as a bright patch on the wall. The
+    /// staging pipeline now derives these rects by auto-diff like the other 23, and
+    /// `assert_overlay_rects_match_art` fails the stage; this test is the CI-side backstop
+    /// that also catches a hand-edited overlays.json, which the Python guard would never see.
+    func testOverlayArtIsPixel1to1WithItsRect() {
+        var offenders: [String] = []
+        for (view, keys) in Self.requiredOverlayKeys {
+            guard let baseName = Self.viewBasePlate[view],
+                  let base = GameAssetLoader.shared.image(named: baseName) else {
+                offenders.append("\(view): base plate missing from bundle")
+                continue
+            }
+            let baseW = base.size.width * base.scale
+            let baseH = base.size.height * base.scale
+            for key in keys {
+                guard let r = OverlayRectCatalog.shared.rect(view: view, overlay: key) else {
+                    continue // completeness is asserted by testEveryCoordinator...
+                }
+                guard let art = GameAssetLoader.shared.image(named: key) else {
+                    continue // presence is asserted by the art-reachability test
+                }
+                let rectW = r.width * baseW
+                let rectH = r.height * baseH
+                guard rectW > 1, rectH > 1 else { continue }
+                let rx = (art.size.width * art.scale) / rectW
+                let ry = (art.size.height * art.scale) / rectH
+                if abs(rx - 1.0) > 0.02 || abs(ry - 1.0) > 0.02 {
+                    let dims = String(format: "art %.0fx%.0f vs rect %.0fx%.0f (ratio %.3f/%.3f)",
+                                      art.size.width * art.scale, art.size.height * art.scale,
+                                      rectW, rectH, rx, ry)
+                    offenders.append("\(view)/\(key) \(dims)")
+                }
+            }
+        }
+        XCTAssertTrue(offenders.isEmpty,
+                      "overlay art is not pixel-1:1 with its rect — the runtime will rescale and MISPLACE it "
+                      + "(R7-001 class: the cauldron flame drawn onto the wall beside the pot). "
+                      + "Re-derive the rect from the current plate via tools/build_game_assets.py "
+                      + "(auto-diff), never by hand-editing overlays.json: \(offenders.joined(separator: "; "))")
+    }
+
+    /// Mirror-motion guard (R4-011 regression): the d2/d3 overlays must crop (nearly) the
+    /// same plate region — the standing mirror on the LEFT of the cellar — so rotating the
+    /// mirror visibly changes it. The build-9 bug placed the hand rect at the plate center
+    /// (x ≈ 0.55 old framing), cropping an unchanged wall region: the overlay drew, but
+    /// nothing ever LOOKED different.
+    func testMirrorOverlaysSitOverTheLeftStandMirror() {
+        guard let d2 = OverlayRectCatalog.shared.rect(view: "z3/v-cellar", overlay: "ov-mirror-d2"),
+              let d3 = OverlayRectCatalog.shared.rect(view: "z3/v-cellar", overlay: "ov-mirror-d3") else {
+            XCTFail("mirror overlays missing from catalog")
+            return
+        }
+        // Same element: centers within a few percent of each other.
+        XCTAssertEqual(d2.midX, d3.midX, accuracy: 0.05, "d2/d3 must crop the same mirror")
+        XCTAssertEqual(d2.midY, d3.midY, accuracy: 0.05, "d2/d3 must crop the same mirror")
+        // Over the left-third stand mirror, not the plate center.
+        XCTAssertLessThan(d2.midX, 0.34,
+                          "mirror overlay must sit over the LEFT stand mirror (build-9 R4-011 put it mid-plate)")
+    }
+
+    /// R3-005: the cuckoo was REMOVED (Q3). Tapping LEFT of the clock — where the stale
+    /// cuckoo close-up used to open — must hit NOTHING (empty stone), and the clock hotspot
+    /// must cover only the clock itself. This is the exact "tapping left of the clock opens
+    /// the old cuckoo close-up" bug the user reported.
+    func testTapLeftOfClockHitsNothing_R3_005_cuckooRemoved() {
+        let coordinator = RoomSceneCoordinator(viewID: .hearth, state: makeState(tempDir()), size: sceneSize)
+        let hT = Reframe.transform(for: .hearth)
+        func h(_ x: CGFloat, _ y: CGFloat) -> (CGFloat, CGFloat) {
+            let p = hT.map(CGRect(x: x, y: y, width: 0, height: 0)); return (p.minX, p.minY)
+        }
+        // Empty stone left of the clock (old cuckoo-hotspot territory, x~0.28), reframed.
+        let left = h(0.28, 0.10)
+        XCTAssertNil(coordinator.scene.hotspotIDAtNormalized(left.0, left.1),
+                     "tapping left of the clock must do nothing (no stale cuckoo close-up)")
+        // The clock itself is hit on its face (reframed).
+        let face = h(0.405, 0.10)
+        XCTAssertEqual(coordinator.scene.hotspotIDAtNormalized(face.0, face.1), "clock")
+        // No cuckoo asset ships anymore.
+        XCTAssertNil(GameAssetLoader.shared.image(named: "cu-clock-pop"),
+                     "cu-clock-pop must not ship (Q3 cuckoo removed)")
+        XCTAssertNil(GameAssetLoader.shared.image(named: "cu-clock-spent"),
+                     "cu-clock-spent must not ship (Q3 cuckoo removed)")
+    }
+
+    /// R3-005 + R3-007: p01 is solvable end-to-end via the rune door once the correct tiles
+    /// are pressed in the fixed order. Drives the coordinator's real tile-press path (the
+    /// same call the close-up UI makes), proving the press-plate resolves the puzzle.
+    func testRuneDoorSolvableByPressingCorrectTiles_p01() {
+        let state = makeState(tempDir())
+        satisfyAllGates(state) // a thorough player has viewed the grimoire + marks (rev 1.3)
+        let coordinator = RoomSceneCoordinator(viewID: .study, state: state, size: sceneSize)
+        // Fixed solution order AIR, FIRE, EARTH, WATER == tiles 3,1,4,2
+        // (RuneDoorSolution.tileRune / solutionOrder).
+        let tilesForSolution = RuneDoorSolution.solutionOrder.map { rune in
+            RuneDoorSolution.tileRune.first(where: { $0.value == rune })!.key
+        }
+        for tile in tilesForSolution {
+            coordinator.pressRuneTile(tile)
+        }
+        XCTAssertTrue(state.hasSolved(PuzzleGraph.PuzzleID.runeDoor),
+                      "pressing the correct tiles in order must solve p01 (rune door)")
     }
 }

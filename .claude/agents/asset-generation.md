@@ -49,12 +49,20 @@ creative decisions.
   fixed style scaffold. The style language below is invariant across levels — only the
   content composed into it changes:
 
-  > _"stylized real-time 3D game render (not painterly/matte-painting), physically based
-  > clean materials (wood, brass, parchment, leather, stone) with realistic but non-noisy
-  > surface detail, softened edges with subtle bevels on furniture/objects so they read
-  > clearly as interactive game elements, realistic engine-style lighting (Unreal Engine 5
-  > Lumen-comparable), single-point perspective at standing eye level, no painterly brush
-  > texture or oil-painting look, no text/letters/people/watermarks."_
+  > _"**clearly stylized** real-time 3D game render (not painterly/matte-painting, and
+  > deliberately NOT photorealistic) — cohesive stylized-PBR like a high-end stylized
+  > Unreal Engine 5 environment / modern stylized adventure game; physically based clean
+  > materials (wood, brass, parchment, leather, stone), simplified-but-believable with
+  > realistic but non-noisy surface detail, pronounced softened bevels and cleaner
+  > silhouettes on furniture/objects so they read clearly as interactive game elements,
+  > art-directed color, realistic engine-style lighting (Unreal Engine 5 Lumen-comparable),
+  > single-point perspective at standing eye level, no painterly brush texture or
+  > oil-painting look, no text/letters/people/watermarks."_
+
+  _Stylization strength calibrated by the user via the Level-1 build-3 seed pick
+  (2026-07-08): the earlier plain-"stylized" wording drifted photoreal and was rejected;
+  the "clearly stylized game art" level above (seed `z1-hearth-base` candidate B) is the
+  approved standing target — keep this strength, do not drift back toward photorealism._
 
   Keep this template verbatim as the standing style layer; the Art Director's brief
   supplies WHAT is in the scene, this template supplies HOW it is rendered. If a style
@@ -75,6 +83,48 @@ creative decisions.
   zone/scene under `specs/assets/level-N/`.
 - **State-variant alignment**: variants of the same hotspot must be pixel-aligned with
   their base scene so swaps don't visibly jump.
+- **Scene→close-up EXACT recreation (binding — user directive 2026-07-08):** the base
+  scene plate is the CANONICAL truth for everything in that scene — exact composition,
+  object placement, colors, shapes, materials/textures, and lighting. Every close-up and
+  every state-variant of an area within a scene MUST reproduce that area EXACTLY as it
+  appears in the base plate — only the camera crop/perspective (tighter) or the puzzle
+  STATE may change. Never re-invent an area's arrangement, palette, object shapes, or
+  texture in a close-up. **Technique (do this, don't "generate a fresh close-up in the
+  style of"):** derive each close-up by CROPPING the high-res base-plate region and using
+  that exact crop as the img2img/`edit` base, then only enhance detail or apply the state
+  change on top; pass the base plate + the region crop among the (up to 14) reference
+  images. A close-up whose layout, colors, or object shapes differ from its parent scene
+  is a DEFECT — this exact failure caused the round-2 wide↔close-up inconsistency bugs
+  (door bird-skull, cabinet sun/moon slots, alcove statue, workshop window). When you
+  finalize a base plate, note its key visual facts (what sits where, palette, materials)
+  so downstream close-ups/variants reproduce them faithfully.
+- **Canonical-filename discipline — ONE asset path = ONE current file (binding, user
+  directive 2026-07-09):** when you (re)generate or correct any plate, the delivered file
+  MUST become THE canonical asset at its path (same final filename the game/bundle loads),
+  and the superseded version MUST move to `_rejects/`. NEVER leave a stale file at the
+  canonical name while shipping the new version under a different suffix (e.g. `-nb`,
+  `-v2`, `-fix`). That creates a "shadow": a stale canonical file sitting next to a newer
+  variant, which downstream staging can silently pick up — shipping OLD art while the
+  correct art sits unused on disk. (This is exactly what shipped 70 stale build-2 close-ups
+  in build 3.) If you use a working suffix DURING generation, before handoff you MUST
+  promote every final asset to its canonical name AND archive the old canonical to
+  `_rejects/`, so the Developer/bundle can trust that the canonical filename IS the current
+  art. Reconcile the manifest to the canonical names. Leaving a stale-canonical/new-suffix
+  pair at the same slot is a DEFECT.
+- **Puzzle-load-bearing glyphs = ONE canonical source, stamped IDENTICALLY everywhere
+  (binding, user directive 2026-07-09):** any glyph a player must MATCH across assets to
+  solve a puzzle — element runes, Roman numerals, moon-phase silhouettes, star-plate dot
+  patterns, crescent hallmarks, recipe symbols — MUST be defined ONCE as deterministic
+  geometry (a PIL stamp / fixed vector) and composited IDENTICALLY onto EVERY asset that
+  shows it: the clue mark, the reference page, AND the lock/input where the player enters
+  it. NEVER let the generative model re-draw the same glyph separately per scene — it
+  drifts, and drift between a clue glyph and the lock glyph makes the puzzle UNSOLVABLE.
+  (This exact failure broke p01 in build 3: the rune-door tiles didn't match the element
+  marks / grimoire.) Canonical shapes come from the puzzle graph (e.g.
+  `clu-grimoire-elements`: FIRE = upward triangle; WATER = downward triangle; AIR = upward
+  triangle with a horizontal bar; EARTH = downward triangle with a horizontal bar).
+  Acceptance gate: place the clue, the reference, and the input asset side by side and
+  confirm a player can match them by shape.
 - **Checkpoint granularity**: bundle outputs per zone for user review — per-zone batches,
   not per-image approvals.
 - **Progress visibility (user requirement, 2026-07-05; revised same day after it failed

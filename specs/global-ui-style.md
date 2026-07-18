@@ -175,16 +175,21 @@ Two system families, fixed roles:
   Pause — a sheet (`.presentationDetents([.medium, .large])` on iPhone, standard
   centered sheet on iPad). Same content either way.
 - **Layout:** grouped rows on `chromeSurface`, 52 pt min height, in this order:
-  1. **Sound** — row with leading symbol (`speaker.wave.2` / `speaker.slash`, swapping
-     with state), label "Sound", trailing Toggle. One master toggle only (no separate
-     music/SFX sliders — the game's audio is a single ambience layer; revisit only if
-     the Developer adds music).
-  2. **Reset Progress** — full-width row, label + `trash` symbol in
+  1. **Music & Ambiance** — row with leading symbol (`speaker.wave.2` / `speaker.slash`,
+     swapping with state), label "Music & Ambiance", trailing Toggle. Controls the level
+     background music + per-zone ambient beds. (Updated R2-006, 2026-07-08: the single
+     master toggle was split into two independent, separately-persisted toggles once the
+     Developer added user-provided background music.)
+  2. **Sound Effects** — row with leading symbol (`speaker.wave.2.fill` /
+     `speaker.slash.fill`, swapping with state), label "Sound Effects", trailing Toggle.
+     Controls interaction cues (pickup/solve/unlock/door/page/etc.). Independent of the
+     Music & Ambiance toggle.
+  3. **Reset Progress** — full-width row, label + `trash` symbol in
      `chromeDestructive`. Tap → confirmation per Section 7.
-  3. **About** — row with `info.circle`, pushes/presents a simple credits sheet:
+  4. **About** — row with `info.circle`, pushes/presents a simple credits sheet:
      game title (serif), one-line description, credits list, licenses if any. The one
      place body text is allowed.
-  4. **Version footer** — below the group, centered, `chromeTextSecondary`,
+  5. **Version footer** — below the group, centered, `chromeTextSecondary`,
      `.footnote`: "Version 1.0 (42)". Not a row, not tappable.
 - No account, no notifications, no purchases (free app, no IAP at launch).
 
@@ -236,7 +241,8 @@ Pause → Restart Level.
 | Context | Symbol | Notes |
 |---|---|---|
 | Settings entry | `gearshape` | |
-| Sound on / off | `speaker.wave.2` / `speaker.slash` | Swap with toggle state |
+| Music & Ambiance on / off | `speaker.wave.2` / `speaker.slash` | Swap with toggle state (R2-006) |
+| Sound Effects on / off | `speaker.wave.2.fill` / `speaker.slash.fill` | Swap with toggle state; distinct filled variant from the ambiance row (R2-006) |
 | Reset Progress | `trash` | `chromeDestructive` |
 | About | `info.circle` | |
 | Main Menu (from pause) | `house` | |
