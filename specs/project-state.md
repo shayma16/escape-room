@@ -4,12 +4,23 @@ _Maintained by the Producer. Updated after every pipeline stage._
 
 ## Current phase
 
-Level 1 in design. Theme received from user on 2026-07-04.
+**Level 2 in design.** Theme received from user 2026-07-18. Level 1 COMPLETE and merged to
+main (PR #8, 2026-07-18) — shipped as TestFlight "Within 1.0 (14)", user-verified.
 
 ## Active level
 
+Level 2 — "The Clockmaker's Attic": mechanical/time-based puzzles (user-specified
+elements: gear ratios, clock hands as clues, time zones, Roman numerals; designer free to
+add theme-fitting puzzles). Branch: `level2-clockmakers-attic` off main @ b38bc9c.
+Pipeline position: step 2 (Theme & Puzzle Designer running).
+
+## Level 1 (COMPLETE — for reference)
+
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
-caged crow, potions/potion-making (user-specified elements).
+caged crow, potions/potion-making (user-specified elements). Difficulty 6.0/10. Art spend
+$21.15. Post-release deferred items: cu-lintel ghost rectangle (user aware, polish pass);
+minor build-14 bugs (user: "minor bugs here and there", not yet itemized); CI cert-cap
+durable fix (reusable .p12 — proposed, not yet decided).
 
 ## ⭐ CURRENT RESUME NOTE (2026-07-14) — ROUND 6 PROCESSED, AWAITING GATE 1
 
