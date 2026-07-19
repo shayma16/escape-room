@@ -1,3 +1,29 @@
+# Level 2 asset generation — STEP-10 z2 FIX PASS (2026-07-19, after batch-2 verdict)
+
+PROGRESS: 1/9 done | 0 retrying | 0 failed | 8 remaining | $0.00 fix-pass spend ($4.80 cumulative) | level cap $15.00
+
+User verdict: z2 APPROVED WITH FIXES (batch-2 flags accepted as-is). Fix-pass plan:
+
+| # | Item | Method | Est $ | Status |
+|---|------|--------|-------|--------|
+| F1 | z2 clockrow numeral rings re-stamped inside measured faces (all 4 clocks, wide + cu-clockrow-plates, plates untouched, masked bbox composite) | deterministic PIL (l2_clockfix.py) | 0 | done |
+| F2 | ov-bar-raised rebuild (misregistered: seams, offset dup hardware, wrong-angle bar) | NB edit + registered component composite | 0.15 | pending |
+| F3 | ov-coat-watch-taken redo (smeary blur blob) | ONE NB edit (both pockets emptied) sources both coat patches | 0.15 | pending |
+| F4 | ov-coat-tile-taken redo (blurred band seams) | same NB edit as F3 | 0 | pending |
+| F5 | AUDIT FAIL ov-stove-tile-taken (blur blob + tile ghost) | NB edit | 0.15 | pending |
+| F6 | AUDIT FAIL ov-crate-tile-taken (brass remnant + blur, seam 92) | NB edit | 0.15 | pending |
+| F7 | AUDIT FAIL ov-cache-pried-wheel / ov-cache-empty (pasted-flat cavity, hard board seams 128) | NB edit + canonical wheel composite | 0.15 | pending |
+| F8 | AUDIT boundary seams: ov-cache-cat-gone (160), ov-workroom-door-open (48), cushion wides, dial-seat wides, sill/stove wides | deterministic feathered boundary re-blend | 0 | pending |
+| F9 | review deliverables: clockrow before/after (done in F1) + fixed-overlays contact sheet + manifest fix block | PIL | 0 | pending |
+
+Audit method: programmatic seam-diff at every patch boundary (3px ring vs base) + 100% visual
+inspection of every overlay composited on its base. PASS as-is: ov-screwdriver-taken*(see F8 note),
+ov-sill-tile-taken (CU), dial-seat CU overlays x4, ov-cushion-empty, ov-cushion-reveal,
+z1-door-win-open, cat-gone visual (boundary only). *ov-screwdriver-taken has a residual vertical
+smear ghost - folded into F5 wave as deterministic re-fill if NB not needed.
+
+NB budget: 5 edits x $0.15 = $0.75 planned, +$0.45 retry reserve; hard stop well inside $15 cap.
+
 # Level 2 asset generation progress — BATCH 2 (z2 + z1 dial fix + z1 state overlays)
 
 PROGRESS: 26/26 done | 0 retrying | 0 failed | 0 remaining | $2.25 batch spend ($4.80 cumulative) | est was $1.50-1.95 (+$0.45: 3 rejects re-rolled) | level cap $15.00
