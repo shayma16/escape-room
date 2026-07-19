@@ -63,22 +63,22 @@
  "ov-coat-tile-taken": {
   "base": "cu-coat-pockets",
   "rect_3x": [
-   465,
-   455,
-   950,
-   860
+   430,
+   430,
+   970,
+   880
   ],
-  "note": "tile IV gone from left pocket"
+  "note": "tile IV gone from left pocket; fix-pass rebuild from NB edit 720301 (both-pockets-empty raw), left pocket masked only"
  },
  "ov-coat-watch-taken": {
   "base": "cu-coat-pockets",
   "rect_3x": [
-   1060,
-   380,
-   1560,
-   980
+   1040,
+   370,
+   1580,
+   1140
   ],
-  "note": "watch A + chain gone from right pocket"
+  "note": "watch A + chain gone from right pocket; fix-pass rebuild from NB edit 720301 (both-pockets-empty raw), right pocket masked only"
  },
  "ov-bar-raised": {
   "base": "cu-timelock",

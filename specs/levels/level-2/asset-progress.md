@@ -1,6 +1,6 @@
 # Level 2 asset generation — STEP-10 z2 FIX PASS (2026-07-19, after batch-2 verdict)
 
-PROGRESS: 2/9 done | 0 retrying | 0 failed | 7 remaining | $0.75 fix-pass spend ($5.55 cumulative) | level cap $15.00
+PROGRESS: 4/9 done | 0 retrying | 0 failed | 5 remaining | $0.75 fix-pass spend ($5.55 cumulative) | level cap $15.00
 
 SPEND RECONCILIATION (2026-07-20): predecessor agent ran ALL 5 planned NB edits before dying
 (results.jsonl evidence, seeds 720301-720305): edit-coat-both-empty, edit-stove-clear,
@@ -16,8 +16,8 @@ User verdict: z2 APPROVED WITH FIXES (batch-2 flags accepted as-is). Fix-pass pl
 |---|------|--------|-------|--------|
 | F1 | z2 clockrow numeral rings re-stamped inside measured faces (all 4 clocks, wide + cu-clockrow-plates, plates untouched, masked bbox composite) | deterministic PIL (l2_clockfix.py) | 0 | done |
 | F2 | ov-bar-raised rebuild (misregistered: seams, offset dup hardware, wrong-angle bar) | NB edit + registered component composite | 0.15 | done (raw 720305 recovered; rect widened to 100,460,1800,1280; seam CU 0.0 / wide 1.0) |
-| F3 | ov-coat-watch-taken redo (smeary blur blob) | ONE NB edit (both pockets emptied) sources both coat patches | 0.15 | pending |
-| F4 | ov-coat-tile-taken redo (blurred band seams) | same NB edit as F3 | 0 | pending |
+| F3 | ov-coat-watch-taken redo (smeary blur blob) | ONE NB edit (both pockets emptied) sources both coat patches | 0.15 | done (raw 720301; rect 1040,370,1580,1140; seam 0.0; tile IV untouched) |
+| F4 | ov-coat-tile-taken redo (blurred band seams) | same NB edit as F3 | 0 | done (rect 430,430,970,880; seam 0.0; watch A untouched) |
 | F5 | AUDIT FAIL ov-stove-tile-taken (blur blob + tile ghost) | NB edit | 0.15 | pending |
 | F6 | AUDIT FAIL ov-crate-tile-taken (brass remnant + blur, seam 92) | NB edit | 0.15 | pending |
 | F7 | AUDIT FAIL ov-cache-pried-wheel / ov-cache-empty (pasted-flat cavity, hard board seams 128) | NB edit + canonical wheel composite | 0.15 | pending |
