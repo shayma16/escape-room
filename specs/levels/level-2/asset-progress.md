@@ -1,6 +1,14 @@
 # Level 2 asset generation — STEP-10 z2 FIX PASS (2026-07-19, after batch-2 verdict)
 
-PROGRESS: 1/9 done | 0 retrying | 0 failed | 8 remaining | $0.00 fix-pass spend ($4.80 cumulative) | level cap $15.00
+PROGRESS: 1/9 done | 0 retrying | 0 failed | 8 remaining | $0.75 fix-pass spend ($5.55 cumulative) | level cap $15.00
+
+SPEND RECONCILIATION (2026-07-20): predecessor agent ran ALL 5 planned NB edits before dying
+(results.jsonl evidence, seeds 720301-720305): edit-coat-both-empty, edit-stove-clear,
+edit-crate-clear, edit-cache-pried, edit-bar-raised = 5 x $0.15 = $0.75, previously unrecorded.
+Raws archived to specs/assets/level-2/_rejects/edit-*-fixraw@3x.png. Registration audit of the
+raws (shift search + control-region MAE): ALL FIVE usable for masked registered compositing —
+incl. crate (MAE 5.4, 5.4% changed, tile-spot only), contra the predecessor's 're-imagined'
+read; no re-roll needed, $0 further NB planned.
 
 User verdict: z2 APPROVED WITH FIXES (batch-2 flags accepted as-is). Fix-pass plan:
 
