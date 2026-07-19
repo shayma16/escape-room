@@ -378,8 +378,13 @@ def f5b_screwdriver():
     ramp = np.clip((560 - yy) / 130.0, 0.0, 1.0) * 0.55 + 0.45
     ramp = np.maximum(ramp, tool)          # tool silhouette: always fully replaced
     out[wall] = (b + (fillv - b) * ramp[..., None])[wall]
-    # feather whole mask edge into base
+    # feather whole mask edge into base + enforce pure-base ring at patch edge
     mf = np.asarray(mask.filter(ImageFilter.GaussianBlur(3)), np.float32) / 255.0
+    lim = ring_lim_mask((W, H), (0, 0, W, H), 5,
+                        {"l": False, "t": False, "r": False, "b": False})
+    mf = mf * (np.asarray(lim.filter(ImageFilter.GaussianBlur(3)), np.float32) / 255.0)
+    mf = mf * (np.asarray(ring_lim_mask((W, H), (0, 0, W, H), 2,
+        {"l": False, "t": False, "r": False, "b": False}), np.float32) / 255.0)
     out = b * (1 - mf[..., None]) + out * mf[..., None]
     # peg clone: right peg box -> restored left peg
     pw, ph = 52, 62
