@@ -1,8 +1,8 @@
 {
  "level": 2,
- "batch": "batch-1 (canonical sheets + zone z1)",
+ "batch": "batch-1 (sheets + z1) + batch-2 (z2 + z1 dial fix + z1 states)",
  "spec_revision": "1.3",
- "generated": "2026-07-18 (recovered from session-limit cutoff 2026-07-19)",
+ "generated": "2026-07-18/19 (batch 1) + 2026-07-19 (batch 2)",
  "model": "fal-ai/nano-banana-pro (t2i + edit) + deterministic PIL glyph/precision passes (l2_glyphs.py canonical source)",
  "pricing_basis": "$0.15/image std (2K), $0.30/image 4K (verified 2026-07-08); PIL passes $0",
  "budget": {
@@ -11,8 +11,10 @@
   "predecessor_spend_note": "RECOVERED FROM CUTOFF. $1.80 confirmed through commit deabd17 (predecessor's own asset-progress.md itemization: Liberty die raw $0.15 + v-bench wide $1.05 (r1 safe-zone reject + r2 + relocation edit + coat crop-fix) + v-master wide $0.30 + v-door wide $0.30). PLUS est $0.45 for the 3 icon raws (screwdriver / tile-blank / watch-blank @2K std) generated after deabd17 and before commit e6e1381 - NOT included in the $1.80 the handoff quoted. Best-effort honest total: $2.25.",
   "batch1_resumer_spend_usd": 0.3,
   "batch1_total_usd": 2.55,
-  "cumulative_level2_usd": 2.55,
-  "resumer_spend_note": "Session 2026-07-19 (resumer): 2 NB generations at 2K std = $0.30 (dial-disc-clean edit consumed into the deterministic door-dial rebuild; cu-coat-pockets fresh t2i). Everything else deterministic PIL at $0."
+  "cumulative_level2_usd": 4.8,
+  "resumer_spend_note": "Session 2026-07-19 (resumer): 2 NB generations at 2K std = $0.30 (dial-disc-clean edit consumed into the deterministic door-dial rebuild; cu-coat-pockets fresh t2i). Everything else deterministic PIL at $0.",
+  "batch2_spend_usd": 2.25,
+  "batch2_note": "Batch 2 NB generations, itemized: z2 wides $0.90 (frame $0.30 + clockrow r1 safe-zone REJECT $0.30 + r2 $0.30); CU19 paint-over edit $0.15; icons $0.45 (mouse r1 $0.15 lost to mask surgery + r2 $0.15, oil can $0.15); z1 state edits $0.60 (cushion-empty, workroom-door-open, stair-door-win, + cushion-reveal r1 wrong watch position REJECT); cushion-reveal r2 $0.15. All glyph/count work + dial fix + 9 deterministic states = $0 PIL. Est was $1.35-1.80; overage $0.45 from 3 rejects + the 2 door-open states needing NB edits instead of PIL."
  },
  "reference_anchors": {
   "note": "Cross-level style library: L1 seed anchors + L2 z1 wides. All fresh L2 generations anchor against these (up to 14 refs).",
@@ -343,6 +345,86 @@
    "method": "PIL contact sheet",
    "generation": "pil",
    "est_cost_usd": 0.0
+  },
+  {
+   "file": "z1/v-master/cu-door-dial + z1-master-base + cu-master-face + cu-crate-straw (dial-fix rev)",
+   "zone": "z1",
+   "view": "v-master",
+   "batch": 2,
+   "element": "USER STEP-10 FIX: door dial deterministically re-seated \u2014 12 square recess seats, 8 canonical tiles (masters tile-blank + canonical numerals CONTAINED in faces), gaps exactly 2/4/7/11, face field rebuilt, hub re-centered, tray tidied w/ flat VI decoy KEPT",
+   "state": "base",
+   "method": "deterministic PIL (l2_dialfix.py); superseded -> _rejects/*-b2pre-dialfix",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "before/after for user: z1/dial-fix-before-after.png"
+  },
+  {
+   "file": "z2/v-frame/z2-frame-base@{1x,2x,3x}",
+   "zone": "z2",
+   "view": "v-frame",
+   "batch": 2,
+   "element": "wide 3840x1920: automaton wall (mural, sun-disc track, watchman+bell), gear frame (crank+XII pinion, posts A/B, VIII stamp, cam, rust bloom), latched panel, 6 rack gears composited, chimney + canonical gear-ring carve",
+   "state": "base",
+   "method": "t2i 4K + deterministic glyph/gear integration (l2_z2_build.py); raw preglyph -> _rejects",
+   "generation": "t2i+pil",
+   "est_cost_usd": 0.3,
+   "seed": 720201
+  },
+  {
+   "file": "z2/v-clockrow/z2-clockrow-base@{1x,2x,3x}",
+   "zone": "z2",
+   "view": "v-clockrow",
+   "batch": 2,
+   "element": "wide 3840x1920: 4 HAND-LESS clocks (canonical numeral rings, bare arbors), 4 plates stamped Burj+IV | BigBen star | Fuji+IX | Liberty -V (sheet-B dies, binding order), display case (F1 sealed seam), parts cabinet",
+   "state": "base",
+   "method": "t2i 4K (r1 safe-zone reject -> _rejects) + deterministic stamping + paint-over propagation",
+   "generation": "t2i+pil",
+   "est_cost_usd": 0.9,
+   "seed": 720203
+  },
+  {
+   "file": "z2/props/gear-{16,24,36,40,48,72}@{1x,2x,3x}",
+   "zone": "z2",
+   "view": "props",
+   "batch": 2,
+   "element": "6 brass rack gears, EXACT tooth counts ASSERTED in code (F6), canonical render_arabic stamps, square arbor holes (9.3 rhyme), diameters monotonic in count",
+   "state": "prop",
+   "method": "deterministic PIL (l2_z2_build.render_gear)",
+   "generation": "pil",
+   "est_cost_usd": 0.0
+  },
+  {
+   "file": "z2/v-frame/cu-{gear-frame,gear-rack,gear-ring,brick-cache} + z2/v-clockrow/cu-{clockrow-plates,cabinet-drawer,display-case} @{1x,2x,3x}",
+   "zone": "z2",
+   "view": "-",
+   "batch": 2,
+   "element": "CUs 13-19: crops of the INTEGRATED wides + native-res canonical overlays (stamps/gears/ring); CU19 carries the F1 paint-over emphasis (NB edit, seam-band masked composite)",
+   "state": "base",
+   "method": "crop + native overlays; CU19 edit $0.15",
+   "generation": "pil+edit",
+   "est_cost_usd": 0.15
+  },
+  {
+   "file": "z2/icons/inv-toy-mouse@{1x,2x,3x} + inv-oil-can@{1x,2x,3x}",
+   "zone": "z2",
+   "view": "icons",
+   "batch": 2,
+   "element": "cutouts: tin mouse (butterfly key ROUND-winged - p08 contract) + clockmaker's oiler",
+   "state": "inventory",
+   "method": "NB raws keyed RGBA + shadow-matte cleanup (mouse r2 after mask-surgery loss)",
+   "generation": "t2i",
+   "est_cost_usd": 0.45
+  },
+  {
+   "file": "z1/*/states/* + z1/z1-state-overlays.json + z1/v-door/z1-door-win-open@{1x,2x,3x}",
+   "zone": "z1",
+   "view": "-",
+   "batch": 2,
+   "element": "z1 state matrix: screwdriver/stove-II/crate-VII/sill-XI taken, coat watch-A/tile-IV taken (independent), 4x dial seated (canonical tile renderer), bar raised, cache pried+wheel/empty, cushion empty/reveal (NB edits; canonical die_gear+ring12 stamped on watch B lid), cache cat-gone echo, workroom door open (NB edit at native res), WIN plate (F4 evening step; stairs render ASCENDING - spec only says 'onto the tower stairs', flagged for step-10)",
+   "state": "state overlays",
+   "method": "patch overlays + rect JSON (per-element architecture) + 1 full win plate; 4 NB edits",
+   "generation": "pil+edit",
+   "est_cost_usd": 1.05
   }
  ]
 }

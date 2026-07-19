@@ -1,0 +1,265 @@
+{
+ "ov-screwdriver-taken": {
+  "wide_base": "z1-bench-base",
+  "wide_rect_3x": [
+   980,
+   440,
+   1340,
+   1110
+  ],
+  "note": "rack empty after pickup; no CU hosts this region"
+ },
+ "ov-stove-tile-taken": {
+  "base": "cu-stove-hob",
+  "rect_3x": [
+   640,
+   310,
+   1720,
+   760
+  ],
+  "note": "tile II removed from the cold hob",
+  "wide_base": "z1-bench-base",
+  "wide_rect_3x": [
+   2582,
+   1407,
+   3025,
+   1592
+  ]
+ },
+ "ov-crate-tile-taken": {
+  "base": "cu-crate-straw",
+  "rect_3x": [
+   770,
+   1000,
+   1290,
+   1340
+  ],
+  "note": "tile VII taken; straw closed over",
+  "wide_base": "z1-master-base",
+  "wide_rect_3x": [
+   2726,
+   1679,
+   2959,
+   1832
+  ]
+ },
+ "ov-sill-tile-taken": {
+  "base": "cu-sill-tile",
+  "rect_3x": [
+   670,
+   255,
+   1270,
+   855
+  ],
+  "note": "tile XI taken off the dormer sill",
+  "wide_base": "z1-door-base",
+  "wide_rect_3x": [
+   2371,
+   965,
+   2581,
+   1176
+  ]
+ },
+ "ov-coat-tile-taken": {
+  "base": "cu-coat-pockets",
+  "rect_3x": [
+   465,
+   455,
+   950,
+   860
+  ],
+  "note": "tile IV gone from left pocket"
+ },
+ "ov-coat-watch-taken": {
+  "base": "cu-coat-pockets",
+  "rect_3x": [
+   1060,
+   380,
+   1560,
+   980
+  ],
+  "note": "watch A + chain gone from right pocket"
+ },
+ "ov-bar-raised": {
+  "base": "cu-timelock",
+  "rect_3x": [
+   100,
+   480,
+   1720,
+   1260
+  ],
+  "note": "time-lock bar pivoted up on its rod crank; cradles empty",
+  "wide_base": "z1-door-base",
+  "wide_rect_3x": [
+   679,
+   701,
+   1628,
+   1158
+  ]
+ },
+ "ov-cache-pried-wheel": {
+  "base": "cu-floor-cache",
+  "rect_3x": [
+   1080,
+   1180,
+   1750,
+   1536
+  ],
+  "note": "cache board pried; great wheel visible in cavity",
+  "wide_base": "z1-door-base",
+  "wide_rect_3x": [
+   2448,
+   1739,
+   2789,
+   1920
+  ]
+ },
+ "ov-cache-empty": {
+  "base": "cu-floor-cache",
+  "rect_3x": [
+   1080,
+   1180,
+   1750,
+   1536
+  ],
+  "note": "cache open + empty after wheel taken",
+  "wide_base": "z1-door-base",
+  "wide_rect_3x": [
+   2448,
+   1739,
+   2789,
+   1920
+  ]
+ },
+ "ov-dial-seat-ii": {
+  "cu": "cu-door-dial",
+  "cu_rect_3x": [
+   1159,
+   360,
+   1287,
+   488
+  ],
+  "wide": "z1-master-base",
+  "wide_rect_3x": [
+   2670,
+   659,
+   2755,
+   744
+  ],
+  "numeral": "II",
+  "socket": 2
+ },
+ "ov-dial-seat-iv": {
+  "cu": "cu-door-dial",
+  "cu_rect_3x": [
+   1159,
+   625,
+   1287,
+   753
+  ],
+  "wide": "z1-master-base",
+  "wide_rect_3x": [
+   2670,
+   835,
+   2755,
+   920
+  ],
+  "numeral": "IV",
+  "socket": 4
+ },
+ "ov-dial-seat-vii": {
+  "cu": "cu-door-dial",
+  "cu_rect_3x": [
+   797,
+   722,
+   925,
+   850
+  ],
+  "wide": "z1-master-base",
+  "wide_rect_3x": [
+   2429,
+   899,
+   2514,
+   984
+  ],
+  "numeral": "VII",
+  "socket": 7
+ },
+ "ov-dial-seat-xi": {
+  "cu": "cu-door-dial",
+  "cu_rect_3x": [
+   797,
+   263,
+   925,
+   391
+  ],
+  "wide": "z1-master-base",
+  "wide_rect_3x": [
+   2429,
+   595,
+   2514,
+   680
+  ],
+  "numeral": "XI",
+  "socket": 11
+ },
+ "ov-cushion-empty": {
+  "base": "cu-cat-cushion",
+  "rect_3x": [
+   450,
+   110,
+   1640,
+   720
+  ],
+  "wide_base": "z1-door-base",
+  "wide_rect_3x": [
+   2661,
+   1137,
+   3219,
+   1422
+  ],
+  "note": "cat gone (post-p02/p03 exit); cushion empty with sleep depression"
+ },
+ "ov-cache-cat-gone": {
+  "base": "cu-floor-cache",
+  "rect_3x": [
+   1499,
+   0,
+   2048,
+   555
+  ],
+  "note": "cat-gone echo for the overlapping floor-cache CU (consistency)"
+ },
+ "ov-workroom-door-open": {
+  "wide_base": "z1-master-base",
+  "wide_rect_3x": [
+   1950,
+   260,
+   2990,
+   1740
+  ],
+  "note": "door + dial swung open ~70deg onto z2; tray swings with door; NB edit at native res"
+ },
+ "z1-door-win-open": {
+  "wide_base": "z1-door-base",
+  "full_plate": true,
+  "note": "WIN beat (F4): stair door open onto tower stairs, bar raised, one-step evening amber grade (sanctioned sole lighting shift); stairs render ASCENDING - flagged for step-10 review (spec says only 'onto the tower stairs')"
+ },
+ "ov-cushion-reveal": {
+  "base": "cu-cat-cushion",
+  "rect_3x": [
+   420,
+   80,
+   2010,
+   990
+  ],
+  "wide_base": "z1-door-base",
+  "wide_rect_3x": [
+   2647,
+   1122,
+   3392,
+   1549
+  ],
+  "note": "cushion lifted; CLOSED watch B on the bench where it sat, canonical die_gear + ring12 stamped on the lid (identical-die contract, r2: watch relocated onto bench, model die replaced by canonical). TRANSIENT state - composite over ov-cushion-empty base; no cache echo"
+ }
+}
