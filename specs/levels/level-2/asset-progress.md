@@ -1,6 +1,6 @@
 # Level 2 asset generation — STEP-10 z2 FIX PASS (2026-07-19, after batch-2 verdict)
 
-PROGRESS: 7/9 done | 0 retrying | 0 failed | 2 remaining | $0.75 fix-pass spend ($5.55 cumulative) | level cap $15.00
+PROGRESS: 8/9 done | 0 retrying | 0 failed | 1 remaining | $0.75 fix-pass spend ($5.55 cumulative) | level cap $15.00
 
 SPEND RECONCILIATION (2026-07-20): predecessor agent ran ALL 5 planned NB edits before dying
 (results.jsonl evidence, seeds 720301-720305): edit-coat-both-empty, edit-stove-clear,
@@ -21,7 +21,7 @@ User verdict: z2 APPROVED WITH FIXES (batch-2 flags accepted as-is). Fix-pass pl
 | F5 | AUDIT FAIL ov-stove-tile-taken (blur blob + tile ghost) | NB edit | 0.15 | done (raw 720302; rect widened to 430,300,1720,760 so tile CAST SHADOW is included; seam 0/0.5; + ov-screwdriver-taken smear rebuilt deterministically from base: tool+shadow masked, rail clone, diffusion low-freq + mirrored HF plaster, shadow attenuation ramp at sunbeam edge, peg restored) |
 | F6 | AUDIT FAIL ov-crate-tile-taken (brass remnant + blur, seam 92) | NB edit | 0.15 | done (recovered raw 720303 was fine — registered masked composite, tile-spot mask only; seam 92 -> 0) |
 | F7 | AUDIT FAIL ov-cache-pried-wheel / ov-cache-empty (pasted-flat cavity, hard board seams 128) | NB edit + canonical wheel composite | 0.15 | done (raw 720304: real cavity + pried board; rect extended to 1080,1150,2048,1536 to contain the board; canonical inv-great-wheel die-64 clipped to cavity interior w/ left catch-light; seams 128 -> 0 CU / 3.7 wide) |
-| F8 | AUDIT boundary seams: ov-cache-cat-gone (160), ov-workroom-door-open (48), cushion wides, dial-seat wides, sill/stove wides | deterministic feathered boundary re-blend | 0 | pending |
+| F8 | AUDIT boundary seams: ov-cache-cat-gone (160), ov-workroom-door-open (48), cushion wides, dial-seat wides, sill/stove wides | deterministic feathered boundary re-blend | 0 | done (ring color-match+feather re-blend: cat-gone 20->0, workroom 49->0, cushion-empty 30->0, cushion-reveal 28->0, dial-seats 36/37/65/44 -> 15/19/20/15, sill 19->11; stove/crate/bar/cache wides re-derived in F2/F5-F7) |
 | F9 | review deliverables: clockrow before/after (done in F1) + fixed-overlays contact sheet + manifest fix block | PIL | 0 | pending |
 
 Audit method: programmatic seam-diff at every patch boundary (3px ring vs base) + 100% visual
