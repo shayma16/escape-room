@@ -77,6 +77,14 @@ per-zone user reviews follow each batch.
 - Toy mouse is z2-scoped (parts cabinet); oil can z2; key/tag z4. F2: L1 rune stays — no
   new pause glyph. Session-limit pattern: agents must commit small chunks (two cutoffs
   already recovered cleanly this level).
+- ✅ z2 STEP-10 VERDICT (user, 2026-07-19): APPROVED WITH FIXES. Batch-2 flags all
+  accepted (ascending win stairs, F1 seam, gear flatness). Defects routed to a fix
+  pass (agent dispatched): (1) clockrow numeral rings spill outside all 4 dial faces
+  — deterministic re-stamp from sheet A, same class as the door-dial fix; (2) z1
+  state overlays bar-raised (misregistered), watch-A-taken (smeary inpaint),
+  tile-taken (blurred edges) — rebuild; PLUS binding proactive audit of ALL batch-2
+  state overlays for misregistration + blur classes (user caught 3; don't make them
+  find more). Then batch 3 (z3) after the user sees the fix results.
 - Pipeline after art: batches 2→4 (z2, z3, z4 + sprites/state edits) with step-10 reviews
   → Developer (NOTE: do NOT build the unreachable p08 mouse-at-drum interaction — dead
   spec text, see walkthrough flags; NEVER the "psh" SFX) → QA → GATE → release.
