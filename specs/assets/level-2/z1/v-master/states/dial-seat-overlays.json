@@ -1,0 +1,74 @@
+{
+ "ov-dial-seat-ii": {
+  "cu": "cu-door-dial",
+  "cu_rect_3x": [
+   1159,
+   360,
+   1287,
+   488
+  ],
+  "wide": "z1-master-base",
+  "wide_rect_3x": [
+   2670,
+   659,
+   2755,
+   744
+  ],
+  "numeral": "II",
+  "socket": 2
+ },
+ "ov-dial-seat-iv": {
+  "cu": "cu-door-dial",
+  "cu_rect_3x": [
+   1159,
+   625,
+   1287,
+   753
+  ],
+  "wide": "z1-master-base",
+  "wide_rect_3x": [
+   2670,
+   835,
+   2755,
+   920
+  ],
+  "numeral": "IV",
+  "socket": 4
+ },
+ "ov-dial-seat-vii": {
+  "cu": "cu-door-dial",
+  "cu_rect_3x": [
+   797,
+   722,
+   925,
+   850
+  ],
+  "wide": "z1-master-base",
+  "wide_rect_3x": [
+   2429,
+   899,
+   2514,
+   984
+  ],
+  "numeral": "VII",
+  "socket": 7
+ },
+ "ov-dial-seat-xi": {
+  "cu": "cu-door-dial",
+  "cu_rect_3x": [
+   797,
+   263,
+   925,
+   391
+  ],
+  "wide": "z1-master-base",
+  "wide_rect_3x": [
+   2429,
+   595,
+   2514,
+   680
+  ],
+  "numeral": "XI",
+  "socket": 11
+ }
+}
