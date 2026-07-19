@@ -44,6 +44,38 @@ NEXT: Asset Generation (step 9) in per-zone batches — canonical sheets (numera
 landmark die) FIRST, then z1 — feeding the FULL cumulative L1 reference library; step-10
 per-zone user reviews follow each batch.
 
+## ⭐ CURRENT RESUME NOTE (2026-07-19, CROSS-COMPUTER HANDOFF #3)
+
+**User switching computers (usage limits). Everything durable is committed and pushed to
+`level2-clockmakers-attic`. Take stock from THIS repo — agent transcripts do not survive.**
+
+**Exact position — L2 ART BATCH 1 (z1) COMPLETE, AWAITING USER'S STEP-10 z1 VERDICT:**
+- Batch 1 done at **$2.55 of the $15.00 L2 cap** (commits e6e1381 → 1e6ae0b → f08d64c):
+  canonical sheets A (numerals I–XII + mirrored set; mirrored-IV→malformed-VI PASS, no
+  legible mirrored VII) + B (landmark dies, 24px distinctness PASS); 3 z1 wides
+  (v-bench/v-master/v-door, glyph-integrated, safe-zone audited); 12 z1 close-ups;
+  8 cutouts (screwdriver, tiles II/IV/VII/XI, watches A/B, great-wheel 64t asserted).
+  Manifest: `specs/levels/level-2/asset-manifest.json` (predecessor spend corrected to
+  $2.25 + $0.30 this session). Review contact sheet for the user:
+  `specs/assets/level-2/z1/z1-review-batch1.png`.
+- **Producer verified at full res:** slate XII/VIII + 24 tallies; door dial seated
+  I/III/V/VI/VIII/IX/X/XII with gaps exactly at 2/4/7/11 + single VI tray decoy, no
+  keyhole. Flag for user on the sheet: stove-II / crate-VII engravings use a mild vertical
+  legibility stretch — user to confirm it reads naturally.
+- **AWAITING USER:** z1 approval (+ any fix list) → then green-light **batch 2 (z2)**:
+  v-frame + v-clockrow wides (~$0.60), CUs 13–19 incl. F1 sealed display case (~$0.45),
+  6 rack gears 16/24/36/40/48/72 deterministic via `specs/tools/l2_glyphs.py::render_arabic`
+  ($0, F6), landmark plates from sheet B, mouse + oil-can cutouts (~$0.30), PLUS ~14 z1
+  state overlays folded in (near-$0 PIL). Est. batch ≈$1.35–1.80 → cumulative ≈$4.35.
+- Toy mouse is z2-scoped (parts cabinet); oil can z2; key/tag z4. F2: L1 rune stays — no
+  new pause glyph. Session-limit pattern: agents must commit small chunks (two cutoffs
+  already recovered cleanly this level).
+- Pipeline after art: batches 2→4 (z2, z3, z4 + sprites/state edits) with step-10 reviews
+  → Developer (NOTE: do NOT build the unreachable p08 mouse-at-drum interaction — dead
+  spec text, see walkthrough flags; NEVER the "psh" SFX) → QA → GATE → release.
+  Deferred L1 items: cu-lintel ghost rect (polish), minor build-14 bugs (unitemized),
+  CI cert-cap durable fix (.p12 pinning — proposed, undecided).
+
 ## Level 1 (COMPLETE — for reference)
 
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
