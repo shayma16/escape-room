@@ -555,19 +555,21 @@ def contact_sheet():
         rec = meta[name]
         cu = load(os.path.join(Z1, view, cuname + "@3x.png"))
         rect = rec["rect_3x"]
+        OLD_RECTS = {"ov-bar-raised": (100, 480, 1720, 1260),
+                     "ov-coat-tile-taken": (465, 455, 950, 860),
+                     "ov-coat-watch-taken": (1060, 380, 1560, 980),
+                     "ov-stove-tile-taken": (640, 310, 1720, 760),
+                     "ov-crate-tile-taken": (770, 1000, 1290, 1340),
+                     "ov-cache-pried-wheel": (1080, 1180, 1750, 1536),
+                     "ov-cache-empty": (1080, 1180, 1750, 1536)}
         oldp = os.path.join(REJ, name + "-b2pre-fixpass@3x.png")
         newp = os.path.join(Z1, view, "states", name + "@3x.png")
         for col, pth in ((0, oldp), (1, newp)):
             img = cu.copy()
             if os.path.exists(pth):
                 p = Image.open(pth).convert("RGB")
-                # old patches may have a different rect: paste centered on old rect if size differs
-                r = rect if p.size == (rect[2] - rect[0], rect[3] - rect[1]) else None
-                if r is None:
-                    # find old rect from archived meta impossible; just fit top-left of rect
-                    img.paste(p, (rect[0], rect[1]))
-                else:
-                    img.paste(p, (r[0], r[1]))
+                r = rect if col == 1 else OLD_RECTS.get(name, rect)
+                img.paste(p, (r[0], r[1]))
             img = img.resize((TW, TH), Image.LANCZOS)
             sheet.paste(img, (pad + col * (TW + pad), y + cap))
         dr.text((pad, y + 6), f"{name}   LEFT=before  RIGHT=fixed", fill=(235, 225, 205))

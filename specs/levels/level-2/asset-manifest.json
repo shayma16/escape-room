@@ -1,8 +1,8 @@
 {
  "level": 2,
- "batch": "batch-1 (sheets + z1) + batch-2 (z2 + z1 dial fix + z1 states)",
+ "batch": "batch-1 (sheets + z1) + batch-2 (z2 + z1 dial fix + z1 states) + step-10 z2 fix pass",
  "spec_revision": "1.3",
- "generated": "2026-07-18/19 (batch 1) + 2026-07-19 (batch 2)",
+ "generated": "2026-07-18/19 (batch 1) + 2026-07-19 (batch 2) + 2026-07-19/20 (fix pass)",
  "model": "fal-ai/nano-banana-pro (t2i + edit) + deterministic PIL glyph/precision passes (l2_glyphs.py canonical source)",
  "pricing_basis": "$0.15/image std (2K), $0.30/image 4K (verified 2026-07-08); PIL passes $0",
  "budget": {
@@ -11,10 +11,12 @@
   "predecessor_spend_note": "RECOVERED FROM CUTOFF. $1.80 confirmed through commit deabd17 (predecessor's own asset-progress.md itemization: Liberty die raw $0.15 + v-bench wide $1.05 (r1 safe-zone reject + r2 + relocation edit + coat crop-fix) + v-master wide $0.30 + v-door wide $0.30). PLUS est $0.45 for the 3 icon raws (screwdriver / tile-blank / watch-blank @2K std) generated after deabd17 and before commit e6e1381 - NOT included in the $1.80 the handoff quoted. Best-effort honest total: $2.25.",
   "batch1_resumer_spend_usd": 0.3,
   "batch1_total_usd": 2.55,
-  "cumulative_level2_usd": 4.8,
+  "cumulative_level2_usd": 5.55,
   "resumer_spend_note": "Session 2026-07-19 (resumer): 2 NB generations at 2K std = $0.30 (dial-disc-clean edit consumed into the deterministic door-dial rebuild; cu-coat-pockets fresh t2i). Everything else deterministic PIL at $0.",
   "batch2_spend_usd": 2.25,
-  "batch2_note": "Batch 2 NB generations, itemized: z2 wides $0.90 (frame $0.30 + clockrow r1 safe-zone REJECT $0.30 + r2 $0.30); CU19 paint-over edit $0.15; icons $0.45 (mouse r1 $0.15 lost to mask surgery + r2 $0.15, oil can $0.15); z1 state edits $0.60 (cushion-empty, workroom-door-open, stair-door-win, + cushion-reveal r1 wrong watch position REJECT); cushion-reveal r2 $0.15. All glyph/count work + dial fix + 9 deterministic states = $0 PIL. Est was $1.35-1.80; overage $0.45 from 3 rejects + the 2 door-open states needing NB edits instead of PIL."
+  "batch2_note": "Batch 2 NB generations, itemized: z2 wides $0.90 (frame $0.30 + clockrow r1 safe-zone REJECT $0.30 + r2 $0.30); CU19 paint-over edit $0.15; icons $0.45 (mouse r1 $0.15 lost to mask surgery + r2 $0.15, oil can $0.15); z1 state edits $0.60 (cushion-empty, workroom-door-open, stair-door-win, + cushion-reveal r1 wrong watch position REJECT); cushion-reveal r2 $0.15. All glyph/count work + dial fix + 9 deterministic states = $0 PIL. Est was $1.35-1.80; overage $0.45 from 3 rejects + the 2 door-open states needing NB edits instead of PIL.",
+  "fixpass_spend_usd": 0.75,
+  "fixpass_note": "STEP-10 z2 FIX PASS. Predecessor agent (died mid-run) had already executed ALL 5 planned NB edits (seeds 720301-720305, results.jsonl evidence): coat-both-empty, stove-clear, crate-clear, cache-pried, bar-raised = 5 x $0.15 = $0.75, reconciled here. Raws archived to _rejects/edit-*-fixraw@3x.png. Successor session spent $0 further NB: registration audit showed all 5 raws usable (incl. crate, contra predecessor's 're-imagined' read); F1 numeral re-stamp, F5b screwdriver re-fill, F8 re-blends, F9 sheets all deterministic PIL."
  },
  "reference_anchors": {
   "note": "Cross-level style library: L1 seed anchors + L2 z1 wides. All fresh L2 generations anchor against these (up to 14 refs).",
@@ -425,6 +427,127 @@
    "method": "patch overlays + rect JSON (per-element architecture) + 1 full win plate; 4 NB edits",
    "generation": "pil+edit",
    "est_cost_usd": 1.05
+  },
+  {
+   "file": "z1/v-door/states/ov-bar-raised@3x.png (+ -wide)",
+   "zone": "z1",
+   "view": "v-door",
+   "element": "time-lock bar raised ~20deg on right hinge, cradles empty",
+   "state": "ov-bar-raised",
+   "method": "fix-pass F2: NB edit 720305 + registered auto-masked composite (rect 100,460,1800,1280)",
+   "generation": "edit+pil",
+   "est_cost_usd": 0.15,
+   "note": "replaces misregistered b2 patch (dup hardware/wrong angle); seam CU 0.0 / wide 1.0; superseded -> _rejects"
+  },
+  {
+   "file": "z1/v-bench/states/ov-coat-watch-taken@3x.png",
+   "zone": "z1",
+   "view": "v-bench",
+   "element": "watch A + chain gone from right pocket (tile IV untouched)",
+   "state": "ov-coat-watch-taken",
+   "method": "fix-pass F3: NB edit 720301 (both pockets emptied), right-pocket mask only (rect 1040,370,1580,1140)",
+   "generation": "edit+pil",
+   "est_cost_usd": 0.15,
+   "note": "smear blob gone; seam 0.0; independent of tile state"
+  },
+  {
+   "file": "z1/v-bench/states/ov-coat-tile-taken@3x.png",
+   "zone": "z1",
+   "view": "v-bench",
+   "element": "tile IV gone from left pocket (watch A untouched)",
+   "state": "ov-coat-tile-taken",
+   "method": "fix-pass F4: same NB raw 720301, left-pocket mask only (rect 430,430,970,880)",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "blur-band seams gone; seam 0.0"
+  },
+  {
+   "file": "z1/v-bench/states/ov-stove-tile-taken@3x.png (+ -wide)",
+   "zone": "z1",
+   "view": "v-bench",
+   "element": "tile II removed from cold hob incl. its cast shadow",
+   "state": "ov-stove-tile-taken",
+   "method": "fix-pass F5: NB edit 720302, rect widened to 430,300,1720,760 to contain the shadow",
+   "generation": "edit+pil",
+   "est_cost_usd": 0.15,
+   "note": "blur blob + tile ghost gone; seam 0.0 / wide 1.0"
+  },
+  {
+   "file": "z1/v-bench/states/ov-screwdriver-taken-wide@3x.png",
+   "zone": "z1",
+   "view": "v-bench",
+   "element": "rack wall clean after screwdriver pickup, peg restored",
+   "state": "ov-screwdriver-taken",
+   "method": "fix-pass F5b deterministic v2: tool+shadow masked from BASE, rail clone, 1/8-res diffusion low-freq + mirrored plaster HF, sunbeam-edge shadow attenuation, right-peg clone",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "residual smear ghost gone; faint wall-shading remnant only (invisible at game scale); seam 6.3"
+  },
+  {
+   "file": "z1/v-master/states/ov-crate-tile-taken@3x.png (+ -wide)",
+   "zone": "z1",
+   "view": "v-master",
+   "element": "tile VII taken; straw closed over",
+   "state": "ov-crate-tile-taken",
+   "method": "fix-pass F6: NB edit 720303, tile-spot masked composite (rect 770,1000,1290,1340)",
+   "generation": "edit+pil",
+   "est_cost_usd": 0.15,
+   "note": "brass remnant + blur gone; seam 92 -> 0.0 / wide 2.0"
+  },
+  {
+   "file": "z1/v-door/states/ov-cache-pried-wheel@3x.png (+ -wide)",
+   "zone": "z1",
+   "view": "v-door",
+   "element": "board pried beside real shadowed cavity; canonical great wheel (die 64) in cavity w/ warm left catch-light",
+   "state": "ov-cache-pried-wheel",
+   "method": "fix-pass F7: NB edit 720304 + canonical inv-great-wheel composite clipped to cavity luminance mask (rect 1080,1150,2048,1536)",
+   "generation": "edit+pil",
+   "est_cost_usd": 0.15,
+   "note": "pasted-flat cavity + hard seams (128) gone; seam 0.0 / wide 3.7; identical-die contract kept"
+  },
+  {
+   "file": "z1/v-door/states/ov-cache-empty@3x.png (+ -wide)",
+   "zone": "z1",
+   "view": "v-door",
+   "element": "cache open + empty",
+   "state": "ov-cache-empty",
+   "method": "fix-pass F7: same composite minus wheel",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "seam 0.0 / wide 3.7"
+  },
+  {
+   "file": "z1: cache-cat-gone, workroom-door-open-wide, cushion-empty/reveal wides, dial-seat wides x4, sill wide",
+   "zone": "z1",
+   "view": "multi",
+   "element": "boundary-only audit failures",
+   "state": "multiple",
+   "method": "fix-pass F8: ring color-match + feathered re-blend, pure-base ring enforced",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "seams: cat-gone 20->0, workroom 49->0, cushion 30/28->0, dial-seats 36/37/65/44 -> 15/19/20/15, sill 19->11; all PASS <= 24"
+  },
+  {
+   "file": "_rejects/edit-{coat-both-empty,stove-clear,crate-clear,cache-pried,bar-raised}-fixraw@3x.png",
+   "zone": "z1",
+   "view": "-",
+   "element": "predecessor NB fix raws (seeds 720301-720305), archived sources",
+   "state": "-",
+   "method": "nano-banana-pro edit @2K std",
+   "generation": "edit",
+   "est_cost_usd": 0.0,
+   "note": "$0.75 total accounted in budget.fixpass_spend_usd (spend reconciliation; per-asset costs above reference these raws)"
+  },
+  {
+   "file": "z1/z1-review-fixpass-overlays.png",
+   "zone": "z1",
+   "view": "-",
+   "element": "fix-pass before/after contact sheet (8 rows)",
+   "state": "-",
+   "method": "PIL",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "review deliverable; clockrow before/after = z2/clockrow-ringfix-before-after.png (F1)"
   }
  ]
 }
