@@ -62,7 +62,14 @@ per-zone user reviews follow each batch.
   I/III/V/VI/VIII/IX/X/XII with gaps exactly at 2/4/7/11 + single VI tray decoy, no
   keyhole. Flag for user on the sheet: stove-II / crate-VII engravings use a mild vertical
   legibility stretch — user to confirm it reads naturally.
-- **AWAITING USER:** z1 approval (+ any fix list) → then green-light **batch 2 (z2)**:
+- ✅ z1 STEP-10 VERDICT (user, 2026-07-19): **APPROVED WITH ONE FIX.** Stove-II +
+  crate-VII stretch explicitly fine. FIX: door-dial glyph stamping is messy — numerals
+  bleed past the brass tile faces and tiles intrude into the round sockets; re-stamp
+  from canonical sheet A across ALL plates showing the dial (cu-door-dial, master wide,
+  any others) and tidy the decoy tray so it reads as a shelf holding the loose VI (user
+  misread it as "a fallen bracket"). VI decoy itself CONFIRMED intentional vs p01 spec
+  (seated set + 2/4/7/11 gaps verified by Producer, no numeral conflicts). **Batch 2
+  GREEN-LIT with the fix folded in — agent dispatched 2026-07-19:**
   v-frame + v-clockrow wides (~$0.60), CUs 13–19 incl. F1 sealed display case (~$0.45),
   6 rack gears 16/24/36/40/48/72 deterministic via `specs/tools/l2_glyphs.py::render_arabic`
   ($0, F6), landmark plates from sheet B, mouse + oil-can cutouts (~$0.30), PLUS ~14 z1
