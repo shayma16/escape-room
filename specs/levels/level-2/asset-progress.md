@@ -1,6 +1,6 @@
 # Level 2 asset generation — STEP-10 z2 FIX PASS (2026-07-19, after batch-2 verdict)
 
-PROGRESS: 5/9 done | 0 retrying | 0 failed | 4 remaining | $0.75 fix-pass spend ($5.55 cumulative) | level cap $15.00
+PROGRESS: 6/9 done | 0 retrying | 0 failed | 3 remaining | $0.75 fix-pass spend ($5.55 cumulative) | level cap $15.00
 
 SPEND RECONCILIATION (2026-07-20): predecessor agent ran ALL 5 planned NB edits before dying
 (results.jsonl evidence, seeds 720301-720305): edit-coat-both-empty, edit-stove-clear,
@@ -19,7 +19,7 @@ User verdict: z2 APPROVED WITH FIXES (batch-2 flags accepted as-is). Fix-pass pl
 | F3 | ov-coat-watch-taken redo (smeary blur blob) | ONE NB edit (both pockets emptied) sources both coat patches | 0.15 | done (raw 720301; rect 1040,370,1580,1140; seam 0.0; tile IV untouched) |
 | F4 | ov-coat-tile-taken redo (blurred band seams) | same NB edit as F3 | 0 | done (rect 430,430,970,880; seam 0.0; watch A untouched) |
 | F5 | AUDIT FAIL ov-stove-tile-taken (blur blob + tile ghost) | NB edit | 0.15 | done (raw 720302; rect widened to 430,300,1720,760 so tile CAST SHADOW is included; seam 0/0.5; + ov-screwdriver-taken smear rebuilt deterministically from base: tool+shadow masked, rail clone, diffusion low-freq + mirrored HF plaster, shadow attenuation ramp at sunbeam edge, peg restored) |
-| F6 | AUDIT FAIL ov-crate-tile-taken (brass remnant + blur, seam 92) | NB edit | 0.15 | pending |
+| F6 | AUDIT FAIL ov-crate-tile-taken (brass remnant + blur, seam 92) | NB edit | 0.15 | done (recovered raw 720303 was fine — registered masked composite, tile-spot mask only; seam 92 -> 0) |
 | F7 | AUDIT FAIL ov-cache-pried-wheel / ov-cache-empty (pasted-flat cavity, hard board seams 128) | NB edit + canonical wheel composite | 0.15 | pending |
 | F8 | AUDIT boundary seams: ov-cache-cat-gone (160), ov-workroom-door-open (48), cushion wides, dial-seat wides, sill/stove wides | deterministic feathered boundary re-blend | 0 | pending |
 | F9 | review deliverables: clockrow before/after (done in F1) + fixed-overlays contact sheet + manifest fix block | PIL | 0 | pending |
