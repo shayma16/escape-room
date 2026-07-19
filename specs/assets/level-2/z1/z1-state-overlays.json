@@ -7,21 +7,21 @@
    1340,
    1110
   ],
-  "note": "rack empty after pickup; no CU hosts this region"
+  "note": "rack empty after pickup; fix-pass deterministic rebuild v2: tool+shadow masked out of the BASE crop, rail cloned, wall row-interpolated w/ grain, peg restored; no CU host"
  },
  "ov-stove-tile-taken": {
   "base": "cu-stove-hob",
   "rect_3x": [
-   640,
-   310,
+   430,
+   300,
    1720,
    760
   ],
-  "note": "tile II removed from the cold hob",
+  "note": "tile II removed from the cold hob (incl. its cast shadow); fix-pass rebuild from NB edit 720302",
   "wide_base": "z1-bench-base",
   "wide_rect_3x": [
-   2582,
-   1407,
+   2496,
+   1403,
    3025,
    1592
   ]

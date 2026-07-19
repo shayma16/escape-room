@@ -299,59 +299,89 @@ def f5_stove():
 
 
 def f5b_screwdriver():
-    """Deterministic rebuild of ov-screwdriver-taken (wide-only patch):
-    base crop -> remove screwdriver+shadow (diff mask vs old overlay),
-    rail band by horizontal wood clone, wall by multi-scale diffusion fill,
-    peg cloned back from the right peg."""
+    """Deterministic rebuild of ov-screwdriver-taken (wide-only patch), v2:
+    mask = screwdriver+shadow ONLY (from base darkness within a hand box),
+    rail rows filled by horizontal clone (feathered run edges), wall rows by
+    per-row linear interpolation + grain, peg cloned from the right peg."""
     rect = (980, 440, 1340, 1110)
     view = "v-bench"
     wide = load(os.path.join(Z1, view, "z1-bench-base@3x.png"))
-    basec = wide.crop(rect)                                   # has screwdriver
-    dstp = os.path.join(Z1, view, "states", "ov-screwdriver-taken-wide@3x.png")
-    old = load(dstp)                                          # smeary removal
+    basec = wide.crop(rect)
     b = np.asarray(basec, np.float32)
-    o = np.asarray(old, np.float32)
-    d = np.abs(b - o).mean(2)
-    ds = np.asarray(Image.fromarray(d.astype(np.uint8))
-                    .filter(ImageFilter.GaussianBlur(4)), np.float32)
-    mask = Image.fromarray(((ds > 6)).astype(np.uint8) * 255, "L") \
-        .filter(ImageFilter.MaxFilter(13))
+    H, W = b.shape[:2]
+
+    # --- mask: tool silhouette + wall shadow ---
+    mask = Image.new("L", (W, H), 0)
+    d = ImageDraw.Draw(mask)
+    d.polygon([(70, 60), (162, 60), (162, 355), (140, 540), (152, 555),
+               (150, 640), (92, 645), (95, 545), (105, 528), (98, 355),
+               (70, 340)], fill=255)                       # handle+shaft+tip
+    d.polygon([(20, 430), (105, 430), (105, 660), (18, 665)], fill=255)  # wall shadow
+    d.polygon([(40, 330), (100, 330), (100, 440), (30, 445)], fill=255)  # shadow upper
+    tool = Image.new("L", (W, H), 0)
+    ImageDraw.Draw(tool).polygon([(70, 60), (162, 60), (162, 355), (140, 540),
+        (152, 555), (150, 640), (92, 645), (95, 545), (105, 528), (98, 355),
+        (70, 340)], fill=255)
+    tool = np.asarray(tool.filter(ImageFilter.MaxFilter(9))
+                      .filter(ImageFilter.GaussianBlur(2)), np.float32) / 255.0
+    mask = mask.filter(ImageFilter.MaxFilter(9))
     m = np.asarray(mask, bool)
 
     out = b.copy()
-    H, W = m.shape
-    # rail band: horizontal clone from clean rail to the right (dest x60..165)
-    rail_y0, rail_y1 = 50, 195
-    src_x0, src_x1, dst_x0 = 160, 260, 58
+    rail_y0, rail_y1 = 60, 187
+    src_off = 104                                          # clean rail to the right
+    rng = np.random.default_rng(720999)
     for y in range(rail_y0, rail_y1):
-        run = m[y]
-        if run.any():
-            xs = np.where(run)[0]
-            seg = out[y, src_x0:src_x1].copy()
-            width = src_x1 - src_x0
-            for x in xs:
-                if x < dst_x0 or x >= dst_x0 + width + 45:
-                    continue
-                out[y, x] = seg[(x - dst_x0) % width]
-    # wall: multi-scale diffusion fill on remaining masked pixels
-    wall_mask = m.copy()
-    wall_mask[rail_y0:rail_y1, dst_x0:dst_x0 + (src_x1 - src_x0) + 45] = False
-    # normalized-convolution diffusion fill (single wide pass + smooth)
-    fm = wall_mask.astype(np.float32)
-    src = out * (1 - fm[..., None])
-    num = np.asarray(Image.fromarray(np.clip(src, 0, 255).astype(np.uint8), "RGB")
-                     .filter(ImageFilter.GaussianBlur(81)), np.float32)
-    den = np.asarray(Image.fromarray(((1 - fm) * 255).astype(np.uint8), "L")
-                     .filter(ImageFilter.GaussianBlur(81)), np.float32) / 255.0
-    est = num / np.clip(den, 0.02, 1.0)[..., None]
-    est = np.asarray(Image.fromarray(np.clip(est, 0, 255).astype(np.uint8), "RGB")
-                     .filter(ImageFilter.GaussianBlur(5)), np.float32)
-    out[wall_mask] = est[wall_mask]
-    # feather the mask border so fills blend into base
-    mf = np.asarray(Image.fromarray((m * 255).astype(np.uint8), "L")
-                    .filter(ImageFilter.GaussianBlur(3)), np.float32) / 255.0
+        run = np.where(m[y])[0]
+        if run.size == 0:
+            continue
+        x0, x1 = run.min(), run.max()
+        for x in run:
+            sx = min(W - 1, x + src_off)
+            out[y, x] = b[y, sx]
+        for k in range(6):
+            wgt = (k + 1) / 7.0
+            if x0 + k < W:
+                out[y, x0 + k] = out[y, x0 + k] * wgt + b[y, x0 + k] * (1 - wgt)
+            if x1 - k >= 0:
+                out[y, x1 - k] = out[y, x1 - k] * wgt + b[y, x1 - k] * (1 - wgt)
+    # wall: smooth low-frequency diffusion fill at 1/8 res (wall is near-
+    # featureless plaster; banding-free), plus faint grain
+    wall = m.copy(); wall[rail_y0:rail_y1] = False
+    F = 8
+    hs, ws = H // F, W // F
+    small = np.asarray(Image.fromarray(np.clip(out, 0, 255).astype(np.uint8), "RGB")
+                       .resize((ws, hs), Image.BILINEAR), np.float32)
+    msk_s = np.asarray(Image.fromarray((wall * 255).astype(np.uint8), "L")
+                       .resize((ws, hs), Image.BILINEAR), np.float32) > 40
+    fill = small.copy()
+    for _ in range(400):
+        up = np.roll(fill, 1, 0); dn = np.roll(fill, -1, 0)
+        lf = np.roll(fill, 1, 1); rt = np.roll(fill, -1, 1)
+        avg = (up + dn + lf + rt) / 4.0
+        fill[msk_s] = avg[msk_s]
+    low = np.asarray(Image.fromarray(np.clip(fill, 0, 255).astype(np.uint8), "RGB")
+                     .resize((W, H), Image.BICUBIC), np.float32)
+    low = np.asarray(Image.fromarray(low.astype(np.uint8), "RGB")
+                     .filter(ImageFilter.GaussianBlur(4)), np.float32)
+    # high-frequency plaster streaks mirrored in from the clean wall right of
+    # the tool (mirror axis x=175 keeps sources in the clean 175..340 zone)
+    hp = b - np.asarray(Image.fromarray(np.clip(b, 0, 255).astype(np.uint8), "RGB")
+                        .filter(ImageFilter.GaussianBlur(10)), np.float32)
+    yy, xx = np.mgrid[0:H, 0:W]
+    mx = np.clip(350 - xx, 0, W - 1)
+    hf = hp[yy, mx]
+    fillv = low + hf * 0.9 + rng.normal(0, 0.8, out.shape)
+    # below y~430 the tool shadow crosses the diagonal sunbeam edge, which
+    # diffusion cannot reconstruct -> keep base structure there and only
+    # ATTENUATE the shadow (ramp 1.0 -> 0.45 replacement strength)
+    ramp = np.clip((560 - yy) / 130.0, 0.0, 1.0) * 0.55 + 0.45
+    ramp = np.maximum(ramp, tool)          # tool silhouette: always fully replaced
+    out[wall] = (b + (fillv - b) * ramp[..., None])[wall]
+    # feather whole mask edge into base
+    mf = np.asarray(mask.filter(ImageFilter.GaussianBlur(3)), np.float32) / 255.0
     out = b * (1 - mf[..., None]) + out * mf[..., None]
-    # peg clone: right peg box (262,96)-(314,158) -> left peg at handle hole
+    # peg clone: right peg box -> restored left peg
     pw, ph = 52, 62
     sx, sy, px, py = 262, 96, 92, 96
     peg = out[sy:sy + ph, sx:sx + pw].copy()
@@ -361,15 +391,16 @@ def f5b_screwdriver():
     reg = out[py:py + ph, px:px + pw]
     out[py:py + ph, px:px + pw] = reg * (1 - pmf[..., None]) + peg * pmf[..., None]
 
+    dstp = os.path.join(Z1, view, "states", "ov-screwdriver-taken-wide@3x.png")
     archive(dstp)
     Image.fromarray(np.clip(out, 0, 255).astype(np.uint8), "RGB").save(dstp)
     meta = meta_load()
     meta["ov-screwdriver-taken"]["note"] = (
-        "rack empty after pickup; fix-pass deterministic rebuild: smear ghost "
-        "re-filled (rail clone + diffusion wall fill), peg restored; no CU host")
+        "rack empty after pickup; fix-pass deterministic rebuild v2: tool+shadow "
+        "masked out of the BASE crop, rail cloned, wall row-interpolated w/ grain, "
+        "peg restored; no CU host")
     meta_save(meta)
-    Image.fromarray(np.clip(out, 0, 255).astype(np.uint8), "RGB") \
-        .resize((360 * 2, 670 * 2), Image.LANCZOS).save(os.path.join(S, "fixed-screw.png"))
+    Image.fromarray(np.clip(out, 0, 255).astype(np.uint8), "RGB")         .resize((W * 2, H * 2), Image.LANCZOS).save(os.path.join(S, "fixed-screw.png"))
     print("saved ov-screwdriver-taken (wide-only)", rect)
 
 
