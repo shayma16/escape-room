@@ -1,6 +1,6 @@
 # Level 2 asset generation — STEP-10 z2 FIX PASS (2026-07-19, after batch-2 verdict)
 
-PROGRESS: 1/9 done | 0 retrying | 0 failed | 8 remaining | $0.75 fix-pass spend ($5.55 cumulative) | level cap $15.00
+PROGRESS: 2/9 done | 0 retrying | 0 failed | 7 remaining | $0.75 fix-pass spend ($5.55 cumulative) | level cap $15.00
 
 SPEND RECONCILIATION (2026-07-20): predecessor agent ran ALL 5 planned NB edits before dying
 (results.jsonl evidence, seeds 720301-720305): edit-coat-both-empty, edit-stove-clear,
@@ -15,7 +15,7 @@ User verdict: z2 APPROVED WITH FIXES (batch-2 flags accepted as-is). Fix-pass pl
 | # | Item | Method | Est $ | Status |
 |---|------|--------|-------|--------|
 | F1 | z2 clockrow numeral rings re-stamped inside measured faces (all 4 clocks, wide + cu-clockrow-plates, plates untouched, masked bbox composite) | deterministic PIL (l2_clockfix.py) | 0 | done |
-| F2 | ov-bar-raised rebuild (misregistered: seams, offset dup hardware, wrong-angle bar) | NB edit + registered component composite | 0.15 | pending |
+| F2 | ov-bar-raised rebuild (misregistered: seams, offset dup hardware, wrong-angle bar) | NB edit + registered component composite | 0.15 | done (raw 720305 recovered; rect widened to 100,460,1800,1280; seam CU 0.0 / wide 1.0) |
 | F3 | ov-coat-watch-taken redo (smeary blur blob) | ONE NB edit (both pockets emptied) sources both coat patches | 0.15 | pending |
 | F4 | ov-coat-tile-taken redo (blurred band seams) | same NB edit as F3 | 0 | pending |
 | F5 | AUDIT FAIL ov-stove-tile-taken (blur blob + tile ghost) | NB edit | 0.15 | pending |

@@ -84,17 +84,17 @@
   "base": "cu-timelock",
   "rect_3x": [
    100,
-   480,
-   1720,
-   1260
+   460,
+   1800,
+   1280
   ],
-  "note": "time-lock bar pivoted up on its rod crank; cradles empty",
+  "note": "time-lock bar pivoted up ~20deg on right hinge; cradles empty; fix-pass rebuild from NB edit 720305, registered masked composite",
   "wide_base": "z1-door-base",
   "wide_rect_3x": [
    679,
-   701,
-   1628,
-   1158
+   690,
+   1675,
+   1170
   ]
  },
  "ov-cache-pried-wheel": {
