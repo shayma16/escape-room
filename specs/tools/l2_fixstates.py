@@ -421,8 +421,8 @@ def f6_crate():
     img.resize((1024, 768), Image.LANCZOS).save(os.path.join(S, "fixed-crate.png"))
 
 
-WHEEL = dict(cx=1300, cy=1292, w=310, squash=0.40, rot=-16.0,
-             dark=0.42, warm=(1.06, 0.97, 0.82), hi=0.30)
+WHEEL = dict(cx=1285, cy=1288, w=285, squash=0.44, rot=-16.0,
+             dark=0.52, warm=(1.10, 0.98, 0.80), hi=0.65, lum_clip=78)
 
 
 def f7_cache():
@@ -444,13 +444,24 @@ def f7_cache():
     # darken into shadow with warm tint + top-left warm catch light gradient
     hgt, wdt = rgb.shape[:2]
     gy, gx = np.mgrid[0:hgt, 0:wdt]
-    g = 1.0 - (gx / wdt * 0.5 + gy / hgt * 0.5)          # 1 top-left -> 0.
+    g = 1.0 - (gx / wdt * 0.8 + gy / hgt * 0.2)          # lit from cavity's left
     fac = P["dark"] * (1 + P["hi"] * g)[..., None]
     rgb = np.clip(rgb * fac * np.array(P["warm"]), 0, 255)
     wh2 = np.concatenate([rgb, a * 255], axis=2).astype(np.uint8)
     wimg = Image.fromarray(wh2, "RGBA")
+    # clip wheel to the dark cavity interior so the lip occludes it
+    ib = np.asarray(img, np.float32)
+    lum = ib.mean(2)
+    cav = (lum < P["lum_clip"]).astype(np.uint8) * 255
+    cavm = Image.fromarray(cav, "L").filter(ImageFilter.MinFilter(5))         .filter(ImageFilter.GaussianBlur(4))
+    ox, oy = P["cx"] - wimg.width // 2, P["cy"] - wimg.height // 2
+    cav_crop = np.asarray(cavm.crop((ox, oy, ox + wimg.width, oy + wimg.height)),
+                          np.float32) / 255.0
+    wa2 = np.asarray(wimg, np.float32)
+    wa2[..., 3] *= cav_crop
+    wimg = Image.fromarray(np.clip(wa2, 0, 255).astype(np.uint8), "RGBA")
     full = img.convert("RGBA")
-    full.alpha_composite(wimg, (P["cx"] - wimg.width // 2, P["cy"] - wimg.height // 2))
+    full.alpha_composite(wimg, (ox, oy))
     full = full.convert("RGB")
     save_patch(meta, "ov-cache-pried-wheel", "cu-floor-cache", full, rect,
                "cache board pried (lies beside opening); canonical great wheel "

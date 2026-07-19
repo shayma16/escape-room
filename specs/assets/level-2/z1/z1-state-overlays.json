@@ -101,16 +101,16 @@
   "base": "cu-floor-cache",
   "rect_3x": [
    1080,
-   1180,
-   1750,
+   1150,
+   2048,
    1536
   ],
-  "note": "cache board pried; great wheel visible in cavity",
+  "note": "cache board pried (lies beside opening); canonical great wheel (inv-great-wheel icon, identical-die contract) lying in shadowed cavity w/ warm catch-light; fix-pass rebuild from NB edit 720304",
   "wide_base": "z1-door-base",
   "wide_rect_3x": [
    2448,
-   1739,
-   2789,
+   1724,
+   2940,
    1920
   ]
  },
@@ -118,16 +118,16 @@
   "base": "cu-floor-cache",
   "rect_3x": [
    1080,
-   1180,
-   1750,
+   1150,
+   2048,
    1536
   ],
-  "note": "cache open + empty after wheel taken",
+  "note": "cache open + empty after wheel taken; fix-pass rebuild from NB edit 720304 (real cavity + pried board)",
   "wide_base": "z1-door-base",
   "wide_rect_3x": [
    2448,
-   1739,
-   2789,
+   1724,
+   2940,
    1920
   ]
  },
