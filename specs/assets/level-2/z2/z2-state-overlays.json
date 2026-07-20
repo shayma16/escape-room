@@ -277,5 +277,25 @@
    1514,
    1280
   ]
+ },
+ "ov-sun-absent": {
+  "wide_base": "z2-frame-base",
+  "wide_rect_3x": [
+   1315,
+   125,
+   1490,
+   305
+  ],
+  "note": "flat wall behind the sun disc (column interp of the plank panel) so the sun can travel the track without ghosting"
+ },
+ "ov-bell-absent": {
+  "wide_base": "z2-frame-base",
+  "wide_rect_3x": [
+   2092,
+   448,
+   2228,
+   578
+  ],
+  "note": "flat wall behind the bell so it can swing for the strike"
  }
 }

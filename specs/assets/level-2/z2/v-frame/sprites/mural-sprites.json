@@ -1,0 +1,108 @@
+{
+ "sp-sun": {
+  "sprite": "sp-sun@3x.png",
+  "rect_3x": [
+   1315,
+   125,
+   1490,
+   305
+  ],
+  "center_px_at_3x": [
+   1400,
+   212
+  ],
+  "background_patch": "states/ov-sun-absent-wide@3x.png"
+ },
+ "sp-bell": {
+  "sprite": "sp-bell@3x.png",
+  "rect_3x": [
+   2092,
+   448,
+   2228,
+   578
+  ],
+  "pivot_px_at_3x": [
+   2160,
+   452
+  ],
+  "strike_swing_deg": 12,
+  "background_patch": "states/ov-bell-absent-wide@3x.png",
+  "note": "watchman bell: swings about the top yoke for the strike beat (carried by swing + audio; no separate strike pose art). Key poses = rest 0deg / struck +-12deg."
+ },
+ "sp-figure-woman": {
+  "sprite": "sp-figure-woman@3x.png",
+  "rect_3x": [
+   1090,
+   440,
+   1285,
+   725
+  ],
+  "pivot_px_at_3x": [
+   1180,
+   720
+  ],
+  "note": "carved-relief automaton figure layer (soft-alpha). For the mural run the Developer applies subtle jointed sway about the pivot; the relief remains in the base plate behind, so keep the sway small. Primary animated reward is sun-transit + bell-strike."
+ },
+ "sp-figure-drummer": {
+  "sprite": "sp-figure-drummer@3x.png",
+  "rect_3x": [
+   1655,
+   445,
+   1855,
+   775
+  ],
+  "pivot_px_at_3x": [
+   1748,
+   765
+  ],
+  "note": "carved-relief automaton figure layer (soft-alpha). For the mural run the Developer applies subtle jointed sway about the pivot; the relief remains in the base plate behind, so keep the sway small. Primary animated reward is sun-transit + bell-strike."
+ },
+ "sp-figure-watchman": {
+  "sprite": "sp-figure-watchman@3x.png",
+  "rect_3x": [
+   1912,
+   552,
+   2068,
+   872
+  ],
+  "pivot_px_at_3x": [
+   1990,
+   862
+  ],
+  "note": "carved-relief automaton figure layer (soft-alpha). For the mural run the Developer applies subtle jointed sway about the pivot; the relief remains in the base plate behind, so keep the sway small. Primary animated reward is sun-transit + bell-strike."
+ },
+ "_mural_run": {
+  "sun_track_at_3x": [
+   [
+    690,
+    250
+   ],
+   [
+    1040,
+    288
+   ],
+   [
+    1385,
+    200
+   ],
+   [
+    1660,
+    250
+   ],
+   [
+    1900,
+    430
+   ],
+   [
+    1960,
+    590
+   ],
+   [
+    1790,
+    660
+   ]
+  ],
+  "track_note": "carved sun-track centerline (approx); the sun disc sweeps L->R along it as the town 'runs'. Variable speed; the one correct full cycle = sun crosses the town then the watchman bell strikes (bell swing). D5 cadence/timing is Developer; identical-on-repeat.",
+  "strike_beat": "at end of sun transit, swing sp-bell +-12deg (2-3 beats) + strike audio; figures may sway subtly (optional)."
+ }
+}

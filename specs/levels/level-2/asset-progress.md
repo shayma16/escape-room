@@ -1,6 +1,6 @@
 # Level 2 asset generation — BATCH 4 (FINAL: all remaining state overlays + sprites + hatch-wheel carry-in fix)
 
-PROGRESS: 9/21 done | 0 retrying | 0 failed | 12 remaining | $0.00 batch NB spend ($7.20 cumulative) | level cap $15.00
+PROGRESS: 11/21 done | 0 retrying | 0 failed | 10 remaining | $0.00 batch NB spend ($7.20 cumulative) | level cap $15.00
 (session note: items 9,11,12,13,14 done deterministically; item 10 key-in + z4 16/17 redo deferred to NB phase; z4 uncommitted work REJECTED = smear defect, redoing)
 
 _Green-lit by user 2026-07-20 (z3/z4 verdict: approved with hatch-wheel curvature fix).
@@ -21,7 +21,7 @@ patches, no blur/smear inpaints, manual-pickup states show emptied containers._
 | 2 | z2 ov-arbor-oiled (CU13 + wide echo): bearing rust bloom cleared + oil sheen, bearing zone only | PIL | 0 | done (seams 6.9/7.1; bearing-only scope) |
 | 3 | z2 post-mount overlays x14 (CU13): gears 16/24/36/40/48/72 + great wheel 64, posts A and B, perspective-matched deterministic gear renders + shadow, arbor through square hole | PIL (render_gear/die-64) | 0 | done (RGBA additive, centered on stub axes A(1322,668)/B(1625,695), dia=84+2.1t, square hole shows arbor socket; no collar re-paste artifacts) |
 | 4 | z2 rack-absent overlays x6 (CU14 native + wide echo): blank-peg crops from the preglyph frame base (_rejects/z2-frame-base-preglyph) | PIL | 0 | done (RGBA masked, nearest-gear partition + neighbor hard-exclude; all-absent residue 0 px; neighbor-bite 6/6 = 0 px) |
-| 5 | z2 mural sprites: sun-disc cutout + track spec; watchman + bell strike key poses; jointed-figure layers (woman/drummer); JSON with track + pose anchors (D5 cadence = Developer timing) | PIL cutouts (+$0.15 NB reserve if strike pose unusable) | 0 | pending |
+| 5 | z2 mural sprites: sun-disc cutout + track spec; watchman + bell strike key poses; jointed-figure layers (woman/drummer); JSON with track + pose anchors (D5 cadence = Developer timing) | PIL cutouts (+$0.15 NB reserve if strike pose unusable) | 0 | done (sun-disc+bell RGBA cutouts +absent patches; woman/drummer/watchman soft-alpha figure layers; track polyline; mural-sprites.json; strike=bell swing+audio, NB reserve untouched) |
 | 6 | z2 ov-panel-open (frame wide): wall panel latched open onto z3 (dark opening + amber dial glow leak) + panel-door cutout sprite for swing keys | NB edit + registered masked composite | 0.15 | pending |
 | 7 | z2 ov-brick-pried-oilcan / ov-brick-empty (CU16 + wide echo): pried cavity NB edit; canonical inv-oil-can composited in cavity; empty = same cavity | NB edit + PIL | 0.15 | pending |
 | 8 | z2 ov-cabinet-open-mouse / ov-cabinet-empty (CU18): top drawer open (empty interior) NB edit; canonical inv-toy-mouse composited for +mouse | NB edit + PIL | 0.15 | pending |
@@ -36,7 +36,7 @@ patches, no blur/smear inpaints, manual-pickup states show emptied containers._
 | 17 | z4 ov-tag-taken (CU23 + wide echo): nail empty | PIL clone-out | 0 | pending |
 | 18 | z1 cat pose sprites x4 (pounce-chase, settled-by-door, stretch, exit-trot) — keyed RGBA, F3 cat design refs, 9.1 register (real-cat, no anthropomorphism) | NB raws + keyed RGBA | 0.60 | pending |
 | 19 | z1 cat facial keys: mouse-tell (eyes locked + tail flick) + slow-blink half-lid on cu-cat-cushion | 1 NB edit + PIL (blend/tail warp) | 0.15 | pending |
-| 20 | z1 mouse skitter loop keys (from inv-toy-mouse cutout: tilt frames + motion JSON; D4) + tray-VI seat/pop-back notes (reuses tile-VI cutout, no art) | PIL + JSON | 0 | pending |
+| 20 | z1 mouse skitter loop keys (from inv-toy-mouse cutout: tilt frames + motion JSON; D4) + tray-VI seat/pop-back notes (reuses tile-VI cutout, no art) | PIL + JSON | 0 | done (6-frame tin-mouse skitter tilt/bob loop from inv-toy-mouse; round-winged key kept; D4 motion JSON; tray-VI seat/pop-back = note only, no art) |
 | 21 | Deliverables: seam audit ALL new overlays (<=24, l2_fixstates ring method); z2/z3/z4 state-overlays.json; batch-4 review contact sheet; manifest batch-4 block; progress/spend reconciliation | PIL | 0 | pending |
 
 Planned NB spend $1.20 + $0.45 reserves (mural pose, drum key-in, 1 re-roll) = worst $1.65

@@ -1,0 +1,30 @@
+{
+ "loop": [
+  "mouse-skitter/mouse-skitter-0@3x.png",
+  "mouse-skitter/mouse-skitter-1@3x.png",
+  "mouse-skitter/mouse-skitter-2@3x.png",
+  "mouse-skitter/mouse-skitter-3@3x.png",
+  "mouse-skitter/mouse-skitter-4@3x.png",
+  "mouse-skitter/mouse-skitter-5@3x.png"
+ ],
+ "source": "inv-toy-mouse@3x.png",
+ "tilt_deg_keys": [
+  -7,
+  -2,
+  4,
+  8,
+  4,
+  -2
+ ],
+ "bob_px_keys_at_3x": [
+  0,
+  -6,
+  -2,
+  3,
+  6,
+  2
+ ],
+ "pivot": "ground contact = sprite bottom-center; rotate about it",
+ "render_rule": "D4 wound-skitter loop: cycle the tilt/bob keys while translating the mouse along its skitter path (the tin mouse scoots, wobbling on its wheels). Speed/path/timing = Developer (D4). Butterfly key stays round-winged (never square) per style 9.2 / p08 read.",
+ "tray_VI_note": "tile-VI tray interaction (seat / pop-back) reuses the existing cast-tile VI render (z1 master tray decoy) \u2014 NO new art. Seat = tile drops into the tray slot; pop-back = tile ejects (non-collectible decoy, never leaves the tray). Motion-only; Developer timing."
+}
