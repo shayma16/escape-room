@@ -1,6 +1,6 @@
 # Level 2 asset generation — BATCH 3 (z3 + z4 + gear-frame carry-in fix)
 
-PROGRESS: 0/17 done | 0 retrying | 0 failed | 17 remaining | $0.00 batch spend ($5.55 cumulative) | level cap $15.00
+PROGRESS: 1/17 done | 0 retrying | 0 failed | 16 remaining | $0.00 batch spend ($5.55 cumulative) | level cap $15.00
 
 _Green-lit by user 2026-07-20 (fix-pass verdict: "everything checks out"; one carry-in fix
 rolled in). Scope per standing plan: z3 (great-dial mirror contract plate — most protected
@@ -13,7 +13,7 @@ numeral set from sheet A). NEW PROGRAMMATIC GATE this batch (user has caught con
 
 | # | Item | Method | Est $ | Status |
 |---|------|--------|-------|--------|
-| 1 | CARRY-IN FIX (user verdict 2026-07-20): cu-gear-frame XII/VIII re-stamp — erase by preglyph bbox revert; XII contained ON the pinion face annulus (ellipse mask minus boss), VIII engraved on the post-A bracket face (rect mask); programmatic containment asserts; propagate wide @3x/2x/1x + re-crop CU13; before/after sheet | deterministic PIL (l2_framefix.py) | 0 | pending |
+| 1 | CARRY-IN FIX (user verdict 2026-07-20): cu-gear-frame XII/VIII re-stamp — erase by preglyph bbox revert; XII contained ON the pinion face annulus (ellipse mask minus boss), VIII engraved on the post-A bracket face (rect mask); programmatic containment asserts; propagate wide @3x/2x/1x + re-crop CU13; before/after sheet | deterministic PIL (l2_framefix.py) | 0 | done (XII h24 @(1054,1152) on pinion face annulus, VIII h26 @(1436,1230) on bracket panel; containment asserts PASS; seam audit: all 3160 changed px inside sanctioned zones; superseded -> _rejects/*-b3pre-framefix; sheet z2/gearframe-stampfix-before-after.png) |
 | 2 | z3-dial-base wide 3840x1920: chamber contre-jour, glowing amber dial disc from behind (glass BLANK — no numerals/no hands, stamped deterministically after), setting crank at hub + clear D9 staging area, winding drum (dry, square socket, weight low on line), dead-still pendulum, strike train + hammers, linkage rods exiting right, floor hatch w/ 4 blank brass wheels + header plates | NB t2i 4K, 14 refs | 0.30 | pending |
 | 3 | z3 glyph integration rev ($0): MIRRORED numeral ring from sheet A -mir set fitted inside measured disc (full 4.2 contract: whole-ring mirror, XII top/VI bottom flipped letterforms, mirrored-IV=malformed-VI, NO legible VII anywhere); hatch wheel I-XII engraves (neutral non-solution position) + 4 canonical header dies (BigBen* Burj Liberty Fuji — binding z3 order); containment asserts | deterministic PIL (l2_z3_build.py) | 0 | pending |
 | 4 | CU20 cu-great-dial (interactive; carries clu-mirrored-numerals; native-res mirrored ring re-stamp; D9 space clear; numeral >=5% screen width floor) | crop + native overlay | 0 | pending |
