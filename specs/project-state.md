@@ -100,6 +100,17 @@ per-zone user reviews follow each batch.
   containment check must also verify curvature/perspective conformance on non-planar
   surfaces. BATCH 4 GREEN-LIT (state overlays + cat/mouse/mural sprites) with the fix
   first; agent dispatched 2026-07-20.
+- ✅ BATCH 4 COMPLETE (2026-07-20, finished on Opus after Fable credit exhaustion):
+  all remaining state overlays (z2/z3/z4) + cat/mouse/mural sprites + hatch-wheel
+  curvature carry-in fix. 24 surface overlays seam-audit PASS (worst 20.2, the optional
+  -absent animation aids). Dead-agent z4 clone work REJECTED for interior smear (seam
+  passed but blur-class defect) and redone. **LEVEL 2 ART COMPLETE — $8.85/$15.00 cap
+  ($6.15 headroom) — awaiting user's final step-10 review.** Review sheet:
+  z2/z2z3z4-review-batch4.png. On approval → DEVELOPER STAGE (reminder: do NOT build the
+  unreachable p08 mouse-at-drum interaction; NEVER "psh" SFX; L1 round-4 architecture is
+  the baseline — per-element overlays, uses-driven lifecycle, manual pickups, containment/
+  conformance gates). Model note: Fable 5 credits exhausted 2026-07-20; spawn subagents
+  on the session's current model (user on Opus) until Fable resets.
 - Pipeline after art: batches 2→4 (z2, z3, z4 + sprites/state edits) with step-10 reviews
   → Developer (NOTE: do NOT build the unreachable p08 mouse-at-drum interaction — dead
   spec text, see walkthrough flags; NEVER the "psh" SFX) → QA → GATE → release.
