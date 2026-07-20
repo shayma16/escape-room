@@ -1,0 +1,85 @@
+{
+ "frame_size_at_3x": [
+  117,
+  102
+ ],
+ "order": [
+  "I",
+  "II",
+  "III",
+  "IV",
+  "V",
+  "VI",
+  "VII",
+  "VIII",
+  "IX",
+  "X",
+  "XI",
+  "XII"
+ ],
+ "crown_face_rects_wide_at_3x": [
+  [
+   2450,
+   1625,
+   2525,
+   1695
+  ],
+  [
+   2605,
+   1680,
+   2685,
+   1750
+  ],
+  [
+   2775,
+   1730,
+   2850,
+   1800
+  ],
+  [
+   2945,
+   1735,
+   3035,
+   1815
+  ]
+ ],
+ "crown_face_rects_cu22_at_3x": [
+  [
+   439,
+   1104,
+   549,
+   1207
+  ],
+  [
+   666,
+   1185,
+   783,
+   1287
+  ],
+  [
+   914,
+   1258,
+   1024,
+   1360
+  ],
+  [
+   1163,
+   1265,
+   1295,
+   1382
+  ]
+ ],
+ "header_dies_left_to_right": [
+  "bigben",
+  "burj",
+  "liberty",
+  "fuji"
+ ],
+ "base_plate_shows": [
+  "XII",
+  "III",
+  "VI",
+  "IX"
+ ],
+ "solution_note": "solution VI-X-I-III set by Developer state; never baked"
+}

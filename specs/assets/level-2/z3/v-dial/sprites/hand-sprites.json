@@ -1,0 +1,18 @@
+{
+ "hand-hour": {
+  "pivot_px_at_3x": [
+   60,
+   290
+  ],
+  "length_px_at_3x": 250,
+  "render_rule": "front angle theta renders at MIRRORED angle -theta (D1); anchor pivot at the works hub arbor (1522,878) in z3-dial-base@3x space; numeral ring is ellipse center (1459.8,889.1) semi-axes (464.4,530.6) at u=0.73"
+ },
+ "hand-minute": {
+  "pivot_px_at_3x": [
+   60,
+   420
+  ],
+  "length_px_at_3x": 380,
+  "render_rule": "front angle theta renders at MIRRORED angle -theta (D1); anchor pivot at the works hub arbor (1522,878) in z3-dial-base@3x space; numeral ring is ellipse center (1459.8,889.1) semi-axes (464.4,530.6) at u=0.73"
+ }
+}
