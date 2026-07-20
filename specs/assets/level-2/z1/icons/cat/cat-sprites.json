@@ -1,0 +1,38 @@
+{
+ "cat-stretch": {
+  "sprite": "cat/cat-stretch@3x.png",
+  "size_px": [
+   2110,
+   1146
+  ],
+  "fal_seed": 740183,
+  "note": "z1 cat stretch pose (real-cat register, F3 design; keyed RGBA). Developer positions/timing (D3; identical-on-repeat)."
+ },
+ "cat-pounce-chase": {
+  "sprite": "cat/cat-pounce-chase@3x.png",
+  "size_px": [
+   2006,
+   1061
+  ],
+  "fal_seed": 740181,
+  "note": "z1 cat pounce-chase pose (real-cat register, F3 design; keyed RGBA). Developer positions/timing (D3; identical-on-repeat)."
+ },
+ "cat-settled-by-door": {
+  "sprite": "cat/cat-settled-by-door@3x.png",
+  "size_px": [
+   1662,
+   1312
+  ],
+  "fal_seed": 740182,
+  "note": "z1 cat settled-by-door pose (real-cat register, F3 design; keyed RGBA). Developer positions/timing (D3; identical-on-repeat)."
+ },
+ "cat-exit-trot": {
+  "sprite": "cat/cat-exit-trot@3x.png",
+  "size_px": [
+   1925,
+   1371
+  ],
+  "fal_seed": 740184,
+  "note": "z1 cat exit-trot pose (real-cat register, F3 design; keyed RGBA). Developer positions/timing (D3; identical-on-repeat)."
+ }
+}

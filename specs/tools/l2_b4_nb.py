@@ -165,3 +165,30 @@ def obj_overlay(base, clean_full, mask_full, rect):
     comp = base.copy()
     comp.paste(clean_full, (0, 0), m)
     return comp.crop(rect)
+
+
+def generate(refs, content, seed, aspect="3:2", resolution="2K", tag="gen"):
+    """t2i-style generation via /edit with reference images (subject/design
+    anchors). Returns the raw output image. Used for cat pose sprites."""
+    image_urls = [_data_uri(Image.open(p)) for p in refs]
+    prompt = STYLE + "\n\n" + content
+    payload = {"prompt": prompt, "output_format": "png", "num_images": 1,
+               "aspect_ratio": aspect, "resolution": resolution,
+               "image_urls": image_urls, "seed": seed}
+    res = _api(EDIT_URL, payload)
+    surl, rurl = res["status_url"], res["response_url"]
+    for _ in range(180):
+        st = _api(surl)
+        if st.get("status") == "COMPLETED":
+            break
+        if st.get("status") not in ("IN_QUEUE", "IN_PROGRESS"):
+            raise RuntimeError("status " + str(st))
+        time.sleep(4)
+    out = _api(rurl)
+    url = out["images"][0]["url"]
+    with urllib.request.urlopen(url, timeout=300) as r:
+        png = r.read()
+    raw = Image.open(io.BytesIO(png)).convert("RGB")
+    os.makedirs(REJ, exist_ok=True)
+    raw.save(os.path.join(REJ, f"{tag}-raw@3x.png"))
+    return raw, out.get("seed", seed)
