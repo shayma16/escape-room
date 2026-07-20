@@ -111,6 +111,15 @@ per-zone user reviews follow each batch.
   the baseline — per-element overlays, uses-driven lifecycle, manual pickups, containment/
   conformance gates). Model note: Fable 5 credits exhausted 2026-07-20; spawn subagents
   on the session's current model (user on Opus) until Fable resets.
+- ⚠️ FINAL-REVIEW VERDICT (user, 2026-07-20): APPROVED EXCEPT ov-key-taken +
+  ov-tag-taken (z4 vault wall) — both visibly SMEARED/soft on the stone at zoom
+  (interior blur; seam-ring gate passed but missed it — same defect class the
+  dead-agent z4 work had, the redo didn't fully clear it). Everything else checks out.
+  FIX dispatched on Opus: reconstruct the emptied wall by DETERMINISTIC grid-aligned
+  clone from clean stone on the SAME z4-vault-base wall (no NB re-imagining of masonry),
+  crisp + seam-feathered + object-independent; NEW interior-sharpness gate (patch local
+  variance/high-freq vs base plate — softer-than-base = FAIL) added to close the
+  seam-check blind spot. On pass → LEVEL 2 ART COMPLETE → Developer.
 - Pipeline after art: batches 2→4 (z2, z3, z4 + sprites/state edits) with step-10 reviews
   → Developer (NOTE: do NOT build the unreachable p08 mouse-at-drum interaction — dead
   spec text, see walkthrough flags; NEVER the "psh" SFX) → QA → GATE → release.
