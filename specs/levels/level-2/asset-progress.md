@@ -1,6 +1,6 @@
 # Level 2 asset generation — BATCH 4 (FINAL: all remaining state overlays + sprites + hatch-wheel carry-in fix)
 
-PROGRESS: 19/21 done | 0 retrying | 0 failed | 2 remaining | $1.50 batch NB spend ($8.70 cumulative) | level cap $15.00
+PROGRESS: 20/21 done | 0 retrying | 0 failed | 1 remaining | $1.65 batch NB spend ($8.85 cumulative) | level cap $15.00
 (session note: items 9,11,12,13,14 done deterministically; item 10 key-in + z4 16/17 redo deferred to NB phase; z4 uncommitted work REJECTED = smear defect, redoing)
 
 _Green-lit by user 2026-07-20 (z3/z4 verdict: approved with hatch-wheel curvature fix).
@@ -35,7 +35,7 @@ patches, no blur/smear inpaints, manual-pickup states show emptied containers._
 | 16 | z4 ov-key-taken (CU24 + wide echo): hook empty | PIL clone-out | 0 | done (REDO: dead-agent smear REJECTED; 1 NB edit removed key+tag -> masonry rebuild; silhouette-masked overlay, tag pristine; wide seam 12.2/CU 10.7; DEVIATION \$0 PIL->\$0.15 NB, flagged) |
 | 17 | z4 ov-tag-taken (CU23 + wide echo): nail empty | PIL clone-out | 0 | done (REDO: same NB edit; tag+rope removed, empty nail, key pristine; wide seam 2.1/CU 1.1) |
 | 18 | z1 cat pose sprites x4 (pounce-chase, settled-by-door, stretch, exit-trot) — keyed RGBA, F3 cat design refs, 9.1 register (real-cat, no anthropomorphism) | NB raws + keyed RGBA | 0.60 | done (4 NB pose raws from F3 cat design ref -> border-seed floodfill + beige-cleanup keyed RGBA: pounce-chase/settled-by-door/stretch/exit-trot; real-cat register, consistent gray-blue design; cat-sprites.json) |
-| 19 | z1 cat facial keys: mouse-tell (eyes locked + tail flick) + slow-blink half-lid on cu-cat-cushion | 1 NB edit + PIL (blend/tail warp) | 0.15 | pending |
+| 19 | z1 cat facial keys: mouse-tell (eyes locked + tail flick) + slow-blink half-lid on cu-cat-cushion | 1 NB edit + PIL (blend/tail warp) | 0.15 | done (1 NB edit opens sleeping eyes->amber locked mouse-tell; PIL half-lid blend=slow-blink; PIL tail-tip flick; eye/blink/tail seams 3.2/3.2/2.9; z1-cat-face.json) |
 | 20 | z1 mouse skitter loop keys (from inv-toy-mouse cutout: tilt frames + motion JSON; D4) + tray-VI seat/pop-back notes (reuses tile-VI cutout, no art) | PIL + JSON | 0 | done (6-frame tin-mouse skitter tilt/bob loop from inv-toy-mouse; round-winged key kept; D4 motion JSON; tray-VI seat/pop-back = note only, no art) |
 | 21 | Deliverables: seam audit ALL new overlays (<=24, l2_fixstates ring method); z2/z3/z4 state-overlays.json; batch-4 review contact sheet; manifest batch-4 block; progress/spend reconciliation | PIL | 0 | pending |
 

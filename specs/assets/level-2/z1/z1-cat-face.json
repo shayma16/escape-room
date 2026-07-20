@@ -1,0 +1,38 @@
+{
+ "ov-cat-mouse-tell": {
+  "base": "cu-cat-cushion",
+  "rect_3x": [
+   720,
+   340,
+   1100,
+   540
+  ],
+  "tail_rect_3x": [
+   1320,
+   290,
+   1730,
+   630
+  ],
+  "note": "mouse-tell (D3): eyes open + amber locked gaze tracking the offered mouse + tail-tip flick; body stays settled. Two patches (eyes + tail) so the Developer can flick the tail on a separate beat. eye seam 3.2, tail seam 2.9."
+ },
+ "ov-cat-slow-blink": {
+  "base": "cu-cat-cushion",
+  "rect_3x": [
+   720,
+   340,
+   1100,
+   540
+  ],
+  "note": "slow-blink half-lid (9.1 slow blink): 0.52 open / 0.48 closed blend over the eye band; the refusal/contentment tell. seam 3.2."
+ },
+ "ov-cat-tail-flick": {
+  "base": "cu-cat-cushion",
+  "rect_3x": [
+   1320,
+   290,
+   1730,
+   630
+  ],
+  "note": "tail-tip flick (PIL upward shear); tail half of the tell / idle. seam 2.9."
+ }
+}
