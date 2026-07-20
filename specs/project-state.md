@@ -120,6 +120,13 @@ per-zone user reviews follow each batch.
   crisp + seam-feathered + object-independent; NEW interior-sharpness gate (patch local
   variance/high-freq vs base plate — softer-than-base = FAIL) added to close the
   seam-check blind spot. On pass → LEVEL 2 ART COMPLETE → Developer.
+- ✅ z4 SMEAR FIX DONE (2026-07-21, commit 8b80ae8): tight NB /edit masonry
+  continuation (harmonic shape-free seed → NB refine → silhouette-masked composite,
+  peg preserved), all 4 overlays PASS both gates (seam + interior-sharpness). Fix cost
+  $3.90 (WELL over the $0.15–0.30 estimate — hard large-hole inpaint needed heavy
+  iteration; flagged to user). **Cumulative L2 art $12.75/$15.00 — headroom now only
+  $2.25.** LEVEL 2 ART COMPLETE pending user's final ok on the fix. Lesson: large-hole
+  object-removal inpaints are iteration-expensive; budget/estimate them accordingly.
 - Pipeline after art: batches 2→4 (z2, z3, z4 + sprites/state edits) with step-10 reviews
   → Developer (NOTE: do NOT build the unreachable p08 mouse-at-drum interaction — dead
   spec text, see walkthrough flags; NEVER the "psh" SFX) → QA → GATE → release.
