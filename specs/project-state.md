@@ -92,6 +92,14 @@ per-zone user reviews follow each batch.
   re-stamp, propagate to any plate showing them. BATCH 3 GREEN-LIT (z3 incl. the
   great-dial mirror contract plate — most protected asset — + z4); agent dispatched
   2026-07-20.
+- ✅ z3/z4 STEP-10 VERDICT (user, 2026-07-20): APPROVED WITH ONE FIX. Both batch-3
+  flags accepted (drum overscan framing, hatch wheel-4 edge spacing). FIX: hatch
+  thumb-wheel numerals (XII/III/VI/IX) sit FLAT/skewed on the curved crown faces —
+  must CONFORM to the wheel curvature/perspective (cylindrical warp), on cu-hatch-
+  wheels CU22 + z3-dial-base wide + the 12-position wheel strip sprite. GATE UPGRADE:
+  containment check must also verify curvature/perspective conformance on non-planar
+  surfaces. BATCH 4 GREEN-LIT (state overlays + cat/mouse/mural sprites) with the fix
+  first; agent dispatched 2026-07-20.
 - Pipeline after art: batches 2→4 (z2, z3, z4 + sprites/state edits) with step-10 reviews
   → Developer (NOTE: do NOT build the unreachable p08 mouse-at-drum interaction — dead
   spec text, see walkthrough flags; NEVER the "psh" SFX) → QA → GATE → release.
