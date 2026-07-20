@@ -1110,9 +1110,13 @@ final class Build10LifecycleAndInteractionTests: XCTestCase {
     // MARK: cluster A — the lifecycle table covers the whole graph
 
     func testEveryGraphItemHasALifecycleEntry() {
+        // ItemCatalog.all now spans both levels; each item must appear in ITS level's
+        // lifecycle table (L1 ItemLifecycle.uses OR L2 Level2Graph.itemUses).
         for def in ItemCatalog.all {
-            XCTAssertNotNil(ItemLifecycle.uses[def.id],
-                            "\(def.id) must appear in ItemLifecycle.uses (transcribed from puzzle-graph.json)")
+            let inL1 = ItemLifecycle.uses[def.id] != nil
+            let inL2 = Level2Graph.itemUses[def.id] != nil
+            XCTAssertTrue(inL1 || inL2,
+                          "\(def.id) must appear in a level lifecycle table (transcribed from puzzle-graph.json)")
         }
         // And the red-herring rule: an empty uses array is NEVER consumed.
         XCTAssertTrue(ItemLifecycle.uses[PuzzleGraph.ItemID.rustedKey]?.isEmpty == true)

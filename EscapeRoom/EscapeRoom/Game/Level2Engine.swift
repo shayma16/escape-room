@@ -35,9 +35,7 @@ enum Level2Engine {
     }
 
     static func isDialComplete(_ state: GameState) -> Bool {
-        Level2Graph.dialSolution.allSatisfy { socket, tile in
-            state.data.l2DialSockets[socket] == tile
-        }
+        Level2Graph.dialSolution.allSatisfy { state.data.l2DialSockets[$0.key] == $0.value }
     }
 
     // MARK: - p02 cat and the wind-up mouse
