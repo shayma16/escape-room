@@ -85,6 +85,13 @@ per-zone user reviews follow each batch.
   tile-taken (blurred edges) — rebuild; PLUS binding proactive audit of ALL batch-2
   state overlays for misregistration + blur classes (user caught 3; don't make them
   find more). Then batch 3 (z3) after the user sees the fix results.
+- ✅ FIX-PASS VERDICT (user, 2026-07-20): "everything checks out" — all 9 fixes + audit
+  accepted; coat watch-wear imprint accepted. ONE remaining fix rolled into batch 3:
+  cu-gear-frame XII/VIII stamps mis-registered (XII stretches outside the small gear
+  face; VIII floats over the bracket instead of engraved on the panel) — deterministic
+  re-stamp, propagate to any plate showing them. BATCH 3 GREEN-LIT (z3 incl. the
+  great-dial mirror contract plate — most protected asset — + z4); agent dispatched
+  2026-07-20.
 - Pipeline after art: batches 2→4 (z2, z3, z4 + sprites/state edits) with step-10 reviews
   → Developer (NOTE: do NOT build the unreachable p08 mouse-at-drum interaction — dead
   spec text, see walkthrough flags; NEVER the "psh" SFX) → QA → GATE → release.
