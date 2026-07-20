@@ -1,0 +1,265 @@
+{
+ "ov-screwdriver-taken": {
+  "wide_base": "z1-bench-base",
+  "wide_rect_3x": [
+   980,
+   440,
+   1340,
+   1110
+  ],
+  "note": "rack empty after pickup; fix-pass deterministic rebuild v2: tool+shadow masked out of the BASE crop, rail cloned, wall row-interpolated w/ grain, peg restored; no CU host"
+ },
+ "ov-stove-tile-taken": {
+  "base": "cu-stove-hob",
+  "rect_3x": [
+   430,
+   300,
+   1720,
+   760
+  ],
+  "note": "tile II removed from the cold hob (incl. its cast shadow); fix-pass rebuild from NB edit 720302",
+  "wide_base": "z1-bench-base",
+  "wide_rect_3x": [
+   2496,
+   1403,
+   3025,
+   1592
+  ]
+ },
+ "ov-crate-tile-taken": {
+  "base": "cu-crate-straw",
+  "rect_3x": [
+   770,
+   1000,
+   1290,
+   1340
+  ],
+  "note": "tile VII taken; straw closed over; fix-pass rebuild from NB edit 720303 (registration audit passed contra predecessor's reject call)",
+  "wide_base": "z1-master-base",
+  "wide_rect_3x": [
+   2726,
+   1679,
+   2959,
+   1832
+  ]
+ },
+ "ov-sill-tile-taken": {
+  "base": "cu-sill-tile",
+  "rect_3x": [
+   670,
+   255,
+   1270,
+   855
+  ],
+  "note": "tile XI taken off the dormer sill",
+  "wide_base": "z1-door-base",
+  "wide_rect_3x": [
+   2371,
+   965,
+   2581,
+   1176
+  ]
+ },
+ "ov-coat-tile-taken": {
+  "base": "cu-coat-pockets",
+  "rect_3x": [
+   430,
+   430,
+   970,
+   880
+  ],
+  "note": "tile IV gone from left pocket; fix-pass rebuild from NB edit 720301 (both-pockets-empty raw), left pocket masked only"
+ },
+ "ov-coat-watch-taken": {
+  "base": "cu-coat-pockets",
+  "rect_3x": [
+   1040,
+   370,
+   1580,
+   1140
+  ],
+  "note": "watch A + chain gone from right pocket; fix-pass rebuild from NB edit 720301 (both-pockets-empty raw), right pocket masked only"
+ },
+ "ov-bar-raised": {
+  "base": "cu-timelock",
+  "rect_3x": [
+   100,
+   460,
+   1800,
+   1280
+  ],
+  "note": "time-lock bar pivoted up ~20deg on right hinge; cradles empty; fix-pass rebuild from NB edit 720305, registered masked composite",
+  "wide_base": "z1-door-base",
+  "wide_rect_3x": [
+   679,
+   690,
+   1675,
+   1170
+  ]
+ },
+ "ov-cache-pried-wheel": {
+  "base": "cu-floor-cache",
+  "rect_3x": [
+   1080,
+   1150,
+   2048,
+   1536
+  ],
+  "note": "cache board pried (lies beside opening); canonical great wheel (inv-great-wheel icon, identical-die contract) lying in shadowed cavity w/ warm catch-light; fix-pass rebuild from NB edit 720304",
+  "wide_base": "z1-door-base",
+  "wide_rect_3x": [
+   2448,
+   1724,
+   2940,
+   1920
+  ]
+ },
+ "ov-cache-empty": {
+  "base": "cu-floor-cache",
+  "rect_3x": [
+   1080,
+   1150,
+   2048,
+   1536
+  ],
+  "note": "cache open + empty after wheel taken; fix-pass rebuild from NB edit 720304 (real cavity + pried board)",
+  "wide_base": "z1-door-base",
+  "wide_rect_3x": [
+   2448,
+   1724,
+   2940,
+   1920
+  ]
+ },
+ "ov-dial-seat-ii": {
+  "cu": "cu-door-dial",
+  "cu_rect_3x": [
+   1159,
+   360,
+   1287,
+   488
+  ],
+  "wide": "z1-master-base",
+  "wide_rect_3x": [
+   2670,
+   659,
+   2755,
+   744
+  ],
+  "numeral": "II",
+  "socket": 2
+ },
+ "ov-dial-seat-iv": {
+  "cu": "cu-door-dial",
+  "cu_rect_3x": [
+   1159,
+   625,
+   1287,
+   753
+  ],
+  "wide": "z1-master-base",
+  "wide_rect_3x": [
+   2670,
+   835,
+   2755,
+   920
+  ],
+  "numeral": "IV",
+  "socket": 4
+ },
+ "ov-dial-seat-vii": {
+  "cu": "cu-door-dial",
+  "cu_rect_3x": [
+   797,
+   722,
+   925,
+   850
+  ],
+  "wide": "z1-master-base",
+  "wide_rect_3x": [
+   2429,
+   899,
+   2514,
+   984
+  ],
+  "numeral": "VII",
+  "socket": 7
+ },
+ "ov-dial-seat-xi": {
+  "cu": "cu-door-dial",
+  "cu_rect_3x": [
+   797,
+   263,
+   925,
+   391
+  ],
+  "wide": "z1-master-base",
+  "wide_rect_3x": [
+   2429,
+   595,
+   2514,
+   680
+  ],
+  "numeral": "XI",
+  "socket": 11
+ },
+ "ov-cushion-empty": {
+  "base": "cu-cat-cushion",
+  "rect_3x": [
+   450,
+   110,
+   1640,
+   720
+  ],
+  "wide_base": "z1-door-base",
+  "wide_rect_3x": [
+   2661,
+   1137,
+   3219,
+   1422
+  ],
+  "note": "cat gone (post-p02/p03 exit); cushion empty with sleep depression"
+ },
+ "ov-cache-cat-gone": {
+  "base": "cu-floor-cache",
+  "rect_3x": [
+   1499,
+   0,
+   2048,
+   555
+  ],
+  "note": "cat-gone echo for the overlapping floor-cache CU (consistency)"
+ },
+ "ov-workroom-door-open": {
+  "wide_base": "z1-master-base",
+  "wide_rect_3x": [
+   1950,
+   260,
+   2990,
+   1740
+  ],
+  "note": "door + dial swung open ~70deg onto z2; tray swings with door; NB edit at native res"
+ },
+ "z1-door-win-open": {
+  "wide_base": "z1-door-base",
+  "full_plate": true,
+  "note": "WIN beat (F4): stair door open onto tower stairs, bar raised, one-step evening amber grade (sanctioned sole lighting shift); stairs render ASCENDING - flagged for step-10 review (spec says only 'onto the tower stairs')"
+ },
+ "ov-cushion-reveal": {
+  "base": "cu-cat-cushion",
+  "rect_3x": [
+   420,
+   80,
+   2010,
+   990
+  ],
+  "wide_base": "z1-door-base",
+  "wide_rect_3x": [
+   2647,
+   1122,
+   3392,
+   1549
+  ],
+  "note": "cushion lifted; CLOSED watch B on the bench where it sat, canonical die_gear + ring12 stamped on the lid (identical-die contract, r2: watch relocated onto bench, model die replaced by canonical). TRANSIENT state - composite over ov-cushion-empty base; no cache echo"
+ }
+}

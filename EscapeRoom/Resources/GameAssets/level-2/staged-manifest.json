@@ -1,0 +1,325 @@
+{
+ "assets": {
+  "cu-barometer.png": {
+   "sha256": "421dc3d98ffbff67454578e886838758445a60713331ba92f4d2885652575991",
+   "source": "specs/assets/level-2/z1/v-bench/cu-barometer@3x.png"
+  },
+  "cu-brick-cache.png": {
+   "sha256": "74dedbbf3c568dae7b2ef50a1a4a30ed349860b06c5714853343742d1e93fba5",
+   "source": "specs/assets/level-2/z2/v-frame/cu-brick-cache@3x.png"
+  },
+  "cu-cabinet-drawer.png": {
+   "sha256": "a2f883ca56a676244f786b76ac4e43c7c0a94901e40a26f510ff23c809301e88",
+   "source": "specs/assets/level-2/z2/v-clockrow/cu-cabinet-drawer@3x.png"
+  },
+  "cu-cat-cushion.png": {
+   "sha256": "d12570cba8d64cd6792d02e4e7862fff1690d7917914a3571a37cc5e5ea20db6",
+   "source": "specs/assets/level-2/z1/v-door/cu-cat-cushion@3x.png"
+  },
+  "cu-clockrow-plates.png": {
+   "sha256": "590e0fdc57978a21c05afc7744f9e2613a870e1849a485b54e48f901dd10f61a",
+   "source": "specs/assets/level-2/z2/v-clockrow/cu-clockrow-plates@3x.png"
+  },
+  "cu-coat-pockets.png": {
+   "sha256": "a819c86c7caddfdbf57901ab89b5333c520df5070771bc61fb737270099ebf74",
+   "source": "specs/assets/level-2/z1/v-bench/cu-coat-pockets@3x.png"
+  },
+  "cu-crate-straw.png": {
+   "sha256": "5ba8268f3b47814f4ebabc8ac18c6d8e9eef188892d5909a60ecbbc126146c8d",
+   "source": "specs/assets/level-2/z1/v-master/cu-crate-straw@3x.png"
+  },
+  "cu-display-case.png": {
+   "sha256": "b20aeeca7f278311bb1a6250fa673c9e9df9e2f424ffc89d5dab185d731dbdde",
+   "source": "specs/assets/level-2/z2/v-clockrow/cu-display-case@3x.png"
+  },
+  "cu-door-dial.png": {
+   "sha256": "e01f7816d8f1e55c53e61ad16940651b014a66f55b05e44628b9a57393134edb",
+   "source": "specs/assets/level-2/z1/v-master/cu-door-dial@3x.png"
+  },
+  "cu-floor-cache.png": {
+   "sha256": "2336e9734ef9f077ee8707e8c1de12e1e1504b12f6ffac710818b0fdf84f19d9",
+   "source": "specs/assets/level-2/z1/v-door/cu-floor-cache@3x.png"
+  },
+  "cu-gear-frame.png": {
+   "sha256": "6b992362b830e11461ecd5f1578688e051537da96d5025298bced01a64c9a91f",
+   "source": "specs/assets/level-2/z2/v-frame/cu-gear-frame@3x.png"
+  },
+  "cu-gear-rack.png": {
+   "sha256": "9eeba496882b650263137a8fdd0f20f78f16576dcbcfc4417ce06ca6d2d20c7c",
+   "source": "specs/assets/level-2/z2/v-frame/cu-gear-rack@3x.png"
+  },
+  "cu-gear-ring.png": {
+   "sha256": "ab86deb288fb68a026626f60fef043a79d6a77953c3d37bc3c61463c7f3415cc",
+   "source": "specs/assets/level-2/z2/v-frame/cu-gear-ring@3x.png"
+  },
+  "cu-great-dial.png": {
+   "sha256": "1ee2ac179212d6c696e2939c42e08062e23a87c66dfbac052a981c9e0a832836",
+   "source": "specs/assets/level-2/z3/v-dial/cu-great-dial@3x.png"
+  },
+  "cu-hatch-wheels.png": {
+   "sha256": "88ee10bccd37634d5df2ae6c112a9f059a063345de8acf29e6339993e2bfcab5",
+   "source": "specs/assets/level-2/z3/v-dial/cu-hatch-wheels@3x.png"
+  },
+  "cu-house-ring.png": {
+   "sha256": "9b506e2794705612715a34be2ef68c59c688ff25eae9b295cec3706036afc56e",
+   "source": "specs/assets/level-2/z1/v-door/cu-house-ring@3x.png"
+  },
+  "cu-key-hook.png": {
+   "sha256": "97ef5d743d259d7d8c093ba433ea3425d06209e66028263174073f37659f3a2e",
+   "source": "specs/assets/level-2/z4/v-vault-interior/cu-key-hook@3x.png"
+  },
+  "cu-master-face.png": {
+   "sha256": "71e354f067a61371298c6ea8b2656b89a45bc8fb0a95551a3b973e0be4322c5e",
+   "source": "specs/assets/level-2/z1/v-master/cu-master-face@3x.png"
+  },
+  "cu-shelf.png": {
+   "sha256": "db75bba3da385da609f3988c5d2b9e7993b85ea00167f28da77897c4a98c233e",
+   "source": "specs/assets/level-2/z4/v-vault-interior/cu-shelf@3x.png"
+  },
+  "cu-sill-tile.png": {
+   "sha256": "cd95f972710bf979ab6298f62cbfe1cca031536c07da102ac61f90dd56b16194",
+   "source": "specs/assets/level-2/z1/v-door/cu-sill-tile@3x.png"
+  },
+  "cu-slate.png": {
+   "sha256": "03b01a05fed124b3049df4b0158064883d5edd2eb8426c49c235d0244fc0f5c3",
+   "source": "specs/assets/level-2/z1/v-bench/cu-slate@3x.png"
+  },
+  "cu-stove-hob.png": {
+   "sha256": "17b2ec0796936b2133ced7421781b6e67213f02c1df11609fed7403aa11a2f12",
+   "source": "specs/assets/level-2/z1/v-bench/cu-stove-hob@3x.png"
+  },
+  "cu-tag-nail.png": {
+   "sha256": "b926e85f7b05c0c8cea55b731da34ff500ffda5440a2ebcf952f4de1a376c8c4",
+   "source": "specs/assets/level-2/z4/v-vault-interior/cu-tag-nail@3x.png"
+  },
+  "cu-timelock.png": {
+   "sha256": "7c9f4b29434e058960faf096c0bdf33fcf2bd56ee4b6694e6b80b9b1b0d51e03",
+   "source": "specs/assets/level-2/z1/v-door/cu-timelock@3x.png"
+  },
+  "cu-winding-drum.png": {
+   "sha256": "e655459c364afed278b0fcf937bff6028115e3e790a2e1effdebed61374a54d9",
+   "source": "specs/assets/level-2/z3/v-dial/cu-winding-drum@3x.png"
+  },
+  "inv-great-wheel.png": {
+   "sha256": "7853d6e02642bd188ec18b4dad05ad718a7969a1e8bd8836de80c449032ce63a",
+   "source": "specs/assets/level-2/z1/icons/inv-great-wheel@2x.png"
+  },
+  "inv-oil-can.png": {
+   "sha256": "2d68c02f02053ddcd4db665e261269b091b28ddeefad62c0ee6250665119a17c",
+   "source": "specs/assets/level-2/z2/icons/inv-oil-can@2x.png"
+  },
+  "inv-return-tag.png": {
+   "sha256": "6c065e4cec894c33a52d5dd43b918ae1b3a56a6def5b5191e056c5cd527d4df5",
+   "source": "specs/assets/level-2/z4/icons/inv-return-tag@2x.png"
+  },
+  "inv-screwdriver.png": {
+   "sha256": "12c6d9cddaa5287457bf559ce6e8179af0a6636312d81fd48daf43b93ac12a45",
+   "source": "specs/assets/level-2/z1/icons/inv-screwdriver@2x.png"
+  },
+  "inv-tile-ii.png": {
+   "sha256": "e94c2d3633c0fef401f35284a6f258961bb51f64f14ecc7c637179e821e71326",
+   "source": "specs/assets/level-2/z1/icons/inv-tile-ii@2x.png"
+  },
+  "inv-tile-iv.png": {
+   "sha256": "b2cd167e0a4ec286bb01ac631f435c838d23c6d0fce10412db81e8f54a7a6653",
+   "source": "specs/assets/level-2/z1/icons/inv-tile-iv@2x.png"
+  },
+  "inv-tile-vii.png": {
+   "sha256": "0bb9e750d55cc4788533a3e6f8c435a483bf6f1b25e5a994fbcc06e77150191d",
+   "source": "specs/assets/level-2/z1/icons/inv-tile-vii@2x.png"
+  },
+  "inv-tile-xi.png": {
+   "sha256": "9687a7609375e3ff4d77e2384420fa86caac144b48ff43c08a265bf59542677b",
+   "source": "specs/assets/level-2/z1/icons/inv-tile-xi@2x.png"
+  },
+  "inv-toy-mouse.png": {
+   "sha256": "95d7ac6de11e40bc55f6afa2b10a54a689e7992b5cd568ba1882092aba4c0cfb",
+   "source": "specs/assets/level-2/z2/icons/inv-toy-mouse@2x.png"
+  },
+  "inv-watch-a.png": {
+   "sha256": "5e87cb06c7e83ee5b17bbfbc33373a274f87a7f8e577366e69866d608b83219e",
+   "source": "specs/assets/level-2/z1/icons/inv-watch-a@2x.png"
+  },
+  "inv-watch-b.png": {
+   "sha256": "7356aee9d8f1b3c74b59332266aa1c7db9f2340dec2724e822012ee1e0191625",
+   "source": "specs/assets/level-2/z1/icons/inv-watch-b@2x.png"
+  },
+  "inv-winding-key.png": {
+   "sha256": "5064fef679cd3121e28d175e7e2db23a354a3b03f10991f6a535b8551e577db9",
+   "source": "specs/assets/level-2/z4/icons/inv-winding-key@2x.png"
+  },
+  "ov-arbor-oiled-wide.png": {
+   "sha256": "8ab5bcca7de7abd3d5ad2d26ebb2a2a10407a14d37b6d70007ca188bb7bfe0ab",
+   "source": "specs/assets/level-2/z2/v-frame/states/ov-arbor-oiled-wide@3x.png"
+  },
+  "ov-bar-raised-wide.png": {
+   "sha256": "fee66d08c2dfcf542920a3957fc5a01ac065f752e8969faeecc5876d3ec8f1c2",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-bar-raised-wide@3x.png"
+  },
+  "ov-bell-absent-wide.png": {
+   "sha256": "f7a6eb39c92966cff7172b36f78939920611e24c5bf5dff62ed71d4251b005a3",
+   "source": "specs/assets/level-2/z2/v-frame/states/ov-bell-absent-wide@3x.png"
+  },
+  "ov-brick-empty-wide.png": {
+   "sha256": "9a95bae8d77c3b815f6b7b8e7eb88ccf9bdf3ae0ed993101ee23e6d1abbb6018",
+   "source": "specs/assets/level-2/z2/v-frame/states/ov-brick-empty-wide@3x.png"
+  },
+  "ov-brick-pried-oilcan-wide.png": {
+   "sha256": "e89204cec9c84b6ea816e0a4311a7c8d0bcebd8b439c11aefc47eafec2408882",
+   "source": "specs/assets/level-2/z2/v-frame/states/ov-brick-pried-oilcan-wide@3x.png"
+  },
+  "ov-cabinet-empty-wide.png": {
+   "sha256": "424689b408f4dd95ab647bf7d192038480fef24d4f43fa8453646c0c170b9c4c",
+   "source": "specs/assets/level-2/z2/v-clockrow/states/ov-cabinet-empty-wide@3x.png"
+  },
+  "ov-cabinet-open-mouse-wide.png": {
+   "sha256": "bb9b1f4a7332b3b2acd07e5c02bc868350f0b13dfe4da6c2d01fe2e4d470ac88",
+   "source": "specs/assets/level-2/z2/v-clockrow/states/ov-cabinet-open-mouse-wide@3x.png"
+  },
+  "ov-cache-empty-wide.png": {
+   "sha256": "492ae0c1144dee5296dce78bfbc38374cec077494f3924d9d1b62aa09381f75f",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-cache-empty-wide@3x.png"
+  },
+  "ov-cache-pried-wheel-wide.png": {
+   "sha256": "5af65123a32945f0d57f1a874c02718c0bd7f916f757195c913305fc1de931da",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-cache-pried-wheel-wide@3x.png"
+  },
+  "ov-crate-tile-taken-wide.png": {
+   "sha256": "1d92f4a95f5d99385057b201f1050b2098976a89b7a22417b73a3cedae5fdf2f",
+   "source": "specs/assets/level-2/z1/v-master/states/ov-crate-tile-taken-wide@3x.png"
+  },
+  "ov-cushion-empty-wide.png": {
+   "sha256": "94cff30b1fb39e25bbe3ef4174d80e13962148373a53dc38e83ce3e1d2f106a5",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-cushion-empty-wide@3x.png"
+  },
+  "ov-cushion-reveal-wide.png": {
+   "sha256": "65cae45a7e2cd1b52244429b58c4f95c041e21ff38854a649966cf18aba9efeb",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-cushion-reveal-wide@3x.png"
+  },
+  "ov-dial-seat-ii-wide.png": {
+   "sha256": "c439b0b63044a26f46b0b5d07d48b876ae06d9e27b8ac5195efbf24a33c00c52",
+   "source": "specs/assets/level-2/z1/v-master/states/ov-dial-seat-ii-wide@3x.png"
+  },
+  "ov-dial-seat-iv-wide.png": {
+   "sha256": "17f37571bcf60d18a8cd3404e13bc8750924880cde1ee5e08ef52998413c62b6",
+   "source": "specs/assets/level-2/z1/v-master/states/ov-dial-seat-iv-wide@3x.png"
+  },
+  "ov-dial-seat-vii-wide.png": {
+   "sha256": "453dca466a060cafae50a21895fe226e8c2ae5cdecc1e164cbe6c457251186a6",
+   "source": "specs/assets/level-2/z1/v-master/states/ov-dial-seat-vii-wide@3x.png"
+  },
+  "ov-dial-seat-xi-wide.png": {
+   "sha256": "bebeeb2c668fabedee614190aed4f028ec770002edbf5f21ceae30fa93051112",
+   "source": "specs/assets/level-2/z1/v-master/states/ov-dial-seat-xi-wide@3x.png"
+  },
+  "ov-drum-key-in-wide.png": {
+   "sha256": "063121f984108bd83b3fd7d800e821f77fcde6a3cf3c34f9211244bc92dfa6eb",
+   "source": "specs/assets/level-2/z3/v-dial/states/ov-drum-key-in-wide@3x.png"
+  },
+  "ov-drum-oiled-wide.png": {
+   "sha256": "aeb49a3a09609c5c400936a69ca658d20156d0444dd6351bccc378387dc5faeb",
+   "source": "specs/assets/level-2/z3/v-dial/states/ov-drum-oiled-wide@3x.png"
+  },
+  "ov-hammer-absent-wide.png": {
+   "sha256": "c0b152c307ddf82546a7d46f64de4587e160bd9327edf7220b01007480b4ece2",
+   "source": "specs/assets/level-2/z3/v-dial/states/ov-hammer-absent-wide@3x.png"
+  },
+  "ov-hatch-open-wide.png": {
+   "sha256": "fb4757e72d1953ef14b27f20946af66fe49446295dd866c133f3c618d0fb83d7",
+   "source": "specs/assets/level-2/z3/v-dial/states/ov-hatch-open-wide@3x.png"
+  },
+  "ov-key-taken-wide.png": {
+   "sha256": "13e8867d0414e715eac762703ff0379b4cbc1a53b8182592673301be7d1e2dfe",
+   "source": "specs/assets/level-2/z4/v-vault-interior/states/ov-key-taken-wide@3x.png"
+  },
+  "ov-panel-open-wide.png": {
+   "sha256": "34d0963a2e525514149656bd41b2701ad83dd0cfc705d2e14526d10b8275d9bc",
+   "source": "specs/assets/level-2/z2/v-frame/states/ov-panel-open-wide@3x.png"
+  },
+  "ov-pendulum-absent-wide.png": {
+   "sha256": "169b75e6a1cbeffe0f640ad5a9ceb94e78ee83edfbd2ea35abf042957e8ba0e6",
+   "source": "specs/assets/level-2/z3/v-dial/states/ov-pendulum-absent-wide@3x.png"
+  },
+  "ov-rack-absent-16-wide.png": {
+   "sha256": "5726956354d9818183aef55eb38a7abfc0c676e77fb3f6af76d13161a2d164b8",
+   "source": "specs/assets/level-2/z2/v-frame/states/ov-rack-absent-16-wide@3x.png"
+  },
+  "ov-rack-absent-24-wide.png": {
+   "sha256": "a4d0eacf856e1d0ba1546b0d9def149ef29b1bffd3e78bdcaa846400ce19e56e",
+   "source": "specs/assets/level-2/z2/v-frame/states/ov-rack-absent-24-wide@3x.png"
+  },
+  "ov-rack-absent-36-wide.png": {
+   "sha256": "7c27316d63e19bc4ee3e199f4a5f8497b04265d446dbed5f1003b4aa5fdaf93d",
+   "source": "specs/assets/level-2/z2/v-frame/states/ov-rack-absent-36-wide@3x.png"
+  },
+  "ov-rack-absent-40-wide.png": {
+   "sha256": "9fea7d1d364665c8e7add0857324d8fee3745f19681b81729ad7a224bcf6dd23",
+   "source": "specs/assets/level-2/z2/v-frame/states/ov-rack-absent-40-wide@3x.png"
+  },
+  "ov-rack-absent-48-wide.png": {
+   "sha256": "07ad7dfff7c442c4591e8c6aa9413f453e69adb1254fe49a33e4537f9e0d819b",
+   "source": "specs/assets/level-2/z2/v-frame/states/ov-rack-absent-48-wide@3x.png"
+  },
+  "ov-rack-absent-72-wide.png": {
+   "sha256": "35b2cfa42f5a204545c1c23292e84d611c2b4f7dd77005e417bada4bb2e12609",
+   "source": "specs/assets/level-2/z2/v-frame/states/ov-rack-absent-72-wide@3x.png"
+  },
+  "ov-screwdriver-taken-wide.png": {
+   "sha256": "6f6b33b6ccc33f202ee50d0d9b19e1c19e7dc77df89be4145c6df4dae340f1eb",
+   "source": "specs/assets/level-2/z1/v-bench/states/ov-screwdriver-taken-wide@3x.png"
+  },
+  "ov-sill-tile-taken-wide.png": {
+   "sha256": "1661faad0056c3d4d838103f7c19f130acfc1edca2e2c8a59b91484e7b004f5f",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-sill-tile-taken-wide@3x.png"
+  },
+  "ov-stove-tile-taken-wide.png": {
+   "sha256": "2dfaf868f64f7ed1841e1ff59ab24522bb6fe006daae38d242331d8a9c4a6aa7",
+   "source": "specs/assets/level-2/z1/v-bench/states/ov-stove-tile-taken-wide@3x.png"
+  },
+  "ov-sun-absent-wide.png": {
+   "sha256": "a3994882e89eb174535b1435103429e4bcca1cecc163ecfbe06bd27ddc162baa",
+   "source": "specs/assets/level-2/z2/v-frame/states/ov-sun-absent-wide@3x.png"
+  },
+  "ov-tag-taken-wide.png": {
+   "sha256": "402ee611bdeb42c53a2b2cf94d82ca2cb6e11cf61763d92a459b3f0bb74d82aa",
+   "source": "specs/assets/level-2/z4/v-vault-interior/states/ov-tag-taken-wide@3x.png"
+  },
+  "ov-workroom-door-open-wide.png": {
+   "sha256": "7d07b60bde35584e48cfb40f019c3ff04ed888b204f7d2d3885ef02bd0c2232b",
+   "source": "specs/assets/level-2/z1/v-master/states/ov-workroom-door-open-wide@3x.png"
+  },
+  "z1-bench-base.png": {
+   "sha256": "335ea548e6635bcbde42a895dc4ee8d9fd92e39fa437be1746332f07c695c4ec",
+   "source": "specs/assets/level-2/z1/v-bench/z1-bench-base@2x.png"
+  },
+  "z1-door-base.png": {
+   "sha256": "2765c681661f71f9ef980766424282a5c81eb5447eb864361d9de3852b31126d",
+   "source": "specs/assets/level-2/z1/v-door/z1-door-base@2x.png"
+  },
+  "z1-door-win-open.png": {
+   "sha256": "94654ff32d4093994975edeed83ce3a595665d5d8acbf897104ac02ccb8a7a96",
+   "source": "specs/assets/level-2/z1/v-door/z1-door-win-open@2x.png"
+  },
+  "z1-master-base.png": {
+   "sha256": "31b76969aa2e1b63ee96143f8c5bfa5ba28be1d8ae7cd586bcd8d4a99e829d4f",
+   "source": "specs/assets/level-2/z1/v-master/z1-master-base@2x.png"
+  },
+  "z2-clockrow-base.png": {
+   "sha256": "11dea1f7bc4ed1b3d8021d7a44991735353cb07b4b41605ebb6df830dfea35ea",
+   "source": "specs/assets/level-2/z2/v-clockrow/z2-clockrow-base@2x.png"
+  },
+  "z2-frame-base.png": {
+   "sha256": "417b5b9bdf4cf9ff6f604e6ad8e764f1626e76846e68accfc1816b943a3465b0",
+   "source": "specs/assets/level-2/z2/v-frame/z2-frame-base@2x.png"
+  },
+  "z3-dial-base.png": {
+   "sha256": "af1e87bfb80c5a0fb574f87db153ac0fa24c0efbe69118ff97328c8c39eac9a8",
+   "source": "specs/assets/level-2/z3/v-dial/z3-dial-base@2x.png"
+  },
+  "z4-vault-base.png": {
+   "sha256": "d1b42584d9dfc0d00c627052ff6b4e3dbcedf245490c6a0d865439d0d6c6399e",
+   "source": "specs/assets/level-2/z4/v-vault-interior/z4-vault-base@2x.png"
+  }
+ },
+ "count": 80
+}

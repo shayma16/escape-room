@@ -1,0 +1,66 @@
+{
+ "ov-drum-oiled": {
+  "wide_base": "z3-dial-base",
+  "wide_rect_3x": [
+   415,
+   1355,
+   815,
+   1760
+  ],
+  "note": "winding-drum bearing oiled (CU21): dry bloom cleared + oil sheen at boss/socket",
+  "base": "cu-winding-drum",
+  "rect_3x": [
+   716,
+   560,
+   1406,
+   1259
+  ]
+ },
+ "ov-pendulum-absent": {
+  "wide_base": "z3-dial-base",
+  "wide_rect_3x": [
+   2030,
+   70,
+   2280,
+   1330
+  ],
+  "note": "dark background behind the pendulum (column dark-median clone) so the swing sprite can rotate without ghosting"
+ },
+ "ov-hammer-absent": {
+  "wide_base": "z3-dial-base",
+  "wide_rect_3x": [
+   2320,
+   130,
+   2540,
+   300
+  ],
+  "note": "dark background behind the strike hammer for twitch frames"
+ },
+ "ov-drum-key-in": {
+  "wide_base": "z3-dial-base",
+  "wide_rect_3x": [
+   624,
+   1499,
+   893,
+   1749
+  ],
+  "note": "winding key seated in the drum square socket (NB): ring handle+shaft protrude, square bit hidden; brass-only accept-mask (dial glow preserved).",
+  "base": "cu-winding-drum",
+  "rect_3x": [
+   1076,
+   809,
+   1541,
+   1241
+  ]
+ },
+ "ov-hatch-open": {
+  "wide_base": "z3-dial-base",
+  "wide_rect_3x": [
+   2346,
+   1486,
+   3284,
+   1914
+  ],
+  "note": "floor hatch open onto the stair mouth down to z4 + warm lamp leak (sanctioned amber leak through an opening)."
+ }
+}

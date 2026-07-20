@@ -1,0 +1,36 @@
+{
+ "ov-key-taken": {
+  "base": "cu-key-hook",
+  "rect_3x": [
+   667,
+   300,
+   1236,
+   1514
+  ],
+  "wide_base": "z4-vault-base",
+  "wide_rect_3x": [
+   1000,
+   415,
+   1255,
+   960
+  ],
+  "note": "winding key taken (2026-07-21 TIGHT AI-repaint, gate-passed): key bow/shaft/square-bit removed; beveled sandstone blocks + mortar continue through the gap (no object-shaped region), canonical round mounting peg preserved (no nail), warm one-lamp lighting. Tag left pixel-identical. Method: harmonic shape-free seed -> nano-banana /edit refine, silhouette-masked composite (outside mask bit-identical). overlay_gate: CU seam 9.5 / sharpness 2.43; wide seam 9.9 / sharpness 1.30."
+ },
+ "ov-tag-taken": {
+  "base": "cu-tag-nail",
+  "rect_3x": [
+   227,
+   170,
+   1070,
+   1411
+  ],
+  "wide_base": "z4-vault-base",
+  "wide_rect_3x": [
+   600,
+   425,
+   970,
+   970
+  ],
+  "note": "return tag + rope loop taken (2026-07-21 TIGHT AI-repaint, gate-passed): tag body + rope removed; beveled sandstone blocks + mortar continue through the gap (no object-shaped region), canonical round mounting peg preserved (no nail). Key left pixel-identical. Method: harmonic shape-free seed -> nano-banana /edit refine, silhouette-masked composite. overlay_gate: CU seam 12.8 / sharpness 2.01; wide seam 7.0 / sharpness 0.99."
+ }
+}
