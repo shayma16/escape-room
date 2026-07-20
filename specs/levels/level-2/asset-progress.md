@@ -1,6 +1,6 @@
 # Level 2 asset generation — BATCH 4 (FINAL: all remaining state overlays + sprites + hatch-wheel carry-in fix)
 
-PROGRESS: 20/21 done | 0 retrying | 0 failed | 1 remaining | $1.65 batch NB spend ($8.85 cumulative) | level cap $15.00
+PROGRESS: 21/21 done | 0 retrying | 0 failed | 0 remaining | $1.65 batch NB spend ($8.85 cumulative) | level cap $15.00 — BATCH 4 COMPLETE 2026-07-20 (LEVEL 2 ART COMPLETE pending user step-10 review)
 (session note: items 9,11,12,13,14 done deterministically; item 10 key-in + z4 16/17 redo deferred to NB phase; z4 uncommitted work REJECTED = smear defect, redoing)
 
 _Green-lit by user 2026-07-20 (z3/z4 verdict: approved with hatch-wheel curvature fix).
@@ -37,7 +37,7 @@ patches, no blur/smear inpaints, manual-pickup states show emptied containers._
 | 18 | z1 cat pose sprites x4 (pounce-chase, settled-by-door, stretch, exit-trot) — keyed RGBA, F3 cat design refs, 9.1 register (real-cat, no anthropomorphism) | NB raws + keyed RGBA | 0.60 | done (4 NB pose raws from F3 cat design ref -> border-seed floodfill + beige-cleanup keyed RGBA: pounce-chase/settled-by-door/stretch/exit-trot; real-cat register, consistent gray-blue design; cat-sprites.json) |
 | 19 | z1 cat facial keys: mouse-tell (eyes locked + tail flick) + slow-blink half-lid on cu-cat-cushion | 1 NB edit + PIL (blend/tail warp) | 0.15 | done (1 NB edit opens sleeping eyes->amber locked mouse-tell; PIL half-lid blend=slow-blink; PIL tail-tip flick; eye/blink/tail seams 3.2/3.2/2.9; z1-cat-face.json) |
 | 20 | z1 mouse skitter loop keys (from inv-toy-mouse cutout: tilt frames + motion JSON; D4) + tray-VI seat/pop-back notes (reuses tile-VI cutout, no art) | PIL + JSON | 0 | done (6-frame tin-mouse skitter tilt/bob loop from inv-toy-mouse; round-winged key kept; D4 motion JSON; tray-VI seat/pop-back = note only, no art) |
-| 21 | Deliverables: seam audit ALL new overlays (<=24, l2_fixstates ring method); z2/z3/z4 state-overlays.json; batch-4 review contact sheet; manifest batch-4 block; progress/spend reconciliation | PIL | 0 | pending |
+| 21 | Deliverables: seam audit ALL new overlays (<=24, l2_fixstates ring method); z2/z3/z4 state-overlays.json; batch-4 review contact sheet; manifest batch-4 block; progress/spend reconciliation | PIL | 0 | done (seam audit: 24 surface overlays PASS<=24 worst 20.2; 20 RGBA additive verified; z2/z3/z4 state-overlays.json complete; contact sheet z2/z2z3z4-review-batch4.png; manifest batch-4 block +17 entries; spend reconciled $1.65 -> cumulative $8.85) |
 
 Planned NB spend $1.20 + $0.45 reserves (mural pose, drum key-in, 1 re-roll) = worst $1.65
 -> cumulative worst $8.85 of $15.00 (headroom $6.15 at worst). Hard stop $15.00.
