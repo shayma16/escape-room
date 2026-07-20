@@ -9,7 +9,8 @@ struct LevelSelectView: View {
     @State private var completionVersion = 0 // bump to force re-read of SaveGameStore
 
     private let levels: [LevelMeta] = [
-        LevelMeta(id: 1, title: "The Wizard's Cabin", thumbnail: "level1-thumb")
+        LevelMeta(id: 1, title: "The Wizard's Cabin", thumbnail: "level1-thumb"),
+        LevelMeta(id: 2, title: "The Clockmaker's Attic", thumbnail: "level2-thumb")
     ]
 
     var body: some View {
