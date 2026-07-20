@@ -1,0 +1,75 @@
+{
+ "sp-pendulum": {
+  "sprite": "sp-pendulum@3x.png",
+  "rect_3x": [
+   2030,
+   70,
+   2280,
+   1330
+  ],
+  "pivot_px_local": [
+   160,
+   10
+  ],
+  "pivot_px_at_3x": [
+   2190,
+   80
+  ],
+  "amplitudes_deg": {
+   "still": 0,
+   "weak": 4,
+   "full": 11
+  },
+  "render_rule": "rotate the sprite about pivot; for non-zero amplitude paint the resting pendulum out with ov-pendulum-absent (wide) first. still = base as shipped (dead still). Cadence/timing is Developer.",
+  "background_patch": "states/ov-pendulum-absent-wide@3x.png"
+ },
+ "sp-hammer": {
+  "rest": "sp-hammer-rest@3x.png",
+  "lift": "sp-hammer-lift@3x.png",
+  "rect_3x": [
+   2320,
+   130,
+   2540,
+   300
+  ],
+  "pivot_px_local": [
+   18,
+   116
+  ],
+  "twitch_deg": 9,
+  "render_rule": "D11 twitch = lift-and-settle between rest and lift (never contacts the bell); escapement tick is audio. Two hammers share this sprite (mirror for the right hammer). Paint out with ov-hammer-absent for non-rest frames.",
+  "background_patch": "states/ov-hammer-absent-wide@3x.png"
+ },
+ "sp-weight": {
+  "sprite": "sp-weight@3x.png",
+  "size_px_at_3x": [
+   150,
+   300
+  ],
+  "hang_point_local": [
+   75,
+   2
+  ],
+  "track_at_3x": {
+   "x": 300,
+   "y_low": 1720,
+   "y_rising": 1500,
+   "y_raised": 1300
+  },
+  "render_rule": "cast-iron drive weight on the drum cable; positioned sprite. Deterministic render (no clean weight silhouette in the base plate). Track x/y are the cable line; Developer tweens low->raised as the clock winds."
+ },
+ "strike-rods": {
+  "art": null,
+  "z3_rod_rects_at_3x": [
+   [
+    2500,
+    180,
+    3600,
+    420
+   ]
+  ],
+  "z1_rod_note": "the linkage rods exit z3 frame-right and re-enter at the z1 time-lock housing (cu-timelock) rod ends; same rod line the player followed all level.",
+  "articulation": "strike beat = small axial translate of the rod (+-6 px @3x along the rod axis) synced to the hammer twitch; key poses only, no separate art. Translate offsets are Developer timing.",
+  "render_rule": "no image asset; overlay/transform notes only."
+ }
+}

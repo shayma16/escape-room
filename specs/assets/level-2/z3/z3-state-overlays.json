@@ -1,0 +1,39 @@
+{
+ "ov-drum-oiled": {
+  "wide_base": "z3-dial-base",
+  "wide_rect_3x": [
+   415,
+   1355,
+   815,
+   1760
+  ],
+  "note": "winding-drum bearing oiled (CU21): dry bloom cleared + oil sheen at boss/socket",
+  "base": "cu-winding-drum",
+  "rect_3x": [
+   716,
+   560,
+   1406,
+   1259
+  ]
+ },
+ "ov-pendulum-absent": {
+  "wide_base": "z3-dial-base",
+  "wide_rect_3x": [
+   2030,
+   70,
+   2280,
+   1330
+  ],
+  "note": "dark background behind the pendulum (column dark-median clone) so the swing sprite can rotate without ghosting"
+ },
+ "ov-hammer-absent": {
+  "wide_base": "z3-dial-base",
+  "wide_rect_3x": [
+   2320,
+   130,
+   2540,
+   300
+  ],
+  "note": "dark background behind the strike hammer for twitch frames"
+ }
+}

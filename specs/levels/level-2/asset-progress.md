@@ -1,6 +1,7 @@
 # Level 2 asset generation — BATCH 4 (FINAL: all remaining state overlays + sprites + hatch-wheel carry-in fix)
 
-PROGRESS: 4/21 done | 0 retrying | 0 failed | 17 remaining | $0.00 batch NB spend ($7.20 cumulative) | level cap $15.00
+PROGRESS: 9/21 done | 0 retrying | 0 failed | 12 remaining | $0.00 batch NB spend ($7.20 cumulative) | level cap $15.00
+(session note: items 9,11,12,13,14 done deterministically; item 10 key-in + z4 16/17 redo deferred to NB phase; z4 uncommitted work REJECTED = smear defect, redoing)
 
 _Green-lit by user 2026-07-20 (z3/z4 verdict: approved with hatch-wheel curvature fix).
 Final art batch: per-element overlay architecture (patch + rect JSON, pixel-aligned,
@@ -24,12 +25,12 @@ patches, no blur/smear inpaints, manual-pickup states show emptied containers._
 | 6 | z2 ov-panel-open (frame wide): wall panel latched open onto z3 (dark opening + amber dial glow leak) + panel-door cutout sprite for swing keys | NB edit + registered masked composite | 0.15 | pending |
 | 7 | z2 ov-brick-pried-oilcan / ov-brick-empty (CU16 + wide echo): pried cavity NB edit; canonical inv-oil-can composited in cavity; empty = same cavity | NB edit + PIL | 0.15 | pending |
 | 8 | z2 ov-cabinet-open-mouse / ov-cabinet-empty (CU18): top drawer open (empty interior) NB edit; canonical inv-toy-mouse composited for +mouse | NB edit + PIL | 0.15 | pending |
-| 9 | z3 ov-drum-oiled (CU21 + wide echo): rust/dry bloom cleared at bearing + oil sheen | PIL | 0 | pending |
+| 9 | z3 ov-drum-oiled (CU21 + wide echo): rust/dry bloom cleared at bearing + oil sheen | PIL | 0 | done (drum-oiled: rust bloom cleared + oil sheen, bearing zone; wide seam 1.9 / CU 1.3) |
 | 10 | z3 ov-drum-key-in (CU21 + wide echo): winding key seated in square socket (rhyme read preserved) | PIL composite first; NB reserve | 0(+0.15) | pending |
-| 11 | z3 weight sprite + track spec (low->raised positions on line) | PIL cutout + JSON | 0 | pending |
-| 12 | z3 pendulum sprite (still/weak/full amplitudes) + pivot/animation JSON | PIL cutout + JSON | 0 | pending |
-| 13 | z3 hammer D11 twitch keys (rest + lifted, never strikes) + JSON | PIL cutout + rotate | 0 | pending |
-| 14 | z3 strike-beat rod articulation key poses/notes (z3 + z1 rod ends, translate offsets) | JSON notes + rects | 0 | pending |
+| 11 | z3 weight sprite + track spec (low->raised positions on line) | PIL cutout + JSON | 0 | done (deterministic cast-iron weight sprite + vertical track spec; no clean plate source noted) |
+| 12 | z3 pendulum sprite (still/weak/full amplitudes) + pivot/animation JSON | PIL cutout + JSON | 0 | done (pendulum geo-mask sprite rod+bob; pivot (2190,80); amps still/weak/full 0/4/11; +absent patch) |
+| 13 | z3 hammer D11 twitch keys (rest + lifted, never strikes) + JSON | PIL cutout + rotate | 0 | done (hammer geo-mask rest+lift; pivot (2338,246); twitch 9deg; +absent patch) |
+| 14 | z3 strike-beat rod articulation key poses/notes (z3 + z1 rod ends, translate offsets) | JSON notes + rects | 0 | done (strike-rods JSON notes+rects, z3+z1 rod ends, axial translate; no art) |
 | 15 | z3 ov-hatch-open (wide): hatch open onto stair mouth + warm z4 lamp leak | NB edit + registered masked composite | 0.15 | pending |
 | 16 | z4 ov-key-taken (CU24 + wide echo): hook empty | PIL clone-out | 0 | pending |
 | 17 | z4 ov-tag-taken (CU23 + wide echo): nail empty | PIL clone-out | 0 | pending |
