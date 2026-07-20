@@ -1,8 +1,28 @@
 {
- "frame_size_at_3x": [
-  117,
-  102
+ "layout": "columns = wheels 1-4 (left->right); rows = numerals I..XII",
+ "cell_size_at_3x": [
+  146,
+  123
  ],
+ "per_wheel_frame_size_at_3x": [
+  [
+   146,
+   101
+  ],
+  [
+   135,
+   89
+  ],
+  [
+   130,
+   110
+  ],
+  [
+   139,
+   123
+  ]
+ ],
+ "frame_anchor": "each frame drawn at native size, top-left of its cell",
  "order": [
   "I",
   "II",
@@ -17,56 +37,56 @@
   "XI",
   "XII"
  ],
- "crown_face_rects_wide_at_3x": [
+ "wheel_frame_rects_wide_at_3x": [
   [
-   2450,
-   1625,
-   2525,
-   1695
+   2455,
+   1624,
+   2555,
+   1693
   ],
   [
-   2605,
-   1680,
-   2685,
-   1750
+   2601,
+   1668,
+   2693,
+   1729
   ],
   [
-   2775,
-   1730,
-   2850,
-   1800
+   2787,
+   1706,
+   2876,
+   1781
   ],
   [
-   2945,
-   1735,
-   3035,
-   1815
+   2966,
+   1746,
+   3061,
+   1830
   ]
  ],
- "crown_face_rects_cu22_at_3x": [
+ "wheel_frame_rects_cu22_at_3x": [
   [
-   439,
-   1104,
-   549,
-   1207
+   446,
+   1103,
+   592,
+   1204
   ],
   [
-   666,
-   1185,
-   783,
-   1287
+   660,
+   1167,
+   794,
+   1257
   ],
   [
-   914,
-   1258,
-   1024,
-   1360
+   932,
+   1223,
+   1062,
+   1333
   ],
   [
-   1163,
-   1265,
-   1295,
-   1382
+   1194,
+   1281,
+   1333,
+   1404
   ]
  ],
  "header_dies_left_to_right": [
@@ -81,5 +101,6 @@
   "VI",
   "IX"
  ],
+ "conformal_model": "numerals cylindrically warped per wheel (bow + surface-frame shear); frames are PER-WHEEL \u2014 column i must only ever be composited onto wheel i's frame rect",
  "solution_note": "solution VI-X-I-III set by Developer state; never baked"
 }
