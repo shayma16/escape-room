@@ -35,5 +35,22 @@
    300
   ],
   "note": "dark background behind the strike hammer for twitch frames"
+ },
+ "ov-drum-key-in": {
+  "wide_base": "z3-dial-base",
+  "wide_rect_3x": [
+   624,
+   1499,
+   893,
+   1749
+  ],
+  "note": "winding key seated in the drum square socket (NB): ring handle+shaft protrude, square bit hidden; brass-only accept-mask (dial glow preserved).",
+  "base": "cu-winding-drum",
+  "rect_3x": [
+   1076,
+   809,
+   1541,
+   1241
+  ]
  }
 }

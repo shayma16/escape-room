@@ -1,6 +1,6 @@
 # Level 2 asset generation — BATCH 4 (FINAL: all remaining state overlays + sprites + hatch-wheel carry-in fix)
 
-PROGRESS: 13/21 done | 0 retrying | 0 failed | 8 remaining | $0.15 batch NB spend ($7.35 cumulative) | level cap $15.00
+PROGRESS: 16/21 done | 0 retrying | 0 failed | 5 remaining | $0.60 batch NB spend ($7.80 cumulative) | level cap $15.00
 (session note: items 9,11,12,13,14 done deterministically; item 10 key-in + z4 16/17 redo deferred to NB phase; z4 uncommitted work REJECTED = smear defect, redoing)
 
 _Green-lit by user 2026-07-20 (z3/z4 verdict: approved with hatch-wheel curvature fix).
@@ -23,10 +23,10 @@ patches, no blur/smear inpaints, manual-pickup states show emptied containers._
 | 4 | z2 rack-absent overlays x6 (CU14 native + wide echo): blank-peg crops from the preglyph frame base (_rejects/z2-frame-base-preglyph) | PIL | 0 | done (RGBA masked, nearest-gear partition + neighbor hard-exclude; all-absent residue 0 px; neighbor-bite 6/6 = 0 px) |
 | 5 | z2 mural sprites: sun-disc cutout + track spec; watchman + bell strike key poses; jointed-figure layers (woman/drummer); JSON with track + pose anchors (D5 cadence = Developer timing) | PIL cutouts (+$0.15 NB reserve if strike pose unusable) | 0 | done (sun-disc+bell RGBA cutouts +absent patches; woman/drummer/watchman soft-alpha figure layers; track polyline; mural-sprites.json; strike=bell swing+audio, NB reserve untouched) |
 | 6 | z2 ov-panel-open (frame wide): wall panel latched open onto z3 (dark opening + amber dial glow leak) + panel-door cutout sprite for swing keys | NB edit + registered masked composite | 0.15 | pending |
-| 7 | z2 ov-brick-pried-oilcan / ov-brick-empty (CU16 + wide echo): pried cavity NB edit; canonical inv-oil-can composited in cavity; empty = same cavity | NB edit + PIL | 0.15 | pending |
-| 8 | z2 ov-cabinet-open-mouse / ov-cabinet-empty (CU18): top drawer open (empty interior) NB edit; canonical inv-toy-mouse composited for +mouse | NB edit + PIL | 0.15 | pending |
+| 7 | z2 ov-brick-pried-oilcan / ov-brick-empty (CU16 + wide echo): pried cavity NB edit; canonical inv-oil-can composited in cavity; empty = same cavity | NB edit + PIL | 0.15 | done (NB pried cavity, seam 4.4/1.4; canonical oil-can composited for -oilcan; -empty = cavity only) |
+| 8 | z2 ov-cabinet-open-mouse / ov-cabinet-empty (CU18): top drawer open (empty interior) NB edit; canonical inv-toy-mouse composited for +mouse | NB edit + PIL | 0.15 | done (NB top-center drawer open; gap-aligned accept mask kills tonal seam; wide 7.6/CU 4.0; canonical tin-mouse for -mouse variant) |
 | 9 | z3 ov-drum-oiled (CU21 + wide echo): rust/dry bloom cleared at bearing + oil sheen | PIL | 0 | done (drum-oiled: rust bloom cleared + oil sheen, bearing zone; wide seam 1.9 / CU 1.3) |
-| 10 | z3 ov-drum-key-in (CU21 + wide echo): winding key seated in square socket (rhyme read preserved) | PIL composite first; NB reserve | 0(+0.15) | pending |
+| 10 | z3 ov-drum-key-in (CU21 + wide echo): winding key seated in square socket (rhyme read preserved) | PIL composite first; NB reserve | 0(+0.15) | done (NB winding key seated in socket — convincing 3D insertion; brass-only accept mask preserves dial glow, no blob; wide 1.7/CU 1.0; PIL attempt failed=flat, used reserve) |
 | 11 | z3 weight sprite + track spec (low->raised positions on line) | PIL cutout + JSON | 0 | done (deterministic cast-iron weight sprite + vertical track spec; no clean plate source noted) |
 | 12 | z3 pendulum sprite (still/weak/full amplitudes) + pivot/animation JSON | PIL cutout + JSON | 0 | done (pendulum geo-mask sprite rod+bob; pivot (2190,80); amps still/weak/full 0/4/11; +absent patch) |
 | 13 | z3 hammer D11 twitch keys (rest + lifted, never strikes) + JSON | PIL cutout + rotate | 0 | done (hammer geo-mask rest+lift; pivot (2338,246); twitch 9deg; +absent patch) |

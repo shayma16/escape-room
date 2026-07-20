@@ -297,5 +297,73 @@
    578
   ],
   "note": "flat wall behind the bell so it can swing for the strike"
+ },
+ "ov-brick-empty": {
+  "wide_base": "z2-frame-base",
+  "wide_rect_3x": [
+   2577,
+   986,
+   3014,
+   1263
+  ],
+  "note": "brick cache pried, empty cavity (CU16).",
+  "base": "cu-brick-cache",
+  "rect_3x": [
+   391,
+   186,
+   1990,
+   1200
+  ]
+ },
+ "ov-brick-pried-oilcan": {
+  "wide_base": "z2-frame-base",
+  "wide_rect_3x": [
+   2577,
+   986,
+   3014,
+   1263
+  ],
+  "note": "brick cache pried + oil can in cavity (CU16).",
+  "base": "cu-brick-cache",
+  "rect_3x": [
+   391,
+   186,
+   1990,
+   1200
+  ]
+ },
+ "ov-cabinet-empty": {
+  "base": "cu-cabinet-drawer",
+  "rect_3x": [
+   552,
+   519,
+   1254,
+   1041
+  ],
+  "wide_base": "z2-clockrow-base",
+  "wide_rect_3x": [
+   2347,
+   1374,
+   2723,
+   1654
+  ],
+  "note": "top-center drawer pulled open, empty wooden interior (NB); drawer-gap-aligned accept mask. Manual pickup done."
+ },
+ "ov-cabinet-open-mouse": {
+  "base": "cu-cabinet-drawer",
+  "rect_3x": [
+   552,
+   519,
+   1254,
+   1041
+  ],
+  "wide_base": "z2-clockrow-base",
+  "wide_rect_3x": [
+   2347,
+   1374,
+   2723,
+   1654
+  ],
+  "note": "top drawer open with the tin toy mouse inside (round-winged key visible)."
  }
 }
