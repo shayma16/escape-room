@@ -1,3 +1,23 @@
+# Level 2 asset generation — z4 SMEAR FIX PASS (2026-07-21)
+
+PROGRESS: 4/4 done | 0 retrying | 0 failed | 0 remaining | $3.90 spent (this task) | cumulative $12.75 of $15.00 (headroom $2.25) — Z4 SMEAR FIX COMPLETE 2026-07-21
+
+Replacing the two smeared z4 vault state overlays (each CU + wide echo) with a TIGHT
+nano-banana /edit masonry continuation, gate-backstopped by overlay_gate.py
+(seam_delta<=24 AND sharpness_ratio>=0.75). User decision 2026-07-21: do NOT ship the
+flat-panel deterministic reclone. Tool: specs/tools/l2_z4_tightfix.py.
+
+| # | asset | method | status |
+|---|-------|--------|--------|
+| 1 | ov-key-taken@3x (CU, cu-key-hook)          | NB /edit tight mask + gate | done |
+| 2 | ov-key-taken-wide@3x (z4-vault-base echo)   | NB /edit tight mask + gate | done |
+| 3 | ov-tag-taken@3x (CU, cu-tag-nail)           | NB /edit tight mask + gate | done |
+| 4 | ov-tag-taken-wide@3x (z4-vault-base echo)    | NB /edit tight mask + gate | done |
+
+Budget: cap $15.00, $8.85 prior spend, $6.15 headroom. ~$0.15/edit (2K); ~2 retries/overlay max.
+
+---
+
 # Level 2 asset generation — BATCH 4 (FINAL: all remaining state overlays + sprites + hatch-wheel carry-in fix)
 
 PROGRESS: 21/21 done | 0 retrying | 0 failed | 0 remaining | $1.65 batch NB spend ($8.85 cumulative) | level cap $15.00 — BATCH 4 COMPLETE 2026-07-20 (LEVEL 2 ART COMPLETE pending user step-10 review)

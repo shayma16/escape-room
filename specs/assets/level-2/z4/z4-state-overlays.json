@@ -14,7 +14,7 @@
    1255,
    960
   ],
-  "note": "winding key taken (NB masonry rebuild): clean stone + empty iron mounting nail revealed; square-bit rhyme leaves with the key. Tag untouched."
+  "note": "winding key taken (2026-07-21 TIGHT AI-repaint, gate-passed): key bow/shaft/square-bit removed; beveled sandstone blocks + mortar continue through the gap (no object-shaped region), canonical round mounting peg preserved (no nail), warm one-lamp lighting. Tag left pixel-identical. Method: harmonic shape-free seed -> nano-banana /edit refine, silhouette-masked composite (outside mask bit-identical). overlay_gate: CU seam 9.5 / sharpness 2.43; wide seam 9.9 / sharpness 1.30."
  },
  "ov-tag-taken": {
   "base": "cu-tag-nail",
@@ -31,6 +31,6 @@
    970,
    970
   ],
-  "note": "return tag + rope loop taken (NB masonry rebuild): clean stone + empty nail; key untouched."
+  "note": "return tag + rope loop taken (2026-07-21 TIGHT AI-repaint, gate-passed): tag body + rope removed; beveled sandstone blocks + mortar continue through the gap (no object-shaped region), canonical round mounting peg preserved (no nail). Key left pixel-identical. Method: harmonic shape-free seed -> nano-banana /edit refine, silhouette-masked composite. overlay_gate: CU seam 12.8 / sharpness 2.01; wide seam 7.0 / sharpness 0.99."
  }
 }
