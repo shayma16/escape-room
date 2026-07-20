@@ -1,3 +1,52 @@
+# Level 2 asset generation — BATCH 4 (FINAL: all remaining state overlays + sprites + hatch-wheel carry-in fix)
+
+PROGRESS: 1/21 done | 0 retrying | 0 failed | 20 remaining | $0.00 batch NB spend ($7.20 cumulative) | level cap $15.00
+
+_Green-lit by user 2026-07-20 (z3/z4 verdict: approved with hatch-wheel curvature fix).
+Final art batch: per-element overlay architecture (patch + rect JSON, pixel-aligned,
+seam-checked <=24) matching the Developer compositor; deterministic/PIL wherever possible;
+NB edits ONLY for genuine surface changes. UPGRADED GATE in force batch-wide: containment
++ curvature/perspective conformance on every stamped non-planar/oblique surface
+(l2_wheelfix.assert_conformal; flat stamp = FAIL even if contained). Overlay JSONs:
+z2/z2-state-overlays.json, z3/z3-state-overlays.json, z4/z4-state-overlays.json (schema =
+z1-state-overlays.json). L1/round-4 lessons binding: no full-plate swaps, no misregistered
+patches, no blur/smear inpaints, manual-pickup states show emptied containers._
+
+## Batch 4 plan (2026-07-20)
+
+| # | Item | Method | Est $ | Status |
+|---|------|--------|-------|--------|
+| 1 | CARRY-IN FIX (user verdict 2026-07-20): hatch thumb-wheel numerals conform to crown curvature/perspective — per-wheel surface model (axial/circum frame + bow), strip-warp of canonical numerals, UPGRADED conformance gate (batch-3 flat stamps proven FAIL 4/4); rebuilt z3-dial-base + cu-hatch-wheels + PER-WHEEL 4x12 wheel strip; before/after sheet | deterministic PIL (l2_wheelfix.py) | 0 | done (commit 5205ba3; sweep 11.4deg = model on all 8 stamped surfaces; changed-px audit clean; w4 y-band note = accepted batch-3 flag) |
+| 2 | z2 ov-arbor-oiled (CU13 + wide echo): bearing rust bloom cleared + oil sheen, bearing zone only | PIL | 0 | pending |
+| 3 | z2 post-mount overlays x14 (CU13): gears 16/24/36/40/48/72 + great wheel 64, posts A and B, perspective-matched deterministic gear renders + shadow, arbor through square hole | PIL (render_gear/die-64) | 0 | pending |
+| 4 | z2 rack-absent overlays x6 (CU14 native + wide echo): blank-peg crops from the preglyph frame base (_rejects/z2-frame-base-preglyph) | PIL | 0 | pending |
+| 5 | z2 mural sprites: sun-disc cutout + track spec; watchman + bell strike key poses; jointed-figure layers (woman/drummer); JSON with track + pose anchors (D5 cadence = Developer timing) | PIL cutouts (+$0.15 NB reserve if strike pose unusable) | 0 | pending |
+| 6 | z2 ov-panel-open (frame wide): wall panel latched open onto z3 (dark opening + amber dial glow leak) + panel-door cutout sprite for swing keys | NB edit + registered masked composite | 0.15 | pending |
+| 7 | z2 ov-brick-pried-oilcan / ov-brick-empty (CU16 + wide echo): pried cavity NB edit; canonical inv-oil-can composited in cavity; empty = same cavity | NB edit + PIL | 0.15 | pending |
+| 8 | z2 ov-cabinet-open-mouse / ov-cabinet-empty (CU18): top drawer open (empty interior) NB edit; canonical inv-toy-mouse composited for +mouse | NB edit + PIL | 0.15 | pending |
+| 9 | z3 ov-drum-oiled (CU21 + wide echo): rust/dry bloom cleared at bearing + oil sheen | PIL | 0 | pending |
+| 10 | z3 ov-drum-key-in (CU21 + wide echo): winding key seated in square socket (rhyme read preserved) | PIL composite first; NB reserve | 0(+0.15) | pending |
+| 11 | z3 weight sprite + track spec (low->raised positions on line) | PIL cutout + JSON | 0 | pending |
+| 12 | z3 pendulum sprite (still/weak/full amplitudes) + pivot/animation JSON | PIL cutout + JSON | 0 | pending |
+| 13 | z3 hammer D11 twitch keys (rest + lifted, never strikes) + JSON | PIL cutout + rotate | 0 | pending |
+| 14 | z3 strike-beat rod articulation key poses/notes (z3 + z1 rod ends, translate offsets) | JSON notes + rects | 0 | pending |
+| 15 | z3 ov-hatch-open (wide): hatch open onto stair mouth + warm z4 lamp leak | NB edit + registered masked composite | 0.15 | pending |
+| 16 | z4 ov-key-taken (CU24 + wide echo): hook empty | PIL clone-out | 0 | pending |
+| 17 | z4 ov-tag-taken (CU23 + wide echo): nail empty | PIL clone-out | 0 | pending |
+| 18 | z1 cat pose sprites x4 (pounce-chase, settled-by-door, stretch, exit-trot) — keyed RGBA, F3 cat design refs, 9.1 register (real-cat, no anthropomorphism) | NB raws + keyed RGBA | 0.60 | pending |
+| 19 | z1 cat facial keys: mouse-tell (eyes locked + tail flick) + slow-blink half-lid on cu-cat-cushion | 1 NB edit + PIL (blend/tail warp) | 0.15 | pending |
+| 20 | z1 mouse skitter loop keys (from inv-toy-mouse cutout: tilt frames + motion JSON; D4) + tray-VI seat/pop-back notes (reuses tile-VI cutout, no art) | PIL + JSON | 0 | pending |
+| 21 | Deliverables: seam audit ALL new overlays (<=24, l2_fixstates ring method); z2/z3/z4 state-overlays.json; batch-4 review contact sheet; manifest batch-4 block; progress/spend reconciliation | PIL | 0 | pending |
+
+Planned NB spend $1.20 + $0.45 reserves (mural pose, drum key-in, 1 re-roll) = worst $1.65
+-> cumulative worst $8.85 of $15.00 (headroom $6.15 at worst). Hard stop $15.00.
+
+GATES (every item): pixel-aligned patch+rect (no full-plate swaps); seam ring <=24;
+emptied-container reads for manual pickups; canonical glyphs/dies only (never model-drawn);
+canonical-filename discipline (superseded -> _rejects/); upgraded conformance gate on any
+stamped curved/oblique surface; one-sun continuity (no lighting shifts except sanctioned
+amber leaks through openings); iPad band for interactive points; 7-R1.5 bottom band on CUs.
+
 # Level 2 asset generation — BATCH 3 (z3 + z4 + gear-frame carry-in fix)
 
 PROGRESS: 17/17 done | 0 retrying | 0 failed | 0 remaining | $1.65 batch spend ($7.20 cumulative) | level cap $15.00 — BATCH 3 COMPLETE 2026-07-20
