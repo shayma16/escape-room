@@ -43,8 +43,9 @@ def reveal(base, region, content, seed, tag, thresh=17):
     ys, xs = np.nonzero(np.asarray(m) > 20)
     if len(xs) == 0:
         raise RuntimeError("no change detected — edit had no effect")
-    bb = (x0 + int(xs.min()) - 4, y0 + int(ys.min()) - 4,
-          x0 + int(xs.max()) + 5, y0 + int(ys.max()) + 5)
+    bb = (max(0, x0 + int(xs.min()) - 4), max(0, y0 + int(ys.min()) - 4),
+          min(base.width, x0 + int(xs.max()) + 5),
+          min(base.height, y0 + int(ys.max()) + 5))
     return full, bb
 
 

@@ -1,0 +1,16 @@
+{
+ "sp-panel-door": {
+  "sprite": "sp-panel-door@3x.png",
+  "rect_3x": [
+   812,
+   1452,
+   1560,
+   1905
+  ],
+  "hinge_pivot_px_at_3x": [
+   812,
+   1678
+  ],
+  "render_rule": "door face cut from the CLOSED base panel; swing about the LEFT hinge (rotate 0->~100deg, Y-axis look via horizontal squash) for the shut->swinging->open key poses. End (latched-open) state = overlay ov-panel-open (dark opening + amber z3 dial glow). Timing = Developer."
+ }
+}

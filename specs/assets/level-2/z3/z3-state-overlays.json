@@ -52,5 +52,15 @@
    1541,
    1241
   ]
+ },
+ "ov-hatch-open": {
+  "wide_base": "z3-dial-base",
+  "wide_rect_3x": [
+   2346,
+   1486,
+   3284,
+   1914
+  ],
+  "note": "floor hatch open onto the stair mouth down to z4 + warm lamp leak (sanctioned amber leak through an opening)."
  }
 }

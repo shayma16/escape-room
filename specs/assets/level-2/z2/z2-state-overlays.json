@@ -365,5 +365,15 @@
    1654
   ],
   "note": "top drawer open with the tin toy mouse inside (round-winged key visible)."
+ },
+ "ov-panel-open": {
+  "wide_base": "z2-frame-base",
+  "wide_rect_3x": [
+   756,
+   1416,
+   1704,
+   1920
+  ],
+  "note": "wall panel latched open onto the z3 doorway: dark opening + warm amber dial glow leak; panel door swung aside (sanctioned amber leak through an opening, one-sun continuity preserved)."
  }
 }
