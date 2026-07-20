@@ -1,3 +1,47 @@
+# Level 2 asset generation — BATCH 3 (z3 + z4 + gear-frame carry-in fix)
+
+PROGRESS: 0/17 done | 0 retrying | 0 failed | 17 remaining | $0.00 batch spend ($5.55 cumulative) | level cap $15.00
+
+_Green-lit by user 2026-07-20 (fix-pass verdict: "everything checks out"; one carry-in fix
+rolled in). Scope per standing plan: z3 (great-dial mirror contract plate — most protected
+asset) + z4; z3/z4 STATE overlays stay in batch 4. Model: fal-ai/nano-banana-pro (t2i) +
+deterministic PIL for every load-bearing glyph (l2_glyphs.py canonical source; mirrored
+numeral set from sheet A). NEW PROGRAMMATIC GATE this batch (user has caught containment
+3x): every stamp's bbox is ASSERTED inside its target-surface mask in code, not by eye._
+
+## Batch 3 plan (2026-07-20)
+
+| # | Item | Method | Est $ | Status |
+|---|------|--------|-------|--------|
+| 1 | CARRY-IN FIX (user verdict 2026-07-20): cu-gear-frame XII/VIII re-stamp — erase by preglyph bbox revert; XII contained ON the pinion face annulus (ellipse mask minus boss), VIII engraved on the post-A bracket face (rect mask); programmatic containment asserts; propagate wide @3x/2x/1x + re-crop CU13; before/after sheet | deterministic PIL (l2_framefix.py) | 0 | pending |
+| 2 | z3-dial-base wide 3840x1920: chamber contre-jour, glowing amber dial disc from behind (glass BLANK — no numerals/no hands, stamped deterministically after), setting crank at hub + clear D9 staging area, winding drum (dry, square socket, weight low on line), dead-still pendulum, strike train + hammers, linkage rods exiting right, floor hatch w/ 4 blank brass wheels + header plates | NB t2i 4K, 14 refs | 0.30 | pending |
+| 3 | z3 glyph integration rev ($0): MIRRORED numeral ring from sheet A -mir set fitted inside measured disc (full 4.2 contract: whole-ring mirror, XII top/VI bottom flipped letterforms, mirrored-IV=malformed-VI, NO legible VII anywhere); hatch wheel I-XII engraves (neutral non-solution position) + 4 canonical header dies (BigBen* Burj Liberty Fuji — binding z3 order); containment asserts | deterministic PIL (l2_z3_build.py) | 0 | pending |
+| 4 | CU20 cu-great-dial (interactive; carries clu-mirrored-numerals; native-res mirrored ring re-stamp; D9 space clear; numeral >=5% screen width floor) | crop + native overlay | 0 | pending |
+| 5 | CU21 cu-winding-drum (interactive; dry bearing + square socket reads as square absence) | crop (+native detail if upsample soft) | 0 | pending |
+| 6 | CU22 cu-hatch-wheels (interactive; 4 header dies + engraved wheel numerals legible simultaneously) | crop + native deterministic wheel band + dies | 0 | pending |
+| 7 | dial hand sprites: hour (short, spade tip) + minute (long, plain tip) silhouette soft-edge RGBA, arbor-anchored (D1: Developer renders front time th at mirrored -th; art bakes NO time) | deterministic PIL | 0 | pending |
+| 8 | hatch wheel 12-position engraved sprite strip (shared x4 wheels, canonical numerals) | deterministic PIL | 0 | pending |
+| 9 | mirror-contract gate sheet: front ring (std) vs back plate side-by-side + malformed-VI/IIV crops + grayscale squint record | PIL | 0 | pending |
+| 10 | z4-vault-base wide 3840x1920: strongroom, steps down back-left w/ amber hatch spill, one warm lamp pocket (#D9973F), winding key on hook (large SQUARE bit silhouette — drum-socket rhyme), blank brass tag on nail, shelf (blank ledger spines + wrapped watch), second cushion + empty saucer | NB t2i 4K, 14 refs | 0.30 | pending |
+| 11 | z4 glyph integration rev ($0): tag face mini FRONT-VIEW dial FIXED 7:20 (canonical numerals, spade hour @7:20 pos, plain minute on 4) over door die; key square-bit geometry check; containment asserts | deterministic PIL (l2_z4_build.py) | 0 | pending |
+| 12 | CU23 cu-tag-nail (7:20 unambiguous at CU + native tag re-stamp) | crop + native overlay | 0 | pending |
+| 13 | CU24 cu-key-hook (square bit rhyme legible) | crop | 0 | pending |
+| 14 | CU25 cu-shelf (lore inspect; nothing puzzle-bearing, spines glyph-free) | crop | 0 | pending |
+| 15 | inv-winding-key cutout (>=1024px RGBA; square bit) | NB raw + keyed RGBA | 0.15 | pending |
+| 16 | inv-return-tag cutout (>=1024px RGBA; front face ONLY per D9 — no reverse side; deterministic 7:20 dial + door die identical to cu-tag-nail stamps) | NB blank-tag raw + keyed + PIL | 0.15 | pending |
+| 17 | review deliverables: z3+z4 contact sheet + gear-frame before/after + manifest batch-3 block + progress updates | PIL | 0 | pending |
+
+Planned NB spend: $0.90 (2 wides @4K + 2 icon raws @std). Retry reserve $0.60 (wide
+re-roll if dial arrives pre-numeraled/hatch wheel count wrong; icon re-key). Worst case
+$1.50 -> cumulative $7.05, hard stop far inside the $15.00 cap ($9.45 headroom at start).
+
+GATES (every plate): programmatic stamp-bbox-inside-surface-mask assert; glyph legibility
++ grayscale squint; one-sun continuity (z3 glow = #F0C060 transmitted sun; z4 lamp
+#D9973F + hatch amber leak only); iPad 4:3 dual-safe band (critical elements x in
+[640,3200], y in [154,1766] @3x) + 8% edge inset; 7-R1.5 bottom band; canonical-filename
+discipline (superseded -> _rejects/); seam checks on all composites; NO legible VII on the
+dial back view (asserted per-glyph); D9 staging area clear; no keyholes; no IIII.
+
 # Level 2 asset generation — STEP-10 z2 FIX PASS (2026-07-19, after batch-2 verdict)
 
 PROGRESS: 9/9 done | 0 retrying | 0 failed | 0 remaining | $0.75 fix-pass spend ($5.55 cumulative) | level cap $15.00 — FIX PASS COMPLETE 2026-07-20
