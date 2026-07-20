@@ -125,8 +125,10 @@ per-zone user reviews follow each batch.
   peg preserved), all 4 overlays PASS both gates (seam + interior-sharpness). Fix cost
   $3.90 (WELL over the $0.15–0.30 estimate — hard large-hole inpaint needed heavy
   iteration; flagged to user). **Cumulative L2 art $12.75/$15.00 — headroom now only
-  $2.25.** LEVEL 2 ART COMPLETE pending user's final ok on the fix. Lesson: large-hole
-  object-removal inpaints are iteration-expensive; budget/estimate them accordingly.
+  $2.25.** LEVEL 2 ART **USER-APPROVED / LOCKED** 2026-07-21 ("all good"). Lesson:
+  large-hole object-removal inpaints are iteration-expensive; budget them accordingly.
+  → DEVELOPER STAGE dispatched 2026-07-21 (build Level 2 in Swift/SpriteKit on the L1
+  round-4 architecture; NOT the dead-spec p08 mouse-at-drum; NEVER "psh" SFX).
 - Pipeline after art: batches 2→4 (z2, z3, z4 + sprites/state edits) with step-10 reviews
   → Developer (NOTE: do NOT build the unreachable p08 mouse-at-drum interaction — dead
   spec text, see walkthrough flags; NEVER the "psh" SFX) → QA → GATE → release.
