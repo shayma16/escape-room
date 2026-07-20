@@ -49,6 +49,10 @@ final class SoundManager {
         // R4-003: THE menu cue — the liked Level-Select ping, used consistently across
         // all menu chrome. (sfx-menu-tap — the "ugly tick" — is retired and deleted.)
         case menuConfirm = "sfx-menu-confirm"
+        // Level 2 functional cues (originally synthesized, no third-party audio — see the
+        // Level-2 implementation notes licensing table). NEVER the "psh" whoosh (hard rule):
+        case creak = "sfx-creak"        // D10 pry faint-tell on the correct cache spot (creak + shift)
+        case chime = "sfx-chime"        // the strike train firing when the time lock releases
         // Build 10 removals (cases deleted, files deleted from the bundle):
         // - sfx-wood: the surviving default nav/passage "psh" (R4-010/012/017/027).
         // - sfx-entry: the "ocean waves" swell at level entry (R4-002).

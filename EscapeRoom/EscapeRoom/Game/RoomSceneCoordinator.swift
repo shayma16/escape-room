@@ -61,7 +61,7 @@ final class RoomSceneCoordinator: ObservableObject {
         self.viewID = viewID
         self.state = state
         self.interaction = interaction
-        self.scene = RoomScene(viewID: viewID, size: size)
+        self.scene = RoomScene(sceneName: viewID.rawValue, size: size)
         configure()
         scene.onHotspotTap = { [weak self] id in self?.handleTap(id) }
         // Cluster F (R4-005, build 10): tapping empty scene space disarms the armed

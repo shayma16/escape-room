@@ -24,6 +24,29 @@ struct LevelSaveData: Codable, Equatable {
     var isComplete: Bool = false
     var lastUpdated: Date = Date()
 
+    // MARK: - Level 2 puzzle state (all decodeIfPresent + defaulted; ignored by Level 1)
+    //
+    // Level 2 reuses this same persistence bag (one shared save format) — its interactive
+    // puzzles carry a few scalar/positional states that "retain position" across attempts
+    // per the puzzle graph, exactly like L1's dial/mirror/cauldron fields above.
+
+    /// p01 door dial: seated tile item id keyed by socket position ("2","4","7","11").
+    /// Only correctly-seated tiles persist here (wrong tiles / the tray VI decoy pop back).
+    var l2DialSockets: [String: String] = [:]
+    /// p06 gear train: the gear id mounted on each post (rack gear "16".."72" or the great
+    /// wheel "64"), or nil if the post is empty. Both arrangements of {36,64} are valid.
+    var l2GearPostA: String? = nil
+    var l2GearPostB: String? = nil
+    /// p07 vault hatch: the four wheel readings (1...12) under the pictogram headers
+    /// (Big Ben, Burj, Liberty, Fuji — z3 binding order). Retains position (no lockout).
+    /// Defaults to the neutral face the base plate is painted with (XII, III, VI, IX).
+    var l2VaultWheels: [Int] = [12, 3, 6, 9]
+    /// p09 hand-setting: the FRONT-view time on the great clock, in minutes on a 12-hour
+    /// dial (0...719). The setting crank moves it in 5-minute detents. hands-at-release is
+    /// derived (== 440, i.e. front 7:20) — never a stored flag (D1 canonical-front-time
+    /// contract: no second "back time" variable).
+    var l2ClockFrontMinutes: Int = 0
+
     init(levelID: Int) {
         self.levelID = levelID
     }
@@ -46,6 +69,11 @@ struct LevelSaveData: Codable, Equatable {
         viewedClues = try c.decodeIfPresent(Set<String>.self, forKey: .viewedClues) ?? []
         isComplete = try c.decodeIfPresent(Bool.self, forKey: .isComplete) ?? false
         lastUpdated = try c.decodeIfPresent(Date.self, forKey: .lastUpdated) ?? Date()
+        l2DialSockets = try c.decodeIfPresent([String: String].self, forKey: .l2DialSockets) ?? [:]
+        l2GearPostA = try c.decodeIfPresent(String.self, forKey: .l2GearPostA)
+        l2GearPostB = try c.decodeIfPresent(String.self, forKey: .l2GearPostB)
+        l2VaultWheels = try c.decodeIfPresent([Int].self, forKey: .l2VaultWheels) ?? [12, 3, 6, 9]
+        l2ClockFrontMinutes = try c.decodeIfPresent(Int.self, forKey: .l2ClockFrontMinutes) ?? 0
     }
 }
 
@@ -86,9 +114,15 @@ struct SaveGame: Codable, Equatable {
 final class GameState: ObservableObject {
     @Published private(set) var data: LevelSaveData
     private let store: SaveGameStore
+    /// Per-level rules (start zone + item-lifecycle reconciliation). Resolved once from the
+    /// level id so GameState is fully reusable across levels without any level-specific
+    /// branching in this class — Level 1 keeps its exact prior behavior (Level1Rules ==
+    /// PuzzleGraph.startZoneID + ItemLifecycle.reconcile). See LevelRules.swift.
+    private let rules: LevelRules
 
     init(levelID: Int, store: SaveGameStore) {
         self.store = store
+        self.rules = LevelRulesRegistry.rules(for: levelID)
         if let existing = store.load().levels[levelID] {
             self.data = existing
         } else {
@@ -97,14 +131,14 @@ final class GameState: ObservableObject {
         // QA-BUG-001 fix: the graph's start zone is unlocked from the first frame of a
         // fresh save (zones[0].start_zone == true). Applied on every init so saves
         // written by earlier builds (which never contained the start zone) migrate too.
-        if !data.unlockedZones.contains(PuzzleGraph.startZoneID) {
-            data.unlockedZones.insert(PuzzleGraph.startZoneID)
+        if !data.unlockedZones.contains(rules.startZoneID) {
+            data.unlockedZones.insert(rules.startZoneID)
             persist()
         }
         // Build 10 cluster A migration: a save written by the build-9 lifecycle
         // (which under-consumed — R4-030's lingering spoon/file) may still hold
         // fully-depleted items; reconcile once on load so old saves come clean.
-        ItemLifecycle.reconcile(self)
+        rules.reconcile(self)
     }
 
     // MARK: - Read helpers
@@ -160,7 +194,7 @@ final class GameState: ObservableObject {
         // Build 10 cluster A: every way an item use can become satisfied passes
         // through setFlag or markSolved, so reconciling here (and only here) makes
         // the uses-driven retain/consume rule impossible to bypass (R4-019/R4-030).
-        ItemLifecycle.reconcile(self)
+        rules.reconcile(self)
     }
 
     func clearFlag(_ id: String) {
@@ -174,7 +208,7 @@ final class GameState: ObservableObject {
         data.solvedPuzzles.insert(puzzleID)
         persist()
         // Build 10 cluster A: see setFlag — the single, unbypassable reconcile point.
-        ItemLifecycle.reconcile(self)
+        rules.reconcile(self)
     }
 
     func setRuneDoorProgress(_ progress: [String]) {
@@ -203,6 +237,32 @@ final class GameState: ObservableObject {
         persist()
     }
 
+    // MARK: - Level 2 mutators (persist; reconcile via markSolved/setFlag as usual)
+
+    func setL2DialSocket(_ socket: String, tile: String?) {
+        if let tile { data.l2DialSockets[socket] = tile } else { data.l2DialSockets[socket] = nil }
+        persist()
+    }
+
+    func setL2GearPost(_ post: Level2Post, gear: String?) {
+        switch post {
+        case .a: data.l2GearPostA = gear
+        case .b: data.l2GearPostB = gear
+        }
+        persist()
+    }
+
+    func setL2VaultWheel(_ index: Int, value: Int) {
+        guard data.l2VaultWheels.indices.contains(index) else { return }
+        data.l2VaultWheels[index] = value
+        persist()
+    }
+
+    func setL2ClockFrontMinutes(_ minutes: Int) {
+        data.l2ClockFrontMinutes = ((minutes % 720) + 720) % 720
+        persist()
+    }
+
     /// Records that a clue close-up has been viewed (F-012 clue-gating substrate).
     /// Idempotent latched fact, like any satisfied-requirement flag.
     func markClueViewed(_ clueID: String) {
@@ -225,7 +285,7 @@ final class GameState: ObservableObject {
     /// (QA-BUG-001) — a restarted level must be navigable exactly like a fresh save.
     func restartLevel() {
         data = LevelSaveData(levelID: data.levelID)
-        data.unlockedZones.insert(PuzzleGraph.startZoneID)
+        data.unlockedZones.insert(rules.startZoneID)
         persist()
     }
 

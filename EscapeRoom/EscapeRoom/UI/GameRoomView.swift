@@ -140,7 +140,7 @@ struct GameRoomView: View {
             // partially off-screen); a full-window overlay centers within the safe area
             // on every device, matching the completion card.
             if showPause {
-                PauseMenuView(session: session, isPresented: $showPause)
+                PauseMenuView(onRestart: { session.restartLevel() }, isPresented: $showPause)
                     .transition(.opacity)
             }
         }

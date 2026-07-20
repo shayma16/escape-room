@@ -26,6 +26,25 @@ enum ItemCatalog {
         ItemDefinition(id: PuzzleGraph.ItemID.paste, name: "Moonflower Paste", iconAsset: "icon-paste", isRedHerring: false),
         ItemDefinition(id: PuzzleGraph.ItemID.feather, name: "Black Crow Feather", iconAsset: "icon-feather", isRedHerring: false),
         ItemDefinition(id: PuzzleGraph.ItemID.phialDraught, name: "Phial of Unbinding Draught", iconAsset: "icon-phial-draught", isRedHerring: false),
+    ] + level2Items
+
+    /// Level 2 "The Clockmaker's Attic" items (distinct ids/icons from L1; appended so the
+    /// shared InventoryBarView / ItemInspectView resolve them). Icon asset names match the
+    /// staged Level-2 inventory cutouts (inv-*). None are red herrings — the level's decoys
+    /// (tray VI tile, 48 gear) are non-collectible and never enter inventory (R6-003).
+    static let level2Items: [ItemDefinition] = [
+        ItemDefinition(id: Level2Graph.ItemID.screwdriver, name: "Heavy Flat-Blade Screwdriver", iconAsset: "inv-screwdriver", isRedHerring: false),
+        ItemDefinition(id: Level2Graph.ItemID.tileII, name: "Numeral Tile II", iconAsset: "inv-tile-ii", isRedHerring: false),
+        ItemDefinition(id: Level2Graph.ItemID.tileIV, name: "Numeral Tile IV", iconAsset: "inv-tile-iv", isRedHerring: false),
+        ItemDefinition(id: Level2Graph.ItemID.tileVII, name: "Numeral Tile VII", iconAsset: "inv-tile-vii", isRedHerring: false),
+        ItemDefinition(id: Level2Graph.ItemID.tileXI, name: "Numeral Tile XI", iconAsset: "inv-tile-xi", isRedHerring: false),
+        ItemDefinition(id: Level2Graph.ItemID.watchA, name: "Pocket Watch A", iconAsset: "inv-watch-a", isRedHerring: false),
+        ItemDefinition(id: Level2Graph.ItemID.watchB, name: "Pocket Watch B", iconAsset: "inv-watch-b", isRedHerring: false),
+        ItemDefinition(id: Level2Graph.ItemID.toyMouse, name: "Tin Wind-Up Mouse", iconAsset: "inv-toy-mouse", isRedHerring: false),
+        ItemDefinition(id: Level2Graph.ItemID.greatWheel, name: "Great Wheel (64 teeth)", iconAsset: "inv-great-wheel", isRedHerring: false),
+        ItemDefinition(id: Level2Graph.ItemID.oilcan, name: "Long-Spout Oil Can", iconAsset: "inv-oil-can", isRedHerring: false),
+        ItemDefinition(id: Level2Graph.ItemID.windingKey, name: "Square-Bit Winding Key", iconAsset: "inv-winding-key", isRedHerring: false),
+        ItemDefinition(id: Level2Graph.ItemID.returnTag, name: "'Will Return' Tag (7:20)", iconAsset: "inv-return-tag", isRedHerring: false),
     ]
 
     static let byID: [String: ItemDefinition] = Dictionary(uniqueKeysWithValues: all.map { ($0.id, $0) })

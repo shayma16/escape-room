@@ -7,7 +7,9 @@ import SwiftUI
 /// mutation in GameState is persisted immediately (see SaveGameStore), so there is no
 /// transient state that would be silently lost by backgrounding to the menu.
 struct PauseMenuView: View {
-    @ObservedObject var session: LevelSession
+    /// Restart-this-level action, injected so the pause menu is level-agnostic (reused by
+    /// both the Level 1 and Level 2 room views without depending on a concrete session type).
+    let onRestart: () -> Void
     @Binding var isPresented: Bool
     @State private var showRestartConfirm = false
     @EnvironmentObject private var navigator: AppNavigator
@@ -51,7 +53,7 @@ struct PauseMenuView: View {
         .alert("Restart level?", isPresented: $showRestartConfirm) {
             Button("Cancel", role: .cancel) {}
             Button("Restart") {
-                session.restartLevel()
+                onRestart()
                 isPresented = false
             }
         } message: {

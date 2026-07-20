@@ -43,7 +43,11 @@ enum ViewID: String, CaseIterable {
 /// letterbox math only matters OUTSIDE the app (the UI-test `sceneCoordinate` that syntheses
 /// a view-space tap from a plate-normalized point must use the same min-scale fit).
 final class RoomScene: SKScene {
-    let viewID: ViewID
+    /// Opaque scene identifier (e.g. an L1 `ViewID.rawValue` or an L2 view raw value).
+    /// The scene never branches on it — base textures/hotspots/overlays are set explicitly
+    /// by whichever coordinator owns the scene — so it is level-agnostic and can back both
+    /// the Level 1 and Level 2 coordinators without change (Level 2 reuse).
+    let sceneName: String
     private(set) var hotspots: [Hotspot] = []
     private var hotspotNodes: [String: SKShapeNode] = [:]
     private let baseNode = SKSpriteNode()
@@ -59,8 +63,8 @@ final class RoomScene: SKScene {
     /// — one of the three always-available disarm affordances.
     var onEmptyTap: (() -> Void)?
 
-    init(viewID: ViewID, size: CGSize) {
-        self.viewID = viewID
+    init(sceneName: String, size: CGSize) {
+        self.sceneName = sceneName
         super.init(size: size)
         // BUILD 10 — `.aspectFill` RESTORED (the interim build-9 letterbox is removed).
         // The Asset agent re-framed every wide plate into the §8 iPad-4:3 ∩ iPhone-19.5:9
