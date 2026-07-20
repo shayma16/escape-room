@@ -1,0 +1,281 @@
+{
+ "ov-arbor-oiled": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   40,
+   360,
+   440,
+   710
+  ],
+  "note": "seized bearing oiled: rust bloom cleared (recolored to clean iron, texture kept) + oil sheen/gloss at the boss; bearing plate only per style 8",
+  "wide_base": "z2-frame-base",
+  "wide_rect_3x": [
+   688,
+   913,
+   969,
+   1159
+  ]
+ },
+ "ov-mount-a-16": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   1239,
+   579,
+   1405,
+   756
+  ],
+  "rgba": true,
+  "note": "gear 16t mounted on post A (deterministic render_gear, exact tooth count; stub collar re-pasted through the square arbor hole; dia 117px prop. to teeth)"
+ },
+ "ov-mount-b-16": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   1542,
+   609,
+   1708,
+   781
+  ],
+  "rgba": true,
+  "note": "gear 16t mounted on post B (deterministic render_gear, exact tooth count; stub collar re-pasted through the square arbor hole; dia 117px prop. to teeth)"
+ },
+ "ov-mount-a-24": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   1231,
+   572,
+   1413,
+   764
+  ],
+  "rgba": true,
+  "note": "gear 24t mounted on post A (deterministic render_gear, exact tooth count; stub collar re-pasted through the square arbor hole; dia 134px prop. to teeth)"
+ },
+ "ov-mount-b-24": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   1534,
+   599,
+   1716,
+   791
+  ],
+  "rgba": true,
+  "note": "gear 24t mounted on post B (deterministic render_gear, exact tooth count; stub collar re-pasted through the square arbor hole; dia 134px prop. to teeth)"
+ },
+ "ov-mount-a-36": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   1219,
+   560,
+   1425,
+   776
+  ],
+  "rgba": true,
+  "note": "gear 36t mounted on post A (deterministic render_gear, exact tooth count; stub collar re-pasted through the square arbor hole; dia 159px prop. to teeth)"
+ },
+ "ov-mount-b-36": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   1522,
+   587,
+   1728,
+   803
+  ],
+  "rgba": true,
+  "note": "gear 36t mounted on post B (deterministic render_gear, exact tooth count; stub collar re-pasted through the square arbor hole; dia 159px prop. to teeth)"
+ },
+ "ov-mount-a-40": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   1215,
+   555,
+   1429,
+   781
+  ],
+  "rgba": true,
+  "note": "gear 40t mounted on post A (deterministic render_gear, exact tooth count; stub collar re-pasted through the square arbor hole; dia 168px prop. to teeth)"
+ },
+ "ov-mount-b-40": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   1518,
+   582,
+   1732,
+   808
+  ],
+  "rgba": true,
+  "note": "gear 40t mounted on post B (deterministic render_gear, exact tooth count; stub collar re-pasted through the square arbor hole; dia 168px prop. to teeth)"
+ },
+ "ov-mount-a-48": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   1206,
+   547,
+   1438,
+   789
+  ],
+  "rgba": true,
+  "note": "gear 48t mounted on post A (deterministic render_gear, exact tooth count; stub collar re-pasted through the square arbor hole; dia 184px prop. to teeth)"
+ },
+ "ov-mount-b-48": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   1509,
+   574,
+   1741,
+   816
+  ],
+  "rgba": true,
+  "note": "gear 48t mounted on post B (deterministic render_gear, exact tooth count; stub collar re-pasted through the square arbor hole; dia 184px prop. to teeth)"
+ },
+ "ov-mount-a-64": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   1190,
+   529,
+   1454,
+   807
+  ],
+  "rgba": true,
+  "note": "gear 64t mounted on post A (deterministic render_gear, exact tooth count; stub collar re-pasted through the square arbor hole; dia 218px prop. to teeth)"
+ },
+ "ov-mount-b-64": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   1493,
+   556,
+   1757,
+   834
+  ],
+  "rgba": true,
+  "note": "gear 64t mounted on post B (deterministic render_gear, exact tooth count; stub collar re-pasted through the square arbor hole; dia 218px prop. to teeth)"
+ },
+ "ov-mount-a-72": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   1181,
+   521,
+   1463,
+   815
+  ],
+  "rgba": true,
+  "note": "gear 72t mounted on post A (deterministic render_gear, exact tooth count; stub collar re-pasted through the square arbor hole; dia 235px prop. to teeth)"
+ },
+ "ov-mount-b-72": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   1484,
+   548,
+   1766,
+   842
+  ],
+  "rgba": true,
+  "note": "gear 72t mounted on post B (deterministic render_gear, exact tooth count; stub collar re-pasted through the square arbor hole; dia 235px prop. to teeth)"
+ },
+ "ov-rack-absent-36": {
+  "wide_base": "z2-frame-base",
+  "wide_rect_3x": [
+   2116,
+   1096,
+   2235,
+   1227
+  ],
+  "rgba": true,
+  "note": "gear 36t taken off its rack peg: blank-peg pixels, alpha = own silhouette (nearest-gear partition, neighbors hard-excluded)",
+  "base": "cu-gear-rack",
+  "rect_3x": [
+   556,
+   414,
+   832,
+   719
+  ]
+ },
+ "ov-rack-absent-48": {
+  "wide_base": "z2-frame-base",
+  "wide_rect_3x": [
+   2229,
+   1096,
+   2360,
+   1239
+  ],
+  "rgba": true,
+  "note": "gear 48t taken off its rack peg: blank-peg pixels, alpha = own silhouette (nearest-gear partition, neighbors hard-excluded)",
+  "base": "cu-gear-rack",
+  "rect_3x": [
+   844,
+   414,
+   1152,
+   751
+  ]
+ },
+ "ov-rack-absent-24": {
+  "wide_base": "z2-frame-base",
+  "wide_rect_3x": [
+   2375,
+   1123,
+   2472,
+   1226
+  ],
+  "rgba": true,
+  "note": "gear 24t taken off its rack peg: blank-peg pixels, alpha = own silhouette (nearest-gear partition, neighbors hard-excluded)",
+  "base": "cu-gear-rack",
+  "rect_3x": [
+   1216,
+   482,
+   1435,
+   724
+  ]
+ },
+ "ov-rack-absent-40": {
+  "wide_base": "z2-frame-base",
+  "wide_rect_3x": [
+   2125,
+   1276,
+   2253,
+   1417
+  ],
+  "rgba": true,
+  "note": "gear 40t taken off its rack peg: blank-peg pixels, alpha = own silhouette (nearest-gear partition, neighbors hard-excluded)",
+  "base": "cu-gear-rack",
+  "rect_3x": [
+   579,
+   876,
+   876,
+   1205
+  ]
+ },
+ "ov-rack-absent-16": {
+  "wide_base": "z2-frame-base",
+  "wide_rect_3x": [
+   2257,
+   1305,
+   2345,
+   1398
+  ],
+  "rgba": true,
+  "note": "gear 16t taken off its rack peg: blank-peg pixels, alpha = own silhouette (nearest-gear partition, neighbors hard-excluded)",
+  "base": "cu-gear-rack",
+  "rect_3x": [
+   916,
+   948,
+   1111,
+   1158
+  ]
+ },
+ "ov-rack-absent-72": {
+  "wide_base": "z2-frame-base",
+  "wide_rect_3x": [
+   2348,
+   1276,
+   2502,
+   1444
+  ],
+  "rgba": true,
+  "note": "gear 72t taken off its rack peg: blank-peg pixels, alpha = own silhouette (nearest-gear partition, neighbors hard-excluded)",
+  "base": "cu-gear-rack",
+  "rect_3x": [
+   1148,
+   876,
+   1514,
+   1280
+  ]
+ }
+}

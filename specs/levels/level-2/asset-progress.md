@@ -1,6 +1,6 @@
 # Level 2 asset generation — BATCH 4 (FINAL: all remaining state overlays + sprites + hatch-wheel carry-in fix)
 
-PROGRESS: 1/21 done | 0 retrying | 0 failed | 20 remaining | $0.00 batch NB spend ($7.20 cumulative) | level cap $15.00
+PROGRESS: 4/21 done | 0 retrying | 0 failed | 17 remaining | $0.00 batch NB spend ($7.20 cumulative) | level cap $15.00
 
 _Green-lit by user 2026-07-20 (z3/z4 verdict: approved with hatch-wheel curvature fix).
 Final art batch: per-element overlay architecture (patch + rect JSON, pixel-aligned,
@@ -17,9 +17,9 @@ patches, no blur/smear inpaints, manual-pickup states show emptied containers._
 | # | Item | Method | Est $ | Status |
 |---|------|--------|-------|--------|
 | 1 | CARRY-IN FIX (user verdict 2026-07-20): hatch thumb-wheel numerals conform to crown curvature/perspective — per-wheel surface model (axial/circum frame + bow), strip-warp of canonical numerals, UPGRADED conformance gate (batch-3 flat stamps proven FAIL 4/4); rebuilt z3-dial-base + cu-hatch-wheels + PER-WHEEL 4x12 wheel strip; before/after sheet | deterministic PIL (l2_wheelfix.py) | 0 | done (commit 5205ba3; sweep 11.4deg = model on all 8 stamped surfaces; changed-px audit clean; w4 y-band note = accepted batch-3 flag) |
-| 2 | z2 ov-arbor-oiled (CU13 + wide echo): bearing rust bloom cleared + oil sheen, bearing zone only | PIL | 0 | pending |
-| 3 | z2 post-mount overlays x14 (CU13): gears 16/24/36/40/48/72 + great wheel 64, posts A and B, perspective-matched deterministic gear renders + shadow, arbor through square hole | PIL (render_gear/die-64) | 0 | pending |
-| 4 | z2 rack-absent overlays x6 (CU14 native + wide echo): blank-peg crops from the preglyph frame base (_rejects/z2-frame-base-preglyph) | PIL | 0 | pending |
+| 2 | z2 ov-arbor-oiled (CU13 + wide echo): bearing rust bloom cleared + oil sheen, bearing zone only | PIL | 0 | done (seams 6.9/7.1; bearing-only scope) |
+| 3 | z2 post-mount overlays x14 (CU13): gears 16/24/36/40/48/72 + great wheel 64, posts A and B, perspective-matched deterministic gear renders + shadow, arbor through square hole | PIL (render_gear/die-64) | 0 | done (RGBA additive, centered on stub axes A(1322,668)/B(1625,695), dia=84+2.1t, square hole shows arbor socket; no collar re-paste artifacts) |
+| 4 | z2 rack-absent overlays x6 (CU14 native + wide echo): blank-peg crops from the preglyph frame base (_rejects/z2-frame-base-preglyph) | PIL | 0 | done (RGBA masked, nearest-gear partition + neighbor hard-exclude; all-absent residue 0 px; neighbor-bite 6/6 = 0 px) |
 | 5 | z2 mural sprites: sun-disc cutout + track spec; watchman + bell strike key poses; jointed-figure layers (woman/drummer); JSON with track + pose anchors (D5 cadence = Developer timing) | PIL cutouts (+$0.15 NB reserve if strike pose unusable) | 0 | pending |
 | 6 | z2 ov-panel-open (frame wide): wall panel latched open onto z3 (dark opening + amber dial glow leak) + panel-door cutout sprite for swing keys | NB edit + registered masked composite | 0.15 | pending |
 | 7 | z2 ov-brick-pried-oilcan / ov-brick-empty (CU16 + wide echo): pried cavity NB edit; canonical inv-oil-can composited in cavity; empty = same cavity | NB edit + PIL | 0.15 | pending |
