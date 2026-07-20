@@ -1,6 +1,6 @@
 # Level 2 asset generation — BATCH 4 (FINAL: all remaining state overlays + sprites + hatch-wheel carry-in fix)
 
-PROGRESS: 11/21 done | 0 retrying | 0 failed | 10 remaining | $0.00 batch NB spend ($7.20 cumulative) | level cap $15.00
+PROGRESS: 13/21 done | 0 retrying | 0 failed | 8 remaining | $0.15 batch NB spend ($7.35 cumulative) | level cap $15.00
 (session note: items 9,11,12,13,14 done deterministically; item 10 key-in + z4 16/17 redo deferred to NB phase; z4 uncommitted work REJECTED = smear defect, redoing)
 
 _Green-lit by user 2026-07-20 (z3/z4 verdict: approved with hatch-wheel curvature fix).
@@ -32,8 +32,8 @@ patches, no blur/smear inpaints, manual-pickup states show emptied containers._
 | 13 | z3 hammer D11 twitch keys (rest + lifted, never strikes) + JSON | PIL cutout + rotate | 0 | done (hammer geo-mask rest+lift; pivot (2338,246); twitch 9deg; +absent patch) |
 | 14 | z3 strike-beat rod articulation key poses/notes (z3 + z1 rod ends, translate offsets) | JSON notes + rects | 0 | done (strike-rods JSON notes+rects, z3+z1 rod ends, axial translate; no art) |
 | 15 | z3 ov-hatch-open (wide): hatch open onto stair mouth + warm z4 lamp leak | NB edit + registered masked composite | 0.15 | pending |
-| 16 | z4 ov-key-taken (CU24 + wide echo): hook empty | PIL clone-out | 0 | pending |
-| 17 | z4 ov-tag-taken (CU23 + wide echo): nail empty | PIL clone-out | 0 | pending |
+| 16 | z4 ov-key-taken (CU24 + wide echo): hook empty | PIL clone-out | 0 | done (REDO: dead-agent smear REJECTED; 1 NB edit removed key+tag -> masonry rebuild; silhouette-masked overlay, tag pristine; wide seam 12.2/CU 10.7; DEVIATION \$0 PIL->\$0.15 NB, flagged) |
+| 17 | z4 ov-tag-taken (CU23 + wide echo): nail empty | PIL clone-out | 0 | done (REDO: same NB edit; tag+rope removed, empty nail, key pristine; wide seam 2.1/CU 1.1) |
 | 18 | z1 cat pose sprites x4 (pounce-chase, settled-by-door, stretch, exit-trot) — keyed RGBA, F3 cat design refs, 9.1 register (real-cat, no anthropomorphism) | NB raws + keyed RGBA | 0.60 | pending |
 | 19 | z1 cat facial keys: mouse-tell (eyes locked + tail flick) + slow-blink half-lid on cu-cat-cushion | 1 NB edit + PIL (blend/tail warp) | 0.15 | pending |
 | 20 | z1 mouse skitter loop keys (from inv-toy-mouse cutout: tilt frames + motion JSON; D4) + tray-VI seat/pop-back notes (reuses tile-VI cutout, no art) | PIL + JSON | 0 | done (6-frame tin-mouse skitter tilt/bob loop from inv-toy-mouse; round-winged key kept; D4 motion JSON; tray-VI seat/pop-back = note only, no art) |

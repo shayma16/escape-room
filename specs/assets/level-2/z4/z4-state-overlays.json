@@ -1,0 +1,36 @@
+{
+ "ov-key-taken": {
+  "base": "cu-key-hook",
+  "rect_3x": [
+   667,
+   300,
+   1236,
+   1514
+  ],
+  "wide_base": "z4-vault-base",
+  "wide_rect_3x": [
+   1000,
+   415,
+   1255,
+   960
+  ],
+  "note": "winding key taken (NB masonry rebuild): clean stone + empty iron mounting nail revealed; square-bit rhyme leaves with the key. Tag untouched."
+ },
+ "ov-tag-taken": {
+  "base": "cu-tag-nail",
+  "rect_3x": [
+   227,
+   170,
+   1070,
+   1411
+  ],
+  "wide_base": "z4-vault-base",
+  "wide_rect_3x": [
+   600,
+   425,
+   970,
+   970
+  ],
+  "note": "return tag + rope loop taken (NB masonry rebuild): clean stone + empty nail; key untouched."
+ }
+}
