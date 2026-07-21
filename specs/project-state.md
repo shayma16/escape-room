@@ -141,9 +141,13 @@ per-zone user reviews follow each batch.
      EXPLICIT — "NEVER consumed; retained for the whole level and beyond." Correct =
      LITERAL never-consumed. Safe either way (no soft-lock) but must match spec →
      route to the post-QA Developer fix batch (bundle with QA hotspot findings).
-  (2) FOR USER at checkpoint-2: per-zone ambient loops NOT shipped (reuses existing
-     music bed); dedicated L2 ambience needs sourcing 4 licensed beds — decide if wanted
-     before release. Also DEFERRED (logic present, motion is polish): sprite animations
+  (2) ✅ RESOLVED 2026-07-21: user PROVIDED the Level-2 music bed
+     (music-level2.wav, staged EscapeRoom/Resources/Audio/). Developer (fix batch) wires
+     it level-scoped per the L1 pattern (music-level1.wav / R2-005 / R3-001): plays only
+     in-level, stops on exit + level-complete, under the ambiance/music mute toggle,
+     under gameplay volume; NO per-zone ambient beds needed. LICENSING: confirm
+     provenance same as L1 (fal.ai-generated → commercial-use OK, user-owned) and log in
+     implementation-notes before release — quick user confirm pending. Also DEFERRED (logic present, motion is polish): sprite animations
      (cat poses, mouse skitter, mural strike, pendulum swing, hammer twitch, cat-tell) —
      confirm acceptable for QA/release or do as a polish pass.
   NEXT: hold for CI iPad step → GREEN → QA full pass (test vs graph incl. the never-
