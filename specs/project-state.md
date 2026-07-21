@@ -214,7 +214,17 @@ per-zone user reviews follow each batch.
   is in-band; Producer chose OPTION (a): anchor to the in-band socket, accept cosmetic drum
   clip (flag for user device check), do NOT shrink the hero dial. M2 registration guard
   verifies the re-anchors. NEXT: fast-lane green → re-QA → TestFlight → user iPad check.
-  L2 art total UNCHANGED $12.75/$15 (diagnostic was $0). (test vs graph incl. the never-
+  L2 art total UNCHANGED $12.75/$15 (diagnostic was $0).
+  ✅ HOTSPOT RE-ANCHOR DONE 2026-07-21 (commit 203036a, fast-lane GREEN run 29860297437,
+  ~15m, $0): 7 stale inspect hotspots re-anchored to their art (coat 0.03→0.68 = the p01
+  iPad blocker; barometer/master-clock/clockrow/display-case/vault-exit; + house-ring
+  audit catch); coat/p01 path now reachable in the iPad band; new
+  testL2InspectHotspotsSitOnArtAndAreIPadReachable guard locks it. Drum body cosmetic
+  clip accepted (option a, flag for device check). ALL QA findings now CLOSED.
+  ▶ FULL-LANE pre-release regression DISPATCHED 2026-07-21 (run 29861667813, ~75m: L1
+  iPad playthrough [continue-on-error] + L1/L2 iPhone-SE + DI). On green → build TestFlight
+  → user iPad spot-check (checkpoint) → merge to main + release. Non-blocking residuals:
+  drum clip, vault shelf slight right-edge (cosmetic). (test vs graph incl. the never-
   consumed check as an expected finding; hotspot recalibration vs shipped plates;
   alternate-order completability; assess deferred animations) → checkpoint-2 → dev fix
   batch → re-QA → release.
