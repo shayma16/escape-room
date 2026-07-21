@@ -167,7 +167,13 @@ per-zone user reviews follow each batch.
   Deferred-animation QA call: cat/mouse/mural/hammer-sprite OK to defer; pendulum-swing +
   D11 tick cross into feedback-necessary → fix or explicitly accept.
   ⛔ AT CHECKPOINT-2 (user reviews QA + decides fix scope). TestFlight spot-check is
-  load-bearing this round (L2 has no automated human-visible net until M2 lands). (test vs graph incl. the never-
+  load-bearing this round (L2 has no automated human-visible net until M2 lands).
+  ✅ CHECKPOINT-2 APPROVED 2026-07-21 ("implement all recommendations"). Developer FIX
+  BATCH dispatched (Opus): M1 cache-hotspot re-anchor + all minor hotspot fixes; M3
+  pendulum swing + D11 wrong-time feedback (other cosmetic anims stay deferred); M2 add
+  L2 UI-playthrough + overlay/hotspot-registration CI tests (mirror L1); m1
+  screwdriver/oilcan → literal never-consumed; wire music-level2.wav level-scoped.
+  NEXT: CI green (incl. new L2 tests) → re-QA → checkpoint-2b → release. (test vs graph incl. the never-
   consumed check as an expected finding; hotspot recalibration vs shipped plates;
   alternate-order completability; assess deferred animations) → checkpoint-2 → dev fix
   batch → re-QA → release.
