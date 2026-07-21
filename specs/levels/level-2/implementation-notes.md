@@ -247,6 +247,23 @@ Test: `testLevel2MusicIsLevelScopedAndBundled`.
 - **Minimal entitlements/permissions:** no camera/mic/location/contacts usage; no
   `NS*UsageDescription` strings; no capability entitlements added. Info.plist unchanged.
 
+### Residual QA-worthy items surfaced by this batch (flag to Producer — NOT fixed here)
+
+1. **L2 iPad edge-crop (potential MAJOR, L1-BUG-004 class).** The L2 wide plates were never
+   re-framed into the §8 iPad-4:3 ∩ iPhone-19.5:9 dual-safe band (L2 hotspots are authored in
+   raw final-plate space, no `Reframe`). Under `.aspectFill` on iPad the visible x-range is
+   ~[0.167,0.833], so **far-left/right x-edge elements are cropped** — notably the bench
+   **coat** (x-center ~0.115), which is **p01-critical** (tile IV). On iPhone-SE the band is
+   ~[0.055,0.945] so they are reachable. This means L2 may be **hard/uncompletable on iPad**
+   at the coat (and any other x-edge hotspot). Building the M2 UI net surfaced this; the fix
+   is an Asset-Gen dual-safe re-frame of the L2 plates + a hotspot remap (as L1 did in build
+   10), which is **out of this batch's scope**. Interim: the L2 pickup smoke is iPhone-scoped
+   in CI and this is flagged for the TestFlight iPad spot-check + a follow-up re-frame task.
+2. **Full-chrome XCUITest playthrough** of p02–p11 is not shipped (see the M2 scope note
+   above); completability is proven at engine (example-ordering A/B) + geometry (visual-tap)
+   level. A literal full L2 XCUITest solve, if required, is a scoped follow-up (and is blocked
+   on item 1 for the iPad half).
+
 ### CI (this batch)
 Run **29826350986** on `build-and-test.yml` (branch `level2-clockmakers-attic`): build **green**;
 unit + UI status per the handoff message. This batch adds `Level2RegistrationTests` +

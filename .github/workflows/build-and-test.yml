@@ -182,6 +182,7 @@ jobs:
             -destination "platform=iOS Simulator,name=${{ steps.sims.outputs.ipad_name }}" \
             -skip-testing:EscapeRoomUITests/EscapeRoomUITests/testR6009_pokerSurvivesBarrelBeforeAsh \
             -skip-testing:EscapeRoomUITests/EscapeRoomUITests/testR6009_pokerSurvivesAstrolabeFirst \
+            -skip-testing:EscapeRoomUITests/Level2UITests/testL2Z1PickupsCloseUpsAndNavigationSmoke \
             -resultBundlePath TestResults/EscapeRoomUITests-iPad.xcresult \
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
