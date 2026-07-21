@@ -203,7 +203,18 @@ per-zone user reviews follow each batch.
   ✅ USER CHOSE FIX (2026-07-21). Asset-Gen L2 iPad dual-safe RE-FRAME dispatched (Opus,
   deterministic per L1 build-10 — no outpaint; all 7 wides + overlays, per-view transform
   recorded for Dev remap; coat must land in-band). THEN → Developer hotspot/overlay-rect
-  remap + .aspectFill confirm → re-QA (fast lane) → TestFlight → user iPad spot-check. (test vs graph incl. the never-
+  remap + .aspectFill confirm → re-QA (fast lane) → TestFlight → user iPad spot-check.
+  ⚠️ REVERSAL 2026-07-21: Asset-Gen diagnostic ($0, no art changed) proved the RE-FRAME
+  WAS THE WRONG FIX — plates are correctly framed, coat/barometer/master-clock/clockrow/
+  display-case/vault-exit ART is all IN the iPad band; the bug is STALE/estimated HOTSPOTS
+  pointing at empty space (coat hotspot x[.03,.20] vs coat art x≈[.68,.80]). Evidence:
+  specs/assets/level-2/_reframe-work/evidence-*.png. Re-frame CANCELLED (would've shrunk 6
+  good views). REAL FIX = Developer HOTSPOT RE-ANCHOR ($0) — dispatched. Only genuine
+  out-of-band ART = z3 dial winding-drum body (~56% left crop) but its socket (interaction)
+  is in-band; Producer chose OPTION (a): anchor to the in-band socket, accept cosmetic drum
+  clip (flag for user device check), do NOT shrink the hero dial. M2 registration guard
+  verifies the re-anchors. NEXT: fast-lane green → re-QA → TestFlight → user iPad check.
+  L2 art total UNCHANGED $12.75/$15 (diagnostic was $0). (test vs graph incl. the never-
   consumed check as an expected finding; hotspot recalibration vs shipped plates;
   alternate-order completability; assess deferred animations) → checkpoint-2 → dev fix
   batch → re-QA → release.
