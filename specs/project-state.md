@@ -129,6 +129,27 @@ per-zone user reviews follow each batch.
   large-hole object-removal inpaints are iteration-expensive; budget them accordingly.
   → DEVELOPER STAGE dispatched 2026-07-21 (build Level 2 in Swift/SpriteKit on the L1
   round-4 architecture; NOT the dead-spec p08 mouse-at-drum; NEVER "psh" SFX).
+- 🔄 DEVELOPER BUILD DONE 2026-07-21 (CI run 29786847406): core GREEN (build + full L2
+  unit suite incl. mirror/naive-time trap + item lifecycle + save/resume, shadow-guard
+  staging tests, iPhone UI full playthrough, security checklist). Only pending step =
+  iPad UI L1-regression (documented-slow CI simulator; not L2). Reused L1 systems via a
+  new LevelRules abstraction (L1 byte-identical, proven). All 11 puzzles logic-tested.
+  Files/notes: EscapeRoom/.../Level2*.swift, specs/levels/level-2/implementation-notes.md.
+  TWO escalations:
+  (1) RESOLVED by Producer (spec-fidelity): Developer made itm-screwdriver + itm-oilcan
+     consume-when-all-uses-done (L1 poker generic rule), but the L2 graph nodes are
+     EXPLICIT — "NEVER consumed; retained for the whole level and beyond." Correct =
+     LITERAL never-consumed. Safe either way (no soft-lock) but must match spec →
+     route to the post-QA Developer fix batch (bundle with QA hotspot findings).
+  (2) FOR USER at checkpoint-2: per-zone ambient loops NOT shipped (reuses existing
+     music bed); dedicated L2 ambience needs sourcing 4 licensed beds — decide if wanted
+     before release. Also DEFERRED (logic present, motion is polish): sprite animations
+     (cat poses, mouse skitter, mural strike, pendulum swing, hammer twitch, cat-tell) —
+     confirm acceptable for QA/release or do as a polish pass.
+  NEXT: hold for CI iPad step → GREEN → QA full pass (test vs graph incl. the never-
+  consumed check as an expected finding; hotspot recalibration vs shipped plates;
+  alternate-order completability; assess deferred animations) → checkpoint-2 → dev fix
+  batch → re-QA → release.
 - Pipeline after art: batches 2→4 (z2, z3, z4 + sprites/state edits) with step-10 reviews
   → Developer (NOTE: do NOT build the unreachable p08 mouse-at-drum interaction — dead
   spec text, see walkthrough flags; NEVER the "psh" SFX) → QA → GATE → release.
