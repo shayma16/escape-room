@@ -119,6 +119,22 @@ Builds happen on a GitHub Actions macOS runner:
 Keep CI minutes in mind: batch changes into meaningful pushes rather than triggering a
 macOS build per tiny edit.
 
+**CI efficiency rules (binding — standing user directive 2026-07-21, after a fix batch
+burned ~6h on flaky UI-test CI loops):**
+- **Never gate a build on flaky/slow on-device UI automation.** The CI gate is the
+  DETERMINISTIC fast lane: build + unit/logic suite + geometry/registration guards (e.g.
+  "every interactive hotspot must intersect the art rect it controls" — a pure-geometry
+  test, no simulator). On-device XCUITest UI playthroughs are best-effort / non-blocking
+  (or full-lane, pre-merge only); the user's TestFlight device spot-check is the
+  human-visible net. Do NOT enter a "tweak → wait 30–80m CI run → fail → tweak" loop to
+  chase a green UI playthrough.
+- **Fast lane vs full lane:** working-branch pushes run the fast lane (~10–15m). The full
+  cross-level UI regression (the slow L1 iPad playthrough etc.) runs only pre-merge/
+  release (workflow_dispatch / main / release path) — never on every working-branch push.
+- **Bundle before you validate:** stage ALL related fixes, THEN dispatch one CI run — not
+  one run per fix. A failed fast-lane run should be diagnosed from its logs and fixed in a
+  batch, not chased one CI iteration at a time.
+
 ## Outputs
 
 - A buildable Xcode project, verified green on the `build-and-test.yml` GitHub Actions

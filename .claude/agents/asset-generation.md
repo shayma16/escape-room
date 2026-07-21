@@ -70,7 +70,12 @@ creative decisions.
   Producer rather than silently reconciling.
 - **Cost discipline**: before generating a level's assets, report an image-count and cost
   estimate to the Producer and wait for go-ahead. After generating, report actual spend
-  for the cumulative ledger.
+  for the cumulative ledger. **Estimate HARD cases as hard** (standing lesson 2026-07-21:
+  a large object-removal/large-hole inpaint cost $3.90 vs a $0.15–0.30 estimate — ~13x
+  over). Object-removal states, big masonry/structure reconstructions, and anything
+  needing multi-seed iteration are NOT pennies — price them with real iteration reserve,
+  and prefer deterministic techniques (masked clone/composite, canonical stamps) over
+  generative fills wherever they can hold, to keep spend and iteration down.
 - **Style consistency**: anchor each new generation against approved reference images —
   first from earlier in the *same* level, and against the project-wide reference library
   for cross-level consistency. Style drift across levels is a defect. **Nano Banana Pro
