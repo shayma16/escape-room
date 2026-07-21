@@ -64,6 +64,39 @@ final class Level2UITests: XCTestCase {
         sceneCoordinate(app, nx, ny).tap()
         Thread.sleep(forTimeInterval: settle)
     }
+
+    /// SINGLE-SOURCE hotspot tap: resolves the element's rect from `Level2HotspotTable` — the
+    /// EXACT rects the game's `Level2Coordinator` configures its hotspots from — and taps its
+    /// on-screen center. This is the coupling that closes the stale-tap class that red-gated
+    /// build 15: a UI-test tap can no longer drift from a re-anchored hotspot, because both the
+    /// game hotspot and this tap read the same table, so re-anchoring moves them together.
+    ///
+    /// The window-Y is clamped up out of the bottom inventory-bar band (SwiftUI chrome sits ON
+    /// TOP of the SKView) while STAYING inside the hotspot's own rect, so a bottom-heavy hotspot
+    /// (e.g. the crate, whose rect center falls under the bar) is tapped on its visible upper art
+    /// rather than under the bar. Purely geometric — it never re-introduces a hand-typed literal.
+    private func tapHotspot(_ app: XCUIApplication, _ id: String, in view: String,
+                            settle: TimeInterval = 0.6,
+                            file: StaticString = #filePath, line: UInt = #line) {
+        guard let rect = Level2HotspotTable.rect(id, inView: view) else {
+            XCTFail("no hotspot '\(id)' in view '\(view)' (Level2HotspotTable)", file: file, line: line)
+            return
+        }
+        let frame = app.windows.firstMatch.frame
+        let scale = max(frame.width / sceneSize.width, frame.height / sceneSize.height)
+        func winX(_ nx: CGFloat) -> CGFloat { frame.width / 2 + (nx * sceneSize.width - sceneSize.width / 2) * scale }
+        func winY(_ ny: CGFloat) -> CGFloat { frame.height / 2 + (ny * sceneSize.height - sceneSize.height / 2) * scale }
+        let cx = winX(rect.midX)
+        var cy = winY(rect.midY)
+        // Bottom inventory bar is <=62pt on iPhone (this test's device scope); keep an 8pt margin
+        // above it, but never leave the hotspot's own rect (bias just inside its top edge).
+        let barSafeTop = frame.height - 70
+        if cy > barSafeTop { cy = max(winY(rect.minY) + 6, barSafeTop) }
+        app.windows.firstMatch
+            .coordinate(withNormalizedOffset: CGVector(dx: cx / frame.width, dy: cy / frame.height))
+            .tap()
+        Thread.sleep(forTimeInterval: settle)
+    }
     private func tapID(_ app: XCUIApplication, _ id: String, timeout: TimeInterval = 6) {
         let el = app.descendants(matching: .any)[id].firstMatch
         XCTAssertTrue(el.waitForExistence(timeout: timeout), "\(id) must exist")
@@ -122,31 +155,30 @@ final class Level2UITests: XCTestCase {
     // MARK: - z1 pickups (incl. the coat-pocket collect FIX) + close-ups + nav + pause
     //
     // CI DEVICE SCOPE (build-and-test.yml `-skip-testing` on the iPad UI step): this test runs
-    // on iPhone SE only. Unlike L1, the L2 wide plates were NOT re-framed into the §8 iPad-4:3
-    // dual-safe band, so under `.aspectFill` the iPad crops the visible x-range to ~[0.167,
-    // 0.833] and the far-left `coat` hotspot (x-center ~0.115) is off the iPad crop — tapping
-    // it there cannot land. On iPhone-SE (19.5:9) the visible band is ~[0.055,0.945], so every
-    // element tapped here is on-screen. The iPad still runs testL2SceneContentFillsScreen.
-    // (Residual QA item flagged in implementation-notes: L2 iPad edge-crop of x-edge elements
-    // — the coat is p01-critical — is an L1-BUG-004-class re-frame owed by Asset-Gen, out of
-    // this fix batch's scope.)
+    // on iPhone SE only. Every element tapped here is now resolved from Level2HotspotTable (the
+    // game's own hotspot rects) and, post commit-203036a re-anchor, sits inside the iPad 4:3 ∩
+    // iPhone 19.5:9 dual-safe band, so each tap lands on both device crops. iPhone-SE (19.5:9)
+    // shows ~x[0.055,0.945]; the reachability of these same rects on the iPad crop is guarded at
+    // the unit layer by Level2RegistrationTests.testL2InspectHotspotsSitOnArtAndAreIPadReachable.
+    // The iPad still runs testL2SceneContentFillsScreen in its own UI step.
     func testL2Z1PickupsCloseUpsAndNavigationSmoke() {
         let app = launchFreshApp()
         enterLevelTwo(app)
         shoot(app, "l2-smoke-01-bench")
 
-        // Wide-tap pickups at their visual positions (proves real hit-testing + inventory).
-        tapScene(app, 0.302, 0.404)                 // screwdriver (rack, left)
+        // Pickups tapped at each element's REAL hotspot center (resolved from Level2HotspotTable,
+        // the same rects the game configures) — proves real hit-testing + inventory arming.
+        tapHotspot(app, "screwdriver", in: "v-bench")   // screwdriver on the rack
         assertHolding(app, "itm-screwdriver")
-        tapScene(app, 0.72, 0.77)                   // tile II on the cold stove hob (right)
+        tapHotspot(app, "stove", in: "v-bench")         // tile II on the cold stove hob
         assertHolding(app, "itm-tile-ii")
 
         // Coat close-up: the FIX — two collectible pockets. Prior build shipped a plain image
-        // with no pickup path, so tile IV (needed for p01) was unobtainable in-app.
-        // Tap the coat's upper-right portion: the far-left nav-previous chevron (56x88pt hit
-        // area at window x~[8,64], vertically centred) overlays the coat's lower-left on
-        // iPhone-SE, so tap clear of it (higher x, above the chevron's vertical band).
-        tapScene(app, 0.17, 0.32)                   // coat (upper-right of the hotspot)
+        // with no pickup path, so tile IV (needed for p01) was unobtainable in-app. Commit
+        // 203036a re-anchored the coat hotspot from the stale far-left x[0.03,0.20] to the actual
+        // pocketed-coat art on the RIGHT hook (x≈[0.68,0.81]); this tap now follows it because it
+        // reads the SAME table the game does (the coupling that fixes the build-15 stale-tap gate).
+        tapHotspot(app, "coat", in: "v-bench")          // coat (real art center, right hook)
         XCTAssertTrue(app.descendants(matching: .any)["closeup-dismiss"].waitForExistence(timeout: 5),
                       "tapping the coat must open its close-up")
         XCTAssertTrue(app.descendants(matching: .any)["collect-itm-tile-iv"].waitForExistence(timeout: 5),
@@ -160,9 +192,9 @@ final class Level2UITests: XCTestCase {
 
         // z1 navigation: bench -> master (door-dial close-up presents) -> door.
         ensureView(app, "door-dial") { tapID(app, "nav-next") }
-        tapScene(app, 0.74, 0.80)                   // crate straw -> tile VII (right, above the pill)
+        tapHotspot(app, "crate", in: "v-master")    // crate straw -> tile VII (clamped above the pill)
         assertHolding(app, "itm-tile-vii")
-        tapScene(app, 0.65, 0.46)                   // door-dial close-up (p01 numeral dial)
+        tapHotspot(app, "door-dial", in: "v-master") // door-dial close-up (p01 numeral dial)
         // The dial-socket hit targets are Color.clear Buttons (human-tappable but not queryable
         // by id in XCUITest), so assert the close-up presented via its dismiss control.
         XCTAssertTrue(app.descendants(matching: .any)["closeup-dismiss"].waitForExistence(timeout: 5),
@@ -171,7 +203,7 @@ final class Level2UITests: XCTestCase {
         tapID(app, "closeup-dismiss")
 
         ensureView(app, "stair-door") { tapID(app, "nav-next") }   // master -> door
-        tapScene(app, 0.65, 0.53)                   // dormer sill -> tile XI (clear of the cushion top)
+        tapHotspot(app, "sill", in: "v-door")       // dormer sill -> tile XI
         assertHolding(app, "itm-tile-xi")
         shoot(app, "l2-smoke-04-door")
 

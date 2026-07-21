@@ -268,6 +268,50 @@ final class Level2RegistrationTests: XCTestCase {
         XCTAssertTrue(offenders.isEmpty, "L2 hotspots below the 44pt floor on iPhone SE: " + offenders.joined(separator: "; "))
     }
 
+    // MARK: - UI-test-tap <-> hotspot-rect coupling (build-15 stale-coat-tap class)
+
+    /// The build-15 TestFlight gate went red because a hand-coded UI-test tap (coat @ x0.17)
+    /// desynced from a re-anchored hotspot (coat @ x≈0.74). The fix routes BOTH the game hotspots
+    /// AND the UI-test taps through one source, `Level2HotspotTable`. This deterministic guard
+    /// (no simulator) locks that coupling from the game side:
+    ///
+    ///  1. every hotspot the coordinator configures matches the table it is meant to be built
+    ///     from — id set and rect — so the coordinator can never quietly diverge from the table
+    ///     the UI tests read; and
+    ///  2. a tap at each table entry's CENTER (exactly what Level2UITests.tapHotspot taps)
+    ///     resolves to that same hotspot under the real smallest-area-wins hit test — so the
+    ///     UI-test tap assumption "tap the table center -> that element reacts" is CI-proven.
+    func testL2HotspotTableIsTheSingleSourceForCoordinatorAndTapCenters() {
+        var offenders: [String] = []
+        for view in L2ViewID.allCases {
+            let coord = coordinator(view)
+            let configured = coord.scene.hotspots
+            let table = Level2HotspotTable.rects(forView: view.rawValue)
+
+            // (1) id set parity.
+            let configuredIDs = Set(configured.map(\.id))
+            let tableIDs = Set(table.map(\.id))
+            if configuredIDs != tableIDs {
+                offenders.append("\(view.rawValue): coordinator ids \(configuredIDs.sorted()) != table ids \(tableIDs.sorted())")
+            }
+
+            for (id, rect) in table {
+                // (1) rect parity for shared ids.
+                if let hs = configured.first(where: { $0.id == id }), hs.normalizedRect != rect {
+                    offenders.append("\(view.rawValue)/\(id): coordinator rect \(rectStr(hs.normalizedRect)) != table \(rectStr(rect))")
+                }
+                // (2) the tap center resolves to this hotspot.
+                let hit = coord.scene.hotspotIDAtNormalized(rect.midX, rect.midY)
+                if hit != id {
+                    offenders.append("\(view.rawValue): tap at \(id) table center (\(f(rect.midX)),\(f(rect.midY))) resolved to '\(hit ?? "nil")'")
+                }
+            }
+        }
+        XCTAssertTrue(offenders.isEmpty,
+            "Level2HotspotTable <-> coordinator/UI-test-tap coupling broken (stale-tap class):\n"
+            + offenders.joined(separator: "\n"))
+    }
+
     private func f(_ v: CGFloat) -> String { String(format: "%.3f", v) }
     private func rectStr(_ r: CGRect) -> String { "(\(f(r.minX)),\(f(r.minY)),\(f(r.width)),\(f(r.height)))" }
 }

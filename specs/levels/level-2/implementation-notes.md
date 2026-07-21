@@ -355,3 +355,61 @@ incl. the new L2 smoke + composition — verified green in the pre-split runs
 (29832607524's iPhone-SE UI step ✓; L2 `testL2SceneContentFillsScreen` ✓ on iPad too). The
 only red ever observed was the pre-existing L1 iPad-runner flakiness, now non-blocking. See
 the handoff message for the exact fast-lane + full-lane run links.
+
+### Build-15 pre-release gate fix — STALE UI-TEST COORDINATE, not a game bug (2026-07-22)
+
+**Symptom.** Full-lane gate run `29861667813` failed on the hard-gated *UI tests — smallest
+supported iPhone* step: `Level2UITests.testL2Z1PickupsCloseUpsAndNavigationSmoke` asserted the
+coat close-up (`closeup-dismiss`) opened after `tapScene(0.17, 0.32)` — it did not. The
+Dynamic-Island step never ran (the job aborted after iPhone-SE failed).
+
+**Root cause — definitive: a stale hand-coded UI-test tap, NOT a game regression.** Commit
+`203036a` re-anchored the `coat` hotspot from the stale far-left `x[0.03,0.20]` to the actual
+pocketed-coat art on the RIGHT hook (`Hotspot(id:"coat", 0.68,0.21,0.13,0.46)`, center
+**x0.745, y0.44**). The UI smoke test still tapped the OLD literal **(0.17, 0.32)** — now empty
+space — so the coat close-up never presented. The game logic is correct: `Level2Coordinator`
+routes `(.bench,"coat") -> present(.coat)` unchanged, and the M2 registration guard
+`testL2InspectHotspotsSitOnArtAndAreIPadReachable` (which resolves the tap from the ART CENTER,
+not a hardcoded coordinate) PASSED — it proved a tap at the coat's rect center resolves to the
+`coat` hotspot under the real smallest-area-wins hit test. On iPhone-SE geometry (landscape,
+`.aspectFill`, visible x≈[0.056,0.944]) x0.745 is well inside the crop. So the coat opens
+correctly at its real art position; only the test's tap was stale. No game code needed changing
+to make the coat open.
+
+**The real fix — UI-test-tap ↔ hotspot-rect coupling (single source of truth).** Fixing just
+the coat literal would leave the whole *class* alive (any future re-anchor re-breaks a hardcoded
+tap — the same desync that shipped this red gate). So both sides now read ONE table:
+
+- New dependency-free file **`EscapeRoom/Game/Level2HotspotTable.swift`** holds every L2 hotspot
+  rect (normalized, keyed by `L2ViewID` raw value). It is compiled into BOTH the app target and
+  the `EscapeRoomUITests` target (UI-test target is a separate process, so no duplicate-symbol
+  issue; the unit-test target keeps using `@testable import`).
+- `Level2Coordinator.hotspots(for:)` is now a 3-line map over `Level2HotspotTable.rects(forView:)`
+  — the game hotspots ARE the table.
+- `Level2UITests` gained `tapHotspot(_:in:)`, which resolves the element's rect from the SAME
+  table and taps its on-screen center. All six scene taps in the smoke test (screwdriver, stove,
+  coat, crate, door-dial, sill) were converted from hardcoded literals to `tapHotspot`. A
+  re-anchor now moves the game hotspot AND the UI-test tap together — the desync class is closed.
+  - `tapHotspot` clamps the tap's window-Y up out of the bottom inventory-bar band while staying
+    inside the hotspot rect, so the bottom-heavy `crate` (rect center falls under the bar) is
+    tapped on its visible upper art — replacing the old hand-tuned `y=0.80` magic offset with a
+    derived one. Purely geometric; no literal re-introduced.
+- Among the seven re-anchored hotspots (coat, barometer, master-clock, clockrow, display-case,
+  vault-exit, house-ring) only `coat` was actually tapped by a UI test; the audit confirmed the
+  other six are not referenced by any L2 UI-test tap. All L2 UI-test taps are now table-derived
+  regardless, so the audit result can't silently rot.
+
+**New deterministic guard (fast lane, no simulator).**
+`Level2RegistrationTests.testL2HotspotTableIsTheSingleSourceForCoordinatorAndTapCenters` asserts
+(1) the coordinator's configured hotspots match the table (id set + rects) per view, and (2) a
+tap at each table entry's CENTER — exactly what `tapHotspot` taps — resolves to that hotspot
+under the real hit test. This CI-proves the UI-test tap assumption without an on-device run, so
+the stale/desynced-tap class fails loudly in the ~15-min fast lane going forward.
+
+**Also updated:** the stale scope-note comment above the smoke test (which still described the
+coat as a far-left element off the iPad crop) now reflects the re-anchored in-band coat and
+points at the iPad-reachability unit guard.
+
+**Validating runs (this fix):** fast lane <FAST_RUN_URL>; full lane <FULL_RUN_URL> — GREEN on
+BOTH hard gates (iPhone-SE UI playthrough + Dynamic Island); the iPad full-playthrough step
+stays `continue-on-error`. Links filled in the handoff message.

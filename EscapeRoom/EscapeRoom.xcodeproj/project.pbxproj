@@ -55,6 +55,8 @@
 		AA50000000000000000000B8 /* Level2AssetStagingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA50000000000000000000A8 /* Level2AssetStagingTests.swift */; };
 		AA50000000000000000000B9 /* Level2RegistrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA50000000000000000000A9 /* Level2RegistrationTests.swift */; };
 		AA30000000000000000000E2 /* Level2UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA30000000000000000000E1 /* Level2UITests.swift */; };
+		AA50000000000000000000BA /* Level2HotspotTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA50000000000000000000AA /* Level2HotspotTable.swift */; };
+		AA50000000000000000000BB /* Level2HotspotTable.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA50000000000000000000AA /* Level2HotspotTable.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -110,6 +112,7 @@
 		AA50000000000000000000A8 /* Level2AssetStagingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level2AssetStagingTests.swift; sourceTree = "<group>"; };
 		AA50000000000000000000A9 /* Level2RegistrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level2RegistrationTests.swift; sourceTree = "<group>"; };
 		AA30000000000000000000E1 /* Level2UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level2UITests.swift; sourceTree = "<group>"; };
+		AA50000000000000000000AA /* Level2HotspotTable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level2HotspotTable.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -209,6 +212,7 @@
 				AA50000000000000000000A3 /* Level2Engine.swift */,
 				AA50000000000000000000A4 /* Level2Visuals.swift */,
 				AA50000000000000000000A5 /* Level2Coordinator.swift */,
+				AA50000000000000000000AA /* Level2HotspotTable.swift */,
 			);
 			path = Game;
 			sourceTree = "<group>";
@@ -411,6 +415,7 @@
 				AA50000000000000000000B4 /* Level2Visuals.swift in Sources */,
 				AA50000000000000000000B5 /* Level2Coordinator.swift in Sources */,
 				AA50000000000000000000B6 /* Level2RoomView.swift in Sources */,
+				AA50000000000000000000BA /* Level2HotspotTable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -433,6 +438,7 @@
 			files = (
 				AA30000000000000000000D4 /* EscapeRoomUITests.swift in Sources */,
 				AA30000000000000000000E2 /* Level2UITests.swift in Sources */,
+				AA50000000000000000000BB /* Level2HotspotTable.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
