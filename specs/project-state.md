@@ -145,12 +145,13 @@ per-zone user reviews follow each batch.
      (music-level2.wav, staged EscapeRoom/Resources/Audio/). Developer (fix batch) wires
      it level-scoped per the L1 pattern (music-level1.wav / R2-005 / R3-001): plays only
      in-level, stops on exit + level-complete, under the ambiance/music mute toggle,
-     under gameplay volume; NO per-zone ambient beds needed. LICENSING: confirm
-     provenance same as L1 (fal.ai-generated → commercial-use OK, user-owned) and log in
-     implementation-notes before release — quick user confirm pending. Also DEFERRED (logic present, motion is polish): sprite animations
+     under gameplay volume; NO per-zone ambient beds needed. LICENSING CONFIRMED by user
+     2026-07-21: fal.ai-generated, commercial-use OK, user-owned — Developer logs in
+     implementation-notes. Also DEFERRED (logic present, motion is polish): sprite animations
      (cat poses, mouse skitter, mural strike, pendulum swing, hammer twitch, cat-tell) —
      confirm acceptable for QA/release or do as a polish pass.
-  NEXT: hold for CI iPad step → GREEN → QA full pass (test vs graph incl. the never-
+  ✅ CI RUN 29786847406 FULLY GREEN 2026-07-21 (all 17 steps incl. iPad UI). QA DISPATCHED.
+  NEXT: QA full pass (test vs graph incl. the never-
   consumed check as an expected finding; hotspot recalibration vs shipped plates;
   alternate-order completability; assess deferred animations) → checkpoint-2 → dev fix
   batch → re-QA → release.
