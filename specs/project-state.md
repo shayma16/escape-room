@@ -181,7 +181,25 @@ per-zone user reviews follow each batch.
   catches the M1 class deterministically); demote the on-device UI playthrough to
   NON-BLOCKING; get ONE green run, stop, hand off. PROCESS LESSON: on this no-local-Mac /
   10x-runner setup, do NOT gate builds on flaky UI-automation; gate on deterministic
-  unit/geometry guards, use the user TestFlight spot-check as the human-visible net. (test vs graph incl. the never-
+  unit/geometry guards, use the user TestFlight spot-check as the human-visible net.
+  ✅ FIX BATCH DONE 2026-07-21 (fast-lane GREEN run 29853873572 ~15-23m; CI split LIVE:
+  fast-lane every push, full-lane pre-merge/manual with iPad L1 playthrough
+  continue-on-error). Landed: M1 cache re-anchor + minor hotspots (m3/m4/m5), M3 pendulum
+  swing + D11 wrong-time tick, M2 Level2RegistrationTests (the real M1-class net:
+  overlay↔hotspot registration + visual-tap geometry) + example-ordering completability +
+  save/resume tests, m1 never-consumed, music-level2.wav wired.
+  🔴 CRITICAL CAUGHT + FIXED mid-batch: the bench COAT close-up had NO pickup path → tile
+  IV + watch A unobtainable → L2 was UNCOMPLETABLE in-app; fixed (two-pocket collect
+  close-up + regression test). Engine tests passed but there was no UI path — exactly why
+  M2 matters.
+  ⛔ RESIDUAL POTENTIAL-MAJOR for user decision (checkpoint-2b): L2 iPad EDGE-CROP (L1
+  BUG-004 class) — L2 wides never re-framed to the iPad dual-safe band, so under
+  .aspectFill iPad crops x-edge elements incl. the p01-critical coat (x~0.115, left of the
+  iPad-visible ~0.167 edge) → L2 possibly uncompletable on iPad (PRIMARY device). Needs
+  Asset-Gen dual-safe re-frame (deterministic reframe tool exists) + Dev hotspot remap,
+  as L1 did in build 10. Other residuals: full-chrome L2 UI playthrough deferred
+  (completability proven at engine+geometry level); some close-up controls not
+  XCUITest-queryable. (test vs graph incl. the never-
   consumed check as an expected finding; hotspot recalibration vs shipped plates;
   alternate-order completability; assess deferred animations) → checkpoint-2 → dev fix
   batch → re-QA → release.
