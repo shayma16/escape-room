@@ -173,7 +173,15 @@ per-zone user reviews follow each batch.
   pendulum swing + D11 wrong-time feedback (other cosmetic anims stay deferred); M2 add
   L2 UI-playthrough + overlay/hotspot-registration CI tests (mirror L1); m1
   screwdriver/oilcan → literal never-consumed; wire music-level2.wav level-scoped.
-  NEXT: CI green (incl. new L2 tests) → re-QA → checkpoint-2b → release. (test vs graph incl. the never-
+  NEXT: CI green (incl. new L2 tests) → re-QA → checkpoint-2b → release.
+  EFFICIENCY REDIRECT 2026-07-21 (user flagged ~6h): game fixes (M1/M3/m1/music) done in
+  first 2 commits (a9922b8, ab41b8e); the ~6h + ~6 CI runs were stabilizing the M2
+  on-device UI playthrough (flaky XCUITest, 30–80m/run @10x). Directed Dev: keep the
+  STATIC overlay↔hotspot registration guard + engine assertions as BLOCKING (fast lane,
+  catches the M1 class deterministically); demote the on-device UI playthrough to
+  NON-BLOCKING; get ONE green run, stop, hand off. PROCESS LESSON: on this no-local-Mac /
+  10x-runner setup, do NOT gate builds on flaky UI-automation; gate on deterministic
+  unit/geometry guards, use the user TestFlight spot-check as the human-visible net. (test vs graph incl. the never-
   consumed check as an expected finding; hotspot recalibration vs shipped plates;
   alternate-order completability; assess deferred animations) → checkpoint-2 → dev fix
   batch → re-QA → release.
