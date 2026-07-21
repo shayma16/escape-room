@@ -1,37 +1,55 @@
 # Build & simulator-test the escape room app on a macOS runner.
-# Triggered by the Developer Agent (gh workflow run build-and-test.yml) after pushing
-# the Xcode project; the QA Agent reads results via gh run download.
 #
-# Device matrix covers the QA test-matrix floor from
-# specs/global-ui-style.md Section 11: 12.9 inch iPad + smallest supported iPhone.
-# A failed job here means the level is not buildable - steps are NOT allowed to
-# silently swallow failures (no trailing `|| true` on the actual build/test commands);
-# `set -o pipefail` ensures a failing xcodebuild fails the step even when piped through
-# xcpretty for readability.
+# TWO-LANE CI (user-approved efficiency split, 2026-07-21):
+#
+#   * FAST lane (`fast-lane` job) — runs on EVERY push (any branch) + every workflow_dispatch.
+#     Build + the full unit/logic suite for ALL levels (PuzzleEngineTests, QALevelFlowTests,
+#     Level2Tests, Level2AssetStagingTests, the RenderedFrameOverlayTests registration guard,
+#     and — the real M1-class safety net — Level2RegistrationTests: the static overlay<->hotspot
+#     REGISTRATION guard + player-style visual-tap geometry + example-ordering completability).
+#     NO slow simulator UI playthroughs. This is the per-iteration gate; target ~10-20 min.
+#     Deterministic + cheap, so a fix batch validates fast instead of waiting on a ~75-min
+#     iPad UI playthrough.
+#
+#   * FULL lane (`full-lane-ui` job) — runs ONLY on push to `main` OR a manual
+#     workflow_dispatch with input `lane=full`. Everything the fast lane does PLUS the heavy
+#     cross-level ON-DEVICE UI regression (the ~75-min L1 iPad full playthrough + the L1/L2
+#     iPhone-SE playthrough/smoke + the Dynamic-Island safe-area shots). This is the
+#     pre-merge / pre-release gate. The single flaky, capacity-bound iPad full-playthrough
+#     step is marked `continue-on-error` (documented simulator-starvation UI-query/terminate
+#     flakiness) so a transient iPad flake cannot hold a batch hostage; the reliable
+#     iPhone-SE + DI UI steps remain hard gates.
+#
+# A failed step still fails its lane (`set -o pipefail`; no `|| true` on real build/test
+# commands) except where `continue-on-error` is explicitly set on the known-flaky iPad UI step.
+#
+# Device matrix covers the QA test-matrix floor (specs/global-ui-style.md Section 11):
+# 12.9 inch iPad + smallest supported iPhone + a notch/Dynamic-Island device.
 
 name: Build and Test
 
 on:
   workflow_dispatch:
+    inputs:
+      lane:
+        description: "Which lane to run (fast = build+unit only; full = + on-device UI regression)"
+        type: choice
+        options: [fast, full]
+        default: fast
   push:
-    branches: [main]
+    branches: ["**"]
     paths:
       - "EscapeRoom/**"
       - ".github/workflows/build-and-test.yml"
 
 jobs:
-  build-and-test:
+  # ------------------------------------------------------------------------------------------
+  # FAST lane: build + full unit/logic suite (all levels) + the static registration/geometry
+  # guards. No simulator UI playthroughs. Blocking on every push.
+  # ------------------------------------------------------------------------------------------
+  fast-lane:
     runs-on: macos-15          # macOS runners bill at 10x minutes on private repos
-    # Raised 60 -> 90 -> 120 -> 180. Build 9 letterbox follow-up RESTORES the full iPad UI
-    # playthrough + save/resume (the primary device is now genuinely verified end-to-end,
-    # not scoped-around), so BOTH iPhone-SE and iPad run the heavy full playthrough. That
-    # is the double-full-playthrough that historically pressured the budget (run
-    # 28899880260 was cancelled at 60 min). 120 proved NOT enough: build-12 round-6 rerun
-    # 29314184259 was CANCELLED at exactly 120 min mid-iPad-test under slow-runner /
-    # simulator-starvation load (typical green suite is ~1h47m, right at the old ceiling).
-    # 180 min gives real buffer for two full playthroughs + 3 unit-test device runs +
-    # 2 smoke/DI UI runs even when the runner is slow.
-    timeout-minutes: 180
+    timeout-minutes: 60        # build + 3 device unit runs; typically ~15-20 min
 
     steps:
       - name: Checkout
@@ -39,13 +57,6 @@ jobs:
 
       - name: Show Xcode version
         run: |
-          # Intentionally NOT pinning a specific /Applications/Xcode_*.app here: side-
-          # installed Xcode versions on macos-15 runners can be missing their iOS
-          # Simulator platform support (observed: xcodebuild -showdestinations returned
-          # zero simulator destinations, only an ineligible "iOS 18.2 is not installed"
-          # device placeholder, when pinned to Xcode 16.2 explicitly). The runner's
-          # default `xcodebuild` has the platform support pre-cached and matching the
-          # preinstalled simulator runtimes reported by `xcrun simctl list`.
           xcodebuild -version
           xcode-select -p
 
@@ -72,8 +83,6 @@ jobs:
           if [ -z "${IPHONE_NAME:-}" ]; then IPHONE_NAME="iPhone SE (3rd generation)"; fi
           echo "iphone_name=$IPHONE_NAME" >> "$GITHUB_OUTPUT"
 
-          # Notch/Dynamic Island device for safe-area verification
-          # (global-ui-style.md Section 11; QA test-infrastructure request 2).
           IPHONE_DI_NAME=""
           for CAND in "iPhone 16 Pro" "iPhone 16" "iPhone 15 Pro" "iPhone 15"; do
             if echo "$ALL_DEVICES" | grep -q "    $CAND ("; then IPHONE_DI_NAME="$CAND"; break; fi
@@ -134,25 +143,72 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
 
-      # UI tests (QA test-infrastructure request 1): scripted full playthrough with
-      # per-view screenshots as xcresult attachments.
+      - name: Upload fast-lane results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-fast
+          path: TestResults/
+          if-no-files-found: warn
+
+  # ------------------------------------------------------------------------------------------
+  # FULL lane: the heavy on-device UI regression. Runs ONLY on push to main OR a manual
+  # dispatch with lane=full. Depends on the fast lane (no point running a ~75-min UI suite if
+  # the logic is red). The capacity-bound iPad full-playthrough step is `continue-on-error`.
+  # ------------------------------------------------------------------------------------------
+  full-lane-ui:
+    needs: fast-lane
+    if: >
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.lane == 'full')
+    runs-on: macos-15
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Show Xcode version
+        run: |
+          xcodebuild -version
+          xcode-select -p
+
+      - name: Install xcpretty
+        run: gem install xcpretty --no-document
+
+      - name: Resolve simulator destinations
+        id: sims
+        run: |
+          set -euo pipefail
+          ALL_DEVICES=$(xcrun simctl list devices available)
+
+          IPAD_NAME=$(echo "$ALL_DEVICES" | grep -Eo 'iPad Pro 13-inch \([^)]*\)' | head -n1 || true)
+          if [ -z "${IPAD_NAME:-}" ]; then
+            IPAD_NAME=$(echo "$ALL_DEVICES" | grep -Eo 'iPad Pro [0-9.]+-inch \([^)]*\)' | head -n1 || true)
+          fi
+          if [ -z "${IPAD_NAME:-}" ]; then IPAD_NAME="iPad Pro 13-inch (M4)"; fi
+          echo "ipad_name=$IPAD_NAME" >> "$GITHUB_OUTPUT"
+
+          IPHONE_NAME=$(echo "$ALL_DEVICES" | grep -Eo 'iPhone SE \([0-9a-zA-Z ]*generation\)' | head -n1 || true)
+          if [ -z "${IPHONE_NAME:-}" ]; then IPHONE_NAME="iPhone SE (3rd generation)"; fi
+          echo "iphone_name=$IPHONE_NAME" >> "$GITHUB_OUTPUT"
+
+          IPHONE_DI_NAME=""
+          for CAND in "iPhone 16 Pro" "iPhone 16" "iPhone 15 Pro" "iPhone 15"; do
+            if echo "$ALL_DEVICES" | grep -q "    $CAND ("; then IPHONE_DI_NAME="$CAND"; break; fi
+          done
+          if [ -z "${IPHONE_DI_NAME:-}" ]; then IPHONE_DI_NAME="iPhone 16"; fi
+          echo "iphone_di_name=$IPHONE_DI_NAME" >> "$GITHUB_OUTPUT"
+
+      # UI tests (QA test-infrastructure request 1): scripted full playthrough with per-view
+      # screenshots as xcresult attachments.
       #
-      # Device split: the FULL 19-step playthrough runs on the smallest supported iPhone
-      # (SE) — the canonical completability proof on the tightest layout — PLUS smoke +
-      # save/resume. It ALSO runs the FULL suite on iPad (the PRIMARY device) now that the
-      # interim letterbox (build 9 follow-up, `.aspectFit`) makes every puzzle-critical
-      # element — including the z1 clue MARKS and the edge elements the build-3 crop hid —
-      # VISIBLE and TAPPABLE on iPad. Previously (R3-005/build 9) the iPad step was scoped
-      # down to smoke + composition because under `.aspectFill` the clue marks + edge
-      # elements sat OUTSIDE the iPad dual-safe crop and their taps could not land; with the
-      # letterbox they are on-screen, so iPad is now GENUINELY verified end-to-end
-      # (playthrough + save/resume + gate persistence) rather than scoped-around.
-      # NOTE (QA-B3-001): the CI screenshots are raster-letterboxed because the runner boots
-      # the simulators portrait; the app itself lays out full-width (verified by the
-      # harness-immune logical guard in testSceneContentFillsScreen_QA_B3_001, and confirmed
-      # by the user's on-device TestFlight spot-check). A reliable headless simulator-rotate
-      # is not available on these runner images; screenshot-fidelity rotation is left to the
-      # user's device spot-check rather than a fragile AppleScript step.
+      # NOTE (M2, Level 2): the iPhone-SE UI step runs the WHOLE EscapeRoomUITests scheme
+      # including the Level2UITests class (L2 menu/entry/z1-pickups-incl-coat-fix/close-ups/
+      # navigation/pause smoke + L2 composition guard); the Dynamic-Island step runs the L2
+      # composition guard. The iPad UI step SKIPS Level2UITests (its heavy full-solve L1 tests
+      # already sit at the runner's simulator-starvation capacity — L2's iPad coverage is the
+      # fast, reliable unit-level Level2RegistrationTests + Level2Tests in the fast lane).
       - name: UI tests - smallest supported iPhone (full playthrough + smoke + save-resume)
         run: |
           set -o pipefail
@@ -164,16 +220,13 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
 
-      # iPad (PRIMARY device) — FULL UI coverage RESTORED (build 9 letterbox follow-up).
-      # The interim `.aspectFit` letterbox puts the full 2:1 plate on-screen on iPad, so the
-      # z1 clue MARKS (windowsill, flowerpot, bellows, lintel) and the previously-cropped edge
-      # elements (potion shelf, mirror, winch, mortar, astrolabe, cage, feed cup, ladder) are
-      # now VISIBLE and TAPPABLE — the `sceneCoordinate` math uses the same min-scale fit, so
-      # its synthesized taps land on those elements. This runs the ENTIRE EscapeRoomUITests
-      # suite on iPad (full playthrough + smoke + save/resume + composition), so iPad
-      # completability + D7 gate persistence are genuinely verified on the primary device, not
-      # scoped-around. (Was smoke+composition-only under `.aspectFill` where those taps missed.)
-      - name: UI tests - iPad (full playthrough + smoke + save-resume)
+      # iPad (PRIMARY device) full L1 playthrough. This single ~75-min step is the documented
+      # simulator-starvation flake surface (UI-query timeout / "Failed to terminate" across
+      # runs), so it is NON-BLOCKING (`continue-on-error`) — a transient iPad flake reports but
+      # does not fail the run. Level2UITests is skipped here (see note above); the R6009 L1
+      # poker-lifecycle heavyweights are gated to the iPhone-SE UI step.
+      - name: UI tests - iPad (full playthrough + smoke + save-resume) [non-blocking]
+        continue-on-error: true
         run: |
           set -o pipefail
           xcodebuild test \
@@ -187,16 +240,6 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
 
-      # NOTE (M2, Level 2): the iPhone-SE UI step runs the WHOLE EscapeRoomUITests scheme
-      # including the Level2UITests class (L2 menu/entry/z1-pickups-incl-coat-fix/close-ups/
-      # navigation/pause smoke + L2 composition guard); the Dynamic-Island step also runs the
-      # L2 composition guard. The iPad UI step SKIPS Level2UITests: the iPad full-solve L1
-      # tests already sit at the runner's capacity (documented simulator-starvation UI-query/
-      # terminate flakiness — testChromeFullyOnScreen / testSaveResumeMidPlaythrough flaked on
-      # different runs), so adding L2 UI there only worsens the marginal iPad step; L2's iPad
-      # coverage is the fast, reliable unit-level Level2RegistrationTests + Level2Tests (geometry
-      # + example-ordering completability), which run in the iPad UNIT step. L2 UI on-device
-      # chrome is covered on iPhone SE + Dynamic Island.
       - name: UI tests - Dynamic Island iPhone (safe-area screenshots)
         run: |
           set -o pipefail
@@ -211,10 +254,10 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
 
-      - name: Upload test results and logs
+      - name: Upload full-lane UI results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
+          name: test-results-full-ui
           path: TestResults/
           if-no-files-found: warn

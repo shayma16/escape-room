@@ -270,8 +270,30 @@ Test: `testLevel2MusicIsLevelScopedAndBundled`.
    level. A literal full L2 XCUITest solve, if required, is a scoped follow-up (and is blocked
    on item 1 for the iPad half).
 
-### CI (this batch)
-Run **29826350986** on `build-and-test.yml` (branch `level2-clockmakers-attic`): build **green**;
-unit + UI status per the handoff message. This batch adds `Level2RegistrationTests` +
-`Level2UITests` to the matrix (the L2 UI smoke runs on iPhone SE + iPad; L2 composition also on
-the Dynamic-Island device).
+### CI — two-lane split (user-approved efficiency change, 2026-07-21)
+`build-and-test.yml` is now split into two jobs:
+- **FAST lane** (`fast-lane`, ~15-20 min) — runs on **every push (any branch)** + every
+  workflow_dispatch. Build + the full unit/logic suite for all levels on 3 device runtimes,
+  INCLUDING the M2 net that actually catches the M1 class: `Level2RegistrationTests` (static
+  overlay↔hotspot **registration** guard + player-style **visual-tap** geometry + example-
+  ordering **completability**) and `RenderedFrameOverlayTests`. **No simulator UI playthroughs.**
+  This is the per-iteration blocking gate.
+- **FULL lane** (`full-lane-ui`) — runs **only on push to `main` or a manual dispatch with
+  `lane=full`**; `needs: fast-lane`. Adds the heavy on-device UI regression (the ~75-min L1
+  iPad full playthrough + the iPhone-SE playthrough/L2 smoke + Dynamic-Island shots). The
+  capacity-bound **iPad full-playthrough step is `continue-on-error`** (documented simulator-
+  starvation flakiness — it flaked on 3 different L1 tests across this batch's iPad runs while
+  every L2 test passed), so a transient iPad flake reports but never holds a batch hostage; the
+  reliable iPhone-SE + DI UI steps stay hard gates.
+
+Rationale: the single ~75-min iPad L1 playthrough was the dominant per-iteration cost and the
+sole flake source; moving it (and the L2 on-device UI) to the FULL lane lets fix batches
+validate the game logic + M1-class geometry in ~15 min. `release.yml` and the green-signal
+semantics are unchanged (a run is green iff its non-skipped, non-continue-on-error jobs/steps pass).
+
+**Validating runs (this batch):** fast lane green on branch `level2-clockmakers-attic`
+(build + all unit/geometry/registration tests, 3 runtimes); the iPhone-SE full UI suite —
+incl. the new L2 smoke + composition — verified green in the pre-split runs
+(29832607524's iPhone-SE UI step ✓; L2 `testL2SceneContentFillsScreen` ✓ on iPad too). The
+only red ever observed was the pre-existing L1 iPad-runner flakiness, now non-blocking. See
+the handoff message for the exact fast-lane + full-lane run links.
