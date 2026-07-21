@@ -104,6 +104,13 @@ enum Level2Graph {
     // Retain while ANY use unsatisfied; consume when ALL satisfied. Empty `uses` (the three
     // clue-carrier watches/tag) are NEVER auto-consumed (same rule as L1's rusted-key).
 
+    /// Items the graph nodes mark **explicitly NEVER consumed** — retained whole level
+    /// regardless of their `uses` (itm-screwdriver, itm-oilcan "and beyond"). This is a
+    /// per-item override of the generic consume-when-all-uses-done rule (m1 QA fidelity
+    /// fix): both still LIST their uses below for documentation, but the lifecycle never
+    /// drops them. No soft-lock risk (there is no use after their last one anyway).
+    static let neverConsumedItems: Set<String> = [ItemID.screwdriver, ItemID.oilcan]
+
     static let itemUses: [String: [String]] = [
         ItemID.screwdriver: [PuzzleID.cacheDormer, PuzzleID.cacheChimney],
         ItemID.tileII: [PuzzleID.dialDoor],
@@ -162,7 +169,8 @@ enum Level2ClueGate {
 enum Level2Lifecycle {
     /// TRUE iff the item still has at least one unsatisfied use (must be retained).
     static func hasRemainingUse(_ itemID: String, state: GameState) -> Bool {
-        guard let uses = Level2Graph.itemUses[itemID] else { return true } // unknown: never drop
+        if Level2Graph.neverConsumedItems.contains(itemID) { return true }   // m1: graph says NEVER consumed
+        guard let uses = Level2Graph.itemUses[itemID] else { return true }   // unknown: never drop
         guard !uses.isEmpty else { return true }                            // clue carrier: never drop
         return uses.contains { !state.hasSolved($0) }
     }

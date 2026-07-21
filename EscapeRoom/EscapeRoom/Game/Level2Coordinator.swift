@@ -13,6 +13,7 @@ enum L2CloseUp: Equatable, Identifiable {
     case dormerCache            // p03 pry / manual great-wheel pickup
     case chimneyCache           // p04 pry / manual oil-can pickup
     case catCushion             // p02 cat + cushion reveal
+    case coat                   // bench coat: manual watch-A + tile-IV pickups (two pockets)
 
     var id: String {
         switch self {
@@ -25,6 +26,7 @@ enum L2CloseUp: Equatable, Identifiable {
         case .dormerCache: return "dormer-cache"
         case .chimneyCache: return "chimney-cache"
         case .catCushion: return "cat-cushion"
+        case .coat: return "coat"
         }
     }
 }
@@ -84,6 +86,37 @@ final class Level2Coordinator: ObservableObject {
             scene.setOverlay(key, imageNamed: key + "-wide", rectNormalized: rect, zPosition: z)
             z += 1
         }
+        if viewID == .dial { updateDialMechanismAnimations() }
+    }
+
+    /// M3 / m2: drives the z3 pendulum swing (visible p10 confirmation) and the D11
+    /// alive-wrong-time ambient (soft escapement tick + occasional hammer twitch, NEVER a
+    /// strike). Pure function of latched state via Level2Visuals.dialMechanism, so it is
+    /// order-free and idempotent (the scene guards against restarting a running animation).
+    private func updateDialMechanismAnimations() {
+        let m = Level2Visuals.dialMechanism(state)
+        let pendRect = Level2OverlayCatalog.shared.wideRect("ov-pendulum-absent")
+        if m.pendulumSwinging, pendRect != .zero {
+            // Dark column background hides the at-rest pendulum on the base plate, then the
+            // procedural bob swings over it (weak when unwound, fuller once wound).
+            scene.setOverlay("ov-pendulum-absent", imageNamed: "ov-pendulum-absent-wide",
+                             rectNormalized: pendRect, zPosition: 15)
+            scene.setPendulumSwing(active: true, rect: pendRect,
+                                   amplitudeDegrees: m.pendulumFullSwing ? 11 : 5,
+                                   period: m.pendulumFullSwing ? 1.6 : 2.3)
+        } else {
+            scene.setOverlay("ov-pendulum-absent", imageNamed: nil, rectNormalized: .zero)
+            scene.setPendulumSwing(active: false, rect: .zero, amplitudeDegrees: 0, period: 1)
+        }
+        let hamRect = Level2OverlayCatalog.shared.wideRect("ov-hammer-absent")
+        if m.aliveWrongTime, hamRect != .zero {
+            scene.setOverlay("ov-hammer-absent", imageNamed: "ov-hammer-absent-wide",
+                             rectNormalized: hamRect, zPosition: 15)
+            scene.setHammerTwitch(active: true, rect: hamRect) { SoundManager.shared.play(.tick) }
+        } else {
+            scene.setOverlay("ov-hammer-absent", imageNamed: nil, rectNormalized: .zero)
+            scene.setHammerTwitch(active: false, rect: .zero, onTick: nil)
+        }
     }
 
     private func allOverlayNames(_ view: L2ViewID) -> [String] {
@@ -127,9 +160,17 @@ final class Level2Coordinator: ObservableObject {
                 Hotspot(id: "stair-door", 0.14, 0.30, 0.30, 0.46),
                 Hotspot(id: "house-ring", 0.52, 0.28, 0.12, 0.16),
                 Hotspot(id: "sill", 0.60, 0.46, 0.12, 0.18),
-                Hotspot(id: "cat-cushion", 0.66, 0.55, 0.24, 0.22),
+                // m4: extended bottom 0.77 -> 0.81 so the ov-cushion-reveal band (watch B on
+                // the bench, y up to 0.807) is fully tappable.
+                Hotspot(id: "cat-cushion", 0.66, 0.55, 0.24, 0.26),
                 Hotspot(id: "cat-floor", 0.62, 0.78, 0.22, 0.14),
-                Hotspot(id: "floor-cache", 0.40, 0.80, 0.20, 0.16),
+                // M1: re-anchored ON the cache/great-wheel art it reveals — the ov-cache-*
+                // wide rect (x0.6375-0.7656, y0.898-1.0). The old x[0.40,0.60] rect did NOT
+                // overlap the cache art (zero horizontal overlap), so a human tapping the
+                // visible pried board/wheel missed the cache entirely. Now overlay-anchored
+                // like every other L2 hotspot; the minHitSize floor expands the small rect
+                // upward for a comfortable target above the inventory pill.
+                Hotspot(id: "floor-cache", 0.6375, 0.898, 0.1281, 0.102),
             ]
         case .frame:
             return [
@@ -147,15 +188,21 @@ final class Level2Coordinator: ObservableObject {
             ]
         case .dial:
             return [
-                Hotspot(id: "great-dial", 0.28, 0.16, 0.34, 0.48),
+                // m5: notched the dial's right edge 0.62 -> 0.50 so it no longer overlaps the
+                // pendulum column (art band x[0.529,0.594]); the pendulum now owns its column
+                // unambiguously rather than relying only on smallest-area-wins.
+                Hotspot(id: "great-dial", 0.28, 0.16, 0.22, 0.48),
                 Hotspot(id: "drum", 0.08, 0.66, 0.18, 0.28),
                 Hotspot(id: "pendulum", 0.50, 0.10, 0.12, 0.62),
                 Hotspot(id: "hatch", 0.60, 0.72, 0.28, 0.24),
             ]
         case .vault:
+            // m3: both anchored to their ov-*-taken wide rects so the key-hook no longer
+            // overlaps the tag art edge (old key x[0.23,0.37] covered the tag's right edge).
+            // key-hook <- ov-key-taken (x0.2604-0.3268), tag-nail <- ov-tag-taken (x0.1563-0.2526).
             return [
-                Hotspot(id: "key-hook", 0.23, 0.20, 0.14, 0.32),
-                Hotspot(id: "tag-nail", 0.13, 0.20, 0.14, 0.32),
+                Hotspot(id: "key-hook", 0.2604, 0.2161, 0.0664, 0.2839),
+                Hotspot(id: "tag-nail", 0.1563, 0.2214, 0.0964, 0.2839),
                 Hotspot(id: "shelf", 0.54, 0.28, 0.32, 0.42),
                 Hotspot(id: "vault-exit", 0.85, 0.20, 0.13, 0.60),
             ]
@@ -223,8 +270,10 @@ final class Level2Coordinator: ObservableObject {
                 state.addItem(Level2Graph.ItemID.tileII); SoundManager.shared.play(.pickup)
             } else { present(.plain(image: "cu-stove-hob"), from: hotspotID) }
         case (.bench, "coat"):
-            // Two independent pickups in one close-up (watch A + tile IV).
-            present(.plain(image: "cu-coat-pockets"), from: hotspotID)
+            // Two independent manual pickups in one close-up (watch A + tile IV). Prior build
+            // presented a PLAIN image with no collect affordance, so tile IV / watch A were
+            // uncollectable through the UI (p01 needs tile IV -> L2 was uncompletable in-app).
+            present(.coat, from: hotspotID)
         case (.bench, "slate"): present(.plain(image: "cu-slate"), from: hotspotID)
         case (.bench, "barometer"): present(.plain(image: "cu-barometer"), from: hotspotID)
 
@@ -375,6 +424,17 @@ final class Level2Coordinator: ObservableObject {
         case .alreadyOpen:
             return true
         }
+    }
+
+    /// Coat pocket pickups (bench). Each is a plain manual collect: add once, never re-add.
+    /// watch A is a clue carrier (never consumed); tile IV feeds the p01 dial.
+    func collectCoatWatchA() {
+        guard !Level2Visuals.watchATaken(state) else { return }
+        state.addItem(Level2Graph.ItemID.watchA); SoundManager.shared.play(.pickup); objectWillChange.send()
+    }
+    func collectCoatTileIV() {
+        guard !Level2Visuals.tileIVTaken(state) else { return }
+        state.addItem(Level2Graph.ItemID.tileIV); SoundManager.shared.play(.pickup); objectWillChange.send()
     }
 
     func collectGreatWheel() {

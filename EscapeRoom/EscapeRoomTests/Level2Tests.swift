@@ -22,6 +22,26 @@ final class Level2Tests: XCTestCase {
         for c in clues { state.markClueViewed(c) }
     }
 
+    // MARK: - Level-scoped music (music-level2.wav is the L2 bed)
+
+    /// The L2 bed is level-scoped like L1's (R3-001): `enterLevel(2)` selects music-level2,
+    /// the file must ship, and exiting clears the level scope. Restores the level-1 default
+    /// afterward so it does not leak into other tests' shared SoundManager singleton.
+    func testLevel2MusicIsLevelScopedAndBundled() {
+        XCTAssertNotNil(Bundle.main.url(forResource: "music-level2", withExtension: "wav", subdirectory: "Audio")
+            ?? Bundle.main.url(forResource: "music-level2", withExtension: "wav"),
+            "music-level2.wav must ship in the bundle")
+        let sm = SoundManager.shared
+        sm.enterLevel(levelID: 2)
+        XCTAssertEqual(sm.debugMusicResource, "music-level2", "L2 selects its own bed, not the L1 track")
+        XCTAssertTrue(sm.debugInLevel)
+        sm.exitLevel()
+        XCTAssertFalse(sm.debugInLevel, "exiting the level clears the music scope")
+        XCTAssertFalse(sm.isMusicActive, "music stops on exit")
+        sm.enterLevel(levelID: 1)   // restore default for the shared singleton
+        sm.exitLevel()
+    }
+
     // MARK: - Start zone / rules
 
     func testLevel2StartZoneUnlocked() {
@@ -64,6 +84,24 @@ final class Level2Tests: XCTestCase {
         // The tray VI decoy (never an inventory item) into socket 4: rejected (glyph-order bait).
         XCTAssertEqual(Level2Engine.seatDialTile("tile-vi-decoy", socket: "4", state: s), .rejected)
         XCTAssertFalse(s.hasSolved(Level2Graph.PuzzleID.dialDoor))
+    }
+
+    /// Regression for the discovered critical gap: the bench coat close-up must actually
+    /// COLLECT watch A + tile IV (the prior plain-image close-up had no pickup path, so tile
+    /// IV was unobtainable and p01 — hence the whole level — was uncompletable through the UI).
+    func testCoatCloseUpCollectsWatchAAndTileIV() {
+        let s = makeState()
+        let coord = Level2Coordinator(viewID: .bench, state: s, size: CGSize(width: 2732, height: 1366))
+        coord.scene.onHotspotTap?("coat")
+        XCTAssertEqual(coord.activeCloseUp, .coat, "coat tap opens the collectible pocket close-up")
+        XCTAssertFalse(s.hasItem(Level2Graph.ItemID.tileIV))
+        coord.collectCoatTileIV()
+        coord.collectCoatWatchA()
+        XCTAssertTrue(s.hasItem(Level2Graph.ItemID.tileIV), "tile IV collectable (p01 now solvable in-app)")
+        XCTAssertTrue(s.hasItem(Level2Graph.ItemID.watchA), "watch A collectable")
+        // Idempotent: re-collecting does nothing (already taken).
+        coord.collectCoatTileIV()
+        XCTAssertEqual(s.inventory.filter { $0 == Level2Graph.ItemID.tileIV }.count, 1)
     }
 
     // MARK: - p02 cat and the wind-up mouse
@@ -271,6 +309,32 @@ final class Level2Tests: XCTestCase {
         XCTAssertFalse(Level2Engine.isAliveWrongTime(s), "strike fires: ambient stops")
     }
 
+    /// M3 / m2: the pure z3 mechanism descriptor that drives the pendulum swing + D11 ambient.
+    /// (The SpriteKit motion itself needs a live view; this locks the state->motion decisions.)
+    func testDialMechanismDescriptor() {
+        let s = makeState()
+        s.unlockZone(Level2Graph.ZoneID.z3BehindDial)
+        // Nothing running yet: no swing, no ambient.
+        XCTAssertEqual(Level2Visuals.dialMechanism(s),
+                       .init(pendulumSwinging: false, pendulumFullSwing: false, aliveWrongTime: false))
+        // Pendulum pushed BEFORE winding: weak swing, no D11 ambient (not wound).
+        XCTAssertTrue(Level2Engine.pushPendulum(state: s))
+        XCTAssertEqual(Level2Visuals.dialMechanism(s),
+                       .init(pendulumSwinging: true, pendulumFullSwing: false, aliveWrongTime: false))
+        // Wound at a WRONG time: full swing + D11 alive-wrong-time ambient (m2 + M3).
+        s.setFlag(Level2Graph.Flag.clockWound)
+        viewGates(s, Level2ClueID.returnTag)
+        s.setL2ClockFrontMinutes(Level2Graph.clockNaiveTrapMinutes)
+        _ = Level2Engine.evaluateTimelock(state: s)
+        XCTAssertEqual(Level2Visuals.dialMechanism(s),
+                       .init(pendulumSwinging: true, pendulumFullSwing: true, aliveWrongTime: true))
+        // Correct time -> strike fires (door-bar latches): ambient stops, swing continues.
+        s.setL2ClockFrontMinutes(Level2Graph.clockReleaseMinutes)
+        _ = Level2Engine.evaluateTimelock(state: s)
+        XCTAssertEqual(Level2Visuals.dialMechanism(s),
+                       .init(pendulumSwinging: true, pendulumFullSwing: true, aliveWrongTime: false))
+    }
+
     /// z3 reached, wound + pendulum running (but hands not yet at release).
     private func wiredForEndgame() -> GameState {
         let s = makeState()
@@ -282,28 +346,35 @@ final class Level2Tests: XCTestCase {
 
     // MARK: - Item lifecycle (uses-driven; alternate orderings)
 
-    func testScrewdriverConsumedOnlyAfterBothCaches() {
+    /// m1 (QA spec-fidelity): itm-screwdriver is marked "NEVER consumed" in the graph, so it
+    /// must be retained the WHOLE level even after its last pry (p04) — overriding the generic
+    /// consume-when-all-uses-done rule. (Was previously consumed after p04.)
+    func testScrewdriverNeverConsumedAfterBothCaches() {
         let s = makeState()
         s.addItem(Level2Graph.ItemID.screwdriver)
         s.unlockZone(Level2Graph.ZoneID.z2Workroom)
         viewGates(s, Level2ClueID.watchA, Level2ClueID.watchB)
         Level2Engine.pryDormerBoard(isCorrectSpot: true, state: s)   // p03
-        XCTAssertTrue(s.hasItem(Level2Graph.ItemID.screwdriver), "one use left (p04) -> retained")
-        Level2Engine.pryChimneyBrick(isCorrectSpot: true, state: s)  // p04
-        XCTAssertFalse(s.hasItem(Level2Graph.ItemID.screwdriver), "both uses done -> consumed")
+        XCTAssertTrue(s.hasItem(Level2Graph.ItemID.screwdriver), "retained after p03")
+        Level2Engine.pryChimneyBrick(isCorrectSpot: true, state: s)  // p04 (its LAST use)
+        XCTAssertTrue(s.hasItem(Level2Graph.ItemID.screwdriver),
+                      "NEVER consumed (graph): retained after its final use")
     }
 
-    func testOilcanRetainedAcrossBothUses() {
+    /// m1 (QA spec-fidelity): itm-oilcan is marked "NEVER consumed" (retained the whole level
+    /// "and beyond"), so it must persist even after BOTH uses (p05 arbor + p08 wind) are done.
+    func testOilcanNeverConsumedAcrossBothUses() {
         let s = makeState()
         s.unlockZone(Level2Graph.ZoneID.z2Workroom)
         s.addItem(Level2Graph.ItemID.oilcan)
         Level2Engine.oilArbor(state: s)                              // p05
-        XCTAssertTrue(s.hasItem(Level2Graph.ItemID.oilcan), "p08 still pending -> retained")
+        XCTAssertTrue(s.hasItem(Level2Graph.ItemID.oilcan), "retained after p05")
         s.unlockZone(Level2Graph.ZoneID.z3BehindDial)
         s.addItem(Level2Graph.ItemID.windingKey)
         Level2Engine.oilDrum(state: s)
-        Level2Engine.windDrum(state: s)                             // p08
-        XCTAssertFalse(s.hasItem(Level2Graph.ItemID.oilcan), "both uses done -> consumed")
+        Level2Engine.windDrum(state: s)                             // p08 (its LAST use)
+        XCTAssertTrue(s.hasItem(Level2Graph.ItemID.oilcan),
+                      "NEVER consumed (graph): retained after both uses")
     }
 
     func testClueCarriersNeverConsumed() {
@@ -319,6 +390,129 @@ final class Level2Tests: XCTestCase {
         XCTAssertTrue(s.hasItem(Level2Graph.ItemID.watchA))
         XCTAssertTrue(s.hasItem(Level2Graph.ItemID.watchB))
         XCTAssertTrue(s.hasItem(Level2Graph.ItemID.returnTag))
+    }
+
+    // MARK: - End-to-end example orderings (graph solve_path_notes) — engine level
+
+    /// Drives the WHOLE 11-puzzle solve in graph `example_ordering_A`, asserting each zone
+    /// unlock milestone and final completion. Mirrors L1's testSolvePathOrderingA_engineLevel.
+    func testExampleOrderingA_completesEndToEnd() {
+        let s = makeState()
+        // z1 pickups + p01.
+        s.addItem(Level2Graph.ItemID.screwdriver)
+        s.addItem(Level2Graph.ItemID.watchA); s.addItem(Level2Graph.ItemID.tileIV)
+        s.addItem(Level2Graph.ItemID.tileII); s.addItem(Level2Graph.ItemID.tileVII); s.addItem(Level2Graph.ItemID.tileXI)
+        viewGates(s, Level2ClueID.masterTime)                                     // master clock close-up
+        for (socket, tile) in [("2", Level2Graph.ItemID.tileII), ("4", Level2Graph.ItemID.tileIV),
+                               ("7", Level2Graph.ItemID.tileVII), ("11", Level2Graph.ItemID.tileXI)] {
+            _ = Level2Engine.seatDialTile(tile, socket: socket, state: s)
+        }
+        XCTAssertTrue(s.isZoneUnlocked(Level2Graph.ZoneID.z2Workroom), "p01 unlocked z2")
+        // mouse (z2) + caches + p02.
+        s.addItem(Level2Graph.ItemID.toyMouse)
+        viewGates(s, Level2ClueID.watchA)
+        XCTAssertEqual(Level2Engine.pryDormerBoard(isCorrectSpot: true, state: s), .yielded)  // p03
+        XCTAssertTrue(Level2Engine.collectGreatWheel(s))
+        XCTAssertTrue(Level2Engine.placeMouseAtCat(state: s))                                 // p02 -> watch B
+        viewGates(s, Level2ClueID.watchB)
+        XCTAssertEqual(Level2Engine.pryChimneyBrick(isCorrectSpot: true, state: s), .yielded) // p04
+        XCTAssertTrue(Level2Engine.collectOilcan(s))
+        // machine stream p05/p06 -> z3.
+        XCTAssertTrue(Level2Engine.oilArbor(state: s))                                        // p05
+        XCTAssertTrue(Level2Engine.mountGear("36", on: .a, state: s))
+        XCTAssertTrue(Level2Engine.mountGear("64", on: .b, state: s))
+        XCTAssertTrue(Level2Engine.crankGearTrain(state: s))                                  // p06
+        XCTAssertTrue(s.isZoneUnlocked(Level2Graph.ZoneID.z3BehindDial), "p06 unlocked z3")
+        // vault p07 -> z4.
+        viewGates(s, Level2ClueID.worldClockRow)
+        for (i, v) in Level2Graph.vaultSolution.enumerated() { Level2Engine.setVaultWheel(i, value: v, state: s) }
+        XCTAssertTrue(s.isZoneUnlocked(Level2Graph.ZoneID.z4Vault), "p07 unlocked z4")
+        // z4 pickups + endgame p08/p09/p10 -> latch -> p11.
+        s.addItem(Level2Graph.ItemID.windingKey); s.addItem(Level2Graph.ItemID.returnTag)
+        XCTAssertTrue(Level2Engine.oilDrum(state: s))
+        XCTAssertTrue(Level2Engine.windDrum(state: s))                                        // p08
+        viewGates(s, Level2ClueID.returnTag)
+        s.setL2ClockFrontMinutes(Level2Graph.clockReleaseMinutes)                             // p09 (7:20)
+        XCTAssertTrue(Level2Engine.pushPendulum(state: s))                                    // p10
+        XCTAssertTrue(s.hasFlag(Level2Graph.Flag.doorBarRaised), "trio holds -> timelock latched")
+        XCTAssertTrue(Level2Engine.openStairDoor(state: s))                                   // p11
+        XCTAssertTrue(s.isComplete)
+    }
+
+    /// example_ordering_B: pendulum pushed FIRST (weak swing), hands set before winding, the
+    /// winding completes the trio. Proves the order-free timelock across the endgame.
+    func testExampleOrderingB_pendulumFirst_completesEndToEnd() {
+        let s = makeState()
+        s.addItem(Level2Graph.ItemID.screwdriver); s.addItem(Level2Graph.ItemID.watchA)
+        for id in [Level2Graph.ItemID.tileII, Level2Graph.ItemID.tileIV,
+                   Level2Graph.ItemID.tileVII, Level2Graph.ItemID.tileXI] { s.addItem(id) }
+        for (socket, tile) in [("2", Level2Graph.ItemID.tileII), ("4", Level2Graph.ItemID.tileIV),
+                               ("7", Level2Graph.ItemID.tileVII), ("11", Level2Graph.ItemID.tileXI)] {
+            _ = Level2Engine.seatDialTile(tile, socket: socket, state: s)
+        }
+        viewGates(s, Level2ClueID.watchA)
+        XCTAssertEqual(Level2Engine.pryDormerBoard(isCorrectSpot: true, state: s), .yielded)
+        XCTAssertTrue(Level2Engine.collectGreatWheel(s))
+        s.addItem(Level2Graph.ItemID.toyMouse)
+        XCTAssertTrue(Level2Engine.placeMouseAtCat(state: s))
+        viewGates(s, Level2ClueID.watchB)
+        XCTAssertEqual(Level2Engine.pryChimneyBrick(isCorrectSpot: true, state: s), .yielded)
+        XCTAssertTrue(Level2Engine.collectOilcan(s))
+        XCTAssertTrue(Level2Engine.oilArbor(state: s))
+        XCTAssertTrue(Level2Engine.mountGear("64", on: .a, state: s))
+        XCTAssertTrue(Level2Engine.mountGear("36", on: .b, state: s))
+        XCTAssertTrue(Level2Engine.crankGearTrain(state: s))
+        // p10 FIRST (pendulum, weak swing — unwound).
+        XCTAssertTrue(Level2Engine.pushPendulum(state: s))
+        XCTAssertFalse(s.hasFlag(Level2Graph.Flag.doorBarRaised), "just the pendulum: not latched")
+        viewGates(s, Level2ClueID.masterTime, Level2ClueID.worldClockRow)
+        for (i, v) in Level2Graph.vaultSolution.enumerated() { Level2Engine.setVaultWheel(i, value: v, state: s) }
+        XCTAssertTrue(s.isZoneUnlocked(Level2Graph.ZoneID.z4Vault))
+        s.addItem(Level2Graph.ItemID.windingKey); s.addItem(Level2Graph.ItemID.returnTag)
+        viewGates(s, Level2ClueID.returnTag)
+        s.setL2ClockFrontMinutes(Level2Graph.clockReleaseMinutes)                 // p09 (hands set before winding)
+        XCTAssertFalse(s.hasFlag(Level2Graph.Flag.doorBarRaised), "not wound yet")
+        XCTAssertTrue(Level2Engine.oilDrum(state: s))
+        XCTAssertTrue(Level2Engine.windDrum(state: s))                            // p08 completes the trio
+        XCTAssertTrue(s.hasFlag(Level2Graph.Flag.doorBarRaised), "winding latched the timelock")
+        XCTAssertTrue(Level2Engine.openStairDoor(state: s))
+        XCTAssertTrue(s.isComplete)
+    }
+
+    /// L2 analogue of L1's testRelaunchInsideNestedHiddenZoneMidPuzzle: relaunch while deep
+    /// inside the hidden z3/z4 mid-puzzle (wound + pendulum running at a WRONG time, vault
+    /// partially dialed) must lose nothing and remain completable after resume.
+    func testRelaunchInsideHiddenZoneMidPuzzleLosesNothing() {
+        let dir = tempDir()
+        do {
+            let s = makeState(dir)
+            s.unlockZone(Level2Graph.ZoneID.z2Workroom)
+            s.unlockZone(Level2Graph.ZoneID.z3BehindDial)
+            s.unlockZone(Level2Graph.ZoneID.z4Vault)
+            s.addItem(Level2Graph.ItemID.oilcan)
+            s.addItem(Level2Graph.ItemID.windingKey)
+            s.addItem(Level2Graph.ItemID.returnTag)
+            s.setFlag(Level2Graph.Flag.drumOiled)
+            s.setFlag(Level2Graph.Flag.clockWound)
+            s.setFlag(Level2Graph.Flag.pendulumRunning)
+            s.setL2ClockFrontMinutes(Level2Graph.clockNaiveTrapMinutes)   // wrong time (alive-wrong D11)
+            s.setL2VaultWheel(0, value: 6)
+            s.markClueViewed(Level2ClueID.returnTag)
+        }
+        let r = makeState(dir)   // relaunch
+        XCTAssertTrue(r.isZoneUnlocked(Level2Graph.ZoneID.z3BehindDial))
+        XCTAssertTrue(r.isZoneUnlocked(Level2Graph.ZoneID.z4Vault))
+        XCTAssertTrue(r.hasFlag(Level2Graph.Flag.clockWound))
+        XCTAssertTrue(r.hasFlag(Level2Graph.Flag.pendulumRunning))
+        XCTAssertEqual(r.data.l2ClockFrontMinutes, Level2Graph.clockNaiveTrapMinutes)
+        XCTAssertEqual(r.data.l2VaultWheels[0], 6)
+        XCTAssertTrue(r.hasViewedClue(Level2ClueID.returnTag))
+        XCTAssertTrue(Level2Visuals.dialMechanism(r).aliveWrongTime, "D11 state survives relaunch")
+        // Still completable: correcting the hands from the resumed state latches + wins.
+        r.setL2ClockFrontMinutes(Level2Graph.clockReleaseMinutes)
+        XCTAssertTrue(r.hasFlag(Level2Graph.Flag.doorBarRaised))
+        XCTAssertTrue(Level2Engine.openStairDoor(state: r))
+        XCTAssertTrue(r.isComplete)
     }
 
     // MARK: - Save / resume
