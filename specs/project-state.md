@@ -239,7 +239,14 @@ per-zone user reviews follow each batch.
   taps to follow the re-anchored hotspots, COUPLE UI-test taps to the hotspot rects (single
   source of truth so re-anchors can't desync tests again), and get full-lane GREEN on
   iPhone-SE + DI (DI never ran — aborted after SE fail). THEN Release Manager builds 15.
-  Note: gate did its job — caught a red before user's device saw it. (test vs graph incl. the never-
+  Note: gate did its job — caught a red before user's device saw it.
+  ✅ ROOT CAUSE CONFIRMED 2026-07-22: STALE TEST COORDINATE, not a game bug — the coat
+  close-up opens correctly at the re-anchored position; the UI smoke-test still tapped the
+  old 0.17. Fix (commits 52e6c93, 1b00075): coupled UI-test taps to the hotspot rects
+  (single source of truth) so a re-anchor can never desync tests again — class eliminated.
+  Fast-lane GREEN. Full-lane regression run 29867897724 RUNNING (Dev has monitor
+  bwu8xfnqi; confirms iPhone-SE + DI hard gates). On green → Release Manager builds 15 →
+  TestFlight → user iPad spot-check. (test vs graph incl. the never-
   consumed check as an expected finding; hotspot recalibration vs shipped plates;
   alternate-order completability; assess deferred animations) → checkpoint-2 → dev fix
   batch → re-QA → release.
