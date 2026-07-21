@@ -151,7 +151,23 @@ per-zone user reviews follow each batch.
      (cat poses, mouse skitter, mural strike, pendulum swing, hammer twitch, cat-tell) —
      confirm acceptable for QA/release or do as a polish pass.
   ✅ CI RUN 29786847406 FULLY GREEN 2026-07-21 (all 17 steps incl. iPad UI). QA DISPATCHED.
-  NEXT: QA full pass (test vs graph incl. the never-
+  ✅ QA DONE 2026-07-21 (qa-report.md, commit 74ec8b2): CONDITIONAL GO — all 11 puzzles
+  solve, all orderings complete, no soft-locks, L1 not regressed, save/resume ok, no psh.
+  NOT release-ready. Findings for the Developer fix batch:
+  - M1 (MAJOR): dormer floor-cache hotspot x[.40,.60] has ZERO overlap with the cache art
+    it reveals (x[.64,.77]) — human can't reach the cache; re-anchor to ov-cache wide rect.
+  - M2 (MAJOR, process): NO L2 UI/hotspot/overlay-registration CI tests (L1-only) — add
+    them (mirror L1's playthrough + rect/pixel guards) so human-facing bugs are catchable.
+  - M3 (MAJOR): p09 wrong-time (D11) feedback unrendered + no pendulum swing → hardest
+    puzzle looks inert/"broken"; render the tick-audio/animation + pendulum swing.
+  - m1 (MINOR, known): screwdriver/oilcan consumed vs graph never-consumed; no soft-lock.
+  - minors: z4 key/tag + z3 dial/pendulum hotspot overlaps, cushion clips watch-B reveal,
+    gear double-mount, p03/p04 single-hotspot pointer-collapse — full list in qa-report.
+  - Music-level2.wav staged but UNWIRED (fold into fix batch).
+  Deferred-animation QA call: cat/mouse/mural/hammer-sprite OK to defer; pendulum-swing +
+  D11 tick cross into feedback-necessary → fix or explicitly accept.
+  ⛔ AT CHECKPOINT-2 (user reviews QA + decides fix scope). TestFlight spot-check is
+  load-bearing this round (L2 has no automated human-visible net until M2 lands). (test vs graph incl. the never-
   consumed check as an expected finding; hotspot recalibration vs shipped plates;
   alternate-order completability; assess deferred animations) → checkpoint-2 → dev fix
   batch → re-QA → release.
