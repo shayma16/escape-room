@@ -401,10 +401,20 @@ tap — the same desync that shipped this red gate). So both sides now read ONE 
 
 **New deterministic guard (fast lane, no simulator).**
 `Level2RegistrationTests.testL2HotspotTableIsTheSingleSourceForCoordinatorAndTapCenters` asserts
-(1) the coordinator's configured hotspots match the table (id set + rects) per view, and (2) a
-tap at each table entry's CENTER — exactly what `tapHotspot` taps — resolves to that hotspot
-under the real hit test. This CI-proves the UI-test tap assumption without an on-device run, so
-the stale/desynced-tap class fails loudly in the ~15-min fast lane going forward.
+(1) the coordinator's configured hotspots match the table (id set + rects) for ALL views, and
+(2) for every hotspot the UI test taps by center, a tap at that table entry's CENTER — exactly
+what `tapHotspot` taps — resolves to that hotspot under the real hit test. This CI-proves the
+UI-test tap assumption without an on-device run, so the stale/desynced-tap class fails loudly in
+the ~15-min fast lane going forward.
+
+_Benign pre-existing overlap surfaced (out of scope, flagged not fixed): the guard's initial
+broad form (every hotspot's exact center resolves to itself) caught `v-frame/gear-rack` — its
+dead center (0.65,0.66) sits on the loose-`brick` hit region, so smallest-area-wins returns
+`brick` there. `gear-rack` is still reachable everywhere left of the overlap (x<0.65); the rects
+are unchanged from before this batch, and hotspot geometry is design (not Developer's to move).
+`gear-rack` is not tapped by center in any UI test, so guard part (2) is scoped to the actual
+UI-tapped set (`uiTappedHotspots`, kept in lockstep with the smoke test). Recommend the Theme/
+Art owner review the gear-rack↔brick hit overlap in a future pass._
 
 **Also updated:** the stale scope-note comment above the smoke test (which still described the
 coat as a far-left element off the iPad crop) now reflects the re-anchored in-band coat and
