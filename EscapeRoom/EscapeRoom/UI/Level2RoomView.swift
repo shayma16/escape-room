@@ -298,12 +298,12 @@ private struct L2CoatControl: View {
             ZStack {
                 GameImage(name: "cu-coat-pockets").aspectRatio(contentMode: .fit)
                 if !Level2Visuals.tileIVTaken(state) {
-                    pocketButton(Self.tileRect, plate: plate, id: "collect-itm-tile-iv") {
+                    pocketButton(Self.tileRect, plate: plate, id: "collect-itm-tile-iv", label: "Numeral tile") {
                         coordinator.collectCoatTileIV()
                     }
                 }
                 if !Level2Visuals.watchATaken(state) {
-                    pocketButton(Self.watchRect, plate: plate, id: "collect-itm-watch-a") {
+                    pocketButton(Self.watchRect, plate: plate, id: "collect-itm-watch-a", label: "Pocket watch") {
                         coordinator.collectCoatWatchA()
                     }
                 }
@@ -312,11 +312,19 @@ private struct L2CoatControl: View {
         .padding(24)
     }
 
-    private func pocketButton(_ r: CGRect, plate: CGRect, id: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) { Color.clear.contentShape(Rectangle()) }
-            .frame(width: r.width * plate.width, height: r.height * plate.height)
-            .position(x: plate.minX + r.midX * plate.width, y: plate.minY + r.midY * plate.height)
+    // Invisible tap target over each uncollected pocket, mirroring the proven L1
+    // manual-pickup pattern (CloseUpView): a near-transparent hit-testable Color +
+    // onTapGesture + a real accessibility label/identifier (a Color.clear Button does NOT
+    // reliably surface as a hittable accessibility element to XCUITest).
+    private func pocketButton(_ r: CGRect, plate: CGRect, id: String, label: String,
+                              action: @escaping () -> Void) -> some View {
+        Color.white.opacity(0.001)
+            .frame(width: max(r.width * plate.width, 44), height: max(r.height * plate.height, 44))
+            .contentShape(Rectangle())
+            .onTapGesture(perform: action)
+            .accessibilityLabel(label)
             .accessibilityIdentifier(id)
+            .position(x: plate.minX + r.midX * plate.width, y: plate.minY + r.midY * plate.height)
     }
 }
 

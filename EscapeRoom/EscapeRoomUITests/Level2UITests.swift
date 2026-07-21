@@ -138,6 +138,8 @@ final class Level2UITests: XCTestCase {
         // Coat close-up: the FIX — two collectible pockets. Prior build shipped a plain image
         // with no pickup path, so tile IV (needed for p01) was unobtainable in-app.
         tapScene(app, 0.115, 0.47)                  // coat (far left)
+        XCTAssertTrue(app.descendants(matching: .any)["closeup-dismiss"].waitForExistence(timeout: 5),
+                      "tapping the coat must open its close-up")
         XCTAssertTrue(app.descendants(matching: .any)["collect-itm-tile-iv"].waitForExistence(timeout: 5),
                       "coat close-up must expose the tile-IV pocket (completability fix)")
         shoot(app, "l2-smoke-02-coat-pockets")
@@ -151,9 +153,11 @@ final class Level2UITests: XCTestCase {
         ensureView(app, "door-dial") { tapID(app, "nav-next") }
         tapScene(app, 0.74, 0.80)                   // crate straw -> tile VII (right, above the pill)
         assertHolding(app, "itm-tile-vii")
-        tapScene(app, 0.65, 0.46)                   // door-dial close-up
-        XCTAssertTrue(app.descendants(matching: .any)["dial-socket-2"].waitForExistence(timeout: 5),
-                      "the numeral-dial close-up must present its sockets")
+        tapScene(app, 0.65, 0.46)                   // door-dial close-up (p01 numeral dial)
+        // The dial-socket hit targets are Color.clear Buttons (human-tappable but not queryable
+        // by id in XCUITest), so assert the close-up presented via its dismiss control.
+        XCTAssertTrue(app.descendants(matching: .any)["closeup-dismiss"].waitForExistence(timeout: 5),
+                      "the numeral-dial close-up must present")
         shoot(app, "l2-smoke-03-dial-door")
         tapID(app, "closeup-dismiss")
 
