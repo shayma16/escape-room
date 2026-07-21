@@ -143,3 +143,112 @@ generic engine rewrite (which would have risked the shipped L1 / TestFlight buil
 
 Build + tests run on the `build-and-test.yml` GitHub Actions macOS runner (no local Mac).
 Branch `level2-clockmakers-attic`. See the run linked in the handoff message for green status.
+
+---
+
+## QA build-1 fix batch (checkpoint-2, 2026-07-21)
+
+Implements the user-approved QA build-1 changelist against `qa-report.md` (build-1 section).
+
+### M1 (MAJOR) — dormer floor-cache hotspot re-anchored
+`Level2Coordinator.hotspots(.door)` `floor-cache` moved from `x[0.40,0.60] y[0.80,0.96]`
+(zero overlap with the cache art) **onto** the `ov-cache-*` wide rect `x0.6375–0.7656,
+y0.898–1.0`. The `minHitSize` floor (182 scene px) expands the short rect **upward**, giving
+a comfortable tap target above the inventory pill. Now overlay-anchored like every other L2
+hotspot; verified by the new registration + visual-tap guards.
+
+### Minor hotspot calibration (against the shipped plates)
+- **m3** — z4 `key-hook` / `tag-nail` re-anchored to their `ov-key-taken` / `ov-tag-taken`
+  wide rects (`key` `x0.2604–0.3268`, `tag` `x0.1563–0.2526`); no more overlap of the
+  neighbour's art edge (previously `key` `x[0.23,0.37]` covered the tag).
+- **m4** — z1 `cat-cushion` bottom extended `0.77 → 0.81` so the `ov-cushion-reveal` band
+  (watch B on the bench, to `y0.807`) is tappable.
+- **m5** — z3 `great-dial` right edge notched `0.62 → 0.50` so it no longer overlaps the
+  `pendulum` column (art band `x[0.529,0.594]`); the pendulum owns its column unambiguously
+  rather than relying only on smallest-area-wins.
+- **m6/m7 (awareness, unchanged):** the gear frame can hold the same rack value on both posts
+  (the lone-48 `Set` trap still holds) and p03/p04 collapse the pointer beat to one always-
+  correct spot. Both left as documented design/awareness items per the report; not defects.
+
+### M3 (MAJOR) — p09 endgame feedback (pendulum swing + D11 alive-wrong-time)
+`Level2Visuals.dialMechanism(state)` is a pure, order-free descriptor (pendulum swinging /
+full-swing / alive-wrong-time). `Level2Coordinator.updateDialMechanismAnimations()` (called
+from `refresh()` for `.dial`) drives two procedural SpriteKit motions in `RoomScene`
+(`setPendulumSwing`, `setHammerTwitch`):
+- **Pendulum swing (m2):** a procedural rod+bob pivoting over the `ov-pendulum-absent` dark
+  bed — weak amplitude when unwound, fuller once wound. The **only** on-screen confirmation
+  p10 succeeded.
+- **D11 alive-wrong-time (M3):** a soft repeating escapement **tick** (via `SoundManager.play(.tick)`,
+  so it respects the SFX mute) + an occasional single **hammer twitch** over `ov-hammer-absent`
+  that lifts and settles but **never strikes**. Active only while wound AND swinging AND NOT
+  at release; stops the instant the strike latches the door bar or any input drops.
+- **Judgment call:** these are drawn **procedurally** (no bespoke swing/hammer sprite art
+  ships — only the `-absent` dark beds), consistent with L2's mirrored clock hands already
+  being procedural SwiftUI capsules. The other deferred cosmetic animations (cat poses, mouse
+  skitter, mural strike, cat relocation) remain deferred per the approved scope.
+
+### M2 (MAJOR, process) — human-visible test net for L2
+Previously L2 had only engine-unit + asset-staging tests. Added, mirroring the L1 guards:
+- **`EscapeRoomTests/Level2RegistrationTests.swift`** (unit, runs on all 3 device runtimes):
+  registration guard (**every interactive hotspot must intersect the art rect it controls** —
+  the exact M1 invariant), player-style **visual-tap** hit resolution at each element's
+  overlay-rect centre under real smallest-area-wins (direct catcher for M1/m3/m5), overlay
+  **pixel-1:1** vs the @3x wide rect (R7-001 class), completeness, sub-region sanity, and the
+  44 pt hit-target floor on the smallest iPhone.
+- **`Level2Tests.swift`** additions: graph **example-ordering A + B** (pendulum-first)
+  end-to-end engine solves, a **hidden-zone mid-puzzle save/resume** round-trip, the M3
+  dial-mechanism descriptor, the coat-collect regression, and the level-scoped music test.
+- **`EscapeRoomUITests/Level2UITests.swift`** (XCUITest, iPhone SE + iPad): L2 menu/entry,
+  composition guard, z1 pickups tapped at their **visual** scene positions (incl. the coat
+  fix), close-up presentation, navigation arrival, pause round-trip. Wired into
+  `build-and-test.yml` (both UI device steps run the whole scheme; L2 composition also added
+  to the Dynamic-Island safe-area step).
+- **Scope judgment call (flag to Producer):** a **full blind 11-puzzle XCUITest solve is not
+  shipped.** No local Mac + 10× macOS CI cost make a blind full-chrome solve disproportionately
+  fragile to author/iterate. The full human-visible **completability** + **every-element-at-its-
+  visual-position** verification is instead delivered reliably (and on all three device
+  runtimes) by `Level2RegistrationTests` (geometry) + `Level2Tests` example-ordering solves
+  (completability), with `Level2UITests` covering the on-device chrome wiring the unit layer
+  cannot. If QA requires a literal full-chrome XCUITest playthrough, it should be a scoped
+  follow-up.
+
+### Critical completability bug found + fixed while building M2
+The bench **coat** close-up shipped as a **plain image with no pickup path**, so `tile IV`
+(required by p01) and `watch A` were **unobtainable through the real UI** — Level 2 was
+**uncompletable in-app** (engine-only QA missed it; exactly the class M2 exists to catch).
+Fixed by a proper two-pocket collect close-up (`L2CloseUp.coat` → `L2CoatControl`, buttons
+`collect-itm-tile-iv` / `collect-itm-watch-a`), mirroring the existing cache-collect pattern.
+This is a missing-interaction-path fix (Developer scope, like L1 QA-BUG-002/003), **not** a
+puzzle-logic change. Regression: `testCoatCloseUpCollectsWatchAAndTileIV`.
+
+### m1 (MINOR) — screwdriver / oil-can literally never consumed
+`Level2Graph.neverConsumedItems = {itm-screwdriver, itm-oilcan}`; `Level2Lifecycle.hasRemainingUse`
+returns `true` for them regardless of `uses`, so both are retained the whole level per the
+graph nodes' explicit "NEVER consumed" (oil-can "and beyond"). No soft-lock (no use exists
+after their last). Tests flipped to assert **persistence**
+(`testScrewdriverNeverConsumedAfterBothCaches`, `testOilcanNeverConsumedAcrossBothUses`).
+This supersedes the earlier "uses-driven consumption acceptable?" escalation (#1 above) — now
+implemented literally.
+
+### Music — music-level2.wav wired as the level-scoped L2 bed
+`SoundManager.enterLevel(levelID:)` selects `music-level<N>`; L2 now plays **music-level2.wav**
+(was reusing the L1 bed), level-scoped exactly like L1: in-level only, stops on exit +
+level-complete, under the ambiance/music mute, under gameplay volume. Call sites updated
+(`LevelLoadingView` passes the real `levelID`; L2 replay passes 2; L1 passes 1).
+**Licensing:** `music-level2.wav` is **fal.ai-generated, user-owned, commercial-use OK
+(user-confirmed 2026-07-21)** — recorded here per the sound-scope licensing rule.
+Test: `testLevel2MusicIsLevelScopedAndBundled`.
+
+### Security checklist (re-run for this batch)
+- **No dev-time secrets:** `grep` of the source tree + staged bundle for
+  `fal.ai/api-key/secret/bearer/credential/sk-` found only **comment/credits prose** (SettingsView
+  About text; SoundManager licensing comment) — **zero** keys/credentials. `.env` gitignored,
+  never bundled. New escapement audio reuses the existing procedurally-synthesized `sfx-tick`.
+- **Minimal entitlements/permissions:** no camera/mic/location/contacts usage; no
+  `NS*UsageDescription` strings; no capability entitlements added. Info.plist unchanged.
+
+### CI (this batch)
+Run **29826350986** on `build-and-test.yml` (branch `level2-clockmakers-attic`): build **green**;
+unit + UI status per the handoff message. This batch adds `Level2RegistrationTests` +
+`Level2UITests` to the matrix (the L2 UI smoke runs on iPhone SE + iPad; L2 composition also on
+the Dynamic-Island device).
