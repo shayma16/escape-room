@@ -137,7 +137,10 @@ final class Level2UITests: XCTestCase {
 
         // Coat close-up: the FIX — two collectible pockets. Prior build shipped a plain image
         // with no pickup path, so tile IV (needed for p01) was unobtainable in-app.
-        tapScene(app, 0.115, 0.47)                  // coat (far left)
+        // Tap the coat's upper-right portion: the far-left nav-previous chevron (56x88pt hit
+        // area at window x~[8,64], vertically centred) overlays the coat's lower-left on
+        // iPhone-SE, so tap clear of it (higher x, above the chevron's vertical band).
+        tapScene(app, 0.17, 0.32)                   // coat (upper-right of the hotspot)
         XCTAssertTrue(app.descendants(matching: .any)["closeup-dismiss"].waitForExistence(timeout: 5),
                       "tapping the coat must open its close-up")
         XCTAssertTrue(app.descendants(matching: .any)["collect-itm-tile-iv"].waitForExistence(timeout: 5),
