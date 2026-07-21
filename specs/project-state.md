@@ -199,7 +199,11 @@ per-zone user reviews follow each batch.
   Asset-Gen dual-safe re-frame (deterministic reframe tool exists) + Dev hotspot remap,
   as L1 did in build 10. Other residuals: full-chrome L2 UI playthrough deferred
   (completability proven at engine+geometry level); some close-up controls not
-  XCUITest-queryable. (test vs graph incl. the never-
+  XCUITest-queryable.
+  ✅ USER CHOSE FIX (2026-07-21). Asset-Gen L2 iPad dual-safe RE-FRAME dispatched (Opus,
+  deterministic per L1 build-10 — no outpaint; all 7 wides + overlays, per-view transform
+  recorded for Dev remap; coat must land in-band). THEN → Developer hotspot/overlay-rect
+  remap + .aspectFill confirm → re-QA (fast lane) → TestFlight → user iPad spot-check. (test vs graph incl. the never-
   consumed check as an expected finding; hotspot recalibration vs shipped plates;
   alternate-order completability; assess deferred animations) → checkpoint-2 → dev fix
   batch → re-QA → release.
