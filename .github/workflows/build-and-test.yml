@@ -186,6 +186,13 @@ jobs:
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
 
+      # NOTE (M2, Level 2): the iPhone-SE and iPad UI steps above run the WHOLE
+      # EscapeRoomUITests scheme, which now INCLUDES the Level2UITests class (L2 menu/entry/
+      # z1-pickups-incl-coat-fix/close-ups/navigation/pause smoke + L2 composition guard), so
+      # Level 2 gets on-device UI coverage on BOTH the primary iPad and the smallest iPhone.
+      # (The full L2 human-visible geometry + completability net is the unit-level
+      # Level2RegistrationTests + Level2Tests example-ordering solves, which run in all three
+      # unit-test device steps.)
       - name: UI tests - Dynamic Island iPhone (safe-area screenshots)
         run: |
           set -o pipefail
@@ -194,6 +201,7 @@ jobs:
             -scheme EscapeRoomUITests \
             -only-testing:EscapeRoomUITests/EscapeRoomUITests/testMenuAndNavigationSmoke \
             -only-testing:EscapeRoomUITests/EscapeRoomUITests/testSceneContentFillsScreen_QA_B3_001 \
+            -only-testing:EscapeRoomUITests/Level2UITests/testL2SceneContentFillsScreen \
             -destination "platform=iOS Simulator,name=${{ steps.sims.outputs.iphone_di_name }}" \
             -resultBundlePath TestResults/EscapeRoomUITests-iPhoneDI.xcresult \
             CODE_SIGNING_ALLOWED=NO \

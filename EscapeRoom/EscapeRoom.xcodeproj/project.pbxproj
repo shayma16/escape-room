@@ -53,6 +53,8 @@
 		AA50000000000000000000B6 /* Level2RoomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA50000000000000000000A6 /* Level2RoomView.swift */; };
 		AA50000000000000000000B7 /* Level2Tests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA50000000000000000000A7 /* Level2Tests.swift */; };
 		AA50000000000000000000B8 /* Level2AssetStagingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA50000000000000000000A8 /* Level2AssetStagingTests.swift */; };
+		AA50000000000000000000B9 /* Level2RegistrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA50000000000000000000A9 /* Level2RegistrationTests.swift */; };
+		AA30000000000000000000E2 /* Level2UITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA30000000000000000000E1 /* Level2UITests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -106,6 +108,8 @@
 		AA50000000000000000000A6 /* Level2RoomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level2RoomView.swift; sourceTree = "<group>"; };
 		AA50000000000000000000A7 /* Level2Tests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level2Tests.swift; sourceTree = "<group>"; };
 		AA50000000000000000000A8 /* Level2AssetStagingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level2AssetStagingTests.swift; sourceTree = "<group>"; };
+		AA50000000000000000000A9 /* Level2RegistrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level2RegistrationTests.swift; sourceTree = "<group>"; };
+		AA30000000000000000000E1 /* Level2UITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Level2UITests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -158,6 +162,7 @@
 			isa = PBXGroup;
 			children = (
 				AA30000000000000000000D3 /* EscapeRoomUITests.swift */,
+				AA30000000000000000000E1 /* Level2UITests.swift */,
 			);
 			path = EscapeRoomUITests;
 			sourceTree = "<group>";
@@ -239,6 +244,7 @@
 				AB12CD34EF56AB78CD90EF21 /* RenderedFrameOverlayTests.swift */,
 				AA50000000000000000000A7 /* Level2Tests.swift */,
 				AA50000000000000000000A8 /* Level2AssetStagingTests.swift */,
+				AA50000000000000000000A9 /* Level2RegistrationTests.swift */,
 			);
 			path = EscapeRoomTests;
 			sourceTree = "<group>";
@@ -417,6 +423,7 @@
 				AB12CD34EF56AB78CD90EF22 /* RenderedFrameOverlayTests.swift in Sources */,
 				AA50000000000000000000B7 /* Level2Tests.swift in Sources */,
 				AA50000000000000000000B8 /* Level2AssetStagingTests.swift in Sources */,
+				AA50000000000000000000B9 /* Level2RegistrationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -425,6 +432,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AA30000000000000000000D4 /* EscapeRoomUITests.swift in Sources */,
+				AA30000000000000000000E2 /* Level2UITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
