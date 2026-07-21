@@ -149,7 +149,7 @@ final class Level2UITests: XCTestCase {
         tapID(app, "closeup-dismiss")
 
         ensureView(app, "stair-door") { tapID(app, "nav-next") }   // master -> door
-        tapScene(app, 0.66, 0.55)                   // dormer sill -> tile XI
+        tapScene(app, 0.65, 0.53)                   // dormer sill -> tile XI (clear of the cushion top)
         assertHolding(app, "itm-tile-xi")
         shoot(app, "l2-smoke-04-door")
 

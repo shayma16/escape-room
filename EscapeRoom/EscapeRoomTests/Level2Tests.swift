@@ -509,7 +509,10 @@ final class Level2Tests: XCTestCase {
         XCTAssertTrue(r.hasViewedClue(Level2ClueID.returnTag))
         XCTAssertTrue(Level2Visuals.dialMechanism(r).aliveWrongTime, "D11 state survives relaunch")
         // Still completable: correcting the hands from the resumed state latches + wins.
-        r.setL2ClockFrontMinutes(Level2Graph.clockReleaseMinutes)
+        // (setL2ClockFrontMinutes is a plain mutator; the engine's adjustClock re-evaluates
+        // the timelock — mirror that here.)
+        Level2Engine.adjustClock(byDetents: (Level2Graph.clockReleaseMinutes - Level2Graph.clockNaiveTrapMinutes) / 5, state: r)
+        XCTAssertEqual(r.data.l2ClockFrontMinutes, Level2Graph.clockReleaseMinutes)
         XCTAssertTrue(r.hasFlag(Level2Graph.Flag.doorBarRaised))
         XCTAssertTrue(Level2Engine.openStairDoor(state: r))
         XCTAssertTrue(r.isComplete)
