@@ -18,7 +18,13 @@ import UIKit
 /// resolution) and Level2Tests (the graph example-ordering A/B end-to-end solves). This UI
 /// test verifies the on-device chrome wiring the unit layer cannot: real touch hit-testing,
 /// close-up presentation, inventory arming, navigation arrival, and the coat-pocket collect
-/// fix. Both tests are cheap enough to run on every device in the matrix.
+/// fix.
+///
+/// CI device scoping (build-and-test.yml): this class runs on iPhone SE (full smoke +
+/// composition) and Dynamic Island (composition). It is SKIPPED on the iPad UI step, whose
+/// heavy L1 full-solve tests already sit at the runner's simulator-starvation limit — L2's
+/// iPad verification is the fast, reliable unit-level Level2RegistrationTests + Level2Tests,
+/// which run in the iPad UNIT step.
 final class Level2UITests: XCTestCase {
 
     private let sceneSize = CGSize(width: 2732, height: 1366)

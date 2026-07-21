@@ -198,11 +198,17 @@ Previously L2 had only engine-unit + asset-staging tests. Added, mirroring the L
 - **`Level2Tests.swift`** additions: graph **example-ordering A + B** (pendulum-first)
   end-to-end engine solves, a **hidden-zone mid-puzzle save/resume** round-trip, the M3
   dial-mechanism descriptor, the coat-collect regression, and the level-scoped music test.
-- **`EscapeRoomUITests/Level2UITests.swift`** (XCUITest, iPhone SE + iPad): L2 menu/entry,
-  composition guard, z1 pickups tapped at their **visual** scene positions (incl. the coat
-  fix), close-up presentation, navigation arrival, pause round-trip. Wired into
-  `build-and-test.yml` (both UI device steps run the whole scheme; L2 composition also added
-  to the Dynamic-Island safe-area step).
+- **`EscapeRoomUITests/Level2UITests.swift`** (XCUITest): L2 menu/entry, composition guard,
+  z1 pickups tapped at their **visual** scene positions (incl. the coat fix), close-up
+  presentation, navigation arrival, pause round-trip. **CI device scoping** (build-and-test.yml):
+  runs on **iPhone SE** (full L2 smoke + composition) + **Dynamic Island** (L2 composition);
+  the whole `Level2UITests` class is **skipped on the iPad UI step**. The iPad full-solve L1
+  UI tests already sit at the CI runner's capacity (documented simulator-starvation flakiness —
+  across three iPad runs of this batch, three *different* L1 tests flaked: the save-resume
+  terminate flake, then the chrome-snapshot UI-query timeout — while `testL2SceneContentFillsScreen`
+  passed on iPad every time). Adding L2 UI to that marginal step only worsens it, so L2's iPad
+  coverage is the fast, reliable **unit-level** `Level2RegistrationTests` + `Level2Tests`
+  (geometry + example-ordering completability), which run in the iPad UNIT step.
 - **Scope judgment call (flag to Producer):** a **full blind 11-puzzle XCUITest solve is not
   shipped.** No local Mac + 10× macOS CI cost make a blind full-chrome solve disproportionately
   fragile to author/iterate. The full human-visible **completability** + **every-element-at-its-

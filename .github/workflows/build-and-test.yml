@@ -182,18 +182,21 @@ jobs:
             -destination "platform=iOS Simulator,name=${{ steps.sims.outputs.ipad_name }}" \
             -skip-testing:EscapeRoomUITests/EscapeRoomUITests/testR6009_pokerSurvivesBarrelBeforeAsh \
             -skip-testing:EscapeRoomUITests/EscapeRoomUITests/testR6009_pokerSurvivesAstrolabeFirst \
-            -skip-testing:EscapeRoomUITests/Level2UITests/testL2Z1PickupsCloseUpsAndNavigationSmoke \
+            -skip-testing:EscapeRoomUITests/Level2UITests \
             -resultBundlePath TestResults/EscapeRoomUITests-iPad.xcresult \
             CODE_SIGNING_ALLOWED=NO \
             | xcpretty
 
-      # NOTE (M2, Level 2): the iPhone-SE and iPad UI steps above run the WHOLE
-      # EscapeRoomUITests scheme, which now INCLUDES the Level2UITests class (L2 menu/entry/
-      # z1-pickups-incl-coat-fix/close-ups/navigation/pause smoke + L2 composition guard), so
-      # Level 2 gets on-device UI coverage on BOTH the primary iPad and the smallest iPhone.
-      # (The full L2 human-visible geometry + completability net is the unit-level
-      # Level2RegistrationTests + Level2Tests example-ordering solves, which run in all three
-      # unit-test device steps.)
+      # NOTE (M2, Level 2): the iPhone-SE UI step runs the WHOLE EscapeRoomUITests scheme
+      # including the Level2UITests class (L2 menu/entry/z1-pickups-incl-coat-fix/close-ups/
+      # navigation/pause smoke + L2 composition guard); the Dynamic-Island step also runs the
+      # L2 composition guard. The iPad UI step SKIPS Level2UITests: the iPad full-solve L1
+      # tests already sit at the runner's capacity (documented simulator-starvation UI-query/
+      # terminate flakiness — testChromeFullyOnScreen / testSaveResumeMidPlaythrough flaked on
+      # different runs), so adding L2 UI there only worsens the marginal iPad step; L2's iPad
+      # coverage is the fast, reliable unit-level Level2RegistrationTests + Level2Tests (geometry
+      # + example-ordering completability), which run in the iPad UNIT step. L2 UI on-device
+      # chrome is covered on iPhone SE + Dynamic Island.
       - name: UI tests - Dynamic Island iPhone (safe-area screenshots)
         run: |
           set -o pipefail
