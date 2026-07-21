@@ -133,6 +133,31 @@ enum Level2Visuals {
         s.data.l2GearPostA == gearValue || s.data.l2GearPostB == gearValue
     }
 
+    // MARK: - z3 dial mechanism motion (M3: pendulum swing + D11 alive-wrong-time ambient)
+
+    /// Pure, order-free descriptor of what the z3 v-dial mechanism should be DOING, derived
+    /// entirely from latched flags (never event order) — the presentation analogue of the
+    /// engine's timelock inputs. The coordinator turns this into SpriteKit motion + audio.
+    ///
+    /// - `pendulumSwinging`: p10 pushed. The ONLY on-screen confirmation p10 succeeded (m2).
+    /// - `pendulumFullSwing`: wound (fuller amplitude) vs weak swing when unwound (graph
+    ///   "weakly if unwound, fully once wound").
+    /// - `aliveWrongTime`: D11 — wound AND swinging AND NOT at release. Drives the soft
+    ///   escapement-tick loop + occasional hammer twitch (M3). Stops the instant the strike
+    ///   fires (door-bar latched) or any input drops. Never new state.
+    struct DialMechanism: Equatable {
+        let pendulumSwinging: Bool
+        let pendulumFullSwing: Bool
+        let aliveWrongTime: Bool
+    }
+
+    static func dialMechanism(_ s: GameState) -> DialMechanism {
+        DialMechanism(
+            pendulumSwinging: s.hasFlag(Level2Graph.Flag.pendulumRunning),
+            pendulumFullSwing: s.hasFlag(Level2Graph.Flag.clockWound),
+            aliveWrongTime: Level2Engine.isAliveWrongTime(s))
+    }
+
     // MARK: - Base texture
 
     static func baseTexture(_ view: L2ViewID, _ s: GameState) -> String {

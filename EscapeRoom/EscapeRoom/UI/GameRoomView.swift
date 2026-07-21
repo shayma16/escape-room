@@ -128,8 +128,8 @@ struct GameRoomView: View {
                     },
                     onReplay: {
                         session.restartLevel()
-                        // R3-001: re-open the level-music scope and restart the bed.
-                        SoundManager.shared.enterLevel()
+                        // R3-001: re-open the level-music scope and restart the bed (L1).
+                        SoundManager.shared.enterLevel(levelID: 1)
                     }
                 )
             }

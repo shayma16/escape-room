@@ -261,6 +261,112 @@ final class RoomScene: SKScene {
         }
     }
 
+    // MARK: - Procedural mechanism animations (level-agnostic; used by L2 z3 for the
+    // pendulum swing (m2) + D11 alive-wrong-time hammer twitch / escapement tick (M3)).
+    //
+    // These are drawn PROCEDURALLY (SKShapeNode rod + bob), consistent with L2's other
+    // moving parts being rendered procedurally (the mirrored clock hands are SwiftUI
+    // capsules) rather than from bespoke sprite art. The `ov-pendulum-absent` /
+    // `ov-hammer-absent` dark-background overlays (composited by the coordinator) hide the
+    // at-rest part on the base plate so the swinging node never ghosts against it.
+
+    private var procNodes: [String: SKNode] = [:]
+    /// Cache of the params each proc node was last built with, so an unrelated state refresh
+    /// (e.g. cranking the clock during D11) does NOT restart the animation from a jump.
+    private var procParams: [String: String] = [:]
+
+    private func removeProc(_ key: String) {
+        procNodes[key]?.removeAllActions()
+        procNodes[key]?.removeFromParent()
+        procNodes[key] = nil
+        procParams[key] = nil
+    }
+
+    private func scenePoint(nx: CGFloat, ny: CGFloat) -> CGPoint {
+        CGPoint(x: -size.width / 2 + nx * size.width, y: size.height / 2 - ny * size.height)
+    }
+
+    /// A pendulum pivoting at the TOP-CENTER of `rect`, a rod down to a brass bob, oscillating
+    /// ±`amplitudeDegrees` with `period` seconds per full swing. active=false removes it.
+    func setPendulumSwing(active: Bool, rect: CGRect, amplitudeDegrees: CGFloat,
+                          period: TimeInterval, zPosition: CGFloat = 20) {
+        let key = "proc:pendulum"
+        guard active, rect != .zero else { removeProc(key); return }
+        let params = "\(rect)|\(amplitudeDegrees)|\(period)"
+        let pivot = scenePoint(nx: rect.midX, ny: rect.minY)
+        if procNodes[key] != nil, procParams[key] == params {
+            procNodes[key]?.position = pivot   // keep the running swing; just re-affirm placement
+            return
+        }
+        removeProc(key)
+        let rodLen = rect.height * size.height * 0.9
+        let rodW = max(rect.width * size.width * 0.10, 5)
+        let bobR = max(rect.width * size.width * 0.42, 9)
+        let node = SKNode()
+        node.name = "l2-pendulum"
+        let rod = SKShapeNode(rectOf: CGSize(width: rodW, height: rodLen))
+        rod.fillColor = SKColor(white: 0.14, alpha: 1); rod.strokeColor = .clear
+        rod.position = CGPoint(x: 0, y: -rodLen / 2)
+        node.addChild(rod)
+        let bob = SKShapeNode(circleOfRadius: bobR)
+        bob.fillColor = SKColor(red: 0.70, green: 0.58, blue: 0.30, alpha: 1)
+        bob.strokeColor = SKColor(white: 0.08, alpha: 1); bob.lineWidth = 2
+        bob.position = CGPoint(x: 0, y: -rodLen)
+        node.addChild(bob)
+        node.position = pivot
+        node.zPosition = zPosition
+        let amp = amplitudeDegrees * .pi / 180
+        node.zRotation = amp
+        let half = period / 2
+        let toNeg = SKAction.rotate(toAngle: -amp, duration: half, shortestUnitArc: true)
+        toNeg.timingMode = .easeInEaseOut
+        let toPos = SKAction.rotate(toAngle: amp, duration: half, shortestUnitArc: true)
+        toPos.timingMode = .easeInEaseOut
+        node.run(.repeatForever(.sequence([toNeg, toPos])))
+        addChild(node)
+        procNodes[key] = node
+        procParams[key] = params
+    }
+
+    /// D11 hammer twitch + escapement tick: a small dark hammer node at `rect` that
+    /// occasionally lifts a few degrees and settles (NEVER strikes), and a soft repeating
+    /// audio pulse via `onTick`. active=false removes it and stops the pulse.
+    func setHammerTwitch(active: Bool, rect: CGRect, onTick: (() -> Void)?, zPosition: CGFloat = 20) {
+        let key = "proc:hammer"
+        guard active, rect != .zero else { removeProc(key); removeProc("proc:tick"); return }
+        let params = "\(rect)"
+        if procNodes[key] != nil, procParams[key] == params { return }   // already twitching
+        removeProc(key); removeProc("proc:tick")
+        let container = SKNode()
+        container.name = "l2-hammer"
+        // Pivot at the RIGHT end of the rect (the hammer arm hinges there and lifts its head).
+        let pivot = scenePoint(nx: rect.maxX, ny: rect.midY)
+        let armLen = rect.width * size.width
+        let armH = max(rect.height * size.height * 0.5, 6)
+        let arm = SKShapeNode(rectOf: CGSize(width: armLen, height: armH))
+        arm.fillColor = SKColor(white: 0.12, alpha: 1); arm.strokeColor = .clear
+        arm.position = CGPoint(x: -armLen / 2, y: 0)
+        container.addChild(arm)
+        container.position = pivot
+        container.zPosition = zPosition
+        addChild(container)
+        procNodes[key] = container
+        procParams[key] = params
+        // Occasional single twitch: lift ~7deg, hold, settle — never completes a strike.
+        let up = SKAction.rotate(toAngle: -0.12, duration: 0.09); up.timingMode = .easeOut
+        let settle = SKAction.rotate(toAngle: 0, duration: 0.22); settle.timingMode = .easeIn
+        let twitch = SKAction.sequence([up, .wait(forDuration: 0.08), settle])
+        container.run(.repeatForever(.sequence([.wait(forDuration: 2.6), twitch])))
+        // Soft escapement tick loop (respects the SFX mute each call via SoundManager).
+        if let onTick {
+            let tickNode = SKNode()
+            tickNode.name = "l2-escapement-tick"
+            tickNode.run(.repeatForever(.sequence([.wait(forDuration: 0.92), .run { onTick() }])))
+            addChild(tickNode)
+            procNodes["proc:tick"] = tickNode
+        }
+    }
+
     // MARK: - Touch handling (tap-based)
 
     #if canImport(UIKit)

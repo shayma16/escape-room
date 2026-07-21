@@ -134,7 +134,7 @@ struct Level2RoomView: View {
             if gameState.isComplete {
                 L2CompleteOverlay(
                     onMainMenu: { SoundManager.shared.exitLevel(); navigator.popToRoot() },
-                    onReplay: { session.restartLevel(); SoundManager.shared.enterLevel() })
+                    onReplay: { session.restartLevel(); SoundManager.shared.enterLevel(levelID: 2) })
             }
             if showPause {
                 PauseMenuView(onRestart: { session.restartLevel() }, isPresented: $showPause)
@@ -276,7 +276,47 @@ private struct L2CloseUpHost: View {
         case .dormerCache: L2CacheControl(coordinator: coordinator, state: coordinator.state, kind: .dormer, interaction: interaction)
         case .chimneyCache: L2CacheControl(coordinator: coordinator, state: coordinator.state, kind: .chimney, interaction: interaction)
         case .catCushion: L2CatCushionView(coordinator: coordinator)
+        case .coat: L2CoatControl(coordinator: coordinator, state: coordinator.state)
         }
+    }
+}
+
+// MARK: bench coat (two-pocket manual pickups: watch A + tile IV)
+
+private struct L2CoatControl: View {
+    @ObservedObject var coordinator: Level2Coordinator
+    @ObservedObject var state: GameState
+
+    // Pocket rects normalized to the 2048x1536 cu-coat-pockets plate (from the ov-coat-*
+    // overlay data): tile IV in the left pocket, watch A in the right pocket.
+    private static let tileRect = CGRect(x: 430/2048.0, y: 430/1536.0, width: 540/2048.0, height: 450/1536.0)
+    private static let watchRect = CGRect(x: 1040/2048.0, y: 370/1536.0, width: 540/2048.0, height: 770/1536.0)
+
+    var body: some View {
+        GeometryReader { geo in
+            let plate = fitRect(in: geo.size, aspect: 2048.0/1536.0)
+            ZStack {
+                GameImage(name: "cu-coat-pockets").aspectRatio(contentMode: .fit)
+                if !Level2Visuals.tileIVTaken(state) {
+                    pocketButton(Self.tileRect, plate: plate, id: "collect-itm-tile-iv") {
+                        coordinator.collectCoatTileIV()
+                    }
+                }
+                if !Level2Visuals.watchATaken(state) {
+                    pocketButton(Self.watchRect, plate: plate, id: "collect-itm-watch-a") {
+                        coordinator.collectCoatWatchA()
+                    }
+                }
+            }
+        }
+        .padding(24)
+    }
+
+    private func pocketButton(_ r: CGRect, plate: CGRect, id: String, action: @escaping () -> Void) -> some View {
+        Button(action: action) { Color.clear.contentShape(Rectangle()) }
+            .frame(width: r.width * plate.width, height: r.height * plate.height)
+            .position(x: plate.minX + r.midX * plate.width, y: plate.minY + r.midY * plate.height)
+            .accessibilityIdentifier(id)
     }
 }
 

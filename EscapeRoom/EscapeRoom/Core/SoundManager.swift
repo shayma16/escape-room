@@ -73,8 +73,11 @@ final class SoundManager {
     /// Background music: present but unobtrusive, sits under gameplay (F-002 "quieter
     /// scene" direction still applies).
     private let musicVolume: Float = 0.22
-    /// The user-provided level background music (fal.ai-generated, user-owned).
-    private let musicResource = "music-level1"
+    /// The user-provided level background music (fal.ai-generated, user-owned), LEVEL-SCOPED:
+    /// `enterLevel(levelID:)` selects `music-level<N>.wav` so each level ships its own bed
+    /// (L1 = music-level1, L2 = music-level2). Same in-level-only / stop-on-exit lifecycle as
+    /// the L1 bed (R3-001). Defaults to level 1 until the first `enterLevel` call.
+    private var musicResource = "music-level1"
 
     #if DEBUG
     /// Test seam: every play() call is recorded so unit tests can assert silence on
@@ -84,6 +87,8 @@ final class SoundManager {
     /// Test seams for the level-music lifecycle assertions (R3-001 / R4-002).
     var isMusicActive: Bool { musicPlayer != nil }
     var debugInLevel: Bool { inLevel }
+    /// The currently-selected level-scoped bed resource (music-level<N>).
+    var debugMusicResource: String { musicResource }
     #endif
 
     // MARK: - R3-001 level-music lifecycle (music is scoped to the level scene)
@@ -91,7 +96,12 @@ final class SoundManager {
     /// Called when a Level scene appears (LevelLoadingView). Marks the level active so
     /// music may play, then starts it. Idempotent. Build 10 (R4-002): this is the ONLY
     /// level-entry audio — no entry swell, no ambient bed.
-    func enterLevel() {
+    func enterLevel(levelID: Int = 1) {
+        let resource = "music-level\(levelID)"
+        // Switching levels mid-session (or replaying a different bed): tear down the old
+        // player so startMusicIfNeeded picks up the new resource cleanly.
+        if resource != musicResource { stopMusic() }
+        musicResource = resource
         inLevel = true
         startMusicIfNeeded()
     }

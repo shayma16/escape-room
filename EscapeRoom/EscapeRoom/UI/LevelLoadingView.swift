@@ -31,7 +31,7 @@ struct LevelLoadingView: View {
             let dipDuration = reduceMotion ? 0.3 : 0.7
             DispatchQueue.main.asyncAfter(deadline: .now() + dipDuration + 0.15) {
                 withAnimation(.easeIn(duration: dipDuration)) { opacity = 1 }
-                SoundManager.shared.enterLevel()
+                SoundManager.shared.enterLevel(levelID: levelID)
             }
         }
     }
