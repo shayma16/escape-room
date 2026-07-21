@@ -224,7 +224,12 @@ per-zone user reviews follow each batch.
   ▶ FULL-LANE pre-release regression DISPATCHED 2026-07-21 (run 29861667813, ~75m: L1
   iPad playthrough [continue-on-error] + L1/L2 iPhone-SE + DI). On green → build TestFlight
   → user iPad spot-check (checkpoint) → merge to main + release. Non-blocking residuals:
-  drum clip, vault shelf slight right-edge (cosmetic). (test vs graph incl. the never-
+  drum clip, vault shelf slight right-edge (cosmetic).
+  ✅ USER AUTHORIZED TESTFLIGHT 2026-07-21 ("go ahead"). Release Manager dispatched (Opus):
+  gates on full-lane run 29861667813 green → release.yml archive/sign/stamp/scan/upload,
+  build 15 (increment from build 14), from the BRANCH (NOT merged to main). Watch the
+  recurring cert-cap issue. NEXT: TestFlight build → user iPad device spot-check
+  (checkpoint) → on GO merge level2-clockmakers-attic → main + release. (test vs graph incl. the never-
   consumed check as an expected finding; hotspot recalibration vs shipped plates;
   alternate-order completability; assess deferred animations) → checkpoint-2 → dev fix
   batch → re-QA → release.
