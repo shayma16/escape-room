@@ -99,6 +99,23 @@ final class Level2RegistrationTests: XCTestCase {
         (.vault, "tag-nail", "ov-tag-taken"),
     ]
 
+    // Inspect/look hotspots that have NO state overlay to anchor to (their pickups/reveals
+    // happen inside a close-up, not via a wide overlay). Their element ART position on the wide
+    // plate was measured from the SHIPPED base plates (see _reframe-work evidence sheets). Each
+    // hotspot MUST (a) sit on that art and (b) be reachable INSIDE the iPad dual-safe band — the
+    // exact class that shipped stale off-band rects and made L2 uncompletable on iPad (the coat
+    // close-up, needed for p01 tile IV, could not be opened). Reverting any of these to its old
+    // off-art rect makes the tap-at-art-center check below fail loudly.
+    private static let inspectArtRects: [(L2ViewID, String, CGRect)] = [
+        (.bench, "coat", CGRect(x: 0.68, y: 0.21, width: 0.13, height: 0.46)),
+        (.bench, "barometer", CGRect(x: 0.28, y: 0.05, width: 0.10, height: 0.18)),
+        (.master, "master-clock", CGRect(x: 0.31, y: 0.15, width: 0.15, height: 0.73)),
+        (.door, "house-ring", CGRect(x: 0.45, y: 0.32, width: 0.10, height: 0.16)),
+        (.clockrow, "clockrow", CGRect(x: 0.18, y: 0.16, width: 0.64, height: 0.42)),
+        (.clockrow, "display-case", CGRect(x: 0.17, y: 0.62, width: 0.30, height: 0.30)),
+        (.vault, "vault-exit", CGRect(x: 0.30, y: 0.15, width: 0.18, height: 0.70)),
+    ]
+
     // MARK: - Completeness
 
     func testL2EveryRequiredWideOverlayResolvesToARect() {
@@ -197,6 +214,42 @@ final class Level2RegistrationTests: XCTestCase {
         }
         XCTAssertTrue(misses.isEmpty,
             "player-style L2 taps missed the visible element (hotspot geometry drift):\n" + misses.joined(separator: "\n"))
+    }
+
+    // MARK: - Overlay-less inspect hotspots sit on their ART and are iPad-reachable (R-REANCHOR)
+
+    /// Registration for the inspect hotspots that have no overlay to key on: each hotspot must
+    /// intersect the measured element ART, a tap at the art center must resolve to that hotspot
+    /// under the real smallest-area-wins hit test, and the art center must fall inside the iPad
+    /// dual-safe band. This is the guard that catches the "L2 uncompletable on iPad" class for
+    /// look/collect hotspots (the coat/p01 blocker), mirroring the overlay-backed M1 invariant.
+    func testL2InspectHotspotsSitOnArtAndAreIPadReachable() {
+        var offenders: [String] = []
+        for (view, hotspotID, art) in Self.inspectArtRects {
+            let coord = coordinator(view)
+            guard let hs = coord.scene.hotspots.first(where: { $0.id == hotspotID }) else {
+                offenders.append("\(view.rawValue)/\(hotspotID): hotspot not configured"); continue
+            }
+            if !hs.normalizedRect.intersects(art) {
+                offenders.append("\(view.rawValue)/\(hotspotID) hs=\(rectStr(hs.normalizedRect)) "
+                    + "does NOT overlap its art \(rectStr(art))")
+            }
+            let hit = coord.scene.hotspotIDAtNormalized(art.midX, art.midY)
+            if hit != hotspotID {
+                offenders.append("\(view.rawValue): tap at \(hotspotID) art center (\(f(art.midX)),\(f(art.midY))) "
+                    + "hit '\(hit ?? "nil")'")
+            }
+            let inX = Reframe.dualSafeX.contains(art.midX)
+            let inY = Reframe.dualSafeY.contains(art.midY)
+            if !(inX && inY) {
+                offenders.append("\(view.rawValue)/\(hotspotID) art center (\(f(art.midX)),\(f(art.midY))) "
+                    + "is OUTSIDE the iPad dual-safe band x\(Reframe.dualSafeX) y\(Reframe.dualSafeY) "
+                    + "(would be uncroppable/untappable on iPad)")
+            }
+        }
+        XCTAssertTrue(offenders.isEmpty,
+            "L2 inspect hotspot off its art or off the iPad band (R-REANCHOR / iPad-uncompletable class):\n"
+            + offenders.joined(separator: "\n"))
     }
 
     // MARK: - 44pt hit-target floor on the smallest iPhone (BUG-009 class)

@@ -270,6 +270,64 @@ Test: `testLevel2MusicIsLevelScopedAndBundled`.
    level. A literal full L2 XCUITest solve, if required, is a scoped follow-up (and is blocked
    on item 1 for the iPad half).
 
+### R-REANCHOR (MAJOR) — "L2 uncompletable on iPad" root cause fixed (2026-07-21)
+
+The Asset-Gen re-frame proposed in "Residual item 1" above was **CANCELLED**: a diagnostic
+reversed the premise. The wide PLATES are correctly framed — every puzzle-critical element's
+ART sits inside the iPad dual-safe band (x∈[0.167,0.833]) on 6 of 7 views. The real cause was
+a batch of **stale/"estimated" inspect hotspots that pointed at empty space OUTSIDE the band
+while the art was elsewhere IN-band.** The coat hotspot was x[0.03,0.20] (off the iPad left
+edge) but the pocketed-coat ART hangs on the RIGHT at x≈[0.68,0.80] — so p01's coat close-up
+(tile IV + watch A) could never be opened on iPad. No art changed; only the Swift hotspot
+rects were re-anchored to the shipped-plate art (evidence sheets:
+`specs/assets/level-2/_reframe-work/evidence-*.png`).
+
+Re-anchor table (old rect → new rect, anchored-to; all measured from the shipped
+`Resources/GameAssets/level-2/` base plates):
+
+| view | hotspot | old (x,y,w,h) | new (x,y,w,h) | anchored to |
+|------|---------|---------------|---------------|-------------|
+| bench | **coat** | 0.03,0.26,0.17,0.42 | 0.68,0.21,0.13,0.46 | pocketed coat on right hook (p01 blocker) |
+| bench | barometer | 0.80,0.18,0.15,0.26 | 0.28,0.05,0.10,0.18 | round gauge, top-center |
+| master | master-clock | 0.06,0.08,0.22,0.74 | 0.31,0.15,0.15,0.73 | longcase clock, center-left |
+| door | house-ring | 0.52,0.28,0.12,0.16 | 0.45,0.32,0.10,0.16 | ring glyph on central post (narrowly missed before) |
+| clockrow | clockrow | 0.06,0.26,0.48,0.34 | 0.18,0.16,0.64,0.42 | four world-clocks span |
+| clockrow | display-case | 0.76,0.28,0.20,0.38 | 0.17,0.62,0.30,0.30 | glass case, bottom-left |
+| vault | vault-exit | 0.85,0.20,0.13,0.60 | 0.30,0.15,0.18,0.70 | exit stairs, center |
+
+All new rect **centers are inside the iPad dual-safe band** (coat 0.745, barometer 0.33,
+master-clock 0.385, house-ring 0.50, clockrow 0.50, display-case 0.32, vault-exit 0.39 — all
+in x[0.167,0.833], y[0.038,0.962]). **house-ring** was an audit catch beyond the named list:
+its old rect started just RIGHT of the glyph and missed it. Every other "estimated"/overlay-
+anchored hotspot was audited against its evidence sheet and left as-is — the overlay-backed
+set (screwdriver, stove, crate, sill, door-dial, bar, arbor, gear-rack, brick, panel, cabinet,
+drum, hatch, key-hook, tag-nail) already matches, and `slate`, `shelf`, `gear-frame`,
+`great-dial`, `stair-door`, `cat-cushion`/`cat-floor`, `pendulum` already intersect their art
+in-band.
+
+**z3 winding drum (Producer decision, option a):** the drum BODY reads ~left-cropped on iPad,
+but its interactive square SOCKET (key-in point) is centered ~x0.198 — in-band and tappable —
+and the existing `drum` hotspot x[0.08,0.26] already covers it. Per the decision we ACCEPT the
+cosmetic left-crop of the drum body and do NOT re-frame/shrink the hero great-dial. The drum
+hotspot was left unchanged. **Flagged for the user's device spot-check: the drum reads slightly
+clipped on iPad.**
+
+**Registration-guard coverage:** the overlay-backed hotspots were already covered by the M2
+`Level2RegistrationTests` overlay↔hotspot registration + visual-tap guards. The seven re-
+anchored inspect hotspots have NO state overlay to key on, so a new guard,
+`testL2InspectHotspotsSitOnArtAndAreIPadReachable`, was added: for each it asserts (a) the
+hotspot intersects the measured element ART, (b) a tap at the art center resolves to that
+hotspot under the real smallest-area-wins hit test, and (c) the art center falls inside
+`Reframe.dualSafeX`/`dualSafeY`. Reverting any hotspot to its old off-band rect fails (b)+(c)
+loudly. This closes the gap that let a look/collect hotspot drift off its art unnoticed.
+
+**Coat/p01 path now reachable on iPad:** the `coat` hotspot center is x0.745 (in-band), so
+tapping the visible coat opens `L2CloseUp.coat`, whose two-pocket collect UI yields tile IV
+(feeds the p01 dial) and watch A — the p01 solve path is reachable within the iPad-visible band.
+
+_Supersedes Residual item 1; the Asset-Gen re-frame is no longer needed. Item 2 (full-chrome
+XCUITest playthrough) is no longer blocked on an iPad re-frame._
+
 ### CI — two-lane split (user-approved efficiency change, 2026-07-21)
 `build-and-test.yml` is now split into two jobs:
 - **FAST lane** (`fast-lane`, ~15-20 min) — runs on **every push (any branch)** + every

@@ -136,8 +136,12 @@ final class Level2Coordinator: ObservableObject {
         }
     }
 
-    // MARK: - Hotspots (normalized to the wide plate; anchored on overlay rects where known,
-    // otherwise estimated — flagged for QA hit-target recalibration, the L1 R3-005 process).
+    // MARK: - Hotspots (normalized to the wide plate). Overlay-backed hotspots are anchored on
+    // their state-overlay wide_rect; inspect/look hotspots (no overlay) are anchored on the
+    // element's ART measured from the SHIPPED base plate. The R-REANCHOR entries below fixed a
+    // batch of stale "estimated" rects that pointed at empty space OUTSIDE the iPad dual-safe
+    // band while the art was elsewhere in-band (the "L2 uncompletable on iPad" bug). The
+    // Level2RegistrationTests art-rect + iPad-band guards lock every one of these on its art.
 
     private func hotspots(for view: L2ViewID) -> [Hotspot] {
         switch view {
@@ -145,20 +149,32 @@ final class Level2Coordinator: ObservableObject {
             return [
                 Hotspot(id: "screwdriver", 0.255, 0.229, 0.094, 0.349),
                 Hotspot(id: "stove", 0.63, 0.70, 0.18, 0.16),
-                Hotspot(id: "coat", 0.03, 0.26, 0.17, 0.42),
+                // R-REANCHOR (L2 iPad-uncompletable fix): the pocketed coat ART hangs on the
+                // RIGHT hook (x≈[0.68,0.80], in the iPad dual-safe band), NOT far-left. The old
+                // x[0.03,0.20] rect sat off the iPad edge over an empty beam, so p01's coat
+                // close-up (tile IV + watch A pickups) could never be opened on iPad — the
+                // literal blocker. Anchored on the visible garment from the shipped bench plate.
+                Hotspot(id: "coat", 0.68, 0.21, 0.13, 0.46),
                 Hotspot(id: "slate", 0.35, 0.28, 0.22, 0.32),
-                Hotspot(id: "barometer", 0.80, 0.18, 0.15, 0.26),
+                // R-REANCHOR: the round barometer gauge ART sits top-CENTER (x≈[0.28,0.38]),
+                // not top-right; old x[0.80,0.95] fell outside the iPad band over empty rafter.
+                Hotspot(id: "barometer", 0.28, 0.05, 0.10, 0.18),
             ]
         case .master:
             return [
-                Hotspot(id: "master-clock", 0.06, 0.08, 0.22, 0.74),
+                // R-REANCHOR: the longcase (grandfather) clock ART stands center-left
+                // (x≈[0.31,0.46]); old x[0.06,0.28] pointed at the sloped-ceiling beam, off-art.
+                Hotspot(id: "master-clock", 0.31, 0.15, 0.15, 0.73),
                 Hotspot(id: "door-dial", 0.52, 0.16, 0.26, 0.60),
                 Hotspot(id: "crate", 0.66, 0.78, 0.16, 0.20),
             ]
         case .door:
             return [
                 Hotspot(id: "stair-door", 0.14, 0.30, 0.30, 0.46),
-                Hotspot(id: "house-ring", 0.52, 0.28, 0.12, 0.16),
+                // R-REANCHOR: the house/ring symbol ART is engraved on the central post at
+                // x≈[0.46,0.55]; old x[0.52,0.64] started just RIGHT of it and narrowly missed
+                // the glyph (an "estimated, no overlay anchor" hotspot off its art).
+                Hotspot(id: "house-ring", 0.45, 0.32, 0.10, 0.16),
                 Hotspot(id: "sill", 0.60, 0.46, 0.12, 0.18),
                 // m4: extended bottom 0.77 -> 0.81 so the ov-cushion-reveal band (watch B on
                 // the bench, y up to 0.807) is fully tappable.
@@ -182,9 +198,13 @@ final class Level2Coordinator: ObservableObject {
             ]
         case .clockrow:
             return [
-                Hotspot(id: "clockrow", 0.06, 0.26, 0.48, 0.34),
+                // R-REANCHOR: the four world-clocks span x≈[0.18,0.82]; old x[0.06,0.54] began
+                // in the dark left margin and missed the two right-hand clocks.
+                Hotspot(id: "clockrow", 0.18, 0.16, 0.64, 0.42),
                 Hotspot(id: "cabinet", 0.58, 0.66, 0.18, 0.24),
-                Hotspot(id: "display-case", 0.76, 0.28, 0.20, 0.38),
+                // R-REANCHOR: the glass display case ART sits bottom-LEFT (x≈[0.17,0.47]); old
+                // x[0.76,0.96] pointed at the right drawer-cabinet/wall edge, off the iPad band.
+                Hotspot(id: "display-case", 0.17, 0.62, 0.30, 0.30),
             ]
         case .dial:
             return [
@@ -204,7 +224,10 @@ final class Level2Coordinator: ObservableObject {
                 Hotspot(id: "key-hook", 0.2604, 0.2161, 0.0664, 0.2839),
                 Hotspot(id: "tag-nail", 0.1563, 0.2214, 0.0964, 0.2839),
                 Hotspot(id: "shelf", 0.54, 0.28, 0.32, 0.42),
-                Hotspot(id: "vault-exit", 0.85, 0.20, 0.13, 0.60),
+                // R-REANCHOR: the exit STAIRS ART climbs the center (x≈[0.30,0.48]); old
+                // x[0.85,0.98] fell outside the iPad band over the dark right wall — the vault
+                // exit could not be tapped on iPad.
+                Hotspot(id: "vault-exit", 0.30, 0.15, 0.18, 0.70),
             ]
         }
     }
