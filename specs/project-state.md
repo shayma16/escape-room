@@ -229,7 +229,17 @@ per-zone user reviews follow each batch.
   gates on full-lane run 29861667813 green → release.yml archive/sign/stamp/scan/upload,
   build 15 (increment from build 14), from the BRANCH (NOT merged to main). Watch the
   recurring cert-cap issue. NEXT: TestFlight build → user iPad device spot-check
-  (checkpoint) → on GO merge level2-clockmakers-attic → main + release. (test vs graph incl. the never-
+  (checkpoint) → on GO merge level2-clockmakers-attic → main + release.
+  🔴 RELEASE GATE RED 2026-07-22 — Release Manager correctly BLOCKED (nothing shipped, no
+  secrets touched). Full-lane run 29861667813 FAILED on the HARD-gated iPhone-SE UI step:
+  Level2UITests testL2Z1...Smoke (line 150) — tapScene(0.17,0.32) for the coat didn't open
+  the close-up. LIKELY a STALE TEST COORD (re-anchor 203036a moved the coat hotspot
+  0.17→0.74; the UI-test tap still uses 0.17; registration guard passed = game logic
+  likely fine). Developer dispatched to VERIFY (game-fix vs test-fix), fix all L2 UI-test
+  taps to follow the re-anchored hotspots, COUPLE UI-test taps to the hotspot rects (single
+  source of truth so re-anchors can't desync tests again), and get full-lane GREEN on
+  iPhone-SE + DI (DI never ran — aborted after SE fail). THEN Release Manager builds 15.
+  Note: gate did its job — caught a red before user's device saw it. (test vs graph incl. the never-
   consumed check as an expected finding; hotspot recalibration vs shipped plates;
   alternate-order completability; assess deferred animations) → checkpoint-2 → dev fix
   batch → re-QA → release.
