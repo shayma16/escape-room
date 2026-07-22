@@ -248,7 +248,11 @@ per-zone user reviews follow each batch.
   bwu8xfnqi). ✅ FULL-LANE GREEN 2026-07-22 (run 29867897724 — success; ALL steps incl.
   iPhone-SE + iPad + DI on-device UI playthroughs passed). Release Manager DISPATCHED to
   build TestFlight build 15 (from branch, NOT merged; watch cert-cap; stamp CFBundleVersion
-  15). NEXT: TestFlight build 15 → user iPad spot-check → on GO merge → main + release. (test vs graph incl. the never-
+  15). ✅ BUILD 15 SHIPPED TO TESTFLIGHT 2026-07-22 (release run 29883003728 success; no
+  cert-cap; CFBundleVersion 15 verified 3 ways incl. shipped .ipa; security re-check on
+  the .ipa PASS). "Within" 1.0 (15) processing on ASC → Ready to Test. ⛔ AWAITING USER
+  iPad DEVICE SPOT-CHECK (checklist relayed). ON USER GO → merge level2-clockmakers-attic
+  → main + final release; do NOT merge before that. (test vs graph incl. the never-
   consumed check as an expected finding; hotspot recalibration vs shipped plates;
   alternate-order completability; assess deferred animations) → checkpoint-2 → dev fix
   batch → re-QA → release.
