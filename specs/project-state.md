@@ -252,7 +252,11 @@ per-zone user reviews follow each batch.
   cert-cap; CFBundleVersion 15 verified 3 ways incl. shipped .ipa; security re-check on
   the .ipa PASS). "Within" 1.0 (15) processing on ASC → Ready to Test. ⛔ AWAITING USER
   iPad DEVICE SPOT-CHECK (checklist relayed). ON USER GO → merge level2-clockmakers-attic
-  → main + final release; do NOT merge before that. (test vs graph incl. the never-
+  → main + final release; do NOT merge before that.
+  📄 DOC SECOND PASS (step 14) dispatched 2026-07-22 (user catch — was overdue): reconcile
+  L2 walkthrough.md to the as-built build-15 game (resolve the p08-mouse-dead-spec +
+  naive-4:40 flags; VI-X-I-III vault code; never-consumed items; coat two-pocket collect;
+  mark FINAL). Runs parallel to the user's device test; non-blocking. (test vs graph incl. the never-
   consumed check as an expected finding; hotspot recalibration vs shipped plates;
   alternate-order completability; assess deferred animations) → checkpoint-2 → dev fix
   batch → re-QA → release.
