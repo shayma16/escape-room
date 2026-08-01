@@ -1,11 +1,21 @@
 # Level 2 — The Clockmaker's Attic — Walkthrough
 
-**STATUS: DRAFT (Documentation first pass, 2026-07-18)** — written from
-`puzzle-graph.json` rev 1.3 (post-playtest tweaks, all user-approved) and
-`puzzle-graph-summary.md`, before implementation. All solution values below are the
-graph's fixed values and will not change; interaction details (exact taps and drags)
-follow the series-standard control scheme and the graph's declared behaviors, and will
-be reconciled against the shipped build in the second pass after QA.
+**STATUS: FINAL (Documentation second pass, 2026-07-22)** — reconciled against the
+**as-built build-15 game**: `puzzle-graph.json` rev 1.3 (authoritative solutions),
+`implementation-notes.md` (Developer judgment calls + QA fix batches, incl. the
+build-15 pre-release gate fix), and `qa-report.md` (all findings fixed). Every fixed
+solution value below is the graph's value and matches the shipped build. Interaction
+details describe the controls and behaviors that actually ship. This is the player's
+only help resource — the game has no in-game hint system.
+
+**A note on this build's polish state (does not affect solving):** several *cosmetic*
+animations are deferred in build 15 — the cat does not visibly move or change pose, the
+wound mouse's chase is not animated, the mural's sun-cross/bell-strike is not animated,
+and the direct-mouse-offer "tell" is sound-only. Your confirmation that a step worked
+therefore comes from **state changes and sound** — a cache opening, an item appearing in
+inventory, a panel swinging open, the escapement tick, the strike chime, the raised door
+bar — not from motion. Every such confirmation is called out at its step. The pendulum
+*does* visibly swing once pushed, and the great clock's hands *do* move as you crank.
 
 ---
 
@@ -30,8 +40,10 @@ satisfies that.
 object of interest opens a close-up; leave a close-up with the down-chevron. Items are
 used by dragging them from the inventory bar onto the scene. Long-press an inventory
 icon to inspect the item — several items in this level carry their clue on the item
-itself, so inspecting matters. Discovered passages (the workroom door, the wall panel,
-the floor hatch) are tapped to travel through.
+itself, so inspecting matters. Some pickups are collected from *inside* a close-up (the
+coat, the caches, the vault) by tapping the item within that close-up. Discovered
+passages (the workroom door, the wall panel, the floor hatch) are tapped to travel
+through. An armed item is deselected by tapping empty scene space.
 
 ---
 
@@ -44,7 +56,9 @@ the cat).
 ### Step 1. Take the screwdriver
 
 At the bench, a heavy flat-blade screwdriver sits in a rack over the long workbench.
-Take it. You will use it twice, much later — both times to pry something open.
+Take it. You will use it twice, much later — both times to pry something open. **It is
+never consumed; it stays in your inventory for the entire level** (as does the oil can
+you find in Part 2), so you never have to ration either tool.
 
 ### Step 2. Study the chalk slate
 
@@ -58,18 +72,22 @@ honest feedback either way — but it is the fast route.)
 
 ### Step 3. Collect the four numeral tiles (and pocket watch A)
 
-Four loose Roman-numeral tiles are hidden around the attic:
+Three loose Roman-numeral tiles sit in the open around the attic; the fourth tile and
+pocket watch A are inside the **coat close-up**:
 
-| Tile | Where |
+| Tile | Where / how collected |
 |---|---|
-| **II** | on the cold hob of the small iron stove (bench view) |
-| **IV** | in a pocket of the clockmaker's coat on its peg (bench view) |
-| **VII** | half-buried in the straw of the packing crate (master-clock view) |
-| **XI** | on the dormer windowsill (stair-door view) |
+| **II** | on the cold hob of the small iron stove (bench view) — tap to take |
+| **IV** | in the clockmaker's coat (bench view) — see the coat close-up below |
+| **VII** | half-buried in the straw of the packing crate (master-clock view) — tap to take |
+| **XI** | on the dormer windowsill (stair-door view) — tap to take |
 
-While you're in the coat pockets, also take **pocket watch A** from the other pocket —
-a single-handed watchman's watch. Hold onto it; it's a clue carrier you'll inspect in
-Part 2.
+**The coat (bench view):** tap the clockmaker's coat hanging on its peg to open its
+close-up. The close-up shows **two pockets** — collect **numeral tile IV** from one and
+**pocket watch A** (a single-handed watchman's watch) from the other by tapping each.
+Hold onto watch A; it's a clue carrier you'll inspect in Part 2. *(Both are collected
+from inside this coat close-up — there is no other way to get them, so don't skip it;
+tile IV is required to open the workroom door.)*
 
 ### Step 4. Look at the master longcase clock
 
@@ -110,10 +128,11 @@ Loft** is now accessible.
 
 > **About the stair door:** the only exit is barred by a heavy horizontal bolt-bar in a
 > vault-style time-lock housing with **no keyhole**. Poke at it all you like — the bar
-> just rattles once against its linkage, identically every time. Follow the linkage
-> rods with your eyes instead: they run from the door along the ceiling and vanish into
-> the workroom wall. The door is opened *by* the clock, from the far end of the level.
-> Nothing you do at the door itself will ever open it.
+> just rattles once (you'll hear it) and shows its time-lock close-up, identically every
+> time. It accepts no item or code input. Follow the linkage rods with your eyes
+> instead: they run from the door along the ceiling and vanish into the workroom wall.
+> The door is opened *by* the clock, from the far end of the level. Nothing you do at
+> the door itself will ever open it directly.
 
 ---
 
@@ -138,45 +157,44 @@ engraved with a **house symbol (⌂)**, and its single hand is frozen on **III**
 Now go to the attic's stair-door view. On the beam beside the dormer is a small carved
 **⌂** ringed by a 12-notch circle — a clock-position ring, and the twin of the watch's
 engraving. The watch is a pointer: read its hand *at the ring*. A hand on III means the
-**3-o'clock direction** — from the ring, that points at the **third floorboard to the
-right of the dormer**.
+**3-o'clock direction** — from the ring, that points at the **floorboard to the right
+of the dormer**.
 
-**Pry that board up with the screwdriver.** Underneath is the **great wheel** — a
-bronze gear with 64 teeth, stamped **64**. Take it.
+**Arm the screwdriver (drag it from inventory) and pry up that board.** Underneath is
+the **great wheel** — a bronze gear with 64 teeth, stamped **64**. **Tap it in the
+opened-cache close-up to take it.**
 
 *Clue-gate note:* this cache is gated on **inspecting watch A**. Until you have viewed
-the watch's close-up, no board will come up — every *wrong* board gives a dead
+the watch's close-up, the board will not come up — a *wrong* spot gives a dead
 "doesn't budge," identical on every try, while the *correct* board gives a faint creak
 and a hair of movement under the blade but still firmly refuses. If an early prying
 spree left you with the memory that one board *felt* different — that was this one, and
 it wasn't lying; it just wasn't ready. Inspect the watch and the same board yields
-normally. The boards otherwise look perfectly uniform — the watch is the *only* thing
-that marks the spot, which is why sweeping the floor blind is deliberately unrewarding.
+normally.
 
 ### Step 8. The cat and the mouse (p02)
 
-In the stair-door view, the gray cat sleeps on a cushion in the dormer sunbeam — and
-the cushion visibly has something flat beneath it. The cat refuses everything: nudge
-it, or offer it any item, and you get one slow blink as it resettles heavier on the
-cushion, and your item comes straight back. (Petting is always allowed — you get a
-purr and nothing else.)
+In the stair-door view, the gray cat sleeps on a cushion on a low bench in the dormer
+sunbeam — and the cushion visibly has something flat beneath it. The cat refuses
+everything: nudge it, or offer it any item, and it resettles and your item comes
+straight back. (Petting is always allowed; nothing changes.)
 
-One offer is different: **hold the mouse out to the cat directly and the cat's eyes
-lock onto it and track it, tail flicking — but it stays put**, and the mouse returns
-to your inventory. Right idea, wrong delivery. A cat doesn't take prey from your hand;
-prey has to *run*.
+One offer is different: **hold the mouse out to the cat directly** and it is *nearly*
+right — but the mouse still returns to your inventory. Right idea, wrong delivery. A cat
+doesn't take prey from your hand; prey has to *run*.
 
-**Wind the tin mouse and set it down on the floor near the cat's bench** (drag the
-mouse from inventory onto the floorboards by the cushion). The mouse skitters, the cat
-pounces and chases it into the stair-door corner — and keeps it, settling there by the
-exit for the rest of the level. The mouse is gone for good; it has no other use, so
-nothing is lost.
+**Set the wound tin mouse down on the floor near the cat's bench** — drag the mouse
+from inventory onto the floorboards beside the cushion (this both winds and releases
+it). The cat takes the mouse and keeps it, settling by the stair-door exit for the rest
+of the level. The mouse is gone for good; it has no other use, so nothing is lost.
 
-**Lift the now-vacant cushion and take pocket watch B** — the flat shape that was
-under the cat all along.
+**The cushion is now liftable — lift it and take pocket watch B** (the flat shape that
+was under the cat all along; it appears on the bench in the reveal — tap to collect).
 
-> Wound and placed anywhere *not* near the cat, the mouse just skitters a small circle
-> and returns to your inventory. It can never be wasted.
+> Wound and placed anywhere *not* near the cat, the mouse just returns to your
+> inventory. It can never be wasted. It has **no other use anywhere in the level** — in
+> particular it is *not* used on the winding drum later; the winding drum takes the
+> square-bit key from the vault.
 
 ### Step 9. Inspect watch B, then pry the chimney brick (p04)
 
@@ -189,7 +207,8 @@ dormer: hand on IX = **9-o'clock direction** = **the brick directly left of the
 ring**.
 
 **Pry that brick out with the screwdriver.** In the cavity is the **long-spout oil
-can**. Take it — you will use it twice, and it never runs dry.
+can** — tap it to take it. You will use it twice, and it never runs dry (and, like the
+screwdriver, it is never consumed).
 
 *Clue-gate note:* identical grammar to Step 7 — gated on **inspecting watch B**. Wrong
 bricks are dead-identical "doesn't budge"; the correct brick gives the faint
@@ -226,10 +245,11 @@ on the rack, and the 64 is the great wheel you dug out of the floor in Step 7.
 either arrangement works (36 on A with 64 on B, or the reverse; the ratio multiplies
 out the same). Then fold out the crank and turn it through one full cam revolution.**
 
-At exactly 24:1 the mural runs one clean cycle — the carved sun crosses the town, the
-watchman figure strikes his bell — a counterweight drops, and a **wall panel swings
-open** onto the tower-clock chamber: **Behind the Great Dial**. The panel latches open
-permanently.
+At exactly 24:1 the mural runs one clean cycle, a counterweight drops, and a **wall
+panel swings open** onto the tower-clock chamber: **Behind the Great Dial**. The panel
+latches open permanently. *(In build 15 the panel-open state and the new passage are
+what you'll see; the carved sun-cross / bell-strike animation of the mural is not yet
+in — the panel opening is your confirmation.)*
 
 This puzzle is deliberately *not* clue-gated — a correctly built train always works,
 slate or no slate. Wrong pairs give honest feedback: the cam visibly runs too fast or
@@ -308,7 +328,7 @@ platform.
 
 ### Step 14. Clear the vault
 
-Two takeables, both needed:
+Two takeables, both needed (tap each in the vault close-up to collect):
 
 - The **square-bit winding key**, on its hook.
 - The **brass "will return" shop tag**, on a nail: a miniature clock dial with its
@@ -333,10 +353,13 @@ is one of several; see Alternate routes.
 ### Step 15. Oil and wind the movement (p08)
 
 The winding drum's bearing is dry and rusted — it squeals. **Use the oil can on the
-drum bearing first**, then **insert the winding key in the square socket and crank
-until the drive weight rises fully** on its line. (Key before oil: the key seats but
-won't turn and the drum squeals — oil it and try again. Nothing is consumed.) The
-clock is now wound; this state persists.
+drum bearing first**, then **insert the square-bit winding key (from the vault) in the
+square socket and crank until the drive weight rises fully** on its line. (Key before
+oil: the key seats but won't turn and the drum squeals — oil it and try again. Nothing
+is consumed.) The clock is now wound; this state persists.
+
+*(The mouse is not involved here and you no longer have it — the cat kept it. The drum
+takes only the square-bit key.)*
 
 ### Step 16. Set the hands from behind — the mirror trap (p09)
 
@@ -344,7 +367,9 @@ The return tag says the release time is **7:20**. The trap: the tag shows the di
 **front**, and you are standing **behind** it. From back here the dial is a mirror
 image — that's what the reversed numerals have been telling you since you walked in.
 Copy the tag's hand positions naively onto the view in front of you and you have
-actually set the front of the clock to **4:40** — and nothing will happen.
+actually set the *front* of the clock to **4:40** — and nothing will happen. (The
+mirror image of any clock time T is 11:60 − T; 11:60 − 7:20 = 4:40, which is exactly
+why a naive copy misfires.)
 
 The evidence is all on the glass. Look closely at the mirrored numerals: nowhere on
 the back view is there a legible "VII" — and what looks like a malformed VI is
@@ -354,35 +379,38 @@ tag's time must be entered *as its mirror image*.
 **Turn the setting crank until the hands — read naively, as if the back view were an
 ordinary dial — show 4:40** (hour hand two-thirds of the way from the 4-position
 toward the 5, minute hand on the 8-position; the minute hand moves in 5-minute
-detents, so the positions land exactly). That is the mirror image of 7:20, which means
-the *front* of the great dial now truly reads **7:20** — the release time.
+detents, so the positions land exactly). That naive-4:40 back reading is the mirror
+image of 7:20, which means the *front* of the great dial now truly reads **7:20** — the
+release time. (There is deliberately no digital front-time readout on this close-up;
+the mirror inference is the puzzle.)
 
 *Clue-gate note:* the crank always turns and the hands always move, but the release
 time only counts after you have **inspected the return tag** (Step 14). Until then —
-or at any wrong time — the strike simply doesn't fire, with no tell. One reassurance
-the movement *does* give you: once the clock is wound and the pendulum is swinging, a
-wrong time is no longer silent — you'll hear a soft escapement tick, and occasionally
-a chime hammer twitches without ever striking. That sound means "alive, wrong input,"
-never "broken" — but it is identical at every wrong time and tells you nothing about
-the right one. The right one is 7:20, front, mirrored as above. Full silence, by
-contrast, means the wind or the pendulum is still missing.
+or at any wrong time — the strike simply doesn't fire, with no tell about the *time*.
+One reassurance the movement *does* give you (build 15 ships this): once the clock is
+wound and the pendulum is swinging, a wrong time is no longer dead silent — you'll hear
+a soft escapement **tick**, and occasionally a chime hammer twitches without ever
+striking. That sound means "alive, wrong input," never "broken" — but it is identical
+at every wrong time and tells you nothing about the right one. The right one is 7:20,
+front, mirrored as above. Full silence, by contrast, means the wind or the pendulum is
+still missing.
 
 ### Step 17. Start the pendulum (p10)
 
-**Push the pendulum bob.** It swings and keeps swinging (weakly if you somehow got
-here unwound; fully once wound — either way it counts, permanently).
+**Push the pendulum bob.** It swings and keeps swinging — this on-screen swing is your
+confirmation the push registered (weakly if you somehow got here unwound; fully once
+wound — either way it counts, permanently).
 
 ### Step 18. The strike — and the exit (p11)
 
 The instant all three hold — wound, front hands at 7:20, pendulum running — the
-**strike train fires**: chimes, and the linkage rods articulate visibly along the
-ceiling, here and all the way back in the attic. The stair door's bar lifts, and it
-stays lifted — no later hand-fiddling can re-lock it.
+**strike train fires**: you hear the chime, and the stair door's bar lifts and *stays*
+lifted (the raised-bar state persists — no later hand-fiddling can re-lock it).
 
-**Return through the panel and the workroom to the attic's stair-door view.** The cat
-— parked by the door since Step 8 — stands and stretches as the bar rises, in case
-you missed the chimes. **Open the stair door.** It swings onto the tower stairs in
-evening light, and the cat trots out ahead of you, tail up. Level complete.
+**Return through the panel and the workroom to the attic's stair-door view.** You'll
+see the bar is now raised (and the cat is parked by the door, where it has been since
+Step 8). **Open the stair door.** It swings onto the tower stairs in evening light.
+Level complete.
 
 ---
 
@@ -396,23 +424,22 @@ notable freedoms:
 
 - **Knowledge first:** the vault code can be fully pre-computed long before the vault
   exists — view the master clock (z1) and the clock row (z2) early and walk into the
-  dial chamber with VI·X·I·III in hand; the hatch opens first try (ordering C in the
-  design doc). The reverse also works: reach the hatch first, then backtrack for the
-  two clue views — both zones stay open forever.
+  dial chamber with VI·X·I·III in hand; the hatch opens first try. The reverse also
+  works: reach the hatch first, then backtrack for the two clue views — both zones stay
+  open forever.
 - **Cache order is free:** the dormer board (watch A) and the chimney brick (watch B)
   can be done in either order, each as soon as its watch has been inspected. Watch A
   is available from the first minutes; watch B always comes via the cat.
 - **The slate is optional:** p06 is not gated. You can solve the gear train by pure
   experiment — mount pairs and count cranks per cam-clack until you hit 24 — without
   ever reading the slate. The slate just saves you the sweep.
-- **Endgame trio in any order:** wind / set hands / pendulum are order-free (orderings
-  B and C in the design doc do pendulum-first and hands-before-winding). Whichever
+- **Endgame trio in any order:** wind / set hands / pendulum are order-free. Whichever
   act completes the set fires the strike. Hands can even be set to 7:20 *before*
   inspecting the tag — the release then asserts itself when you next enter the
   close-up after viewing the tag (the game re-checks; you are never stuck).
 - **The mouse only works one way:** wound and on the floor near the cat. Offered from
-  the hand it earns the eye-lock tell; placed anywhere else it circles back to
-  inventory. It can never be lost early.
+  the hand it is nearly-right and returns; placed anywhere else it returns too. It can
+  never be lost early, and it has no other use in the level.
 
 The only hard cross-zone links: watch B (earned in z1 via the cat, using the z2 mouse)
 is needed for the z2 chimney cache; the great wheel (z1 floor) is needed for the z2
@@ -453,24 +480,28 @@ refuses; wrong spots are always simply dead.
 
 | Puzzle | Answer |
 |---|---|
-| Numeral-dial door (p01) | Seat II / IV / VII / XI in the empty sockets at positions 2 / 4 / 7 / 11 (tray VI is a decoy) |
-| Cat and mouse (p02) | Wind the tin mouse and set it on the floor by the cat's bench; then lift the cushion → watch B |
-| Dormer cache (p03) | Watch A: ⌂, hand on III → pry the 3rd floorboard right of the dormer ⌂-ring → great wheel (64t) |
+| Numeral-dial door (p01) | Seat II / IV / VII / XI in the empty sockets at positions 2 / 4 / 7 / 11 (tray VI is a decoy). Tile IV + watch A come from the coat close-up (two pockets). |
+| Cat and mouse (p02) | Set the wound tin mouse on the floor by the cat's bench; then lift the cushion → watch B |
+| Dormer cache (p03) | Watch A: ⌂, hand on III → pry the board at the ⌂-ring's 3-o'clock (right of the dormer) → great wheel (64t) |
 | Chimney cache (p04) | Watch B: ⚙, hand on IX → pry the brick directly left of the chimney ⚙-ring → oil can |
 | Seized arbor (p05) | Oil can on the rust-bloomed bearing |
 | Gear train (p06) | Mount 36-tooth (rack) and 64-tooth (great wheel) on posts A/B — either order — and crank one full cam cycle (24 cranks : 1 cam) |
 | Vault hatch wheels (p07) | Left to right under Big Ben ★ / Burj Khalifa / Liberty / Fuji: **VI · X · I · III**, then try the hatch |
-| Oil and wind (p08) | Oil can on the drum bearing, winding key in the square socket, crank until the weight is fully raised |
+| Oil and wind (p08) | Oil can on the drum bearing first, then the square-bit winding key in the socket, crank until the weight is fully raised |
 | Set the hands (p09) | Front time **7:20** — from behind, set the hands to read 4:40 naively (the mirror image of the tag's 7:20; naive 7:20 copy = the 4:40 trap) |
-| Pendulum (p10) | Push the bob |
-| Exit (p11) | When the strike fires and the bar lifts, return to the attic and open the stair door |
+| Pendulum (p10) | Push the bob (it visibly swings) |
+| Exit (p11) | When the strike chime fires and the bar lifts, return to the attic and open the stair door |
 
 ---
 
-*DRAFT — Documentation first pass, 2026-07-18, from `puzzle-graph.json` rev 1.3 and
-`puzzle-graph-summary.md`. To be reconciled after QA (second pass) against the
-Developer's implementation notes and `qa-report.md`. Fixed solution values verified
-against the graph: p01 sockets 2/4/7/11 ← II/IV/VII/XI; p02 mouse wound + floor at
-cat; p03 board at ⌂-ring 3 o'clock; p04 brick at ⚙-ring 9 o'clock; p06 gear set
-{36, 64}, either post order, 24:1; p07 VI-X-I-III; p09 front 7:20 (back view mirror);
-p08/p10 mechanism completions; p11 via cond-timelock-release.*
+*FINAL — Documentation second pass, 2026-07-22. Reconciled against build 15:
+`puzzle-graph.json` rev 1.3, `implementation-notes.md` (through the build-15 pre-release
+gate fix), and `qa-report.md` (all findings fixed). Fixed solution values verified
+against the graph and confirmed as-built: p01 sockets 2/4/7/11 ← II/IV/VII/XI (tile IV +
+watch A via the two-pocket coat close-up); p02 mouse wound + floor at cat; p03 board at
+⌂-ring 3 o'clock; p04 brick at ⚙-ring 9 o'clock; p05 oil the arbor; p06 gear set
+{36, 64}, either post order, 24:1; p07 VI-X-I-III; p08 oil-then-key, screwdriver +
+oil-can never consumed; p09 front 7:20 (back-view mirror = naive 4:40), D11 alive-wrong-
+time tick shipped; p10 pendulum push (swing shipped); p11 via cond-timelock-release.*
+</content>
+</invoke>
