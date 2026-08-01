@@ -256,7 +256,17 @@ per-zone user reviews follow each batch.
   📄 DOC SECOND PASS (step 14) dispatched 2026-07-22 (user catch — was overdue): reconcile
   L2 walkthrough.md to the as-built build-15 game (resolve the p08-mouse-dead-spec +
   naive-4:40 flags; VI-X-I-III vault code; never-consumed items; coat two-pocket collect;
-  mark FINAL). Runs parallel to the user's device test; non-blocking. (test vs graph incl. the never-
+  mark FINAL). Runs parallel to the user's device test; non-blocking.
+  ✅ WALKTHROUGH FINAL 2026-07-22 (committed): both flags resolved (p08 mouse dead-spec
+  confirmed not-built; naive-4:40 = 11:60−T identity verified); reconciled to build 15
+  (coat two-pocket collect, never-consumed tools, tick+swing as-shipped, VI-X-I-III).
+  3 DISCREPANCIES flagged (all NON-BLOCKING, level completes + walkthrough correct):
+  (1) p03/p04 spatial 'clock-hand-as-pointer' beat COLLAPSED in as-built — shipped UI has
+  a single always-correct cache hotspot (gated only on the watch clue), so the intended
+  spatial discrimination isn't exercised; p03/p04 are easier than designed (QA m7). USER
+  DECISION pending: accept simpler, or queue a restore-the-spatial-beat dev tweak (future
+  build). (2) gear-rack↔brick hotspot overlap (benign; Art/Theme review). (3) iPad drum
+  clip (already accepted, option a). (test vs graph incl. the never-
   consumed check as an expected finding; hotspot recalibration vs shipped plates;
   alternate-order completability; assess deferred animations) → checkpoint-2 → dev fix
   batch → re-QA → release.
