@@ -860,3 +860,30 @@ they ship without a project change.
 - **Minimal entitlements/permissions.** `Info.plist` and entitlements are **unchanged**. No
   camera / microphone / location / contacts usage, no usage-description strings, no capabilities
   beyond what the code uses.
+
+### CI — build-16 wiring batch
+
+- **FAST LANE GREEN**, one run for the whole batch (both tasks bundled before dispatch, per the
+  CI-efficiency directive): run `31042881390`
+  (<https://github.com/shayma16/escape-room/actions/runs/31042881390>), 14m04s, conclusion
+  **success**; `full-lane-ui` correctly skipped on a working-branch push.
+- **192 unit/logic tests, 0 failures on all three device runtimes** (iPad 13-inch class,
+  smallest supported iPhone, Dynamic-Island iPhone) — up from 190, the two new test methods.
+  Log excerpts:
+
+  ```
+  Unit tests - iPad 13-inch class      Executed 192 tests, with 0 failures (0 unexpected) in 48.362s
+  Unit tests - smallest supported iPhone   Executed 192 tests, with 0 failures (0 unexpected) in 25.374s
+  Unit tests - Dynamic Island iPhone   Executed 192 tests, with 0 failures (0 unexpected) in 57.841s
+
+  ✓ testCrossViewEchoesTrackTheNeighbouringPlatesState
+  ✓ testEveryStatefulCloseUpCompositionChangesOnItsStateFlip      (25-row table)
+  ✓ testGearRingCarveOpensTheChimneyRingClueWithoutStealingTheCacheTaps
+  ✓ testL2InspectHotspotsSitOnArtAndAreIPadReachable              (+ the gear-ring carve row)
+  ```
+
+- No CI iteration loop was needed: the hotspot geometry (smallest-area-wins interplay with
+  `brick` / `gear-rack`, the 44 pt floor and the dual-safe band) was simulated offline against
+  the exact `configureHotspots` inflation rule before pushing, so the first run was green. The
+  superseded in-flight run from the preceding asset commit was cancelled to save macOS minutes.
+
