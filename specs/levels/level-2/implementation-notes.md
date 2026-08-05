@@ -680,17 +680,21 @@ now that ~150 files ship.
 
 ### CI (round 8)
 
-- **Fast lane GREEN** — run `31028394727`
-  (<https://github.com/shayma16/escape-room/actions/runs/31028394727>): build + the full
+- **Fast lane GREEN on the final code** — run `31029844470`
+  (<https://github.com/shayma16/escape-room/actions/runs/31029844470>), 14m42s: build + the full
   unit/logic suite on iPad 13″, iPhone SE and the Dynamic-Island iPhone, including the new
-  `Level2CloseUpStateTests` and the extended `Level2AssetStagingTests`.
-  The preceding run `31027774811` failed the BUILD step only (two `some View` helpers left
-  without an explicit `return` after their `@ViewBuilder` attribute was dropped, plus
-  backward-matching trailing-closure warnings) — diagnosed from its log and fixed in one batch
-  rather than one CI iteration per error, per the CI-efficiency directive.
-- **Full lane** — dispatched with `lane=full` after the batch was complete; link in the handoff
-  message. The heavy iPad L1 playthrough step remains `continue-on-error` by design; the
-  iPhone-SE UI playthrough and the Dynamic-Island safe-area step are the hard gates.
+  `Level2CloseUpStateTests` and the extended `Level2AssetStagingTests`. (An earlier green on the
+  same batch: run `31028394727`.)
+  The first run of the batch, `31027774811`, failed the BUILD step only — two `some View`
+  helpers left without an explicit `return` after their `@ViewBuilder` attribute was dropped,
+  plus backward-matching trailing-closure warnings. Diagnosed from its log and fixed in ONE
+  batch rather than one CI iteration per error, per the CI-efficiency directive. Three fast-lane
+  runs total for the whole batch.
+- **Full lane** — run `31031042901`
+  (<https://github.com/shayma16/escape-room/actions/runs/31031042901>), dispatched with
+  `lane=full` once the batch was complete. The heavy iPad L1 playthrough step remains
+  `continue-on-error` by design; the iPhone-SE UI playthrough and the Dynamic-Island safe-area
+  step are the hard gates. Result reported in the handoff message.
 - The `Level2UITests` smoke test needed no changes: the accessibility identifiers it drives
   (`closeup-dismiss`, `collect-itm-tile-iv`, `collect-itm-watch-a`, `dial-socket-*`) are all
   preserved, and the dial sockets are now real queryable elements rather than `Color.clear`
