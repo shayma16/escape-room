@@ -2473,3 +2473,99 @@ as R8-010 / R8-011 / R8-004 / R8-002 (wide updates, close-up doesn't), here prod
 jarring close-up-vs-wide contradiction the user calls "messy." Reinforces the single-root
 close-up-state cluster. Also ties to the earlier watch-B-under-cushion reveal (QA m4 cushion
 clipping). Developer (close-up state rendering).)
+
+### R8-013 — status: logged 🔴 CRITICAL (progression-blocker)
+> as per the walkthrough, i'm supposed to be able to lift the cushion, i can't as clicking it puts me at the close up with cat sitting on it. i guess i can't continue the game now. also noticed that clicking the corner of the window where the xi tablet used to sit, i get the close up with the cat and the xi tablet. should not be the case. sloppy work my friend.
+
+(context — factual, no classification: Level 2 z1 v-door. Build 15, iPad, Level 2.
+- THREAD (1) CRITICAL PROGRESSION-BLOCKER: the walkthrough says lift the cushion (post-p02,
+  cat gone) to reveal WATCH B — but tapping the cushion opens the STALE close-up (cat still
+  sitting on it, per R8-012) and there is NO lift interaction reachable. Watch B gates p04
+  (chimney cache) -> gear train -> everything after; the user is STUCK and cannot continue.
+  Root appears to be the stale close-up-state bug (R8-002 / 004 / 010 / 011 / 012 cluster),
+  which here BLOCKS progression rather than merely confusing. FOR FIX PASS TO DETERMINE: is
+  the cushion-lift / watch-B-reveal interaction missing entirely, or present but unreachable
+  because the close-up renders the pre-p02 state?
+- THREAD (2) ADDITIONAL STALE CLOSE-UP: tapping the sill corner where the XI tablet used to
+  sit opens a close-up STILL SHOWING the cat AND the XI tablet (both outdated — tile
+  collected, cat gone). Same cluster, another instance.)
+
+---
+
+### ROUND 8 PROCESSING TRIGGERED (2026-08-05) — user: "i'll use fable 5 for you to work out the fixes now"
+
+**PROCESSED 2026-08-05 (Feedback Intake). Routed changelist:
+`specs/levels/level-2/round8-routed-changelist.md` (handed to Producer; pending GATE 1
+user review before execution).**
+
+**IMMEDIATE UNBLOCK FOR THE USER (highest-value finding — Producer relay now):** the user is
+almost certainly **NOT** actually soft-locked. `Level2Engine.placeMouseAtCat` executes
+`state.addItem(Level2Graph.ItemID.watchB)` at the moment p02 solves — and R8-011 confirms p02
+DID solve (the cat vanished from the wide view). So **watch B should already be in the
+inventory bar**; there is no cushion-lift step in the build at all. The blocker is
+perceptual: the cushion close-up is stale and the walkthrough describes a lift interaction
+that does not exist. User can likely continue play right now by arming watch B at the z2
+chimney (p04). To be device-confirmed by Developer/QA.
+
+**Root causes identified (code-level, validated during processing — Developer to confirm):**
+- **Cluster A root:** L2 close-ups render a SINGLE STATIC plate per close-up id. The
+  per-element state overlays (`ov-cushion-reveal` / `ov-cushion-empty` etc.) are composited
+  by `Level2Visuals` into the **wide** scene only; no close-up consumes them. Worst instance
+  is a literal no-op ternary in `Level2RoomView.swift` `L2CatCushionView`:
+  `coordinator.state.hasSolved(...catMouse) ? "cu-cat-cushion" : "cu-cat-cushion"` — both
+  branches are the same image. That view also contains **no tap target at all**, so there is
+  no cushion-lift/watch-B interaction to reach. Art for the resolved states largely EXISTS
+  (overlays are already authored) → expected art spend ~$0; this is a code fix.
+- **Cluster B root:** in `L2CloseUpHost`, the content gets `.padding(.bottom, bottomInset)`
+  (bottomInset = barHeight, 72pt on iPad) but the dismiss chevron gets only
+  `.padding(.bottom, 12)` — and `InventoryBarView` is added to the parent ZStack AFTER
+  `L2CloseUpHost`, so it draws on top. The chevron IS rendered; it sits under the inventory
+  bar. **The user's own guess in R8-001 was correct.** One root, one fix, all L2 close-ups.
+  (The backdrop's `.onTapGesture { dismissCloseUp() }` is why edge-tapping exits.)
+- **Cluster C root (candidate):** `L2CoatControl` is a `GeometryReader { ZStack { ... } }`
+  whose only full-size children are the conditional positioned pocket buttons. When the last
+  uncollected pocket button is removed, the ZStack shrinks to the fitted image and
+  GeometryReader re-places it **top-leading** → the plate jumps left, black void on the
+  right. Matches R8-002(3) exactly.
+- **R8-004(3)+(4) are ONE defect:** the tray-VI decoy is implemented as a floating SwiftUI
+  text button — `Button { Text("VI")... }.position(x: plate.midX, y: plate.maxY - 20)` — not
+  as a tap region on the VI tile depicted in the plate. That is simultaneously the
+  "VI button above my inventory that looks out of place" AND the reason the depicted tray
+  tile can't be interacted with. Spec-determined fix (the decoy is meant to be *selectable
+  bait*, never inventory-collected — consistent with the standing R6-003 principle), so no
+  user decision needed.
+- **R8-005(1) RECLASSIFIED** (refines the Producer's read): the XI-tile fragment in the cat
+  close-up is not a stray overlay — it is Cluster A. The static `cu-cat-cushion` plate's crop
+  includes the sill and was authored with the XI tile in place, so a collected tile still
+  shows. Same for R8-013(2). **Cluster D therefore shrinks to the tray-VI button only.**
+
+**Phase-2 status per item:**
+
+| Item(s) | Class | Sev | Status | Target | Cluster |
+|---|---|---|---|---|---|
+| R8-013(1) | bug | **critical** | routed (P0) | Developer + Documentation | A-crit — cushion CU stale + NO lift interaction; walkthrough contradicts build |
+| R8-002(1), R8-004(2), R8-010 (+R8-009(2) merged), R8-011(2), R8-012, R8-013(2), R8-005(1) | bug | major | routed | Developer | A — close-up state-overlay rendering (wide is correct) |
+| R8-001, R8-002(2), R8-004(1), R8-005(2), R8-007 | bug | major | routed | Developer | B — close-up dismiss chevron occluded by inventory bar |
+| R8-002(3) | bug | major | routed | Developer | C — iPad close-up layout collapse / black void |
+| R8-004(3)+(4) | bug | major | routed (merged) | Developer + Validator (light) | D — tray-VI decoy affordance |
+| R8-011(1) | bug (spec-not-delivered) | major | routed | Developer + Designer consult | rev-1.3 tweak 2 (cat mouse-tell) shipped sound-only |
+| R8-009(1) | balance / design | — | **BLOCKED — user decision at GATE 1** | Theme & Puzzle Designer + **Blind Playtester re-check** + Documentation | p03 under-clued even with the walkthrough |
+| R8-008(3) | polish (art quality) | — | routed | Art Director (+ Asset-Gen if re-crops) | close-up VALUE — ~80% crops of the wide |
+| R8-008(4) | polish | minor | routed | Art Director | sealed display case needs a clearer "sealed" read (by design) |
+| R8-005(3) | bug (verify) | minor | routed (verify-by-design sweep) | Developer + Validator (light) | cat / house-ring / door-lock dead taps |
+| R8-008(2) | — | — | **needs-clarification** | user | "clocks don't do much" — does a close-up open at all? |
+| R8-011(3) | polish | — | parked (known deferred) | Producer | cat vanishes with no chase animation (deferred anims) |
+| R8-003, R8-006, R8-008(1), R8-011(3-positive) | positive | — | closed, no action | — | p01/p02/p03 complete; coat + re-anchor fixes device-confirmed |
+
+**Merges proposed (user confirmation requested, non-blocking):** R8-009(2) merged into
+R8-010 (same defect; R8-010 kept as canonical because it carries the wide-vs-close-up
+diagnostic). R8-004(3) merged with R8-004(4) (one defect, see root above).
+
+**Conflicts:** none in this round.
+
+**Open questions for the user (GATE 1):** (1) R8-009 p03 difficulty direction — restore the
+intended clock-hand-as-pointer spatial beat, or keep the collapsed single-cache and
+strengthen the clue/tell? This is a difficulty call and is NOT mine to make. (2) R8-008(2)
+clarification. (3) NEW observation, creative call: the as-built p01/p06 close-ups use literal
+text UI ("VI" button, "Rack", "Crank", "Post A/B"), which sits against the project's
+near-wordless genre decision — does the user want these replaced with wordless affordances?
