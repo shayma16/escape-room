@@ -260,6 +260,9 @@ final class Level2Coordinator: ObservableObject {
         case (.frame, "arbor"): present(.plain(image: "cu-gear-frame"), from: hotspotID)
         case (.frame, "gear-rack"): present(.plain(image: "cu-gear-rack"), from: hotspotID)
         case (.frame, "brick"): present(.chimneyCache, from: hotspotID)
+        // The ⚙+ring12 carve beside the loose cache brick: the p04 clue plate (clu-ring-chimney).
+        // Its close-up annotates the IX direction once watch B has been read (ringClues).
+        case (.frame, "gear-ring"): present(.plain(image: "cu-gear-ring"), from: hotspotID)
         case (.frame, "panel"):
             if state.isZoneUnlocked(Level2Graph.ZoneID.z3BehindDial) { onNavigate?(.dial) }
 

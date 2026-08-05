@@ -111,6 +111,14 @@ final class Level2RegistrationTests: XCTestCase {
         (.bench, "barometer", CGRect(x: 0.28, y: 0.05, width: 0.10, height: 0.18)),
         (.master, "master-clock", CGRect(x: 0.31, y: 0.15, width: 0.15, height: 0.73)),
         (.door, "house-ring", CGRect(x: 0.45, y: 0.32, width: 0.10, height: 0.16)),
+        // The ⚙+ring12 chimney carve — the ONLY way into cu-gear-ring / clu-ring-chimney.
+        // Rect = the carve's ink bbox measured on the SHIPPED z2-frame-base plate (@3x pixels
+        // 2826..2875 × 1073..1122, i.e. the l2_z2_build GRING anchor 2850,1097 ± the 50 px die),
+        // NOT the hotspot rect: this asserts a tap where the glyph VISUALLY is resolves to the
+        // clue hotspot even though the hotspot is deliberately biased off-centre to protect the
+        // neighbouring cache tap (see Level2HotspotTable).
+        (.frame, "gear-ring", CGRect(x: 2826/3840.0, y: 1073/1920.0,
+                                     width: 49/3840.0, height: 49/1920.0)),
         (.clockrow, "clockrow", CGRect(x: 0.18, y: 0.16, width: 0.64, height: 0.42)),
         (.clockrow, "display-case", CGRect(x: 0.17, y: 0.62, width: 0.30, height: 0.30)),
         (.vault, "vault-exit", CGRect(x: 0.30, y: 0.15, width: 0.18, height: 0.70)),
@@ -250,6 +258,62 @@ final class Level2RegistrationTests: XCTestCase {
         XCTAssertTrue(offenders.isEmpty,
             "L2 inspect hotspot off its art or off the iPad band (R-REANCHOR / iPad-uncompletable class):\n"
             + offenders.joined(separator: "\n"))
+    }
+
+    // MARK: - clu-ring-chimney reachability (GATE-1 clarify-clues follow-up)
+
+    /// The ⚙+ring12 carve had NO hotspot: `cu-gear-ring` was staged and
+    /// `Level2Coordinator.gatingClues` mapped `plain-cu-gear-ring -> clu-ring-chimney`, but
+    /// nothing in v-frame could open it, so the chimney half of the ring/watch clue pair was
+    /// unreachable in the shipped build (the ⌂ dormer ring had a hotspot; this one did not).
+    ///
+    /// This guard pins BOTH halves of the fix: the clue is reachable by tapping the carve, and
+    /// adding it did not collapse the neighbouring loose-cache brick — the carve sits INSIDE the
+    /// cache patch, and both rects are inflated to the 44 pt floor, so smallest-area-wins could
+    /// easily have handed the cache's taps to the clue.
+    func testGearRingCarveOpensTheChimneyRingClueWithoutStealingTheCacheTaps() {
+        let s = makeState()
+        let coord = Level2Coordinator(viewID: .frame, state: s, size: sceneSize)
+
+        XCTAssertFalse(s.hasViewedClue(Level2ClueID.ringChimney))
+        coord.scene.onHotspotTap?("gear-ring")
+        XCTAssertEqual(coord.activeCloseUp, .plain(image: "cu-gear-ring"),
+                       "the carve must open the ⚙-ring clue plate")
+        XCTAssertTrue(s.hasViewedClue(Level2ClueID.ringChimney),
+                      "clu-ring-chimney must be recorded — it was UNREACHABLE before this hotspot")
+        XCTAssertNotNil(GameAssetLoader.shared.image(named: "cu-gear-ring"))
+        XCTAssertNotNil(Level2CloseUpVisuals.ringClues["cu-gear-ring"],
+                        "the plate must carry its IX pointer annotation entry")
+
+        // Non-collapse: every point the CACHE owns still resolves to `brick`, and every point
+        // on the CARVE still resolves to `gear-ring`, under the real smallest-area-wins test.
+        // Cache points: the ov-brick-* rect center (what testL2Taps... taps) plus the measured
+        // oil-can and pried-recess positions inside that art.
+        let cacheRect = Level2OverlayCatalog.shared.wideRect("ov-brick-pried-oilcan")
+        XCTAssertNotEqual(cacheRect, .zero)
+        let cachePoints: [(String, CGPoint)] = [
+            ("cache art center", CGPoint(x: cacheRect.midX, y: cacheRect.midY)),
+            ("oil can", CGPoint(x: 0.7167, y: 0.6140)),
+            ("pried recess", CGPoint(x: 0.7397, y: 0.6240)),
+        ]
+        // Carve ink bbox measured on the shipped plate (@3x 2826..2875 × 1073..1122).
+        let carvePoints: [(String, CGPoint)] = [
+            ("carve center", CGPoint(x: 2850/3840.0, y: 1097/1920.0)),
+            ("carve left rim", CGPoint(x: 2826/3840.0, y: 1097/1920.0)),
+            ("carve top", CGPoint(x: 2850/3840.0, y: 1073/1920.0)),
+            ("carve bottom", CGPoint(x: 2850/3840.0, y: 1122/1920.0)),
+        ]
+        var offenders: [String] = []
+        for (label, p) in cachePoints {
+            let hit = coord.scene.hotspotIDAtNormalized(p.x, p.y)
+            if hit != "brick" { offenders.append("\(label) (\(f(p.x)),\(f(p.y))) -> '\(hit ?? "nil")' (expected brick)") }
+        }
+        for (label, p) in carvePoints {
+            let hit = coord.scene.hotspotIDAtNormalized(p.x, p.y)
+            if hit != "gear-ring" { offenders.append("\(label) (\(f(p.x)),\(f(p.y))) -> '\(hit ?? "nil")' (expected gear-ring)") }
+        }
+        XCTAssertTrue(offenders.isEmpty,
+            "gear-ring / brick-cache overlap-collapse in v-frame:\n" + offenders.joined(separator: "\n"))
     }
 
     // MARK: - 44pt hit-target floor on the smallest iPhone (BUG-009 class)

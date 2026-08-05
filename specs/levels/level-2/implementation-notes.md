@@ -718,3 +718,145 @@ hard-fails if two sources would collide on one canonical name. Representative st
 and CU overlays were also opened and eyeballed across zones (`cu-cat-cushion`, `cu-sill-tile`,
 `cu-door-dial`, `cu-gear-frame`, `cu-hatch-wheels`, `cu-clockrow-plates`, `cu-house-ring`,
 `ov-cushion-reveal-cu`, `ov-mount-a-36-cu`) — all current, none stale.
+
+---
+
+## Build-16 final wiring batch — cross-view CU echoes + the gear-ring clue hotspot
+
+Two small, self-contained changes closing the last two open items before build 16. No puzzle
+logic, no difficulty and no art direction touched.
+
+### 1. The three cross-view close-up echoes are now consumed
+
+`cu-sill-tile` and `cu-cat-cushion` are the SAME z1 render at 4:3 relative zoom (Asset-Gen's ECC
+registration: cc = 0.999507, pure similarity), so each plate's crop bakes in a corner of the
+OTHER plate's element. Asset-Gen authored three deterministic ($0) patches for that
+(51dc362 / 9fe0d41); this batch wires them into the resolver. Wiring only — no new art and no
+re-stage (147 canonical assets, zero churn).
+
+`Level2CloseUpVisuals.plainPlan`, `case "cu-sill-tile"` — appended AFTER the existing
+`ov-sill-tile-taken` line:
+
+```swift
+if s.hasSolved(Level2Graph.PuzzleID.catMouse) { append("ov-sill-cat-gone", to: &layers) }
+if Level2Engine.isWatchBUncollected(s) { append("ov-sill-cushion-lifted", to: &layers) }
+```
+
+`Level2CloseUpVisuals.catCushionPlan` — prepended at the top of the layer build:
+
+```swift
+if Level2Visuals.tileXITaken(s) { append("ov-cushion-sill-taken", to: &layers) }
+```
+
+Judgment calls worth recording:
+
+- **Order is load-bearing on the sill plate.** `ov-sill-cushion-lifted` composites OVER
+  `ov-sill-cat-gone` at the IDENTICAL rect (the JSON declares `composites_over`), mirroring
+  reveal-over-empty on the cushion plate, so simply DROPPING the top patch when watch B is
+  collected restores the flat-cushion corner with no seam bookkeeping. Cat-gone is therefore
+  appended first. A CI assertion now pins that ordering (and pins the two rects equal).
+- **The transient predicate is `Level2Engine.isWatchBUncollected`, NOT `isCushionLiftable`.**
+  They are different windows: liftable = p02 solved AND NOT lifted; uncollected = p02 solved AND
+  lifted AND watch B not taken. The art depicts a cushion tipped UP, which is only true in the
+  second window — and it is the same predicate that gates `ov-cushion-reveal` on the cushion CU
+  and in `Level2Visuals.wideOverlays(.door)`.
+- **The cushion plate's sill echo is appended first** because its rect (0,0,312,240) is disjoint
+  from every cushion overlay, so ordering between them is irrelevant; appending first keeps the
+  "neighbour echo, then own state" reading consistent with `dormerCachePlan`.
+- Watch B itself is off-plate in the sill crop (Asset-Gen verified: its top edge maps to sill
+  y = 1611 vs the 1536 plate bottom), so the sill CU can never show an untappable duplicate of a
+  collectable — only the tipped-up cushion. No pickup target is declared there.
+- This closes the two "residues that ARE art-side (flagged, not fixed)" items recorded at the end
+  of the round-8 section above, plus the third (transient) case Asset-Gen found while authoring.
+
+**Tests.** `Level2CloseUpStateTests.stateFlips` grew from 22 to 25 rows (sill / cat-gone,
+sill / cushion-lifted, cushion / tile-XI-gone), and a new
+`testCrossViewEchoesTrackTheNeighbouringPlatesState` walks the full transient window —
+fresh -> p02 -> lift -> collect — asserting the lift echo OPENS on the lift, composites above
+cat-gone, and CLOSES again on pickup, plus the reverse direction (tile XI held *or* seated in
+socket 11 both clear the sill corner). The existing art guards (staged / pixel-1:1 / actually
+paints / in-bounds) pick the three new keys up automatically, because the `mid` and `late`
+progression phases already reach every one of their states.
+
+### 2. `clu-ring-chimney` is reachable — new `gear-ring` hotspot in `v-frame`
+
+Producer-approved follow-up to the round-8 escalation recorded above (within the GATE-1
+clarify-clues ruling). `cu-gear-ring` was staged and `gatingClues` mapped
+`plain-cu-gear-ring -> clu-ring-chimney`, but nothing could open it.
+
+**Where the hotspot is anchored.** The gear + ring12 brick carve was measured on the SHIPPED
+`z2-frame-base` plate, not taken on trust: differencing the current wide against
+`_rejects/z2-frame-base-preglyph@3x.png` isolates the carve's ink at @3x pixels
+**x 2826…2875, y 1073…1122** (centroid 2850.3, 1097.6) — which matches the `l2_z2_build.py`
+`GRING = (2850, 1097, 50)` anchor and, independently, the back-projected
+`Level2CloseUpVisuals.ringClues["cu-gear-ring"]` centre. Normalized: **x [0.7359, 0.7487],
+y [0.5589, 0.5844]** — a 35 x 35 scene-px glyph. Registration of the close-up against the wide
+was also re-confirmed (staged `cu-gear-ring` vs the staged wide crop: cc = 0.9967).
+
+**The rect** (`Level2HotspotTable`, `v-frame`):
+
+```swift
+("gear-ring", CGRect(x: 0.7350, y: 0.4620, width: 0.0700, height: 0.1340))
+```
+
+**Why it is deliberately off-centre from the glyph (the overlap-collapse judgment call).** The
+carve sits INSIDE the loose-cache brick patch (`ov-brick-*` spans x [0.6711, 0.7849],
+y [0.5135, 0.6578]), and every hotspot is inflated to the 182-scene-px / 44 pt hit floor. A hit
+node CENTRED on the 35 px glyph would span x [0.7090, 0.7756] and therefore swallow the cache's
+tap point (0.7280, 0.5857); being the smaller node it would win under smallest-area-wins and
+steal the p04 pry taps — exactly the collapse the Producer asked me to check for. The rect is
+therefore biased UP and RIGHT, and authored at >= 182 px in both axes so the rect IS the hit node
+(no invisible inflation to reason about):
+
+- node = x [0.7350, 0.8050], y [0.4620, 0.5960]; area 34,990 px^2 vs `brick` 131,363 px^2 and
+  `gear-rack` 229,886 px^2 — so it wins on its own art;
+- it still contains the WHOLE carve (2.5 px of slack past the left rim);
+- its left edge clears the cache tap point by 19 scene px, and its bottom edge (0.5960) clears
+  the pried recess + oil-can art (measured off `ov-brick-pried-oilcan-wide`: can x [0.699, 0.734]
+  y [0.583, 0.645], cavity x [0.717, 0.762] y [0.601, 0.647]) **entirely** — after prying, no
+  part of the visible cavity or can sits under the clue hotspot;
+- art centre (0.7423, 0.5716) is inside the iPad dual-safe band x [0.1667, 0.8333],
+  y [0.0385, 0.9615], and the hit target is 52.5 x 50.3 pt on iPhone SE.
+
+Routing: `Level2Coordinator.lookTap` gains
+`case (.frame, "gear-ring"): present(.plain(image: "cu-gear-ring"), from: hotspotID)`. The
+existing `gatingClues` entry then records `clu-ring-chimney`, and the existing
+`ringClues["cu-gear-ring"]` entry annotates the IX direction once watch B has been read — no
+other change was needed.
+
+**Guard coverage.**
+
+- `Level2RegistrationTests.inspectArtRects` gained a `(.frame, "gear-ring", <carve ink bbox>)`
+  row, so `testL2InspectHotspotsSitOnArtAndAreIPadReachable` now asserts the hotspot intersects
+  the measured carve, that a tap at the carve's centre resolves to `gear-ring` under the real
+  smallest-area-wins hit test, and that the carve is inside the iPad dual-safe band. The row uses
+  the ART rect (not the hotspot rect) precisely because the hotspot is biased.
+- New `testGearRingCarveOpensTheChimneyRingClueWithoutStealingTheCacheTaps`: tapping the hotspot
+  presents `cu-gear-ring` AND records `clu-ring-chimney` (the direct reachability assertion for
+  the escalation), and four points on the carve resolve to `gear-ring` while three cache points
+  (the overlay-rect centre, the oil can, the pried recess) still resolve to `brick`.
+- The pre-existing `testL2TapsAtVisibleElementPositionsHitTheirHotspots` row for `brick`, the
+  `testL2HotspotsMeet44ptFloorOniPhoneSE` floor check and the hotspot-table/coordinator parity
+  guard cover the new hotspot for free; all were re-verified against the new geometry.
+
+### Asset staging verification (user directive 2026-07-09) — re-run for build 16
+
+No art was added by this batch, but the staged tree was re-verified now that Asset-Gen's three
+echo patches are in: **147 / 147 staged assets hash-match their manifest-current source in
+`specs/assets/level-2/`**, zero orphans, zero shadow-marked files (`@1x/@2x/@3x`, `-b2pre`,
+`-b3pre`, `-preglyph`, `_rejects`) anywhere in the staged tree, and no basename collisions. The
+three new echoes were spot-checked individually
+(`ov-sill-cat-gone-cu.png`, `ov-sill-cushion-lifted-cu.png`, `ov-cushion-sill-taken-cu.png`) —
+each byte-identical to its `@3x` source and each pixel-1:1 with its authored CU rect
+(608 x 840 / 608 x 840 / 312 x 240). `GameAssets` is a folder reference in the Xcode project, so
+they ship without a project change.
+
+### Security checklist — re-run for this batch
+
+- **No dev-time secrets.** Re-grepped the whole source tree, the Xcode project and the staged
+  bundle resources for the fal.ai key and for `api[_-]?key` / `secret` / `token` / `credential`
+  patterns: **zero** hits. This batch adds Swift code and test code only — no new resources and
+  no new build phases. `.env` remains gitignored and is referenced by nothing in the app target.
+- **Minimal entitlements/permissions.** `Info.plist` and entitlements are **unchanged**. No
+  camera / microphone / location / contacts usage, no usage-description strings, no capabilities
+  beyond what the code uses.

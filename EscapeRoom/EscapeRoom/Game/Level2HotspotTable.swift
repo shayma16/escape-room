@@ -62,6 +62,24 @@ enum Level2HotspotTable {
             ("arbor",      CGRect(x: 0.15, y: 0.44, width: 0.14, height: 0.22)),
             ("gear-rack",  CGRect(x: 0.54, y: 0.52, width: 0.22, height: 0.28)),
             ("brick",      CGRect(x: 0.65, y: 0.48, width: 0.16, height: 0.22)),
+            // GATE-1 clarify-clues follow-up: `clu-ring-chimney` was UNREACHABLE — cu-gear-ring
+            // is staged and Level2Coordinator.gatingClues maps plain-cu-gear-ring -> the clue,
+            // but no hotspot opened it. The ⚙+ring12 brick carve measured on the SHIPPED
+            // z2-frame-base plate occupies normalized x[0.7359,0.7487] y[0.5589,0.5844]
+            // (wide @3x pixels 2826..2875 × 1073..1122, centroid 2850,1097 == the l2_z2_build
+            // GRING anchor and the cu-gear-ring ring-clue center back-projected).
+            //
+            // OVERLAP-COLLAPSE (deliberate, documented): the carve sits INSIDE the loose-cache
+            // brick patch (ov-brick-* spans x[0.6711,0.7849] y[0.5135,0.6578]), and every rect
+            // is inflated to the 182-scene-px / 44 pt hit floor, so a hit node CENTERED on the
+            // 35×35 px carve would swallow the cache's tap point at (0.7280,0.5857) — smallest-
+            // area-wins would then hand the pried-cache tap to the clue. The rect is therefore
+            // biased UP and RIGHT: it still contains the whole carve (with margin), but its left
+            // edge (0.7350) clears the cache tap point by 19 scene px and its bottom edge
+            // (0.5960) clears the pried recess + oil-can art (x[0.699,0.762] y[0.5828,0.6474])
+            // entirely. Authored at ≥182 px in both axes so the rect IS the hit node — no
+            // invisible inflation to reason about.
+            ("gear-ring",  CGRect(x: 0.7350, y: 0.4620, width: 0.0700, height: 0.1340)),
             ("panel",      CGRect(x: 0.19, y: 0.72, width: 0.26, height: 0.26)),
         ],
         // z2 — clockrow

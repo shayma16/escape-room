@@ -91,6 +91,17 @@ final class Level2CloseUpStateTests: XCTestCase {
          { $0.addItem(Level2Graph.ItemID.windingKey) }, "ov-key-taken"),
         ("tag nail / tag taken", .plain(image: "cu-tag-nail"),
          { $0.addItem(Level2Graph.ItemID.returnTag) }, "ov-tag-taken"),
+        // CROSS-VIEW ECHOES (build-16 gap): cu-sill-tile and cu-cat-cushion are the same z1
+        // render at different zoom, so each plate bakes in a corner of the OTHER plate's
+        // element. Without these, the sill plate showed a cat the game had removed and the
+        // cushion plate showed a tile XI the player was carrying.
+        ("sill / cat gone in the cushion corner", .plain(image: "cu-sill-tile"),
+         { $0.markSolved(Level2Graph.PuzzleID.catMouse) }, "ov-sill-cat-gone"),
+        ("sill / cushion lifted in the cushion corner", .plain(image: "cu-sill-tile"),
+         { $0.markSolved(Level2Graph.PuzzleID.catMouse)
+           $0.setFlag(Level2Graph.Flag.cushionLifted) }, "ov-sill-cushion-lifted"),
+        ("cushion / tile XI gone from the sill corner", .catCushion,
+         { $0.addItem(Level2Graph.ItemID.tileXI) }, "ov-cushion-sill-taken"),
     ]
 
     /// THE CORE GUARD: each stateful close-up's composition must CHANGE, and change in the
@@ -154,6 +165,69 @@ final class Level2CloseUpStateTests: XCTestCase {
         for (a, b) in [(asleep, vacated), (vacated, revealed), (revealed, emptied)] {
             XCTAssertNotEqual(a, b, "each cushion step must render differently")
         }
+    }
+
+    /// The cross-view echoes end to end. cu-sill-tile and cu-cat-cushion are the SAME z1 render
+    /// (ECC cc=0.9995, pure similarity), so each plate's crop bakes in a corner of the other's
+    /// element. Both directions must track state, and the sill's cushion corner must reproduce
+    /// the cushion plate's TRANSIENT lift window — open on lift, closed again on pickup.
+    func testCrossViewEchoesTrackTheNeighbouringPlatesState() {
+        let sill = L2CloseUp.plain(image: "cu-sill-tile")
+        let s = makeState()
+
+        func sillKeys() -> [String] { plan(sill, s).layers.map(\.key) }
+
+        XCTAssertFalse(sillKeys().contains("ov-sill-cat-gone"), "fresh: the cat is on the base plate")
+        XCTAssertFalse(sillKeys().contains("ov-sill-cushion-lifted"))
+
+        // p02 — the cat leaves; the sill plate's corner must follow the cushion plate.
+        s.addItem(Level2Graph.ItemID.toyMouse)
+        XCTAssertTrue(Level2Engine.placeMouseAtCat(state: s))
+        XCTAssertTrue(sillKeys().contains("ov-sill-cat-gone"))
+        XCTAssertFalse(sillKeys().contains("ov-sill-cushion-lifted"),
+                       "the cushion is down again until it is actually lifted")
+
+        // The transient window OPENS on the lift.
+        XCTAssertTrue(Level2Engine.liftCushion(state: s))
+        XCTAssertTrue(Level2Engine.isWatchBUncollected(s))
+        let lifted = plan(sill, s).layers.map(\.key)
+        XCTAssertTrue(lifted.contains("ov-sill-cushion-lifted"))
+        // ORDER IS LOAD-BEARING: the lift patch is authored to composite OVER cat-gone at the
+        // IDENTICAL rect, so cat-gone must be appended first.
+        guard let iGone = lifted.firstIndex(of: "ov-sill-cat-gone"),
+              let iLift = lifted.firstIndex(of: "ov-sill-cushion-lifted") else {
+            return XCTFail("both cushion-corner echoes must composite during the lift window")
+        }
+        XCTAssertLessThan(iGone, iLift, "ov-sill-cushion-lifted must composite OVER ov-sill-cat-gone")
+        XCTAssertEqual(Level2OverlayCatalog.shared.cuRect("ov-sill-cushion-lifted"),
+                       Level2OverlayCatalog.shared.cuRect("ov-sill-cat-gone"),
+                       "the stacked patches share one rect, so dropping the top one restores the base state")
+
+        // ...and CLOSES again on pickup, leaving the flat-cushion (cat-gone) corner.
+        XCTAssertTrue(Level2Engine.collectWatchB(s))
+        XCTAssertTrue(sillKeys().contains("ov-sill-cat-gone"))
+        XCTAssertFalse(sillKeys().contains("ov-sill-cushion-lifted"),
+                       "the transient lift echo must be dropped once watch B is collected")
+
+        // The other direction: the cushion plate's sill corner clears when tile XI is taken,
+        // and the (disjoint) sill patch composites beneath the cushion's own overlays.
+        let fresh = makeState()
+        XCTAssertFalse(plan(.catCushion, fresh).layers.map(\.key).contains("ov-cushion-sill-taken"))
+        fresh.addItem(Level2Graph.ItemID.tileXI)
+        fresh.markSolved(Level2Graph.PuzzleID.catMouse)
+        let cushion = plan(.catCushion, fresh).layers.map(\.key)
+        XCTAssertEqual(cushion.first, "ov-cushion-sill-taken",
+                       "the sill echo composites first (its rect is disjoint from the cushion overlays)")
+        XCTAssertTrue(cushion.contains("ov-cushion-empty"))
+        XCTAssertFalse(Level2OverlayCatalog.shared.cuRect("ov-cushion-sill-taken")
+                        .intersects(Level2OverlayCatalog.shared.cuRect("ov-cushion-empty")),
+                       "disjoint rects — composite order between them is irrelevant")
+
+        // Seating tile XI (rather than holding it) is the same latched 'taken' state.
+        let seated = makeState()
+        seated.setL2DialSocket("11", tile: Level2Graph.ItemID.tileXI)
+        XCTAssertTrue(plan(.catCushion, seated).layers.map(\.key).contains("ov-cushion-sill-taken"))
+        XCTAssertTrue(plan(sill, seated).layers.map(\.key).contains("ov-sill-tile-taken"))
     }
 
     /// Collecting from a close-up must EMPTY it — the direct R8-002(1) assertion.

@@ -142,6 +142,14 @@ enum Level2CloseUpVisuals {
             if Level2Visuals.tileVIITaken(s) { append("ov-crate-tile-taken", to: &layers) }
         case "cu-sill-tile":
             if Level2Visuals.tileXITaken(s) { append("ov-sill-tile-taken", to: &layers) }
+            // CROSS-VIEW ECHO (build 16 gap): this crop's bottom-right corner bakes in the
+            // NEIGHBOURING cushion element, so it must echo the cushion's state or the sill
+            // plate shows a cat the rest of the game has already removed. Order is load-
+            // bearing: the transient lift composites OVER cat-gone at the identical rect
+            // (z1-state-overlays "composites_over"), mirroring reveal-over-empty on the
+            // cushion CU, so dropping it on pickup restores the flat-cushion corner.
+            if s.hasSolved(Level2Graph.PuzzleID.catMouse) { append("ov-sill-cat-gone", to: &layers) }
+            if Level2Engine.isWatchBUncollected(s) { append("ov-sill-cushion-lifted", to: &layers) }
         case "cu-timelock":
             if s.hasFlag(Level2Graph.Flag.doorBarRaised) { append("ov-bar-raised", to: &layers) }
         case "cu-gear-rack":
@@ -233,6 +241,10 @@ enum Level2CloseUpVisuals {
     static func catCushionPlan(_ s: GameState) -> Plan {
         var layers: [Layer] = []
         var targets: [Target] = []
+        // CROSS-VIEW ECHO (build 16 gap): the top-left corner of this crop bakes in the dormer
+        // SILL, so tile XI must disappear here too once it has been taken. Disjoint rect from
+        // every cushion overlay, so it is composited first and order is otherwise irrelevant.
+        if Level2Visuals.tileXITaken(s) { append("ov-cushion-sill-taken", to: &layers) }
         if s.hasSolved(Level2Graph.PuzzleID.catMouse) {
             append("ov-cushion-empty", to: &layers)
             if Level2Engine.isWatchBUncollected(s) {
