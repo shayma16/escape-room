@@ -277,6 +277,17 @@ per-zone user reviews follow each batch.
   verification (user may object). NEXT: overlays land → dev follow-up (stage + gear-ring
   hotspot + fast-lane green) → build 16 → user resumes. ON USER GO → merge level2-clockmakers-attic
   → main + final release; do NOT merge before that.
+  ✅ ECHO OVERLAYS ×3 DONE (Asset-Gen, $0, commits 51dc362/9fe0d41 — incl. the third
+  transient echo, correct predicate isWatchBUncollected confirmed vs engine).
+  ✅ FINAL WIRING DONE (Dev, commits 911ad83/d24b885, fast-lane GREEN 31042881390, 192
+  tests/0 fail, 3 runtimes): echo overlays wired (composite order load-bearing),
+  gear-ring hotspot added (anchored to measured carve ink, overlap-safe vs brick cache,
+  registration-guard covered). **BUILD 16 READY. Release Manager DISPATCHED 2026-08-06:**
+  gates on a FRESH full-lane run (wiring touched UI code after full-lane 31034965366),
+  then release.yml → stamp/verify build 16 → TestFlight → security re-check on the .ipa.
+  User is MID-PLAYTHROUGH (p01–p03 done, watch B in inventory, next = p04 chimney);
+  build-15 save migration tested. On the user's completed device test → GATE 2 → merge →
+  main + release.
   📄 DOC SECOND PASS (step 14) dispatched 2026-07-22 (user catch — was overdue): reconcile
   L2 walkthrough.md to the as-built build-15 game (resolve the p08-mouse-dead-spec +
   naive-4:40 flags; VI-X-I-III vault code; never-consumed items; coat two-pocket collect;
