@@ -466,7 +466,8 @@ private struct L2PlainCloseUp: View {
 
     var body: some View {
         L2Plate(plan: plan, identifier: "closeup-" + image,
-                onPlateTap: { coordinator.useArmedItemInCloseUp() }) { plate in
+                onPlateTap: { coordinator.useArmedItemInCloseUp() },
+                extra: { plate in
             if let ring = Level2CloseUpVisuals.ringClues[image], state.hasViewedClue(ring.gateClue) {
                 let radius = ring.radiusFracOfWidth * plate.width
                 let center = CGPoint(x: plate.minX + ring.center.x * plate.width,
@@ -481,7 +482,7 @@ private struct L2PlainCloseUp: View {
                     .allowsHitTesting(false)
                     .accessibilityIdentifier("ring-pointer-" + String(ring.hour))
             }
-        }
+        })
     }
 }
 
@@ -501,7 +502,7 @@ private struct L2DialDoorControl: View {
     ]
 
     var body: some View {
-        L2Plate(plan: plan, identifier: "dial-door") { plate in
+        L2Plate(plan: plan, identifier: "dial-door", extra: { plate in
             ForEach(Level2Graph.dialSockets, id: \.self) { socket in
                 let r = Self.sub(Level2OverlayCatalog.shared.cuRect(Self.socketOverlays[socket] ?? ""),
                                  in: plate)
@@ -518,12 +519,12 @@ private struct L2DialDoorControl: View {
             // socket then tries to seat it and it whirs, stalls and pops back to the tray,
             // exactly as p01's solution_fixed "rejected: tray VI in socket-4" describes.
             trayDecoy(in: plate)
-        }
+        })
     }
 
     private func trayDecoy(in plate: CGRect) -> some View {
         let tray = Self.sub(Level2CloseUpVisuals.trayDecoyRect, in: plate)
-        ZStack {
+        return ZStack {
             if trayVISelected {
                 RoundedRectangle(cornerRadius: 6)
                     .strokeBorder(NavChevron.boneWhite.opacity(0.85), lineWidth: 2)
@@ -576,10 +577,10 @@ private struct L2GearFrameControl: View {
 
     var body: some View {
         ZStack {
-            L2Plate(plan: plan, identifier: "gear-frame") { plate in
+            L2Plate(plan: plan, identifier: "gear-frame", extra: { plate in
                 postTarget(.a, plate: plate)
                 postTarget(.b, plate: plate)
-            }
+            })
             VStack {
                 gearPicker.padding(.top, 12)
                 Spacer()
@@ -632,7 +633,7 @@ private struct L2GearFrameControl: View {
         let n = Level2CloseUpVisuals.postRect(post, gear: current)
         let r = CGRect(x: plate.minX + n.minX * plate.width, y: plate.minY + n.minY * plate.height,
                        width: n.width * plate.width, height: n.height * plate.height)
-        ZStack {
+        return ZStack {
             if current == nil {
                 Circle()
                     .strokeBorder(NavChevron.boneWhite.opacity(0.30),
@@ -751,14 +752,14 @@ private struct L2GreatDialControl: View {
 
     var body: some View {
         ZStack {
-            L2Plate(plan: plan, identifier: "great-dial") { plate in
+            L2Plate(plan: plan, identifier: "great-dial", extra: { plate in
                 let side = min(plate.width, plate.height)
                 // Hands render at the MIRRORED angle (D1: front angle theta renders at -theta).
                 hand(lengthFrac: 0.30, widthPt: 10, angle: -hourAngle, side: side)
                     .position(x: plate.midX, y: plate.midY)
                 hand(lengthFrac: 0.42, widthPt: 6, angle: -minuteAngle, side: side)
                     .position(x: plate.midX, y: plate.midY)
-            }
+            })
             VStack {
                 Spacer()
                 HStack(spacing: 28) {

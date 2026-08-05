@@ -423,3 +423,257 @@ points at the iPad-reachability unit guard.
 **Validating runs (this fix):** fast lane <FAST_RUN_URL>; full lane <FULL_RUN_URL> — GREEN on
 BOTH hard gates (iPhone-SE UI playthrough + Dynamic Island); the iPad full-playthrough step
 stays `continue-on-error`. Links filled in the handoff message.
+
+---
+
+## Round-8 fix batch → build 16 (device feedback, 2026-08-05)
+
+Authority: `specs/levels/level-2/round8-routed-changelist.md` + `specs/feedback-backlog.md`
+ROUND 8. All items user-approved at GATE 1 (2026-07-22). Source: TestFlight "Within 1.0 (15)",
+iPad, first Level-2 device playthrough. **Art spend this round: $0.00** — every resolved-state
+plate this batch needed already existed; it had simply never been staged.
+
+### Cluster A (P0) — close-up STATE rendering
+
+**Confirmed root cause, and one more layer than the changelist found.** Two independent
+failures stacked:
+
+1. **Code:** nothing in the close-up path consumed the per-element state overlays.
+   `Level2Visuals.wideOverlays` composited them into the WIDE scene only. Every close-up was
+   `GameImage(name: <one constant>)`. The worst instance was the literal no-op ternary called
+   out in the changelist —
+   `coordinator.state.hasSolved(...catMouse) ? "cu-cat-cushion" : "cu-cat-cushion"` — in a view
+   with **no tap target at all**, which is why the cushion could never be lifted (R8-013 P0).
+2. **Assets (not previously diagnosed):** the CLOSE-UP overlay crops
+   (`specs/assets/level-2/**/states/ov-*@3x.png`, the non-`-wide` variants) were authored in
+   batches 2/3 **and were never staged into the bundle**. `tools/stage_level2_assets.py`
+   deliberately staged only `ov-*-wide@3x.png`, with a comment saying the CU variants were
+   "unused by the current presentation". So even a correct compositor would have had nothing
+   to draw. Both halves are fixed here.
+
+**The fix — one path, not per-close-up patches.**
+
+- New `EscapeRoom/Game/Level2CloseUpVisuals.swift`: a pure, order-free
+  `(L2CloseUp, GameState) -> Plan` resolver — the exact mirror of the wide path. A `Plan` is
+  `{ base plate, [Layer], [Target], focus }`, where each `Layer` is an overlay key + its staged
+  image + its authored CU rect, and each `Target` is a manual-pickup/lift hit region sitting on
+  the art it collects.
+- New `L2Plate` in `Level2RoomView.swift` is the **single renderer**. Every close-up — plain
+  plates included — now goes through it. Nothing else decides what a close-up shows, so a new
+  stateful close-up cannot silently ship stale.
+- `tools/stage_level2_assets.py` now stages the CU overlay crops as `<key>-cu.png`. The `-cu`
+  suffix exists because `GameAssetLoader` indexes by BASENAME across all levels and the raw CU
+  names collide with Level 1 (`ov-key-taken`). The mapping is 1:1, deterministic, recorded in
+  `staged-manifest.json` (name → source + sha256), and two sources landing on one canonical name
+  still hard-fail the script — so the 2026-07-09 "canonical filename == current art" guarantee
+  holds. It also now stages `z1-cat-face.json`, the rack gear cutouts (`z2/props/gear-*`), the
+  landmark dies (`masters/glyphs/die-*`) and the canonical hour hand.
+
+**States that now render in close-ups** (each one an R8 item): coat pockets emptying
+independently; the four dial sockets showing their seated tiles; the dormer/chimney caches
+pried-with-the-find then emptied; the cushion's four-step cat→gone→lifted→emptied chain; the
+sill/stove/crate tiles disappearing once taken; the raised time-lock bar; the rack gaps; the
+gears mounted on posts A/B; the oiled drum and seated winding key; the emptied key hook and tag
+nail; the cabinet drawer with/without the tin mouse.
+
+### Cluster B — the occluded dismiss chevron
+
+Root cause confirmed exactly as diagnosed: `L2CloseUpHost` gave the content
+`.padding(.bottom, barHeight)` but the chevron a flat `.padding(.bottom, 12)`, and
+`InventoryBarView` is added to the parent ZStack AFTER the close-up host (deliberately —
+§7-R1.5 / F-020 require the bar to stay live inside close-ups). The 88×56 chevron therefore sat
+inside a 72 pt (iPad) / 62 pt (iPhone) bar band on **every** L2 close-up.
+
+Fixed by matching Level 1's convention (`bottomInset + 10`), and by promoting that convention
+into testable data: new `L2CloseUpChrome` (in `Level2CloseUpVisuals.swift`) exposes
+`dismissBottomPadding(barHeight:)`, `dismissFrame(in:barHeight:)` and
+`inventoryBand(in:barHeight:)`. Z-order is unchanged (the bar stays above the close-up, per
+F-020); only the inset changed.
+
+### Cluster C — iPad close-up layout collapse
+
+Root cause confirmed: `L2CoatControl` was `GeometryReader { ZStack { … } }` whose only
+full-size children were the CONDITIONAL positioned pocket buttons; when the last one
+disappeared the ZStack shrank to the fitted image and GeometryReader re-placed it top-leading.
+
+`L2Plate`'s stack is now explicitly `.frame(width: geo.size.width, height: geo.size.height)`
+with a constant `Color.clear` anchor, so its layout is independent of every conditional child.
+Because **all** L2 close-ups are built on `L2Plate`, the audit the changelist asked for is
+structural rather than per-view: there is no longer a close-up that can collapse.
+
+### Cluster D — the tray-VI decoy
+
+The floating `Button { Text("VI") }.position(x: plate.midX, y: plate.maxY - 20)` is deleted.
+The decoy is now a tap region on the **depicted** tile in the tray art. Its rect is
+deterministic, not eyeballed: `specs/tools/l2_dialfix.py` lays the canonical foreshortened tile
+at center (1120, 1204), ~118×52 after its −5° rotate, on the 2048×1536 plate —
+`Level2CloseUpVisuals.trayDecoyRect` is exactly that, with the host applying the 44 pt floor.
+
+**Semantics implemented per the graph, not invented.** p01 `solution_fixed` lists
+`"rejected": "tray VI in socket-4"`, and the derivation says "Seating the tray VI in socket-4
+whirs, stalls, and pops it back to the tray". So the decoy is *selectable bait*: tap the tile to
+pick it up (a pale selection ring — no text, no badge), tap a socket, it is refused and pops
+back. It is **never** an inventory item (standing R6-003 principle) — `Level2Engine.seatDialTile`
+already guarantees this structurally (`Level2Graph.DecoyTile.trayVI` can never match
+`dialSolution`), and `testTrayDecoyIsAnOnPlateRegionAndNeverCollectible` locks it.
+
+### USER RULING — restore the MANUAL cushion pickup (R8-013)
+
+`placeMouseAtCat` no longer calls `state.addItem(watchB)`. p02 now only vacates the cushion; the
+graph's yield ("cushion now liftable; watch B beneath") is delivered as two deliberate taps:
+
+    cat asleep  →[p02]→  cat gone, cushion down (liftable)
+                →[tap cushion]→  cushion lifted, watch B on the bench
+                →[tap watch]→    emptied
+
+New latched flag `Level2Graph.Flag.cushionLifted` (in the existing generic flag bag — no save
+schema change), plus `Level2Engine.isCushionLiftable / liftCushion / isWatchBUncollected /
+collectWatchB`, all pure functions of latched state.
+
+**Save migration.** A build-15 save that already holds watch B (auto-granted) resolves
+`isCushionLiftable == false` and `isWatchBUncollected == false`, so the cushion reads as empty
+and the watch is never re-offered — guarded by `testLegacySaveHoldingWatchBShowsNoRevealAndNoLift`.
+
+**FOR DOCUMENTATION:** the FINAL walkthrough's cushion-lift step is now **correct again** and
+needs no change on that point. It does need the p03 clarification below.
+
+### USER RULING — near-wordless: literal text UI removed
+
+Replaced with pictogram/glyph affordances from canonical masters. No text labels remain in any
+L2 scene or close-up.
+
+| Was | Now |
+|---|---|
+| `Text("VI")` floating button (p01) | the depicted tray tile + a pale selection ring |
+| `Text("Rack")` + `Text("16")…` gear buttons (p06) | the real gear cutouts `z2/props/gear-*`, sized by tooth count so the ratio reads at a glance; `inv-great-wheel` for the 64 |
+| `Text("Post A")` / `Text("Post B")` + `Text(current ?? "—")` (p06) | the composited `ov-mount-a/b-<g>` art ON the plate; an empty post shows a faint dashed seat ring |
+| `Label("Crank", …)` button (p06) | SF Symbol `arrow.triangle.2.circlepath` only |
+| `Text("Big Ben"/"Burj"/"Liberty"/"Fuji")` headers (p07) | the canonical landmark dies `die-bigben/burj/liberty/fuji` — which is what `clu-worldclock-row` says the player matches ("landmark identification is NOT required — pictogram matching to the vault headers suffices") |
+
+**Judgment call (flagged):** the p07 wheel READOUTS still render Roman numerals (`VI`, `X`, …)
+and the great-dial has no readout. Numerals are the puzzle's diegetic content, not UI labels, and
+they match the numerals painted on the plate itself — so they were kept. If the Producer reads
+"near-wordless" as excluding numerals too, say so and they can be swapped for the canonical
+`masters/glyphs/num-*` engravings.
+
+### USER RULING — p03/p04 KEEP SIMPLE + CLARIFY (R8-009)
+
+**The pointer MECHANIC was not restored.** The cache stays a single always-correct hotspot gated
+on the watch clue. Two presentation-only changes make the clue path legible, both using existing
+canonical art:
+
+1. **The ⌂-ring close-up now shows the direction.** Once `clu-watch-a` has been viewed (i.e. the
+   player has inspected watch A), `cu-house-ring` composites the canonical hour hand
+   (`z3/v-dial/sprites/hand-hour`) pivoted at the ring hub and pointing at the 3-o'clock notch.
+   The ring alone said "apply a clock direction HERE" but showed no direction; now the ring and
+   the watch are visibly bound. Wordless, deterministic, gated so it never spoils the beat for a
+   player who has not read the watch. Table: `Level2CloseUpVisuals.ringClues`.
+2. **The clock-row clue reads as a clue.** `cu-clockrow-plates` is an ~80% crop that also carries
+   the display case and the parts cabinet, so the four timezone plates rendered small
+   (R8-008(2)/(3)). The plan now carries a `focus` rect (`0.02, 0.03, 0.96, 0.52`) and `L2Plate`
+   zooms the presentation to the clock band. A deterministic presentation crop — **no new art**.
+
+**Producer decision needed (I did NOT act on it):** no art annotation was generated, per the
+"flag first" instruction. If the ring-pointer overlay proves insufficient in the blind re-check,
+the next step would be a tiny deterministic engrave on the wide plate — that is an Art
+Director/Asset-Gen call, not mine.
+
+**Escalation — `clu-ring-chimney` is UNREACHABLE in the build.** `cu-gear-ring` (the ⚙ ring on
+the chimney breast) is staged and `Level2Coordinator.gatingClues` maps
+`plain-cu-gear-ring → clu-ring-chimney`, but **no `gear-ring` hotspot exists in
+`Level2HotspotTable` for `v-frame`**, so the close-up can never be opened. The clue is
+"anchor only, not part of the gate" (graph), so this does not block p04 — but the p04 half of the
+ring↔watch beat is currently invisible, and the p03 fix above therefore has no p04 twin. Adding
+a hotspot is a geometry/design change (it must pass the M1 registration + iPad-band guards), so
+**routing this to the Producer rather than fixing it unilaterally.** The ring-clue table already
+contains the `cu-gear-ring` entry (hour IX, gated on `clu-watch-b`), so the annotation lights up
+the moment a hotspot is added.
+
+### R8-011(1) — the cat's mouse-tell is now VISIBLE
+
+The rev-1.3 tell shipped sound-only. The facial-key art already existed and was never staged or
+loaded: `ov-cat-mouse-tell` (eyes open + locked amber gaze), `ov-cat-mouse-tell-tail` (tail-tip
+flick) and `ov-cat-slow-blink`, with rects in `z1/z1-cat-face.json`.
+
+- `Level2OverlayCatalog` now loads `z1-cat-face.json` and registers the second patch of a
+  two-patch entry under `<key>-tail` (the file authors `rect_3x` for the eyes and
+  `tail_rect_3x` for the tail on one entry).
+- Offering ANY item directly to the cat now opens/keeps the cushion close-up and composites the
+  matching facial key for a 2 s beat, then clears (`Level2Coordinator.showCatResponse`,
+  token-guarded so overlapping offers cannot leave the tell stuck on). The mouse gets the
+  eyes+tail tell; everything else the slow blink.
+- No new state, no new art, no engine change: `offerItemToCat` still never executes p02 and never
+  consumes the item.
+
+### R8-005(3) — dead-tap sweep
+
+Verified per element, not swept:
+
+- **house-ring** — was NOT dead. It presents `cu-house-ring` and always did; build 15's "nothing
+  happens" was Cluster B (no visible way out, so the user tapped the backdrop straight back out)
+  compounded by a clue plate with nothing to read. Both now fixed.
+- **door lock (stair-door)** — by design pre-latch: it presents the `cu-timelock` close-up and
+  rattles (D8 keyless remote lock). Unchanged.
+- **cat** — by design pre-p02: it presents the cushion close-up. It now also carries a visible
+  reaction (above) and, post-p02, the lift affordance.
+- **key hook (z4)** — genuinely dead after the key was taken. Now presents the state-resolved
+  `cu-key-hook` close-up (empty hook), symmetric with sill/crate/stove/tag.
+- **parts cabinet (z2)** — the toy mouse used to be auto-added on a second wide tap with no
+  close-up at all. It now opens `cu-cabinet-drawer` and the mouse is a deliberate tap inside it,
+  which both kills the invisible-state complaint and matches the manual-pickup principle.
+
+### Stale-close-up sweep — two residues that ARE art-side (flagged, not fixed)
+
+After Cluster A, every close-up resolves its state correctly. Two remaining wrong reads are
+baked into the source plates and have **no authored overlay**, so they cannot be fixed in code:
+
+1. **`cu-cat-cushion` contains the sill corner with tile XI** (top-left, roughly plate
+   x[0, 235] y[0, 140] @3x). Once tile XI is collected the wide view drops it but this close-up
+   still shows it — the user's R8-005(1) "part of the tablet i just picked up". Needs an
+   `ov-cushion-xi-taken`-style patch (or a re-crop that excludes the sill).
+2. **`cu-sill-tile` contains the cat** (bottom-right, roughly plate x[1380, 2048] y[1275, 1536]
+   @3x). Post-p02 the cat is gone everywhere else but present here — R8-013(2). The analogous
+   patch exists for the OTHER overlapping crop (`ov-cache-cat-gone`, for `cu-floor-cache`), so
+   the precedent and the method are established; the sill twin was simply never authored.
+
+Both are cosmetic (no progression impact) and both are Art Director / Asset-Gen work. They fold
+naturally into the R8-008(3) close-up re-crop pass if that is approved. **Routing to the
+Producer.**
+
+### NEW CI GUARD — `EscapeRoomTests/Level2CloseUpStateTests.swift` (fast lane)
+
+The binding requirement: this defect class shipped because nothing tested it. L2's WIDE views
+had registration/rendered-frame guards; its close-ups had none. The new suite is deterministic
+(pure model + offline UIKit image inspection — **no simulator UI automation**), so it belongs in
+the fast lane per the CI-efficiency directive.
+
+| Test | What it locks |
+|---|---|
+| `testEveryStatefulCloseUpCompositionChangesOnItsStateFlip` | **The core guard.** A 22-row table of (close-up, state mutation, overlay that must appear). For each, the plan must CHANGE and change in the right direction. Build 15 fails every row; the no-op ternary fails the "IDENTICAL after the state flip" assertion by construction. |
+| `testCushionCloseUpRendersAllFourStatesDistinctly` | The P0 chain end to end: four distinct compositions + the right target at each step. |
+| `testCollectingFromACloseUpEmptiesIt` | R8-002(1): collecting through the coordinator empties BOTH coat pockets. |
+| `testCacheCloseUpsRenderPriedThenEmptied` | R8-009(2)/R8-010: pried-with-the-find → collected → empty, in the close-up. |
+| `testEveryCloseUpLayerResolvesToStagedArt` | The staging half of the root cause — an authored-but-unstaged overlay fails loudly. |
+| `testCloseUpLayerArtIsPixel1to1WithItsRect` | R7-001 class, close-up side: art must match its authored rect at 2048×1536 or the runtime rescales and misplaces it. |
+| `testEveryCloseUpLayerActuallyPaints` | Mean-alpha check: a transparent/empty patch cannot pass as a "state change". |
+| `testCloseUpLayersAndTargetsAreInBoundsAndTappable` | Every layer and every pickup target lies on the plate and is big enough to hit. |
+| `testTrayDecoyIsAnOnPlateRegionAndNeverCollectible` | Cluster D: on-plate region, no socket overlap, never an inventory item. |
+| `testRingClueAnnotationAppearsOnlyAfterItsWatchIsRead` | The p03 clue clarification is gated and lands inside the plate. |
+| `testVaultHeaderPictogramsShip` | The near-wordless replacements actually ship. |
+| `testDismissChevronClearsTheInventoryBandOnEveryDeviceClass` | **Cluster B:** pure geometry across iPad 13″/11″ and iPhone SE / 16 Pro — the chevron sits fully above the inventory band with clearance and clears the 44 pt floor. |
+| `testEveryCloseUpCaseResolvesToARenderablePlate` | Every close-up case has a bundled base plate and a sane focus rect. Because all close-ups share one host, this + the chevron test cover the whole level. |
+
+`Level2AssetStagingTests` also gained the `-cu` family (and `z1-cat-face.json`'s rects) to its
+required-asset and rect-catalog assertions, and its byte-vs-manifest check was de-quadraticised
+now that ~150 files ship.
+
+### Security checklist — re-run for this batch
+
+- **No dev-time secrets.** Re-grepped the source tree, the Xcode project and the staged bundle
+  resources for the fal.ai key and any `api[_-]?key`/`secret`/`token`/`credential` pattern:
+  **zero** hits. The assets added this round are PNGs copied from `specs/assets/`; the only new
+  JSON is `z1-cat-face.json` (rect data). `.env` remains gitignored and is not referenced by any
+  build phase.
+- **Minimal entitlements/permissions.** `Info.plist` and entitlements are **unchanged by this
+  batch**. No camera / microphone / location / contacts usage or usage-description strings; no
+  capabilities added.

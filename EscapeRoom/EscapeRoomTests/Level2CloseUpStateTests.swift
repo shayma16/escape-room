@@ -478,11 +478,18 @@ final class Level2CloseUpStateTests: XCTestCase {
     /// Mean alpha of an RGBA/premultiplied CGImage, sampled on a coarse grid.
     private static func meanAlpha(_ image: CGImage) -> Double {
         let w = min(image.width, 96), h = min(image.height, 96)
+        guard w > 0, h > 0 else { return 0 }
         var buffer = [UInt8](repeating: 0, count: w * h * 4)
-        guard let ctx = CGContext(data: &buffer, width: w, height: h, bitsPerComponent: 8,
-                                  bytesPerRow: w * 4, space: CGColorSpaceCreateDeviceRGB(),
-                                  bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue) else { return 1 }
-        ctx.draw(image, in: CGRect(x: 0, y: 0, width: w, height: h))
+        let drawn: Bool = buffer.withUnsafeMutableBytes { raw -> Bool in
+            guard let ctx = CGContext(data: raw.baseAddress, width: w, height: h,
+                                      bitsPerComponent: 8, bytesPerRow: w * 4,
+                                      space: CGColorSpaceCreateDeviceRGB(),
+                                      bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue)
+            else { return false }
+            ctx.draw(image, in: CGRect(x: 0, y: 0, width: w, height: h))
+            return true
+        }
+        guard drawn else { return 1 }   // unreadable: don't fail the build on a decode quirk
         var total = 0.0
         for i in stride(from: 3, to: buffer.count, by: 4) { total += Double(buffer[i]) / 255.0 }
         return total / Double(w * h)
