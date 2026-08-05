@@ -2336,3 +2336,37 @@ door-dial (p01). Build 15, iPad, Level 2. Multiple threads:
 - THREAD (4) STRAY UI: a "VI button just above my inventory that looks out of place" — a
   misplaced/leftover VI UI element/button near the inventory bar (rendering/placement bug);
   possibly the VI decoy rendered as an errant button.)
+
+### R8-005 — status: logged
+> found the xi tablet. then i try to get closeup on the cat, i can see part of the tablet i just picked up, it shouldn't be there. no back to main scene arrow. trying closeups and random clicks on cat, sunny house thing on the pillar, and door lock. nothing happens. i guess now the puzzles start
+
+(context — factual, no classification: Level 2 z1 v-door (cat/sill/door scene). Build 15,
+iPad, Level 2. Threads:
+- POSITIVE / PROGRESS: the XI tile (itm-tile-xi, from the sill cu-sill-tile) pickup works —
+  user now has all 4 p01 tiles (II / IV / VII / XI).
+- THREAD (1) RENDER ARTIFACT: opening the CAT close-up (cu-cat-cushion) shows "part of the
+  tablet i just picked up" (the XI tile) where it shouldn't be — a leftover tile/overlay
+  fragment bleeding into the cat close-up. May relate to QA m4 ("cat-cushion clips the
+  watch-B reveal") — same cushion close-up region, but here it's a stray XI-tile fragment.
+  Art/overlay compositing.
+- THREAD (2) MISSING BACK CHEVRON on the cat close-up (systemic; cross-ref R8-001/002/004).
+- THREAD (3) "NOTHING HAPPENS" on tapping the CAT, the "sunny house thing on the pillar"
+  (house-ring / sun glyph = cu-house-ring, a re-anchored hotspot), and the DOOR LOCK — no
+  close-up / no response. FOR FIX PASS, determine PER ELEMENT whether by-design or defect:
+  cat = p02 (needs the wind-up mouse, so no action yet may be intended, but a close-up/tell
+  should still be reachable); door lock = endgame p11 timelock (not active yet — intended);
+  house-ring = a CLUE close-up that SHOULD open (if tapping it does nothing, the re-anchored
+  house-ring hotspot may be missing its close-up or mis-hit — verify, since house-ring was
+  re-anchored in commit 203036a). User inferred "now the puzzles start.")
+
+### R8-006 — status: logged (POSITIVE / milestone — no defect)
+> ok now that i have the last tablet, let me open that clock on the door, i put it in place and the door opens. i go in.
+
+(context — factual, no classification: Level 2 z2 v-door → z2 interior. Build 15, iPad,
+Level 2. MILESTONE: placing the XI tile completes p01 (numeral-tile door II/IV/VII/XI at
+sockets 2/4/7/11), the door OPENS, and the user enters z2. Confirms the critical build-15
+fixes work end-to-end on iPad — the coat two-pocket collect (tile IV + watch A, previously
+unobtainable → L2 uncompletable) and the re-anchored hotspots — so p01 is now solvable on
+iPad, the exact thing that was broken. Despite the R8-004 door-dial close-up state-refresh
+bug (placed tiles not shown in the close-up), the puzzle still completes. No new defect;
+positive progress narration, id retained for sequence.)
