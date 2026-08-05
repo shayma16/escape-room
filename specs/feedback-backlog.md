@@ -2256,3 +2256,30 @@ correlates almost exactly with the user's report:
   a CLEAN fade-to-black (erase the smeared pixels entirely, no fake detail) rather than burn budget.
 - Left/right edges also show smear (visible in the bench base plate) — sweep ALL edges this time.
 - Target: Asset-Gen. Budget: $2.15 headroom of the $23.00 cap.
+
+---
+
+## Round 8 (Level 2 "The Clockmaker's Attic" — build-15 device testing on iPad, TestFlight "Within 1.0 (15)"; logging)
+
+_First feedback round for LEVEL 2. Device/context: iPad, TestFlight, build 15, Level 2
+first-time playthrough. Logging only (Phase 1) — items logged verbatim as reported, no
+classification/routing/action until the user explicitly triggers processing._
+
+### R8-001 — status: logged
+> ok starting level 2 for the first time, the first scene is the chalkboard. inspecting pulls a closeup that shows a door at the end but i can't really pick up anything, so i go back. i pickup the screwdriver, and the little watch thing on the wall pulls another closeup of weather clock? cloudy, sunny, rainy. oh but there is no down arrow to get out of the closeup. is it hidden under the inventory screwdriver i just picked? i'm not sure, you have to check. i click randomly at the edges of the closeup and that seems to take me back to main scene, but i still need that arrow for consistency
+
+(context — factual, no classification: Level 2 z1 v-bench, build 15, iPad.
+- POSITIVE (working as reported): the slate/chalkboard inspect works — pulls a clue
+  close-up showing a door at the end; nothing to pick up there, which is as-designed
+  (clue view). The screwdriver pickup works.
+- POSITIVE (confirms a prior fix target): "the little watch thing on the wall" = the
+  BAROMETER close-up (cu-barometer, weather symbols cloudy/sunny/rainy) OPENS correctly —
+  confirms the re-anchored barometer hotspot works (this was a stale-hotspot fix target).
+- DEFECT reported: the barometer close-up has NO visible down/back exit chevron. User
+  suspects it may be HIDDEN behind the inventory bar / the just-picked-up screwdriver
+  inventory icon. User had to tap randomly at the close-up edges to exit; wants the exit
+  arrow present for consistency with other close-ups.
+- FOR THE FIX PASS TO CHECK (user explicitly asked): is the exit chevron missing entirely,
+  or is it z-order/position-occluded by the inventory bar / a newly-added inventory item,
+  specifically on the cu-barometer close-up.
+- Narration only (not a defect): the slate close-up's "door at the end.")
