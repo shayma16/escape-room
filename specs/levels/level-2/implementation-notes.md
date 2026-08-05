@@ -677,3 +677,31 @@ now that ~150 files ship.
 - **Minimal entitlements/permissions.** `Info.plist` and entitlements are **unchanged by this
   batch**. No camera / microphone / location / contacts usage or usage-description strings; no
   capabilities added.
+
+### CI (round 8)
+
+- **Fast lane GREEN** — run `31028394727`
+  (<https://github.com/shayma16/escape-room/actions/runs/31028394727>): build + the full
+  unit/logic suite on iPad 13″, iPhone SE and the Dynamic-Island iPhone, including the new
+  `Level2CloseUpStateTests` and the extended `Level2AssetStagingTests`.
+  The preceding run `31027774811` failed the BUILD step only (two `some View` helpers left
+  without an explicit `return` after their `@ViewBuilder` attribute was dropped, plus
+  backward-matching trailing-closure warnings) — diagnosed from its log and fixed in one batch
+  rather than one CI iteration per error, per the CI-efficiency directive.
+- **Full lane** — dispatched with `lane=full` after the batch was complete; link in the handoff
+  message. The heavy iPad L1 playthrough step remains `continue-on-error` by design; the
+  iPhone-SE UI playthrough and the Dynamic-Island safe-area step are the hard gates.
+- The `Level2UITests` smoke test needed no changes: the accessibility identifiers it drives
+  (`closeup-dismiss`, `collect-itm-tile-iv`, `collect-itm-watch-a`, `dial-socket-*`) are all
+  preserved, and the dial sockets are now real queryable elements rather than `Color.clear`
+  Buttons.
+
+### Asset staging verification (user directive 2026-07-09)
+
+Beyond the in-bundle manifest check, the staged tree was verified **byte-for-byte against the
+manifest-current sources** in `specs/assets/level-2/`: all **144** staged assets hash-match their
+source, there are **no orphans** (every staged PNG is manifest-current) and the script still
+hard-fails if two sources would collide on one canonical name. Representative staged close-ups
+and CU overlays were also opened and eyeballed across zones (`cu-cat-cushion`, `cu-sill-tile`,
+`cu-door-dial`, `cu-gear-frame`, `cu-hatch-wheels`, `cu-clockrow-plates`, `cu-house-ring`,
+`ov-cushion-reveal-cu`, `ov-mount-a-36-cu`) — all current, none stale.
