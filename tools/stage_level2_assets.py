@@ -47,7 +47,17 @@ def collect():
     """Return list of (source_abs, dest_rel) for every canonical asset to stage."""
     plans = []
 
-    def add(pattern, scale):
+    def add(pattern, scale, suffix="", exclude=()):
+        """Stage every @<scale>x source matching `pattern`.
+
+        `suffix` is appended to the canonical (scale-stripped) name. It is used for exactly
+        one family — the CLOSE-UP state-overlay crops, staged as `<key>-cu.png` — because the
+        shared GameAssetLoader indexes by BASENAME across all levels and the raw CU names
+        (e.g. `ov-key-taken`) collide with Level-1 overlays. The mapping is 1:1 and
+        deterministic, recorded in staged-manifest.json (name -> source + sha256), and any
+        two sources landing on one canonical name still hard-fail in main() below, so the
+        "canonical filename == current art" guarantee is preserved.
+        """
         for p in glob.glob(os.path.join(SRC, pattern)):
             rel = os.path.relpath(p, SRC)
             if "_rejects" in rel.split(os.sep):
@@ -55,21 +65,45 @@ def collect():
             base = os.path.splitext(os.path.basename(p))[0]
             if any(m in base for m in SHADOW_MARKERS):
                 continue
+            if any(m in base for m in exclude):
+                continue
             if not base.endswith("@%dx" % scale):
                 continue
-            dest_base = canonical(base) + ".png"
+            dest_base = canonical(base) + suffix + ".png"
             dest_rel = os.path.join(os.path.dirname(rel), dest_base)
             plans.append((p, dest_rel))
+
+    def add_raw(pattern, dest_dir):
+        """Stage un-scaled canonical masters (the glyph dies) verbatim."""
+        for p in sorted(glob.glob(os.path.join(SRC, pattern))):
+            rel = os.path.relpath(p, SRC)
+            if "_rejects" in rel.split(os.sep):
+                continue
+            base = os.path.splitext(os.path.basename(p))[0]
+            if any(m in base for m in SHADOW_MARKERS):
+                continue
+            plans.append((p, os.path.join(dest_dir, base + ".png")))
 
     add("z*/v-*/z*-base@2x.png", 2)          # wide base plates
     add("z*/v-*/z1-door-win-open@2x.png", 2)  # z1 win plate
     add("z*/v-*/cu-*@3x.png", 3)              # close-ups
-    # Only the WIDE overlay crops (-wide) are composited onto the wide scenes; the CU-only
-    # overlay variants are unused by the current presentation AND one of them (ov-key-taken)
-    # would collide by basename with a Level-1 overlay in the shared loader index. Staging
-    # only the -wide variants keeps every L2 overlay name globally unique (collision-free).
     add("z*/v-*/states/ov-*-wide@3x.png", 3)  # per-element WIDE state overlays
+    # ROUND 8 CLUSTER A: the CLOSE-UP overlay crops. These were authored in batch 2/3 and
+    # then never staged, which is why every L2 close-up rendered a single static plate while
+    # the wide view composited correctly (R8-002/004/009/010/011/012/013). Staged with a
+    # `-cu` suffix (see add()'s docstring) so the loader's basename index stays collision-free.
+    add("z*/v-*/states/ov-*@3x.png", 3, suffix="-cu", exclude=("-wide",))
     add("z*/icons/inv-*@2x.png", 2)           # inventory cutouts
+    # Rack-gear cutouts: the p06 gear picker renders the REAL gear art instead of the old
+    # Text("16")/Text("24") buttons (near-wordless ruling, round 8 fix 6).
+    add("z2/props/gear-*@2x.png", 2)
+    # Canonical hour hand — composited as the wordless ring pointer on the ⌂-ring clue
+    # close-up once watch A has been inspected (round 8 fix 5, p03 clue legibility).
+    add("z3/v-dial/sprites/hand-hour@3x.png", 3)
+    # Landmark dies: the p07 vault wheel headers are pictogram matches per the graph
+    # (clu-worldclock-row: "landmark identification is NOT required"), replacing the old
+    # "Big Ben"/"Burj"/"Liberty"/"Fuji" word labels.
+    add_raw("masters/glyphs/die-*.png", "masters")
     return plans
 
 
@@ -156,6 +190,10 @@ def main():
     for zone in ["z1", "z2", "z3", "z4"]:
         s = os.path.join(SRC, zone, "%s-state-overlays.json" % zone)
         shutil.copy2(s, os.path.join(DEST, "%s-state-overlays.json" % zone))
+    # Cat facial-key rects (R8-011(1): the rev-1.3 mouse-tell needs a VISIBLE cue, not just
+    # the sound). Same rect schema, loaded by Level2OverlayCatalog alongside the four zones.
+    shutil.copy2(os.path.join(SRC, "z1", "z1-cat-face.json"),
+                 os.path.join(DEST, "z1-cat-face.json"))
 
     with open(os.path.join(DEST, "staged-manifest.json"), "w") as f:
         json.dump({"count": len(manifest), "assets": manifest}, f, indent=1, sort_keys=True)

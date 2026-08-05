@@ -112,7 +112,10 @@ struct Level2RoomView: View {
                 .accessibilityIdentifier("room-scene")
 
             navigationChevrons
-            L2CloseUpHost(coordinator: box.coordinator, bottomInset: barHeight)
+            // The close-up layer sits UNDER the inventory pill (§7-R1.5 / F-020: the bar must
+            // stay live inside close-ups) and keeps BOTH its content and its dismiss chevron
+            // clear of the bar band — see L2CloseUpChrome (round 8 Cluster B).
+            L2CloseUpHost(coordinator: box.coordinator, state: session.state, bottomInset: barHeight)
 
             VStack { HStack { pauseButton; Spacer() }.padding(24); Spacer() }
 
@@ -240,25 +243,53 @@ private struct L2CompleteOverlay: View {
 }
 
 // MARK: - Close-up host + controls
+//
+// ROUND 8 CLUSTERS A/B/C/D. Every close-up now renders through ONE path:
+// `Level2CloseUpVisuals.plan(for:state:)` resolves the base plate + its per-element state
+// overlays + its manual-pickup targets from GameState (Cluster A — previously the close-ups
+// drew a single static plate while only the WIDE scene composited state); `L2Plate` draws
+// that plan inside a container whose layout is FULL-SIZE and independent of its conditional
+// children (Cluster C — the iPad "plate jumps left, black void on the right" collapse); and
+// the dismiss chevron is inset above the inventory band via `L2CloseUpChrome` (Cluster B).
 
 private struct L2CloseUpHost: View {
     @ObservedObject var coordinator: Level2Coordinator
+    /// Observed so a state change (pickup, seat, pry, lift) re-evaluates the PLAN and the
+    /// close-up re-composites — the missing link behind the whole stale-close-up cluster.
+    @ObservedObject var state: GameState
     let bottomInset: CGFloat
     @ObservedObject private var interaction: InteractionModel
-    init(coordinator: Level2Coordinator, bottomInset: CGFloat) {
+    @Environment(\.horizontalSizeClass) private var hSizeClass
+
+    init(coordinator: Level2Coordinator, state: GameState, bottomInset: CGFloat) {
         self.coordinator = coordinator
+        self.state = state
         self.bottomInset = bottomInset
         self.interaction = coordinator.interaction ?? InteractionModel()
     }
+
     var body: some View {
         if let request = coordinator.activeCloseUp {
             ZStack {
-                Color.black.opacity(0.92).ignoresSafeArea().onTapGesture { coordinator.dismissCloseUp() }
+                // Scrim = "empty space": tapping it disarms (same grammar as the wide scene).
+                // It still dismisses when nothing is armed, but the chevron is now the visible,
+                // reliable way out on EVERY close-up.
+                Color.black.opacity(0.92).ignoresSafeArea()
+                    .onTapGesture {
+                        if interaction.armedItem != nil { interaction.disarm() }
+                        else { coordinator.dismissCloseUp() }
+                    }
+
                 content(request)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
                     .padding(.bottom, bottomInset)
-                VStack { Spacer()
-                    NavChevron.dismissButton(action: { coordinator.dismissCloseUp() }, isPad: true)
-                        .padding(.bottom, 12).accessibilityIdentifier("closeup-dismiss")
+
+                VStack {
+                    Spacer()
+                    NavChevron.dismissButton(action: { coordinator.dismissCloseUp() },
+                                             isPad: hSizeClass == .regular)
+                        .padding(.bottom, L2CloseUpChrome.dismissBottomPadding(barHeight: bottomInset))
+                        .accessibilityIdentifier("closeup-dismiss")
                 }
             }
             .transition(.opacity)
@@ -266,176 +297,368 @@ private struct L2CloseUpHost: View {
     }
 
     @ViewBuilder private func content(_ request: L2CloseUp) -> some View {
+        let plan = Level2CloseUpVisuals.plan(for: request, state: state)
         switch request {
-        case .plain(let image): PlatePlateView(image: image)
-        case .dialDoor: L2DialDoorControl(coordinator: coordinator, interaction: interaction)
-        case .gearFrame: L2GearFrameControl(coordinator: coordinator, state: coordinator.state)
-        case .vaultWheels: L2VaultWheelControl(coordinator: coordinator, state: coordinator.state)
-        case .greatDial: L2GreatDialControl(coordinator: coordinator, state: coordinator.state)
-        case .windingDrum: L2WindingDrumControl(coordinator: coordinator, interaction: interaction)
-        case .dormerCache: L2CacheControl(coordinator: coordinator, state: coordinator.state, kind: .dormer, interaction: interaction)
-        case .chimneyCache: L2CacheControl(coordinator: coordinator, state: coordinator.state, kind: .chimney, interaction: interaction)
-        case .catCushion: L2CatCushionView(coordinator: coordinator)
-        case .coat: L2CoatControl(coordinator: coordinator, state: coordinator.state)
+        case .plain(let image):
+            L2PlainCloseUp(coordinator: coordinator, state: state, plan: plan, image: image)
+        case .dialDoor:
+            L2DialDoorControl(coordinator: coordinator, plan: plan, interaction: interaction)
+        case .gearFrame:
+            L2GearFrameControl(coordinator: coordinator, state: state, plan: plan)
+        case .vaultWheels:
+            L2VaultWheelControl(coordinator: coordinator, state: state)
+        case .greatDial:
+            L2GreatDialControl(coordinator: coordinator, state: state, plan: plan)
+        case .windingDrum:
+            L2Plate(plan: plan, identifier: "winding-drum", onPlateTap: {
+                if let armed = interaction.armedItem, coordinator.useOnDrum(armed) { interaction.disarm() }
+            })
+        case .dormerCache:
+            L2CacheControl(coordinator: coordinator, plan: plan, kind: .dormer, interaction: interaction)
+        case .chimneyCache:
+            L2CacheControl(coordinator: coordinator, plan: plan, kind: .chimney, interaction: interaction)
+        case .catCushion:
+            L2CatCushionView(coordinator: coordinator, state: state, plan: plan, interaction: interaction)
+        case .coat:
+            L2Plate(plan: plan, identifier: "coat", onTarget: { coordinator.runCloseUpTarget($0) })
+        case .cabinetDrawer:
+            L2Plate(plan: plan, identifier: "cabinet-drawer", onTarget: { coordinator.runCloseUpTarget($0) })
         }
     }
 }
 
-// MARK: bench coat (two-pocket manual pickups: watch A + tile IV)
+// MARK: - Shared plate renderer (Cluster A compositing + Cluster C stable layout)
 
-private struct L2CoatControl: View {
-    @ObservedObject var coordinator: Level2Coordinator
-    @ObservedObject var state: GameState
+/// Draws a `Level2CloseUpVisuals.Plan`: base plate, its state overlays at their authored CU
+/// rects, and an invisible >=44 pt tap target per manual-pickup target — plus whatever extra
+/// interactive content the caller adds in plate-local coordinates.
+///
+/// LAYOUT CONTRACT (Cluster C): the ZStack is explicitly framed to the FULL GeometryReader
+/// size and carries an always-present `Color.clear` anchor, so removing the last conditional
+/// child (e.g. the final coat pocket button) cannot shrink it and re-place the plate
+/// top-leading. Every L2 close-up is built on this one container.
+private struct L2Plate<Extra: View>: View {
+    let plan: Level2CloseUpVisuals.Plan
+    let identifier: String?
+    let onPlateTap: (() -> Void)?
+    let onTarget: (Level2CloseUpVisuals.Target) -> Void
+    let extra: (CGRect) -> Extra
 
-    // Pocket rects normalized to the 2048x1536 cu-coat-pockets plate (from the ov-coat-*
-    // overlay data): tile IV in the left pocket, watch A in the right pocket.
-    private static let tileRect = CGRect(x: 430/2048.0, y: 430/1536.0, width: 540/2048.0, height: 450/1536.0)
-    private static let watchRect = CGRect(x: 1040/2048.0, y: 370/1536.0, width: 540/2048.0, height: 770/1536.0)
+    init(plan: Level2CloseUpVisuals.Plan,
+         identifier: String? = nil,
+         onPlateTap: (() -> Void)? = nil,
+         onTarget: @escaping (Level2CloseUpVisuals.Target) -> Void = { _ in },
+         @ViewBuilder extra: @escaping (CGRect) -> Extra = { _ in EmptyView() }) {
+        self.plan = plan
+        self.identifier = identifier
+        self.onPlateTap = onPlateTap
+        self.onTarget = onTarget
+        self.extra = extra
+    }
 
     var body: some View {
         GeometryReader { geo in
-            let plate = fitRect(in: geo.size, aspect: 2048.0/1536.0)
-            ZStack {
-                GameImage(name: "cu-coat-pockets").aspectRatio(contentMode: .fit)
-                if !Level2Visuals.tileIVTaken(state) {
-                    pocketButton(Self.tileRect, plate: plate, id: "collect-itm-tile-iv", label: "Numeral tile") {
-                        coordinator.collectCoatTileIV()
-                    }
+            let g = L2PlateGeometry(in: geo.size, focus: plan.focus)
+            ZStack(alignment: .topLeading) {
+                Color.clear                                  // stable full-size anchor
+                GameImage(name: plan.base)
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: g.plate.width, height: g.plate.height)
+                    .position(x: g.plate.midX, y: g.plate.midY)
+                    .accessibilityIdentifier("closeup-plate-" + plan.base)
+                ForEach(plan.layers, id: \.key) { layer in
+                    let r = g.sub(layer.rect)
+                    GameImage(name: layer.image)
+                        .aspectRatio(contentMode: .fill)
+                        .frame(width: r.width, height: r.height)
+                        .allowsHitTesting(false)
+                        .position(x: r.midX, y: r.midY)
+                        .accessibilityIdentifier("closeup-layer-" + layer.key)
                 }
-                if !Level2Visuals.watchATaken(state) {
-                    pocketButton(Self.watchRect, plate: plate, id: "collect-itm-watch-a", label: "Pocket watch") {
-                        coordinator.collectCoatWatchA()
-                    }
+                extra(g.plate)
+                ForEach(plan.targets, id: \.id) { target in
+                    let r = g.sub(target.rect)
+                    Color.white.opacity(0.001)
+                        .frame(width: max(r.width, 44), height: max(r.height, 44))
+                        .contentShape(Rectangle())
+                        .onTapGesture { onTarget(target) }
+                        .accessibilityLabel(Self.label(for: target))
+                        .accessibilityIdentifier(target.id)
+                        .position(x: r.midX, y: r.midY)
                 }
             }
+            .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
+            .modifier(PlateTapModifier(action: onPlateTap))
         }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(24)
+        .modifier(OptionalIdentifier(identifier: identifier))
     }
 
-    // Invisible tap target over each uncollected pocket, mirroring the proven L1
-    // manual-pickup pattern (CloseUpView): a near-transparent hit-testable Color +
-    // onTapGesture + a real accessibility label/identifier (a Color.clear Button does NOT
-    // reliably surface as a hittable accessibility element to XCUITest).
-    private func pocketButton(_ r: CGRect, plate: CGRect, id: String, label: String,
-                              action: @escaping () -> Void) -> some View {
-        Color.white.opacity(0.001)
-            .frame(width: max(r.width * plate.width, 44), height: max(r.height * plate.height, 44))
-            .contentShape(Rectangle())
-            .onTapGesture(perform: action)
-            .accessibilityLabel(label)
-            .accessibilityIdentifier(id)
-            .position(x: plate.minX + r.midX * plate.width, y: plate.minY + r.midY * plate.height)
+    private static func label(for target: Level2CloseUpVisuals.Target) -> String {
+        switch target.kind {
+        case .collectTileIV: return "Numeral tile"
+        case .collectWatchA, .collectWatchB: return "Pocket watch"
+        case .collectGreatWheel: return "Great wheel"
+        case .collectOilcan: return "Oil can"
+        case .collectToyMouse: return "Tin mouse"
+        case .liftCushion: return "Cushion"
+        }
     }
 }
 
-/// A plain zoomed close-up plate.
-private struct PlatePlateView: View {
+/// Attaches a plate-wide tap ONLY when the close-up actually uses one (armed-item use / pry).
+/// Without it the container stays transparent to hits, so the backdrop's dismiss keeps working
+/// on the close-ups that have no plate interaction.
+private struct PlateTapModifier: ViewModifier {
+    let action: (() -> Void)?
+    @ViewBuilder func body(content: Content) -> some View {
+        if let action {
+            content.contentShape(Rectangle()).onTapGesture(perform: action)
+        } else {
+            content
+        }
+    }
+}
+
+private struct OptionalIdentifier: ViewModifier {
+    let identifier: String?
+    @ViewBuilder func body(content: Content) -> some View {
+        if let identifier { content.accessibilityIdentifier(identifier) } else { content }
+    }
+}
+
+/// Maps plate-normalized rects into view space, honoring the plan's `focus` zoom.
+private struct L2PlateGeometry {
+    let fitted: CGRect   // the visible area the focus rect fills
+    let plate: CGRect    // where the FULL plate is drawn (extends past `fitted` when zoomed)
+
+    init(in size: CGSize, focus: CGRect) {
+        let fw = max(focus.width, 0.0001), fh = max(focus.height, 0.0001)
+        let aspect = (fw * Level2CloseUpVisuals.plateSize.width)
+            / (fh * Level2CloseUpVisuals.plateSize.height)
+        let f = fitRect(in: size, aspect: aspect)
+        self.fitted = f
+        let w = f.width / fw, h = f.height / fh
+        self.plate = CGRect(x: f.minX - focus.minX * w, y: f.minY - focus.minY * h,
+                            width: w, height: h)
+    }
+
+    /// A plate-normalized sub-rect in view coordinates.
+    func sub(_ r: CGRect) -> CGRect {
+        CGRect(x: plate.minX + r.minX * plate.width, y: plate.minY + r.minY * plate.height,
+               width: r.width * plate.width, height: r.height * plate.height)
+    }
+}
+
+// MARK: - Plain state-resolved plate (+ the wordless ring-pointer clue annotation)
+
+/// Plain close-ups are still STATEFUL (a taken tile, a raised bar, an emptied hook), so they
+/// render the same plan pipeline. They additionally carry the round-8 fix-5 clue
+/// clarification: once the paired watch has been inspected, the engraved 12-notch ring shows
+/// the canonical hour hand pointing along the direction that watch reads — wordless, built
+/// from existing canonical art, and NOT a pointer mechanic (the cache stays a single hotspot).
+private struct L2PlainCloseUp: View {
+    @ObservedObject var coordinator: Level2Coordinator
+    @ObservedObject var state: GameState
+    let plan: Level2CloseUpVisuals.Plan
     let image: String
+
     var body: some View {
-        GameImage(name: image).aspectRatio(contentMode: .fit).padding(24)
+        L2Plate(plan: plan, identifier: "closeup-" + image,
+                onPlateTap: { coordinator.useArmedItemInCloseUp() }) { plate in
+            if let ring = Level2CloseUpVisuals.ringClues[image], state.hasViewedClue(ring.gateClue) {
+                let radius = ring.radiusFracOfWidth * plate.width
+                let center = CGPoint(x: plate.minX + ring.center.x * plate.width,
+                                     y: plate.minY + ring.center.y * plate.height)
+                let length = radius * Level2CloseUpVisuals.ringPointerLengthFraction
+                GameImage(name: "hand-hour")
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: length * 0.34, height: length * 1.32)
+                    .offset(y: -length * 0.31)
+                    .rotationEffect(.degrees(Double(ring.hour % 12) * 30))
+                    .position(center)
+                    .allowsHitTesting(false)
+                    .accessibilityIdentifier("ring-pointer-" + String(ring.hour))
+            }
+        }
     }
 }
 
-// MARK: p01 dial door
+// MARK: p01 dial door (Cluster D: the decoy is the DEPICTED tray tile, never a text button)
 
 private struct L2DialDoorControl: View {
     @ObservedObject var coordinator: Level2Coordinator
+    let plan: Level2CloseUpVisuals.Plan
     @ObservedObject var interaction: InteractionModel
     @State private var trayVISelected = false
 
-    /// Socket CU rects (normalized to the 2048x1536 cu-door-dial plate) from the dial-seat
-    /// overlay data. Keyed by socket number.
-    private static let socketRects: [String: CGRect] = [
-        "2":  CGRect(x: 1159/2048.0, y: 360/1536.0, width: 128/2048.0, height: 128/1536.0),
-        "4":  CGRect(x: 1159/2048.0, y: 625/1536.0, width: 128/2048.0, height: 128/1536.0),
-        "7":  CGRect(x: 797/2048.0,  y: 722/1536.0, width: 128/2048.0, height: 128/1536.0),
-        "11": CGRect(x: 797/2048.0,  y: 263/1536.0, width: 128/2048.0, height: 128/1536.0),
+    /// Socket CU rects come from the same authored overlay data the seated-tile art uses, so
+    /// a socket's hit region and its seated tile can never drift apart.
+    private static let socketOverlays: [String: String] = [
+        "2": "ov-dial-seat-ii", "4": "ov-dial-seat-iv",
+        "7": "ov-dial-seat-vii", "11": "ov-dial-seat-xi",
     ]
 
     var body: some View {
-        GeometryReader { geo in
-            let plate = fitRect(in: geo.size, aspect: 2048.0/1536.0)
-            ZStack {
-                GameImage(name: "cu-door-dial").aspectRatio(contentMode: .fit)
-                ForEach(Array(Self.socketRects.keys), id: \.self) { socket in
-                    let r = Self.socketRects[socket]!
-                    Button(action: { seat(socket) }) { Color.clear }
-                        .frame(width: r.width * plate.width, height: r.height * plate.height)
-                        .position(x: plate.minX + (r.midX) * plate.width, y: plate.minY + (r.midY) * plate.height)
-                        .accessibilityIdentifier("dial-socket-\(socket)")
-                }
-                // Tray VI decoy: selectable, then a socket tap tries it (glyph-order trap).
-                Button(action: { trayVISelected.toggle() }) {
-                    Text("VI").font(.title3).padding(8)
-                        .background(Circle().fill(trayVISelected ? Color.orange.opacity(0.5) : Color.black.opacity(0.4)))
-                        .foregroundColor(.white)
-                }
-                .position(x: plate.midX, y: plate.maxY - 20)
-                .accessibilityIdentifier("dial-tray-vi")
+        L2Plate(plan: plan, identifier: "dial-door") { plate in
+            ForEach(Level2Graph.dialSockets, id: \.self) { socket in
+                let r = Self.sub(Level2OverlayCatalog.shared.cuRect(Self.socketOverlays[socket] ?? ""),
+                                 in: plate)
+                Color.white.opacity(0.001)
+                    .frame(width: max(r.width, 44), height: max(r.height, 44))
+                    .contentShape(Rectangle())
+                    .onTapGesture { seat(socket) }
+                    .accessibilityLabel("Dial socket")
+                    .accessibilityIdentifier("dial-socket-" + socket)
+                    .position(x: r.midX, y: r.midY)
             }
+            // R8-004(3)+(4): the decoy IS the loose VI tile drawn in the tray. Tapping it
+            // picks it up (a pale selection ring — no label, no floating button); tapping a
+            // socket then tries to seat it and it whirs, stalls and pops back to the tray,
+            // exactly as p01's solution_fixed "rejected: tray VI in socket-4" describes.
+            trayDecoy(in: plate)
         }
-        .padding(24)
+    }
+
+    private func trayDecoy(in plate: CGRect) -> some View {
+        let tray = Self.sub(Level2CloseUpVisuals.trayDecoyRect, in: plate)
+        ZStack {
+            if trayVISelected {
+                RoundedRectangle(cornerRadius: 6)
+                    .strokeBorder(NavChevron.boneWhite.opacity(0.85), lineWidth: 2)
+                    .frame(width: tray.width * 1.3, height: tray.height * 2.0)
+                    .shadow(color: .black.opacity(0.5), radius: 3)
+            }
+            Color.white.opacity(0.001)
+                .frame(width: max(tray.width, 44), height: max(tray.height, 44))
+        }
+        .contentShape(Rectangle())
+        .onTapGesture {
+            trayVISelected.toggle()
+            if trayVISelected { interaction.disarm() }
+            SoundManager.shared.play(.tick)
+        }
+        .accessibilityLabel("Loose tile in the tray")
+        .accessibilityIdentifier("dial-tray-vi")
+        .position(x: tray.midX, y: tray.midY)
+    }
+
+    private static func sub(_ r: CGRect, in plate: CGRect) -> CGRect {
+        CGRect(x: plate.minX + r.minX * plate.width, y: plate.minY + r.minY * plate.height,
+               width: r.width * plate.width, height: r.height * plate.height)
     }
 
     private func seat(_ socket: String) {
         if trayVISelected {
-            coordinator.seatDialTile("tile-vi-decoy", socket: socket)
-            trayVISelected = false
+            coordinator.seatDialTile(Level2Graph.DecoyTile.trayVI, socket: socket)
+            trayVISelected = false                      // pops back to the tray
         } else if let armed = interaction.armedItem, Level2Graph.ItemID.dialTiles.contains(armed) {
             coordinator.seatDialTile(armed, socket: socket)
         } else {
-            SoundManager.shared.play(.wrong)   // nothing selected to seat
+            SoundManager.shared.play(.wrong)            // nothing selected to seat
         }
     }
 }
 
-// MARK: p06 gear frame
+// MARK: p06 gear frame (near-wordless: real gear art, no "Rack"/"Crank"/"Post A/B" labels)
 
 private struct L2GearFrameControl: View {
     @ObservedObject var coordinator: Level2Coordinator
     @ObservedObject var state: GameState
+    let plan: Level2CloseUpVisuals.Plan
     @State private var selectedGear: String?
 
+    private var pickerGears: [String] {
+        Level2Graph.rackGears + (state.hasItem(Level2Graph.ItemID.greatWheel)
+                                 ? [Level2Graph.gearGreatWheelValue] : [])
+    }
+
     var body: some View {
-        VStack(spacing: 14) {
-            GameImage(name: "cu-gear-frame").aspectRatio(contentMode: .fit).frame(maxHeight: 320)
-            HStack(spacing: 24) {
-                postView(.a, label: "Post A")
-                postView(.b, label: "Post B")
+        ZStack {
+            L2Plate(plan: plan, identifier: "gear-frame") { plate in
+                postTarget(.a, plate: plate)
+                postTarget(.b, plate: plate)
             }
-            Text("Rack").foregroundColor(.white.opacity(0.7)).font(.caption)
-            HStack(spacing: 10) {
-                ForEach(Level2Graph.rackGears, id: \.self) { g in gearButton(g) }
-                if state.hasItem(Level2Graph.ItemID.greatWheel) { gearButton("64") }
+            VStack {
+                gearPicker.padding(.top, 12)
+                Spacer()
+                HStack {
+                    Spacer()
+                    crankButton.padding(.trailing, 20).padding(.bottom, 8)
+                }
             }
-            Button(action: { coordinator.crankGearTrain() }) {
-                Label("Crank", systemImage: "arrow.triangle.2.circlepath")
-            }
-            .buttonStyle(.chromePrimary).accessibilityIdentifier("gear-crank")
         }
-        .padding(24)
+    }
+
+    /// The rack, rendered as the ACTUAL gear cutouts (z2/props/gear-*), scaled by tooth count
+    /// so their relative sizes — the whole point of a ratio puzzle — read at a glance.
+    private var gearPicker: some View {
+        HStack(spacing: 10) {
+            ForEach(pickerGears, id: \.self) { g in gearButton(g) }
+        }
+        .padding(.horizontal, 14).padding(.vertical, 8)
+        .background(
+            Capsule().fill(Color(red: 0.078, green: 0.086, blue: 0.102).opacity(0.62))
+                .overlay(Capsule().stroke(NavChevron.boneWhite.opacity(0.08), lineWidth: 1))
+        )
+        .accessibilityIdentifier("gear-rack-picker")
     }
 
     private func gearButton(_ g: String) -> some View {
-        Button(action: { selectedGear = (selectedGear == g ? nil : g) }) {
-            Text(g).font(.headline).frame(width: 52, height: 52)
-                .background(Circle().fill(selectedGear == g ? Color.orange.opacity(0.5) : Color.black.opacity(0.4)))
-                .foregroundColor(.white)
+        let teeth = CGFloat(Int(g) ?? 24)
+        let size = 30 + (teeth / 72.0) * 26
+        return Button(action: { selectedGear = (selectedGear == g ? nil : g) }) {
+            ZStack {
+                if selectedGear == g {
+                    Circle().strokeBorder(NavChevron.boneWhite.opacity(0.9), lineWidth: 2)
+                        .frame(width: size + 10, height: size + 10)
+                }
+                GameImage(name: g == Level2Graph.gearGreatWheelValue ? "inv-great-wheel" : "gear-" + g)
+                    .aspectRatio(contentMode: .fit)
+                    .frame(width: size, height: size)
+                    .offset(y: selectedGear == g ? -3 : 0)
+            }
+            .frame(width: 62, height: 62)
         }
-        .accessibilityIdentifier("gear-\(g)")
+        .accessibilityLabel("Gear")
+        .accessibilityIdentifier("gear-" + g)
     }
 
-    private func postView(_ post: Level2Post, label: String) -> some View {
+    /// An empty post shows a faint dashed seat ring (wordless "something mounts here"); a
+    /// filled post is shown by the composited mount overlay in the plan.
+    private func postTarget(_ post: Level2Post, plate: CGRect) -> some View {
         let current = Level2Engine.currentPostGear(post, state)
-        return VStack(spacing: 6) {
-            Text(label).font(.caption).foregroundColor(.white.opacity(0.7))
-            Button(action: { tapPost(post) }) {
-                Text(current ?? "—").font(.title3).frame(width: 64, height: 64)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.black.opacity(0.5)))
-                    .foregroundColor(.white)
+        let n = Level2CloseUpVisuals.postRect(post, gear: current)
+        let r = CGRect(x: plate.minX + n.minX * plate.width, y: plate.minY + n.minY * plate.height,
+                       width: n.width * plate.width, height: n.height * plate.height)
+        ZStack {
+            if current == nil {
+                Circle()
+                    .strokeBorder(NavChevron.boneWhite.opacity(0.30),
+                                  style: StrokeStyle(lineWidth: 2, dash: [6, 7]))
+                    .frame(width: r.width * 0.9, height: r.width * 0.9)
             }
-            .accessibilityIdentifier("gear-post-\(post == .a ? "a" : "b")")
+            Color.white.opacity(0.001).frame(width: max(r.width, 44), height: max(r.height, 44))
         }
+        .contentShape(Rectangle())
+        .onTapGesture { tapPost(post) }
+        .accessibilityLabel(post == .a ? "First arbor post" : "Second arbor post")
+        .accessibilityIdentifier("gear-post-" + (post == .a ? "a" : "b"))
+        .position(x: r.midX, y: r.midY)
+    }
+
+    private var crankButton: some View {
+        Button(action: { coordinator.crankGearTrain() }) {
+            Image(systemName: "arrow.triangle.2.circlepath")
+                .font(.system(size: 26, weight: .medium))
+                .foregroundColor(NavChevron.boneWhite)
+                .frame(width: 60, height: 60)
+                .background(Circle().fill(Color.black.opacity(0.45)))
+                .overlay(Circle().stroke(NavChevron.boneWhite.opacity(0.18), lineWidth: 1))
+        }
+        .accessibilityLabel("Crank the frame")
+        .accessibilityIdentifier("gear-crank")
     }
 
     private func tapPost(_ post: Level2Post) {
@@ -448,36 +671,73 @@ private struct L2GearFrameControl: View {
     }
 }
 
-// MARK: p07 vault wheels
+// MARK: p07 vault wheels (landmark DIES, not landmark words — the graph's pictogram match)
 
 private struct L2VaultWheelControl: View {
     @ObservedObject var coordinator: Level2Coordinator
     @ObservedObject var state: GameState
-    private static let headers = ["Big Ben", "Burj", "Liberty", "Fuji"]
-    private static let roman = ["", "I","II","III","IV","V","VI","VII","VIII","IX","X","XI","XII"]
+    /// z3 binding order (Level2Graph.vaultHeaders), as canonical glyph dies.
+    private static let headerDies = ["die-bigben", "die-burj", "die-liberty", "die-fuji"]
+    private static let roman = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"]
 
     var body: some View {
-        VStack(spacing: 16) {
-            GameImage(name: "cu-hatch-wheels").aspectRatio(contentMode: .fit).frame(maxHeight: 300)
-            HStack(spacing: 20) {
-                ForEach(0..<4, id: \.self) { i in wheel(i) }
+        ZStack {
+            L2Plate(plan: Level2CloseUpVisuals.Plan(base: "cu-hatch-wheels"), identifier: "vault-wheels")
+            VStack {
+                Spacer()
+                HStack(spacing: 20) { ForEach(0..<4, id: \.self) { i in wheel(i) } }
+                    .padding(.horizontal, 18).padding(.vertical, 12)
+                    .background(
+                        RoundedRectangle(cornerRadius: 18)
+                            .fill(Color(red: 0.078, green: 0.086, blue: 0.102).opacity(0.72))
+                            .overlay(RoundedRectangle(cornerRadius: 18)
+                                .stroke(NavChevron.boneWhite.opacity(0.08), lineWidth: 1))
+                    )
+                Spacer().frame(height: 74)   // clear of the dismiss chevron
             }
         }
-        .padding(24)
     }
 
     private func wheel(_ i: Int) -> some View {
         VStack(spacing: 6) {
-            Text(Self.headers[i]).font(.caption2).foregroundColor(.white.opacity(0.7))
+            GlyphImage(name: Self.headerDies[i], color: NavChevron.boneWhite.opacity(0.85))
+                .frame(height: 26)
+                .accessibilityIdentifier("vault-header-" + Level2Graph.vaultHeaders[i])
             Button(action: { coordinator.setVaultWheel(i, delta: 1) }) {
-                Image(systemName: "chevron.up").foregroundColor(.white)
+                Image(systemName: "chevron.up").foregroundColor(NavChevron.boneWhite)
+                    .frame(width: 56, height: 32).contentShape(Rectangle())
             }
-            Text(Self.roman[state.data.l2VaultWheels[i]]).font(.title2).foregroundColor(.white)
-                .frame(width: 56, height: 44).background(RoundedRectangle(cornerRadius: 8).fill(Color.black.opacity(0.5)))
-                .accessibilityIdentifier("vault-wheel-\(i)")
+            .accessibilityLabel("Turn up")
+            .accessibilityIdentifier("vault-wheel-" + String(i) + "-up")
+            Text(Self.roman[state.data.l2VaultWheels[i]])
+                .font(.title2).foregroundColor(.white)
+                .frame(width: 56, height: 44)
+                .background(RoundedRectangle(cornerRadius: 8).fill(Color.black.opacity(0.5)))
+                .accessibilityIdentifier("vault-wheel-" + String(i))
             Button(action: { coordinator.setVaultWheel(i, delta: -1) }) {
-                Image(systemName: "chevron.down").foregroundColor(.white)
+                Image(systemName: "chevron.down").foregroundColor(NavChevron.boneWhite)
+                    .frame(width: 56, height: 32).contentShape(Rectangle())
             }
+            .accessibilityLabel("Turn down")
+            .accessibilityIdentifier("vault-wheel-" + String(i) + "-down")
+        }
+    }
+}
+
+/// A canonical glyph die (RGBA silhouette master) tinted for the dark chrome register.
+/// Loose game-art files can't use SwiftUI's `renderingMode(.template)` via `Image(uiImage:)`
+/// unless the UIImage itself is re-rendered as a template, which this does once per draw.
+private struct GlyphImage: View {
+    let name: String
+    let color: Color
+    var body: some View {
+        if let ui = GameAssetLoader.shared.image(named: name) {
+            Image(uiImage: ui.withRenderingMode(.alwaysTemplate))
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .foregroundColor(color)
+        } else {
+            Color.clear
         }
     }
 }
@@ -487,118 +747,122 @@ private struct L2VaultWheelControl: View {
 private struct L2GreatDialControl: View {
     @ObservedObject var coordinator: Level2Coordinator
     @ObservedObject var state: GameState
+    let plan: Level2CloseUpVisuals.Plan
 
     var body: some View {
-        VStack(spacing: 14) {
-            GeometryReader { geo in
-                let side = min(geo.size.width, geo.size.height)
-                ZStack {
-                    GameImage(name: "cu-great-dial").aspectRatio(contentMode: .fit)
-                    // Hands rendered at the MIRRORED angle (D1: front angle θ renders at −θ).
-                    hand(lengthFrac: 0.30, widthPt: 10, angle: -hourAngle, side: side)   // hour
-                    hand(lengthFrac: 0.42, widthPt: 6, angle: -minuteAngle, side: side)  // minute
-                }
-                .frame(width: geo.size.width, height: geo.size.height)
+        ZStack {
+            L2Plate(plan: plan, identifier: "great-dial") { plate in
+                let side = min(plate.width, plate.height)
+                // Hands render at the MIRRORED angle (D1: front angle theta renders at -theta).
+                hand(lengthFrac: 0.30, widthPt: 10, angle: -hourAngle, side: side)
+                    .position(x: plate.midX, y: plate.midY)
+                hand(lengthFrac: 0.42, widthPt: 6, angle: -minuteAngle, side: side)
+                    .position(x: plate.midX, y: plate.midY)
             }
-            .frame(maxHeight: 340)
-            HStack(spacing: 28) {
-                crankButton("minus", detents: -1)
-                crankButton("plus", detents: 1)
+            VStack {
+                Spacer()
+                HStack(spacing: 28) {
+                    crankButton(detents: -1)
+                    crankButton(detents: 1)
+                }
+                Spacer().frame(height: 78)   // clear of the dismiss chevron
             }
         }
-        .padding(24)
     }
 
     private var minutes: Int { state.data.l2ClockFrontMinutes }
-    private var hourAngle: Double { Double(minutes) * 0.5 }          // 0.5°/min
-    private var minuteAngle: Double { Double(minutes % 60) * 6.0 }   // 6°/min
+    private var hourAngle: Double { Double(minutes) * 0.5 }          // 0.5 deg/min
+    private var minuteAngle: Double { Double(minutes % 60) * 6.0 }   // 6 deg/min
 
     private func hand(lengthFrac: CGFloat, widthPt: CGFloat, angle: Double, side: CGFloat) -> some View {
-        // A side×side container centered on the hub; the hand extends up from center, so
-        // rotating the container pivots the hand about the hub (mirrored angle per D1).
         Capsule()
             .fill(Color.black.opacity(0.7))
             .frame(width: widthPt, height: side * lengthFrac)
             .offset(y: -side * lengthFrac / 2)
             .frame(width: side, height: side)
             .rotationEffect(.degrees(angle))
+            .allowsHitTesting(false)
     }
 
-    private func crankButton(_ symbol: String, detents: Int) -> some View {
+    private func crankButton(detents: Int) -> some View {
         Button(action: { coordinator.adjustClock(byDetents: detents) }) {
-            Image(systemName: symbol.contains("plus") ? "plus.circle.fill" : "minus.circle.fill")
+            Image(systemName: detents > 0 ? "plus.circle.fill" : "minus.circle.fill")
                 .font(.system(size: 40)).foregroundColor(.white.opacity(0.85))
+                .frame(width: 56, height: 56).contentShape(Rectangle())
         }
-        .accessibilityIdentifier("dial-crank-\(detents > 0 ? "plus" : "minus")")
+        .accessibilityLabel(detents > 0 ? "Advance the hands" : "Turn the hands back")
+        .accessibilityIdentifier("dial-crank-" + (detents > 0 ? "plus" : "minus"))
     }
 }
 
-// MARK: p08 winding drum (armed oil / key)
-
-private struct L2WindingDrumControl: View {
-    @ObservedObject var coordinator: Level2Coordinator
-    @ObservedObject var interaction: InteractionModel
-    var body: some View {
-        VStack {
-            GameImage(name: "cu-winding-drum").aspectRatio(contentMode: .fit)
-                .onTapGesture {
-                    if let armed = interaction.armedItem, coordinator.useOnDrum(armed) { interaction.disarm() }
-                }
-        }
-        .padding(24)
-        .accessibilityIdentifier("winding-drum")
-    }
-}
-
-// MARK: p03/p04 pry caches
+// MARK: p03/p04 pry caches (state-resolved: closed -> pried with the find -> emptied)
 
 private struct L2CacheControl: View {
     enum Kind { case dormer, chimney }
     @ObservedObject var coordinator: Level2Coordinator
-    @ObservedObject var state: GameState
+    let plan: Level2CloseUpVisuals.Plan
     let kind: Kind
     @ObservedObject var interaction: InteractionModel
 
-    private var plate: String { kind == .dormer ? "cu-floor-cache" : "cu-brick-cache" }
-    private var solved: Bool {
-        state.hasSolved(kind == .dormer ? Level2Graph.PuzzleID.cacheDormer : Level2Graph.PuzzleID.cacheChimney)
-    }
-    private var uncollected: Bool {
-        kind == .dormer ? Level2Engine.isGreatWheelUncollected(state) : Level2Engine.isOilcanUncollected(state)
-    }
-
     var body: some View {
-        VStack {
-            GameImage(name: plate).aspectRatio(contentMode: .fit)
-                .onTapGesture {
-                    if !solved, interaction.armedItem == Level2Graph.ItemID.screwdriver {
-                        let ok = kind == .dormer ? coordinator.pryDormer() : coordinator.pryChimney()
-                        if ok { interaction.disarm() }
-                    } else if uncollected {
-                        kind == .dormer ? coordinator.collectGreatWheel() : coordinator.collectOilcan()
-                    }
-                }
-        }
-        .padding(24)
-        .accessibilityIdentifier(kind == .dormer ? "dormer-cache" : "chimney-cache")
+        L2Plate(plan: plan,
+                identifier: kind == .dormer ? "dormer-cache" : "chimney-cache",
+                onPlateTap: {
+                    guard interaction.armedItem == Level2Graph.ItemID.screwdriver else { return }
+                    let ok = kind == .dormer ? coordinator.pryDormer() : coordinator.pryChimney()
+                    if ok { interaction.disarm() }
+                },
+                onTarget: { coordinator.runCloseUpTarget($0) })
     }
 }
 
-// MARK: p02 cat cushion look
+// MARK: p02 cat cushion — THE P0: state-correct plate + lift + manual watch-B pickup
 
+/// Build 15 shipped `hasSolved(catMouse) ? "cu-cat-cushion" : "cu-cat-cushion"` — a literal
+/// no-op ternary with no tap target at all, so the close-up always showed a sleeping cat and
+/// the cushion could never be lifted (R8-012/R8-013). It now renders the plan (cat asleep ->
+/// cat gone -> cushion lifted with watch B -> emptied), carries the lift/collect targets, and
+/// composites the cat's facial-key tell while a direct offer is being refused (R8-011(1)).
 private struct L2CatCushionView: View {
     @ObservedObject var coordinator: Level2Coordinator
-    private var image: String {
-        coordinator.state.hasSolved(Level2Graph.PuzzleID.catMouse) ? "cu-cat-cushion" : "cu-cat-cushion"
+    @ObservedObject var state: GameState
+    let plan: Level2CloseUpVisuals.Plan
+    @ObservedObject var interaction: InteractionModel
+
+    /// The visible half of the D3 tell: eye key (+ tail key for the mouse-specific tell).
+    private var tellLayers: [Level2CloseUpVisuals.Layer] {
+        guard !state.hasSolved(Level2Graph.PuzzleID.catMouse),
+              let response = coordinator.catResponse else { return [] }
+        switch response {
+        case .mouseTell:
+            return [Level2CloseUpVisuals.layer("ov-cat-mouse-tell"),
+                    Level2CloseUpVisuals.catTailTellLayer()].compactMap { $0 }
+        case .refusal:
+            return [Level2CloseUpVisuals.layer("ov-cat-slow-blink")].compactMap { $0 }
+        }
     }
+
+    private var composited: Level2CloseUpVisuals.Plan {
+        var p = plan
+        p.layers.append(contentsOf: tellLayers)
+        return p
+    }
+
     var body: some View {
-        GameImage(name: image).aspectRatio(contentMode: .fit).padding(24)
-            .accessibilityIdentifier("cat-cushion")
+        L2Plate(plan: composited, identifier: "cat-cushion",
+                onPlateTap: {
+                    if let armed = interaction.armedItem {
+                        _ = coordinator.useItem(armed, on: "cat-cushion")
+                    }
+                },
+                onTarget: { coordinator.runCloseUpTarget($0) })
+            .animation(.easeInOut(duration: 0.25), value: coordinator.catResponse)
     }
 }
 
 /// Compute the fitted (aspectFit) rect of an image with `aspect` (w/h) inside `size`.
 private func fitRect(in size: CGSize, aspect: CGFloat) -> CGRect {
+    guard size.width > 0, size.height > 0 else { return .zero }
     let containerAspect = size.width / size.height
     var w = size.width, h = size.height
     if containerAspect > aspect { w = size.height * aspect } else { h = size.width / aspect }

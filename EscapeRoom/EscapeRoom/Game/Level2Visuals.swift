@@ -63,6 +63,10 @@ final class Level2OverlayCatalog {
         for zone in ["z1", "z2", "z3", "z4"] {
             load("\(zone)-state-overlays")
         }
+        // R8-011(1): the cat facial keys (mouse-tell eyes / slow-blink / tail flick) live in
+        // their own rect file with the same schema. `tail_rect_3x` is registered under
+        // "<key>-tail" so the two-patch tell (eyes + tail) can be composited independently.
+        load("z1-cat-face")
     }
 
     private func load(_ resource: String) {
@@ -76,6 +80,9 @@ final class Level2OverlayCatalog {
             }
             if let cuBox = Self.doubles(entry["rect_3x"]) ?? Self.doubles(entry["cu_rect_3x"]), cuBox.count == 4 {
                 cuRects[key] = Self.norm(cuBox, Self.cuW, Self.cuH)
+            }
+            if let tailBox = Self.doubles(entry["tail_rect_3x"]), tailBox.count == 4 {
+                cuRects[key + "-tail"] = Self.norm(tailBox, Self.cuW, Self.cuH)
             }
         }
     }
@@ -195,7 +202,11 @@ enum Level2Visuals {
                 out.append(Level2Engine.isGreatWheelUncollected(s) ? "ov-cache-pried-wheel" : "ov-cache-empty")
             }
             if s.hasSolved(Level2Graph.PuzzleID.catMouse) {
-                out.append(watchBTaken(s) ? "ov-cushion-empty" : "ov-cushion-reveal")
+                // R8-013: the cat-vacated cushion sits DOWN until the player lifts it; only
+                // then does the reveal (cushion tipped up, watch B on the bench) composite —
+                // and it composites OVER the empty base, per the overlay JSON's contract.
+                out.append("ov-cushion-empty")
+                if Level2Engine.isWatchBUncollected(s) { out.append("ov-cushion-reveal") }
             }
             if s.hasFlag(Level2Graph.Flag.doorBarRaised) { out.append("ov-bar-raised") }
             return out

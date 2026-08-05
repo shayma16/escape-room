@@ -59,6 +59,15 @@ enum Level2Graph {
         static let dialTiles: Set<String> = [tileII, tileIV, tileVII, tileXI]
     }
 
+    /// In-scene decoys that are NEVER inventory items (standing R6-003 principle). They can be
+    /// picked up *within* their close-up and offered to a socket, where they are refused — the
+    /// bait's whole job. Given a distinct id namespace so it can never match `dialSolution`.
+    enum DecoyTile {
+        /// p01 tray VI: the loose tile in the door tray. solution_fixed lists it as
+        /// "rejected: tray VI in socket-4".
+        static let trayVI = "tile-vi-decoy"
+    }
+
     /// Persistent latched state flags (kept in GameState.flags, the shared bag).
     enum Flag {
         static let arborFreed = "l2-arbor-freed"        // p05 (oiled the seized bearing)
@@ -67,6 +76,11 @@ enum Level2Graph {
         static let pendulumRunning = "l2-pendulum-running" // p10 (bob pushed)
         static let doorBarRaised = "l2-door-bar-raised" // cond-timelock-release latch
         static let cabinetDrawerOpened = "l2-cabinet-drawer-opened" // z2 parts-cabinet drawer pulled
+        /// Round 8 (R8-013, user ruling): the cushion the cat vacated has been LIFTED, so
+        /// watch B is revealed and waiting for a deliberate tap. Restores the manual-pickup
+        /// step the graph describes ("cushion now liftable; watch B beneath") in place of the
+        /// build-15 auto-grant, per the standing L1 manual-pickup principle (F-023 / R2-003).
+        static let cushionLifted = "l2-cushion-lifted"
     }
 
     // MARK: Fixed solution values (never randomized)

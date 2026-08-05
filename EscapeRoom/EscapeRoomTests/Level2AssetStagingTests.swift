@@ -69,9 +69,13 @@ final class Level2AssetStagingTests: XCTestCase {
     func testStagedBytesMatchManifest_noStaleShadow() throws {
         let manifest = try loadManifest()
         XCTAssertGreaterThan(manifest.count, 0)
+        // Index once: the staged set grew to ~150 files in round 8 (the close-up overlay
+        // crops), and re-enumerating per asset made this quadratic.
+        var byName: [String: URL] = [:]
+        for url in stagedPNGs() { byName[url.deletingPathExtension().lastPathComponent + ".png"] = url }
         for (name, entry) in manifest.assets {
             // Resolve the staged file by basename anywhere under the level dir.
-            guard let url = stagedPNGs().first(where: { $0.deletingPathExtension().lastPathComponent + ".png" == name }) else {
+            guard let url = byName[name] else {
                 XCTFail("manifest-current asset missing from bundle: \(name) (source \(entry.source))")
                 continue
             }
@@ -87,6 +91,23 @@ final class Level2AssetStagingTests: XCTestCase {
             "cu-door-dial", "cu-great-dial", "cu-hatch-wheels", "cu-gear-frame",
             "ov-bar-raised-wide", "ov-cache-pried-wheel-wide", "ov-key-taken-wide", "ov-panel-open-wide",
             "inv-screwdriver", "inv-great-wheel", "inv-return-tag",
+            // ROUND 8 CLUSTER A: the CLOSE-UP overlay crops. Authored in batch 2/3, never
+            // staged through build 15 — which is why every L2 close-up rendered a static
+            // plate while the wide view composited correctly. If these stop shipping, the
+            // stale-close-up defect returns, so they are required here by name.
+            "ov-cushion-empty-cu", "ov-cushion-reveal-cu", "ov-cache-pried-wheel-cu",
+            "ov-cache-empty-cu", "ov-brick-pried-oilcan-cu", "ov-brick-empty-cu",
+            "ov-coat-tile-taken-cu", "ov-coat-watch-taken-cu", "ov-sill-tile-taken-cu",
+            "ov-dial-seat-ii-cu", "ov-dial-seat-iv-cu", "ov-dial-seat-vii-cu", "ov-dial-seat-xi-cu",
+            "ov-drum-oiled-cu", "ov-drum-key-in-cu", "ov-key-taken-cu", "ov-tag-taken-cu",
+            "ov-cabinet-open-mouse-cu", "ov-cabinet-empty-cu", "ov-arbor-oiled-cu",
+            "ov-mount-a-36-cu", "ov-mount-b-64-cu",
+            // R8-011(1): the cat's VISIBLE mouse-tell keys.
+            "ov-cat-mouse-tell-cu", "ov-cat-mouse-tell-tail-cu", "ov-cat-slow-blink-cu",
+            // Near-wordless replacements for the p06/p07 text UI.
+            "gear-16", "gear-36", "gear-72", "die-bigben", "die-fuji", "hand-hour",
+            // Close-up plates newly reachable this round.
+            "cu-cabinet-drawer", "cu-key-hook",
         ]
         for name in required {
             XCTAssertNotNil(GameAssetLoader.shared.image(named: name), "missing/unloadable staged asset: \(name)")
@@ -98,6 +119,22 @@ final class Level2AssetStagingTests: XCTestCase {
         for key in ["ov-bar-raised", "ov-cache-pried-wheel", "ov-key-taken", "ov-panel-open",
                     "ov-arbor-oiled", "ov-hatch-open", "ov-workroom-door-open"] {
             XCTAssertNotEqual(Level2OverlayCatalog.shared.wideRect(key), .zero, "no wide rect for \(key)")
+        }
+    }
+
+    /// Round 8: the CLOSE-UP rect side of the same catalog, plus the cat facial-key file that
+    /// is loaded from its own JSON (`z1-cat-face.json`). A missing CU rect makes the overlay
+    /// silently not render — exactly the failure mode this round is fixing.
+    func testCloseUpOverlayRectsAndCatFaceCatalogLoaded() {
+        for key in ["ov-cushion-empty", "ov-cushion-reveal", "ov-cache-pried-wheel", "ov-cache-empty",
+                    "ov-brick-pried-oilcan", "ov-coat-tile-taken", "ov-coat-watch-taken",
+                    "ov-sill-tile-taken", "ov-dial-seat-iv", "ov-drum-oiled", "ov-key-taken",
+                    "ov-tag-taken", "ov-cabinet-open-mouse", "ov-mount-a-36", "ov-rack-absent-36"] {
+            XCTAssertNotEqual(Level2OverlayCatalog.shared.cuRect(key), .zero, "no CU rect for \(key)")
+        }
+        for key in ["ov-cat-mouse-tell", "ov-cat-mouse-tell-tail", "ov-cat-slow-blink"] {
+            XCTAssertNotEqual(Level2OverlayCatalog.shared.cuRect(key), .zero,
+                              "no CU rect for \(key) — z1-cat-face.json must ship and load")
         }
     }
 }

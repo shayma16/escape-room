@@ -21,7 +21,7 @@ enum Level2Engine {
     static func seatDialTile(_ tile: String, socket: String, state: GameState) -> DialResult {
         guard !state.hasSolved(Level2Graph.PuzzleID.dialDoor) else { return .solved }
         guard Level2Graph.dialSockets.contains(socket) else { return .rejected }
-        // Only a held inventory tile can seat; the tray VI decoy (Level2DecoyTile.vi) is
+        // Only a held inventory tile can seat; the tray VI decoy (Level2Graph.DecoyTile.trayVI) is
         // never an inventory item so it can never match dialSolution — always rejected.
         guard Level2Graph.dialSolution[socket] == tile, state.hasItem(tile) else { return .rejected }
         state.setL2DialSocket(socket, tile: tile)
@@ -43,15 +43,62 @@ enum Level2Engine {
     enum CatOffer: Equatable { case mouseTell, refusal }
 
     /// Wind the mouse and set it on the FLOOR near the cat's bench: the cat pounces, keeps
-    /// the mouse (consumed by design), and yields watch B from under the cushion. Ungated.
+    /// the mouse (consumed by design), and VACATES the cushion. Ungated.
+    ///
+    /// ROUND 8 (R8-013, user ruling): this no longer auto-grants watch B. The graph's yield is
+    /// "cushion now liftable; watch B beneath" — a revealed item, picked up deliberately, per
+    /// the standing manual-pickup principle (L1 F-023 / R2-003). p02 opens the cushion; the
+    /// player lifts it (`liftCushion`) and taps the watch (`collectWatchB`).
     @discardableResult
     static func placeMouseAtCat(state: GameState) -> Bool {
         guard state.hasItem(Level2Graph.ItemID.toyMouse) else { return false }
         guard !state.hasSolved(Level2Graph.PuzzleID.catMouse) else { return true }
         state.markSolved(Level2Graph.PuzzleID.catMouse)
         state.removeItem(Level2Graph.ItemID.toyMouse)     // cat keeps it (soft-lock-safe: no other use)
-        state.addItem(Level2Graph.ItemID.watchB)          // revealed under the lifted cushion
         return true
+    }
+
+    // MARK: - p02 yield: the cushion lift -> watch B manual pickup (R8-013)
+
+    /// TRUE once the cat has left and the cushion has NOT yet been lifted (the lift affordance
+    /// is live). Derived from latched flags only — order-free and idempotent.
+    static func isCushionLiftable(_ state: GameState) -> Bool {
+        state.hasSolved(Level2Graph.PuzzleID.catMouse)
+            && !state.hasFlag(Level2Graph.Flag.cushionLifted)
+            && !watchBTaken(state)
+    }
+
+    /// Lift the vacated cushion. Latched (never un-lifts), so re-entering the close-up keeps
+    /// showing the reveal until watch B is actually collected.
+    @discardableResult
+    static func liftCushion(state: GameState) -> Bool {
+        guard isCushionLiftable(state) else { return false }
+        state.setFlag(Level2Graph.Flag.cushionLifted)
+        return true
+    }
+
+    /// TRUE while watch B lies revealed under the lifted cushion, uncollected.
+    static func isWatchBUncollected(_ state: GameState) -> Bool {
+        state.hasSolved(Level2Graph.PuzzleID.catMouse)
+            && state.hasFlag(Level2Graph.Flag.cushionLifted)
+            && !watchBTaken(state)
+    }
+
+    /// The deliberate pickup. Idempotent: a second tap can never duplicate the watch.
+    @discardableResult
+    static func collectWatchB(_ state: GameState) -> Bool {
+        guard isWatchBUncollected(state) else { return false }
+        state.addItem(Level2Graph.ItemID.watchB)
+        return true
+    }
+
+    /// Watch B is "taken" once held or once any of its downstream sinks has fired (so a
+    /// consumed/spent carrier never re-appears under the cushion). Mirrors
+    /// `Level2Visuals.watchBTaken`, kept here so the engine has no view-layer dependency.
+    private static func watchBTaken(_ state: GameState) -> Bool {
+        state.hasItem(Level2Graph.ItemID.watchB)
+            || state.hasSolved(Level2Graph.PuzzleID.cacheChimney)
+            || state.hasSolved(Level2Graph.PuzzleID.gearTrain)
     }
 
     /// Offering an armed item DIRECTLY to the cat (D3/D4): the mouse earns the tell (eyes

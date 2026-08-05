@@ -106,13 +106,50 @@ final class Level2Tests: XCTestCase {
 
     // MARK: - p02 cat and the wind-up mouse
 
-    func testCatMouseYieldsWatchBAndConsumesMouse() {
+    /// ROUND 8 (R8-013, user ruling): p02 vacates the cushion; watch B is then a MANUAL
+    /// two-step pickup (lift the cushion, tap the watch) instead of the build-15 auto-grant.
+    func testCatMouseVacatesCushionAndWatchBIsAManualPickup() {
         let s = makeState()
         s.addItem(Level2Graph.ItemID.toyMouse)
         XCTAssertTrue(Level2Engine.placeMouseAtCat(state: s))
         XCTAssertTrue(s.hasSolved(Level2Graph.PuzzleID.catMouse))
-        XCTAssertTrue(s.hasItem(Level2Graph.ItemID.watchB))
         XCTAssertFalse(s.hasItem(Level2Graph.ItemID.toyMouse), "cat keeps the mouse (consumed by design)")
+
+        // No auto-grant: the watch is REVEALED, not handed over.
+        XCTAssertFalse(s.hasItem(Level2Graph.ItemID.watchB), "watch B must not be auto-granted at p02 solve")
+        XCTAssertTrue(Level2Engine.isCushionLiftable(s), "the vacated cushion is liftable")
+        XCTAssertFalse(Level2Engine.isWatchBUncollected(s), "nothing revealed until the cushion is lifted")
+
+        // Step 1: lift.
+        XCTAssertTrue(Level2Engine.liftCushion(state: s))
+        XCTAssertTrue(Level2Engine.isWatchBUncollected(s), "watch B now lies revealed on the bench")
+        XCTAssertFalse(s.hasItem(Level2Graph.ItemID.watchB), "still requires a deliberate tap")
+        XCTAssertFalse(Level2Engine.isCushionLiftable(s), "already lifted — latched")
+
+        // Step 2: collect. Idempotent.
+        XCTAssertTrue(Level2Engine.collectWatchB(s))
+        XCTAssertTrue(s.hasItem(Level2Graph.ItemID.watchB))
+        XCTAssertFalse(Level2Engine.collectWatchB(s), "second tap cannot duplicate the watch")
+        XCTAssertFalse(Level2Engine.isWatchBUncollected(s))
+    }
+
+    /// The lift/collect affordances never exist before p02 (no reaching under a sleeping cat).
+    func testCushionLiftIsUnavailableBeforeP02() {
+        let s = makeState()
+        XCTAssertFalse(Level2Engine.isCushionLiftable(s))
+        XCTAssertFalse(Level2Engine.liftCushion(state: s))
+        XCTAssertFalse(Level2Engine.isWatchBUncollected(s))
+        XCTAssertFalse(Level2Engine.collectWatchB(s))
+        XCTAssertFalse(s.hasItem(Level2Graph.ItemID.watchB))
+    }
+
+    /// Build-15 saves auto-granted watch B. Such a save must NOT re-offer it under the cushion.
+    func testLegacySaveHoldingWatchBShowsNoRevealAndNoLift() {
+        let s = makeState()
+        s.markSolved(Level2Graph.PuzzleID.catMouse)
+        s.addItem(Level2Graph.ItemID.watchB)                 // as the build-15 auto-grant left it
+        XCTAssertFalse(Level2Engine.isCushionLiftable(s))
+        XCTAssertFalse(Level2Engine.isWatchBUncollected(s))
     }
 
     func testCatOfferGrammar() {
@@ -413,7 +450,9 @@ final class Level2Tests: XCTestCase {
         viewGates(s, Level2ClueID.watchA)
         XCTAssertEqual(Level2Engine.pryDormerBoard(isCorrectSpot: true, state: s), .yielded)  // p03
         XCTAssertTrue(Level2Engine.collectGreatWheel(s))
-        XCTAssertTrue(Level2Engine.placeMouseAtCat(state: s))                                 // p02 -> watch B
+        XCTAssertTrue(Level2Engine.placeMouseAtCat(state: s))                                 // p02
+        XCTAssertTrue(Level2Engine.liftCushion(state: s))                                     // cushion lift
+        XCTAssertTrue(Level2Engine.collectWatchB(s))                                          // -> watch B
         viewGates(s, Level2ClueID.watchB)
         XCTAssertEqual(Level2Engine.pryChimneyBrick(isCorrectSpot: true, state: s), .yielded) // p04
         XCTAssertTrue(Level2Engine.collectOilcan(s))
@@ -455,6 +494,8 @@ final class Level2Tests: XCTestCase {
         XCTAssertTrue(Level2Engine.collectGreatWheel(s))
         s.addItem(Level2Graph.ItemID.toyMouse)
         XCTAssertTrue(Level2Engine.placeMouseAtCat(state: s))
+        XCTAssertTrue(Level2Engine.liftCushion(state: s))
+        XCTAssertTrue(Level2Engine.collectWatchB(s))
         viewGates(s, Level2ClueID.watchB)
         XCTAssertEqual(Level2Engine.pryChimneyBrick(isCorrectSpot: true, state: s), .yielded)
         XCTAssertTrue(Level2Engine.collectOilcan(s))

@@ -12,8 +12,9 @@ enum L2CloseUp: Equatable, Identifiable {
     case windingDrum            // p08 oil + wind (armed-item targets inside the CU)
     case dormerCache            // p03 pry / manual great-wheel pickup
     case chimneyCache           // p04 pry / manual oil-can pickup
-    case catCushion             // p02 cat + cushion reveal
+    case catCushion             // p02 cat + cushion lift + manual watch-B pickup (R8-013)
     case coat                   // bench coat: manual watch-A + tile-IV pickups (two pockets)
+    case cabinetDrawer          // z2 parts cabinet: drawer open -> manual toy-mouse pickup
 
     var id: String {
         switch self {
@@ -27,8 +28,18 @@ enum L2CloseUp: Equatable, Identifiable {
         case .chimneyCache: return "chimney-cache"
         case .catCushion: return "cat-cushion"
         case .coat: return "coat"
+        case .cabinetDrawer: return "cabinet-drawer"
         }
     }
+}
+
+/// R8-011(1): the cat's transient reaction to a DIRECT offer (D3/D4). The rev-1.3 mouse-tell
+/// shipped sound-only, so a correct idea read as "broken". These drive the VISIBLE facial
+/// keys composited onto the cushion close-up (existing `ov-cat-*` art), which is why the
+/// coordinator presents that close-up on an offer instead of reacting off-screen.
+enum L2CatResponse: String, Equatable {
+    case mouseTell      // eyes open + locked gaze + tail flick — "right idea, wrong verb"
+    case refusal        // the generic slow blink
 }
 
 /// Wires a RoomScene for a given L2ViewID to GameState + Level2Engine: builds hotspots,
@@ -44,8 +55,11 @@ final class Level2Coordinator: ObservableObject {
 
     @Published var activeCloseUp: L2CloseUp?
     private(set) var closeUpOrigin: String?
-    /// Transient cat-response beat for the D3 tell / generic refusal (auto-clears).
-    @Published var catResponse: String?
+    /// Transient cat-response beat for the D3 tell / generic refusal. Auto-clears after
+    /// `catResponseDuration` so the tell is a beat, never a new latched state (R8-011(1)).
+    @Published var catResponse: L2CatResponse?
+    static let catResponseDuration: TimeInterval = 2.0
+    private var catResponseToken = 0
 
     var onNavigate: ((L2ViewID) -> Void)?
 
@@ -231,6 +245,8 @@ final class Level2Coordinator: ObservableObject {
 
         // z1 v-door
         case (.door, "stair-door"): stairDoorTap()
+        // R8-005(3): this DOES open a clue close-up (the ⌂ ring). Build 15's "nothing happens"
+        // was the occluded-chevron/stale-plate cluster, not a dead hotspot.
         case (.door, "house-ring"): present(.plain(image: "cu-house-ring"), from: hotspotID)
         case (.door, "sill"):
             if !Level2Visuals.tileXITaken(state) {
@@ -265,6 +281,10 @@ final class Level2Coordinator: ObservableObject {
         case (.vault, "key-hook"):
             if !Level2Visuals.windingKeyTaken(state) {
                 state.addItem(Level2Graph.ItemID.windingKey); SoundManager.shared.play(.pickup)
+            } else {
+                // R8-005(3) dead-tap sweep: post-pickup this was silently inert. It now opens
+                // the (state-resolved, empty-hook) close-up like every other taken element.
+                present(.plain(image: "cu-key-hook"), from: hotspotID)
             }
         case (.vault, "tag-nail"):
             if !Level2Visuals.returnTagTaken(state) {
@@ -287,12 +307,22 @@ final class Level2Coordinator: ObservableObject {
         }
     }
 
+    /// z2 parts cabinet. Pulling the drawer opens the (state-resolved) drawer close-up; the
+    /// mouse is then a deliberate tap inside it — the manual-pickup grammar, and the reason
+    /// the "mouse in the drawer" state is now visible at all (R8-012 family).
     private func cabinetTap() {
         if !state.hasFlag(Level2Graph.Flag.cabinetDrawerOpened) {
             state.setFlag(Level2Graph.Flag.cabinetDrawerOpened); SoundManager.shared.play(.tick)
-        } else if !Level2Visuals.mouseTaken(state) {
-            state.addItem(Level2Graph.ItemID.toyMouse); SoundManager.shared.play(.pickup)
         }
+        present(.cabinetDrawer, from: "cabinet")
+    }
+
+    /// Manual toy-mouse pickup from the opened drawer.
+    func collectToyMouse() {
+        guard !Level2Visuals.mouseTaken(state) else { return }
+        state.addItem(Level2Graph.ItemID.toyMouse)
+        SoundManager.shared.play(.pickup)
+        objectWillChange.send()
     }
 
     // MARK: - Armed-item use (tool-on-hotspot)
@@ -317,20 +347,50 @@ final class Level2Coordinator: ObservableObject {
         case (.door, "cat-floor"):
             if itemID == Level2Graph.ItemID.toyMouse, Level2Engine.placeMouseAtCat(state: state) {
                 SoundManager.shared.play(.solve)
-                present(.catCushion, from: "cat-floor")   // cushion now liftable; watch B revealed
+                present(.catCushion, from: "cat-floor")   // cat gone; the cushion is now liftable
                 return true
             }
             // A non-mouse item on the floor is a reach: generic refusal (returns unspent).
-            catResponse = "refusal"; SoundManager.shared.play(.refusal); return true
+            showCatResponse(.refusal); return true
         // Cat: offering an armed item DIRECTLY to the cat (D3/D4 — never executes p02).
         case (.door, "cat-cushion"):
-            let offer = Level2Engine.offerItemToCat(itemID)
-            catResponse = offer == .mouseTell ? "mouse-tell" : "refusal"
-            SoundManager.shared.play(offer == .mouseTell ? .tick : .refusal)
+            showCatResponse(Level2Engine.offerItemToCat(itemID) == .mouseTell ? .mouseTell : .refusal)
             return true   // intended in-world reaction; item returns unspent
         default:
             return false
         }
+    }
+
+    /// R8-011(1): play the cat's reaction as a VISIBLE beat, not just a sound. The tell art
+    /// (`ov-cat-mouse-tell` eyes + tail, `ov-cat-slow-blink`) is authored on the cushion
+    /// close-up plate, so the offer opens/keeps that close-up and composites the facial key
+    /// for `catResponseDuration`, then clears. No new state, no new art.
+    func showCatResponse(_ response: L2CatResponse) {
+        catResponse = response
+        SoundManager.shared.play(response == .mouseTell ? .tick : .refusal)
+        if activeCloseUp != .catCushion { present(.catCushion, from: "cat-cushion") }
+        catResponseToken += 1
+        let token = catResponseToken
+        DispatchQueue.main.asyncAfter(deadline: .now() + Self.catResponseDuration) { [weak self] in
+            guard let self, self.catResponseToken == token else { return }
+            self.catResponse = nil
+        }
+    }
+
+    // MARK: - p02 yield: cushion lift + manual watch-B pickup (R8-013)
+
+    /// Lift the cat-vacated cushion, revealing watch B on the bench beneath it.
+    func liftCushion() {
+        guard Level2Engine.liftCushion(state: state) else { return }
+        SoundManager.shared.play(.creak)
+        objectWillChange.send()
+    }
+
+    /// Collect the revealed watch B (the deliberate second tap).
+    func collectWatchB() {
+        guard Level2Engine.collectWatchB(state) else { return }
+        SoundManager.shared.play(.pickup)
+        objectWillChange.send()
     }
 
     // MARK: - Close-up interactions (called by the SwiftUI controls)
@@ -377,6 +437,20 @@ final class Level2Coordinator: ObservableObject {
     func collectCoatTileIV() {
         guard !Level2Visuals.tileIVTaken(state) else { return }
         state.addItem(Level2Graph.ItemID.tileIV); SoundManager.shared.play(.pickup); objectWillChange.send()
+    }
+
+    /// Single dispatch point for every manual-pickup / lift target a close-up plan declares,
+    /// so the view layer never re-implements collect semantics per close-up (round 8 Cluster A).
+    func runCloseUpTarget(_ target: Level2CloseUpVisuals.Target) {
+        switch target.kind {
+        case .collectTileIV:     collectCoatTileIV()
+        case .collectWatchA:     collectCoatWatchA()
+        case .collectGreatWheel: collectGreatWheel()
+        case .collectOilcan:     collectOilcan()
+        case .collectToyMouse:   collectToyMouse()
+        case .liftCushion:       liftCushion()
+        case .collectWatchB:     collectWatchB()
+        }
     }
 
     func collectGreatWheel() {
