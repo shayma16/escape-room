@@ -332,6 +332,10 @@
    "sha256": "65cae45a7e2cd1b52244429b58c4f95c041e21ff38854a649966cf18aba9efeb",
    "source": "specs/assets/level-2/z1/v-door/states/ov-cushion-reveal-wide@3x.png"
   },
+  "ov-cushion-sill-taken-cu.png": {
+   "sha256": "e84e32409d7a9ceb4c04b6a880ba44895742b1abdf27b60cd933b62bd3b130a8",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-cushion-sill-taken@3x.png"
+  },
   "ov-dial-seat-ii-cu.png": {
    "sha256": "f4d7b5226a1be5d1fdac8da056034d15d3413efe9f9dbf43c7b02dae2284849d",
    "source": "specs/assets/level-2/z1/v-master/states/ov-dial-seat-ii@3x.png"
@@ -512,6 +516,10 @@
    "sha256": "6f6b33b6ccc33f202ee50d0d9b19e1c19e7dc77df89be4145c6df4dae340f1eb",
    "source": "specs/assets/level-2/z1/v-bench/states/ov-screwdriver-taken-wide@3x.png"
   },
+  "ov-sill-cat-gone-cu.png": {
+   "sha256": "f4fe287b082e5e5c37976e45908b82fe0b6d20be40af36595c6ecea57eed2dfa",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-sill-cat-gone@3x.png"
+  },
   "ov-sill-tile-taken-cu.png": {
    "sha256": "5d6be90e13bf9f583ddeee8cbf41f9c992f1b783f5de909e8c147c1d28004f1e",
    "source": "specs/assets/level-2/z1/v-door/states/ov-sill-tile-taken@3x.png"
@@ -577,5 +585,5 @@
    "source": "specs/assets/level-2/z4/v-vault-interior/z4-vault-base@2x.png"
   }
  },
- "count": 144
+ "count": 146
 }

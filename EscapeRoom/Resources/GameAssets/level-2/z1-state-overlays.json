@@ -261,5 +261,25 @@
    1549
   ],
   "note": "cushion lifted; CLOSED watch B on the bench where it sat, canonical die_gear + ring12 stamped on the lid (identical-die contract, r2: watch relocated onto bench, model die replaced by canonical). TRANSIENT state - composite over ov-cushion-empty base; no cache echo"
+ },
+ "ov-cushion-sill-taken": {
+  "base": "cu-cat-cushion",
+  "rect_3x": [
+   0,
+   0,
+   312,
+   240
+  ],
+  "note": "sill corner echo: tile XI gone from the dormer sill as it reads in the cu-cat-cushion crop; deterministic warp of the approved ov-sill-tile-taken art (ECC cc=0.9995, no generation). Keyed to the tile-XI-taken state."
+ },
+ "ov-sill-cat-gone": {
+  "base": "cu-sill-tile",
+  "rect_3x": [
+   1440,
+   696,
+   2048,
+   1536
+  ],
+  "note": "cat-gone echo for the overlapping cushion corner of the sill CU (consistency, mirrors ov-cache-cat-gone); deterministic warp of the approved ov-cushion-empty art. Keyed to p02-solved / cat-gone."
  }
 }

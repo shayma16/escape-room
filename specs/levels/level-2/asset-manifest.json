@@ -1,6 +1,6 @@
 {
  "level": 2,
- "batch": "batch-1 (sheets + z1) + batch-2 (z2 + z1 dial fix + z1 states) + step-10 z2 fix pass + batch-3 (z3 + z4 + gear-frame fix) + batch-4 (all remaining z1-z4 state overlays + sprites + hatch-wheel fix)",
+ "batch": "batch-1 (sheets + z1) + batch-2 (z2 + z1 dial fix + z1 states) + step-10 z2 fix pass + batch-3 (z3 + z4 + gear-frame fix) + batch-4 (all remaining z1-z4 state overlays + sprites + hatch-wheel fix) + 2026-08-05 z1 cross-view CU echo pass ($0, deterministic)",
  "spec_revision": "1.3",
  "generated": "2026-07-18/19 (batch 1) + 2026-07-19 (batch 2) + 2026-07-19/20 (fix pass) + 2026-07-20 (batch 3)",
  "model": "fal-ai/nano-banana-pro (t2i + edit) + deterministic PIL glyph/precision passes (l2_glyphs.py canonical source)",
@@ -834,6 +834,54 @@
    "method": "PIL",
    "generation": "pil",
    "est_cost_usd": 0.0
+  },
+  {
+   "file": "z1/v-door/states/ov-cushion-sill-taken@3x.png",
+   "zone": "z1",
+   "view": "v-door",
+   "close_up": "cu-cat-cushion",
+   "element": "dormer-sill corner baked into the cat-cushion close-up crop",
+   "state": "tile XI taken (cross-view echo)",
+   "rect_3x": [
+    0,
+    0,
+    312,
+    240
+   ],
+   "method": "deterministic warp of the approved ov-sill-tile-taken art from cu-sill-tile into cu-cat-cushion's frame (ECC affine, cc=0.999507, pure similarity 1.33330, residual 0.32/255) + linear colour match on the unchanged surround + feathered composite keeping a pure-base ring on every non-image-edge side",
+   "generation": "pil/opencv",
+   "est_cost_usd": 0.0,
+   "gate": {
+    "seam_delta": 0.02,
+    "sharpness_ratio": 1.036,
+    "PASS": true
+   },
+   "tool": "specs/tools/l2_cu_echoes.py",
+   "note": "build-17 gap: build 16 made all L2 CUs state-composited but this baked-in neighbour content had no overlay. Staged automatically as ov-cushion-sill-taken-cu.png."
+  },
+  {
+   "file": "z1/v-door/states/ov-sill-cat-gone@3x.png",
+   "zone": "z1",
+   "view": "v-door",
+   "close_up": "cu-sill-tile",
+   "element": "cat + cushion corner baked into the sill-tile close-up crop",
+   "state": "p02 solved / cat gone (cross-view echo, mirrors ov-cache-cat-gone)",
+   "rect_3x": [
+    1440,
+    696,
+    2048,
+    1536
+   ],
+   "method": "deterministic warp of the approved ov-cushion-empty art from cu-cat-cushion into cu-sill-tile's frame (same ECC registration, inverse) + colour match + feathered pure-base ring on the two interior sides",
+   "generation": "pil/opencv",
+   "est_cost_usd": 0.0,
+   "gate": {
+    "seam_delta": 0.17,
+    "sharpness_ratio": 1.192,
+    "PASS": true
+   },
+   "tool": "specs/tools/l2_cu_echoes.py",
+   "note": "Staged automatically as ov-sill-cat-gone-cu.png. Residual (not built): the TRANSIENT ov-cushion-reveal is also visible in this corner, bbox (1462,719,2048,1536)."
   }
  ]
 }

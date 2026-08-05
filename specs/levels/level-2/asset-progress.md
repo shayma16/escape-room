@@ -1,3 +1,31 @@
+# Level 2 asset generation — z1 CROSS-VIEW CU ECHO PASS (2026-08-05)
+
+PROGRESS: 2/2 done | 0 retrying | 0 failed | 0 remaining | $0.00 spent (this task) | cumulative $12.75 of $15.00 (headroom $2.25) — CU ECHO PASS COMPLETE 2026-08-05
+
+The build-16 fix made every L2 close-up state-composited, but two z1/v-door close-up plates
+still carried baked-in NEIGHBOUR-element content with no authored overlay to cover their
+post-state. Both patched deterministically (PIL/OpenCV only, NO generation, $0):
+
+| # | asset | host plate | state key | method | gate | status |
+|---|-------|-----------|-----------|--------|------|--------|
+| 1 | ov-cushion-sill-taken@3x (312x240, rect 0,0,312,240) | cu-cat-cushion | tile XI taken | warp of the approved ov-sill-tile-taken art (ECC cc=0.9995) + colour-match + feathered pure-base ring | seam 0.02 / sharp 1.036 PASS | done |
+| 2 | ov-sill-cat-gone@3x (608x840, rect 1440,696,2048,1536) | cu-sill-tile | p02 solved / cat gone | warp of the approved ov-cushion-empty art (same registration, inverse) | seam 0.17 / sharp 1.192 PASS | done |
+
+Tool: `specs/tools/l2_cu_echoes.py` (build | gate | sheet). Review sheet:
+`specs/assets/level-2/z1/z1-review-cu-echoes.png`. Registration proof: cu-sill-tile and
+cu-cat-cushion are the SAME render at 4:3 relative zoom — ECC affine converges at
+cc = 0.999507, pure similarity (scale 1.33330, rotation ~6e-5 rad), residual mean |delta|
+0.32/255 across the whole overlap — so the warp is exact, not an approximation. Rects are
+disjoint from every existing overlay on the same host, so composite order is irrelevant.
+
+RESIDUAL FLAG (not built — outside this task's 2-asset scope): the TRANSIENT cushion-lift
+reveal (`ov-cushion-reveal`) is ALSO visible in cu-sill-tile's corner — change bbox in sill
+CU coords = (1462, 719, 2048, 1536). While watch B is uncollected the sill CU would show the
+cushion still lying flat. A third echo (`ov-sill-cushion-lifted`) closes it with the same $0
+technique. Producer's call.
+
+---
+
 # Level 2 asset generation — z4 SMEAR FIX PASS (2026-07-21)
 
 PROGRESS: 4/4 done | 0 retrying | 0 failed | 0 remaining | $3.90 spent (this task) | cumulative $12.75 of $15.00 (headroom $2.25) — Z4 SMEAR FIX COMPLETE 2026-07-21
