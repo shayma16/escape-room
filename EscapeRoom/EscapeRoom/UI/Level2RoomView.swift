@@ -339,6 +339,12 @@ private struct L2CloseUpHost: View {
 /// top-leading. Every L2 close-up is built on this one container.
 private struct L2Plate<Extra: View>: View {
     let plan: Level2CloseUpVisuals.Plan
+    /// Debug/diagnostic name for the close-up. Deliberately NOT applied as an
+    /// `accessibilityIdentifier` on the container: an identifier on a container turns it into a
+    /// single accessibility element and MASKS its children from XCUITest — the documented L1
+    /// `LevelCompleteOverlay` trap, and exactly what hid `collect-itm-tile-iv` inside the coat
+    /// close-up in full-lane run 31031042901. Close-ups are identified by their leaf controls
+    /// (`closeup-dismiss`, `collect-*`, `dial-socket-*`, …), which is what the UI tests query.
     let identifier: String?
     let onPlateTap: (() -> Void)?
     let onTarget: (Level2CloseUpVisuals.Target) -> Void
@@ -369,16 +375,16 @@ private struct L2Plate<Extra: View>: View {
                     GameImage(name: plan.base)
                         .aspectRatio(contentMode: .fill)
                         .frame(width: g.plate.width, height: g.plate.height)
+                        .accessibilityHidden(true)
                         .position(x: g.plate.midX - g.fitted.minX, y: g.plate.midY - g.fitted.minY)
-                        .accessibilityIdentifier("closeup-plate-" + plan.base)
                     ForEach(plan.layers, id: \.key) { layer in
                         let r = g.sub(layer.rect)
                         GameImage(name: layer.image)
                             .aspectRatio(contentMode: .fill)
                             .frame(width: r.width, height: r.height)
                             .allowsHitTesting(false)
+                            .accessibilityHidden(true)
                             .position(x: r.midX - g.fitted.minX, y: r.midY - g.fitted.minY)
-                            .accessibilityIdentifier("closeup-layer-" + layer.key)
                     }
                 }
                 .frame(width: g.fitted.width, height: g.fitted.height)
@@ -401,7 +407,6 @@ private struct L2Plate<Extra: View>: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(24)
-        .modifier(OptionalIdentifier(identifier: identifier))
     }
 
     private static func label(for target: Level2CloseUpVisuals.Target) -> String {
@@ -427,13 +432,6 @@ private struct PlateTapModifier: ViewModifier {
         } else {
             content
         }
-    }
-}
-
-private struct OptionalIdentifier: ViewModifier {
-    let identifier: String?
-    @ViewBuilder func body(content: Content) -> some View {
-        if let identifier { content.accessibilityIdentifier(identifier) } else { content }
     }
 }
 
@@ -487,9 +485,9 @@ private struct L2PlainCloseUp: View {
                     .frame(width: length * 0.34, height: length * 1.32)
                     .offset(y: -length * 0.31)
                     .rotationEffect(.degrees(Double(ring.hour % 12) * 30))
-                    .position(center)
                     .allowsHitTesting(false)
-                    .accessibilityIdentifier("ring-pointer-" + String(ring.hour))
+                    .accessibilityHidden(true)
+                    .position(center)
             }
         })
     }
