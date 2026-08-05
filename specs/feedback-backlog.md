@@ -2283,3 +2283,23 @@ classification/routing/action until the user explicitly triggers processing._
   or is it z-order/position-occluded by the inventory bar / a newly-added inventory item,
   specifically on the cu-barometer close-up.
 - Narration only (not a defect): the slate close-up's "door at the end.")
+
+### R8-002 — status: logged
+> a closeup to the coat, i pick up the IV tablet, although it's in my inventory but i can also see it on the coat closeup still, that's another bug. i pickup the pocket watch, same issue, it is in my inventory but also didn't disappear from the coat. also no "down" arrow here too to go back to the main scene. i also noticed that after i picked up the pocket watch, the closeup whole image shifted to the left of the ipad screen, leaving a big black void on the right
+
+(context — factual, no classification: Level 2 z1 v-bench COAT close-up (the two-pocket
+collect — L2CoatControl; this was the critical build fix that made tile IV + watch A
+obtainable). Build 15, iPad, Level 2.
+- POSITIVE (working as reported): both pickups WORK — tile IV and the pocket watch (watch A)
+  go to inventory, so the p01 path is reachable.
+- DEFECT (1) STATE NOT REFRESHED: after collecting tile IV and the pocket watch, both STILL
+  show in the coat close-up (pockets not emptied). Same "manual-pickup emptied-container /
+  state-visual not refreshed after pickup" family as L1 round-4 (R4-013 / R4-012 /
+  R4-020-thread-4). The coat close-up must show the emptied pocket(s) once collected.
+- DEFECT (2) MISSING EXIT CHEVRON: the coat close-up also has no down/back arrow to return
+  to the main scene — same as R8-001 barometer. Now appears SYSTEMIC across L2 close-ups,
+  not a single view. Cross-ref R8-001.
+- DEFECT (3) NEW iPad LAYOUT SHIFT: after picking up the pocket watch, the whole close-up
+  image shifted LEFT on the iPad screen, leaving a big BLACK VOID on the right. A close-up
+  positioning/relayout bug on iPad triggered by the pickup (possibly the close-up view
+  re-centers/re-lays-out when an item node is removed; iPad-aspect specific).)
