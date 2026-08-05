@@ -2311,3 +2311,28 @@ obtainable). Build 15, iPad, Level 2.
 narration — the stove tile II (itm-tile-ii) pickup works; user finds nothing else to
 inspect in v-bench and navigates RIGHT to the next view (v-master). No defect reported;
 id retained for sequence.)
+
+### R8-004 — status: logged
+> i picked up the VII tablet and the VI tablet. inspecting the wall clock doesn't reveal much, missing back arrow again. i click randomly at the edges to go back. let's close up on the clock on the door, i see a VI tablet on the shelf under the clock but can't pick it up. there is also a VI button just above my inventory, which looks out of place . anyway, it seems those tablets fit on this clock, i place the II tablet in the right place, the clock takes it because it disappears from my inventory, but i don't see it visually. same issue after adding the IV tablet, and the VII tablet. i spam the VI tablet on the shelf trying to pick it up, doesn't work, so i click randomly to get out of the close up, then click it again to get into the closeup, try to pick it up, doesn't work. visually when i get out of the close up, i can see the tablets i placed on the clock, but when into the closeup, although i put them there already, i don't see them visually. that's another bug. let me go to the cat scene now to the right
+
+(context — factual, no classification: Level 2 z1 v-master (master/wall clock) + z2 v-door
+door-dial (p01). Build 15, iPad, Level 2. Multiple threads:
+- POSITIVE / PROGRESS: VII and VI tablet pickups work; user places 3 of 4 p01 tiles
+  (II / IV / VII) into the door dial — the puzzle ACCEPTS them (each disappears from
+  inventory). Still needs XI (from the sill). Moving RIGHT to the cat scene.
+- THREAD (1) MISSING BACK CHEVRON: the master/wall-clock close-up again has no down/back
+  arrow — user clicks edges to exit. Systemic across L2 close-ups (cross-ref R8-001
+  barometer, R8-002 coat).
+- THREAD (2) DOOR-DIAL CLOSE-UP STATE-REFRESH: placing tiles II/IV/VII — p01 LOGIC works
+  and the WIDE view DOES show the seated tiles, but the CLOSE-UP does NOT render the placed
+  tiles (re-opening the close-up shows empty sockets though they're placed). So the
+  close-up seated-tile state isn't rendered; wide vs close-up divergence. Same state-visual
+  family as R8-002.
+- THREAD (3) VI DECOY NOT PICKABLE: the loose VI tile on the tray/shelf under the door clock
+  can't be picked up (user spammed it, re-entered the close-up, still no). FOR FIX PASS TO
+  DETERMINE: is the tray VI meant to be COLLECTIBLE (design intent = pickable decoy that
+  tempts the wrong placement, per p01 "rejected: tray VI in socket-4") or a NON-COLLECTIBLE
+  decoy (like L1's demoted decoys)? Current behavior (can't pick up) is confusing either way.
+- THREAD (4) STRAY UI: a "VI button just above my inventory that looks out of place" — a
+  misplaced/leftover VI UI element/button near the inventory bar (rendering/placement bug);
+  possibly the VI decoy rendered as an errant button.)
