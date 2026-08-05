@@ -109,3 +109,16 @@ hand off to user for device install and physical-device spot-check (user checkpo
 step 16). Failure modes to watch: ASC permissions on cloud cert creation (see
 contingency above), missing app record ("no suitable application records"), Apple
 processing rejections (emailed to the account holder).
+
+
+## Build 16 — "Within" 1.0 (16) — 2026-08-06 (branch level2-clockmakers-attic, NOT merged)
+Round-8 fix build (L2 device-test feedback). Fixes: close-up state compositing (dual
+root: resolver + never-staged CU overlay crops), occluded back chevrons, iPad close-up
+layout collapse, tray-VI decoy rebuilt per spec, pictogram UI (near-wordless), manual
+cushion pickup restored (watch-B auto-grant removed; legacy-save migration tested),
+cat direct-offer visual tell, p03/p04 clue clarification + gear-ring clue hotspot
+(was unreachable), 3 cross-view echo overlays ($0). New CI guards: close-up state-flip
+table (25 rows), chevron-visibility, gear-ring registration. Gate: full-lane
+31044990838 green (1 L1 iPhone-SE flake, disambiguated + rerun green). Release run
+31052500361; stamp verified 4 ways; .ipa security re-check clean. What's New: "Level 2
+fixes: close-up views now update correctly, visible back arrows, and clearer clues."

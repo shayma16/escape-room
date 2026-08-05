@@ -288,6 +288,17 @@ per-zone user reviews follow each batch.
   User is MID-PLAYTHROUGH (p01–p03 done, watch B in inventory, next = p04 chimney);
   build-15 save migration tested. On the user's completed device test → GATE 2 → merge →
   main + release.
+  ✅ BUILD 16 SHIPPED TO TESTFLIGHT 2026-08-06 (release run 31052500361, 4m11s, no
+  cert-cap; full-lane gate 31044990838 GREEN — one iPhone-SE flake on an L1 test,
+  properly disambiguated [zero-L1-diff proof] + re-run green; CFBundleVersion 16
+  verified 4 ways incl. shipped .ipa; .ipa security re-check PASS). "Within" 1.0 (16)
+  processing on ASC. User action (optional): paste What-to-Test text in ASC. USER
+  RESUMES at p04 chimney (save migration verified: migrated saves show cushion empty,
+  watch B kept). PROCESS NOTES logged: (a) iPhone-SE L1 full-solve is now a SECOND
+  flake surface (policy decision pending: keep hard-gate w/ manual flake triage vs
+  demote L1 long-solves to continue-on-error on working branches); (b) cert-cap durable
+  fix (.p12 pinning vs killing Development-signing resolution) STILL UNDECIDED — the
+  'Created via API' per-run cert minting remains live.
   📄 DOC SECOND PASS (step 14) dispatched 2026-07-22 (user catch — was overdue): reconcile
   L2 walkthrough.md to the as-built build-15 game (resolve the p08-mouse-dead-spec +
   naive-4:40 flags; VI-X-I-III vault code; never-consumed items; coat two-pocket collect;
