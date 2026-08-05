@@ -2370,3 +2370,17 @@ unobtainable → L2 uncompletable) and the re-anchored hotspots — so p01 is no
 iPad, the exact thing that was broken. Despite the R8-004 door-dial close-up state-refresh
 bug (placed tiles not shown in the close-up), the puzzle still completes. No new defect;
 positive progress narration, id retained for sequence.)
+
+### R8-007 — status: logged
+> two closeups immediately inside, the gear with numbers and the wooden toy thing on the wall. these are puzzles i don't have answers for yet. oh there is something else on the wall, a sunny gear. all those closeups don't have the back arrow
+
+(context — factual, no classification: Level 2 z2 interior (v-frame). Build 15, iPad,
+Level 2.
+- PROGRESS: user finds the z2 puzzle elements — "the gear with numbers" (the gear-frame /
+  p06 gear-train puzzle, cu-gear-frame), "the wooden toy thing on the wall" (the
+  mural/automaton), and "a sunny gear" (the sun-gear glyph clue). All correctly read as
+  puzzles the user has no answers for yet (gated — expected at this point).
+- DEFECT MISSING BACK CHEVRON on all these z2 close-ups too — confirms the missing-exit-arrow
+  bug is SYSTEMIC across the ENTIRE level (z1 + z2), every close-up (cross-ref R8-001
+  barometer, R8-002 coat, R8-004 wall-clock, R8-005 cat). No new defect beyond the chevron
+  here; the rest is progress narration.)
