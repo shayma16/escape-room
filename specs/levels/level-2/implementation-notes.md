@@ -680,21 +680,30 @@ now that ~150 files ship.
 
 ### CI (round 8)
 
-- **Fast lane GREEN on the final code** — run `31029844470`
-  (<https://github.com/shayma16/escape-room/actions/runs/31029844470>), 14m42s: build + the full
-  unit/logic suite on iPad 13″, iPhone SE and the Dynamic-Island iPhone, including the new
-  `Level2CloseUpStateTests` and the extended `Level2AssetStagingTests`. (An earlier green on the
-  same batch: run `31028394727`.)
-  The first run of the batch, `31027774811`, failed the BUILD step only — two `some View`
-  helpers left without an explicit `return` after their `@ViewBuilder` attribute was dropped,
-  plus backward-matching trailing-closure warnings. Diagnosed from its log and fixed in ONE
-  batch rather than one CI iteration per error, per the CI-efficiency directive. Three fast-lane
-  runs total for the whole batch.
-- **Full lane** — run `31031042901`
-  (<https://github.com/shayma16/escape-room/actions/runs/31031042901>), dispatched with
-  `lane=full` once the batch was complete. The heavy iPad L1 playthrough step remains
-  `continue-on-error` by design; the iPhone-SE UI playthrough and the Dynamic-Island safe-area
-  step are the hard gates. Result reported in the handoff message.
+- **FULL LANE GREEN (the handoff gate)** — run `31034965366`
+  (<https://github.com/shayma16/escape-room/actions/runs/31034965366>): fast-lane 13m52s +
+  full-lane-ui 48m29s. **All three UI steps passed**, including the normally-flaky
+  `continue-on-error` iPad playthrough:
+  - iPhone SE full playthrough + smoke + save-resume — 10 tests, 0 failures (incl.
+    `testL2Z1PickupsCloseUpsAndNavigationSmoke` 53.7s and `testL2SceneContentFillsScreen`);
+  - iPad full playthrough — 6 tests, 0 failures;
+  - Dynamic Island safe-area — 3 tests, 0 failures.
+- **Fast lane** — 190 unit/logic tests, 0 failures, on all three device runtimes, including all
+  13 new `Level2CloseUpStateTests` cases.
+- **Three failures were caught by CI and fixed in-batch, none chased one-iteration-at-a-time:**
+  1. run `31027774811` — BUILD only: two `some View` helpers left without an explicit `return`
+     after their `@ViewBuilder` attribute was dropped, plus backward-matching trailing-closure
+     warnings. Both diagnosed from one log and fixed together.
+  2. a self-caught visual defect before dispatching the full lane: the focus-zoomed clue plate
+     needed clipping to its visible window.
+  3. run `31031042901` — the **iPhone-SE UI hard gate**, which is exactly what that lane is for:
+     `L2Plate` applied the close-up's identifier to its ROOT CONTAINER, which turns the container
+     into a single accessibility element and masks its children, so the coat close-up opened but
+     `collect-itm-tile-iv` was invisible to XCUITest. This is the documented L1
+     `LevelCompleteOverlay` trap. Container identifiers are now dropped level-wide and the
+     decorative plate/overlay/pointer views are `accessibilityHidden`.
+  Five CI runs total for the whole batch (three fast, two full), with the duplicate
+  push-triggered runs cancelled to save macOS minutes.
 - The `Level2UITests` smoke test needed no changes: the accessibility identifiers it drives
   (`closeup-dismiss`, `collect-itm-tile-iv`, `collect-itm-watch-a`, `dial-socket-*`) are all
   preserved, and the dial sockets are now real queryable elements rather than `Color.clear`
