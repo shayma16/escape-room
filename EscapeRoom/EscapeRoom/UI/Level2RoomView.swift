@@ -361,20 +361,29 @@ private struct L2Plate<Extra: View>: View {
             let g = L2PlateGeometry(in: geo.size, focus: plan.focus)
             ZStack(alignment: .topLeading) {
                 Color.clear                                  // stable full-size anchor
-                GameImage(name: plan.base)
-                    .aspectRatio(contentMode: .fill)
-                    .frame(width: g.plate.width, height: g.plate.height)
-                    .position(x: g.plate.midX, y: g.plate.midY)
-                    .accessibilityIdentifier("closeup-plate-" + plan.base)
-                ForEach(plan.layers, id: \.key) { layer in
-                    let r = g.sub(layer.rect)
-                    GameImage(name: layer.image)
+                // Base plate + its state overlays, clipped to the VISIBLE window. When a plan
+                // carries a `focus` zoom (the clock-row clue) the full plate is larger than the
+                // window, so this clip is what keeps the un-focused remainder off-screen.
+                ZStack(alignment: .topLeading) {
+                    Color.clear
+                    GameImage(name: plan.base)
                         .aspectRatio(contentMode: .fill)
-                        .frame(width: r.width, height: r.height)
-                        .allowsHitTesting(false)
-                        .position(x: r.midX, y: r.midY)
-                        .accessibilityIdentifier("closeup-layer-" + layer.key)
+                        .frame(width: g.plate.width, height: g.plate.height)
+                        .position(x: g.plate.midX - g.fitted.minX, y: g.plate.midY - g.fitted.minY)
+                        .accessibilityIdentifier("closeup-plate-" + plan.base)
+                    ForEach(plan.layers, id: \.key) { layer in
+                        let r = g.sub(layer.rect)
+                        GameImage(name: layer.image)
+                            .aspectRatio(contentMode: .fill)
+                            .frame(width: r.width, height: r.height)
+                            .allowsHitTesting(false)
+                            .position(x: r.midX - g.fitted.minX, y: r.midY - g.fitted.minY)
+                            .accessibilityIdentifier("closeup-layer-" + layer.key)
+                    }
                 }
+                .frame(width: g.fitted.width, height: g.fitted.height)
+                .clipped()
+                .position(x: g.fitted.midX, y: g.fitted.midY)
                 extra(g.plate)
                 ForEach(plan.targets, id: \.id) { target in
                     let r = g.sub(target.rect)
