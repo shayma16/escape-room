@@ -2426,3 +2426,17 @@ Threads:
 - THREAD (2) STATE-REFRESH: prying the cache yielded the gear (works) but "visually nothing
   changed" — the pried-cache / opened-floorboard state isn't rendered. Same systemic
   state-visual-not-refreshed family as R8-002 / R8-004.)
+
+### R8-010 — status: logged
+> again, the closeup doesn't show the opened floor, only by going back to the main scene i can see it
+
+(context — factual, no classification: Level 2 z1 v-door p03 cache. Build 15, iPad, Level 2.
+Clarifies/confirms the R8-009 state-refresh thread with a KEY DIAGNOSTIC: the pried-open
+floorboard state renders correctly in the WIDE (main scene) view but NOT in the CLOSE-UP.
+Same close-up-vs-wide divergence as R8-004 (door-dial: placed tiles show in the wide, not
+the close-up). PATTERN across multiple puzzles: the WIDE-view per-element state overlays
+composite correctly, but the CLOSE-UP views are not applying/rendering their state overlays
+— so the defect is specifically the CLOSE-UP state-overlay compositing (not the wide).
+Strong root-cause signal — likely one root fix for the whole R8-002 / R8-004 / R8-009 /
+R8-010 close-up-state cluster. Cross-ref R8-004, R8-009. Developer (close-up state-overlay
+rendering).)
