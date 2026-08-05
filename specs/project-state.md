@@ -262,7 +262,20 @@ per-zone user reviews follow each batch.
   cushion pickup for watch B; changelist APPROVED as routed. BUILD-16 FIX BATCH
   DISPATCHED (Developer, Opus) incl. NEW CI guard: close-up STATE rendering + chevron
   visibility assertions (the untested class that shipped). NEXT: fixes → fast-lane green
-  → full-lane green → build 16 → user resumes device test → GATE 2 → merge+release. ON USER GO → merge level2-clockmakers-attic
+  → full-lane green → build 16 → user resumes device test → GATE 2 → merge+release.
+  ✅ BUILD-16 FIX BATCH DONE + FULL-LANE GREEN 2026-07-22 (run 31034965366; all 3 device
+  UI playthroughs passed incl. iPad). All 9 fixes landed; SECOND ROOT found+fixed: CU
+  state-overlay crops were NEVER STAGED (staging script skipped them) — compositor +
+  staging both fixed; new Level2CloseUpStateTests (13 tests, 22-row state-flip table —
+  build 15 fails every row) in the fast lane; accessibility container-identifier trap
+  fixed level-wide. Producer resolutions of the 3 escalations: (1) vault-wheel Roman
+  numerals ACCEPTED (diegetic, not UI text); (2) gear-ring clue hotspot = follow-up to
+  Developer (within the GATE-1 clarify-clues ruling; must pass M1+band guards);
+  (3) 2 stale CU residues (cat-in-sill-CU, XI-in-cat-CU) → Asset-Gen $0 deterministic
+  overlay task DISPATCHED. Producer call: SKIP a separate QA-agent cycle for build 16 —
+  the new CI guards + full-lane green + the user's live device playthrough are the
+  verification (user may object). NEXT: overlays land → dev follow-up (stage + gear-ring
+  hotspot + fast-lane green) → build 16 → user resumes. ON USER GO → merge level2-clockmakers-attic
   → main + final release; do NOT merge before that.
   📄 DOC SECOND PASS (step 14) dispatched 2026-07-22 (user catch — was overdue): reconcile
   L2 walkthrough.md to the as-built build-15 game (resolve the p08-mouse-dead-spec +
