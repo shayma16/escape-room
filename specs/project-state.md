@@ -251,7 +251,18 @@ per-zone user reviews follow each batch.
   15). ✅ BUILD 15 SHIPPED TO TESTFLIGHT 2026-07-22 (release run 29883003728 success; no
   cert-cap; CFBundleVersion 15 verified 3 ways incl. shipped .ipa; security re-check on
   the .ipa PASS). "Within" 1.0 (15) processing on ASC → Ready to Test. ⛔ AWAITING USER
-  iPad DEVICE SPOT-CHECK (checklist relayed). ON USER GO → merge level2-clockmakers-attic
+  iPad DEVICE SPOT-CHECK (checklist relayed).
+  📋 ROUND 8 (L2 build-15 iPad device test, 2026-07-22): 13 items logged+processed
+  (backlog + specs/levels/level-2/round8-routed-changelist.md). p01/p02/p03 CONFIRMED
+  completable on device (coat + re-anchor fixes proven). Code-level roots found for all
+  4 technical clusters (close-up state no-op ternary; chevron occluded by inventory bar;
+  GeometryReader shrink; tray-VI = floating text button). USER NOT BLOCKED (watch B
+  auto-granted, confirmed in inventory). GATE-1 RULINGS (user): p03/p04 KEEP SIMPLE +
+  clarify clue; REPLACE literal text UI with pictograms (near-wordless); RESTORE manual
+  cushion pickup for watch B; changelist APPROVED as routed. BUILD-16 FIX BATCH
+  DISPATCHED (Developer, Opus) incl. NEW CI guard: close-up STATE rendering + chevron
+  visibility assertions (the untested class that shipped). NEXT: fixes → fast-lane green
+  → full-lane green → build 16 → user resumes device test → GATE 2 → merge+release. ON USER GO → merge level2-clockmakers-attic
   → main + final release; do NOT merge before that.
   📄 DOC SECOND PASS (step 14) dispatched 2026-07-22 (user catch — was overdue): reconcile
   L2 walkthrough.md to the as-built build-15 game (resolve the p08-mouse-dead-spec +
