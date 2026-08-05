@@ -2384,3 +2384,25 @@ Level 2.
   bug is SYSTEMIC across the ENTIRE level (z1 + z2), every close-up (cross-ref R8-001
   barometer, R8-002 coat, R8-004 wall-clock, R8-005 cat). No new defect beyond the chevron
   here; the rest is progress narration.)
+
+### R8-008 — status: logged
+> going right, i got the toy mouse. clicking the clocks on the wall doesn't do much really. i feel closeups in level 2 are not very good to be honest as this scene and also the wall clock scene closeups are basically cropped out versions of the bigger scene, around 80% of the big scene, so not really that useful. anyway, i see a glass cabinet with stuff in it, can't open it
+
+(context — factual, no classification: Level 2 z2 v-clockrow. Build 15, iPad, Level 2.
+Threads:
+- THREAD (1) POSITIVE: the toy mouse (inv-toy-mouse, needed for p02 cat) pickup works.
+- THREAD (2) CLUE CLOCKS: clicking the four wall clocks (the world-clock timezone plates,
+  cu-clockrow) "doesn't do much" — verify they open a useful clue close-up vs a near-noop.
+- THREAD (3) DESIGN/QUALITY CRITIQUE: several L2 close-ups — specifically the clockrow scene
+  AND the wall-clock/master scene — are "basically cropped out versions of the bigger scene,
+  around 80% of the big scene," so they don't reveal more detail than the wide and feel not
+  useful. Matches how some L2 CUs were produced (crops of the integrated wide + native-res
+  overlays). Real player-experience concern about close-up VALUE — candidate for an art pass
+  to make affected close-ups meaningfully tighter/more detailed (or reconsider which elements
+  warrant a close-up at all). Also relates to the missing-back-arrow (R8-001..007) making
+  low-value close-ups extra annoying.
+- THREAD (4) GLASS CABINET (the sealed display case, cu-display-case / F1) "can't open it."
+  FOR FIX PASS TO DETERMINE: is it SEALED BY DESIGN (F1 was an intentionally sealed display
+  case — a clue/decoration showing clock hands, not openable) or a bug? If by-design, it
+  likely needs a clearer "sealed/locked" read so the player doesn't try to open it and feel
+  stuck.)
