@@ -2406,3 +2406,23 @@ Threads:
   case — a clue/decoration showing clock hands, not openable) or a bug? If by-design, it
   likely needs a clearer "sealed/locked" read so the player doesn't try to open it and feel
   stuck.)
+
+### R8-009 — status: logged
+> ok i had to cheat now to get this clue, i couldn't understand even when i read the walkthrough so this puzzle may be too hard to figure out. i see the house on the beam clue, and the clue on the pocket watch, then i used the screwdriver on the floorboard under the cat, by randomly clicked, that gave me a gear in my inventory, but visually nothing changed. the clue was hard, and the visual is not there.
+
+(context — factual, no classification: Level 2 z1 v-door, p03-cache-dormer (screwdriver on
+the dormer floorboard cache under the cat → itm-great-wheel gear). Build 15, iPad, Level 2.
+Threads:
+- THREAD (1) DIFFICULTY / CLUE-CLARITY (significant, design): the user could NOT solve p03
+  even after READING the walkthrough — had to "cheat"/random-click to find the floorboard.
+  The clues (house-ring glyph on the beam cu-house-ring + the pocket-watch clue) did not
+  clearly point to the cache location. User: "this puzzle may be too hard to figure out."
+  Noted as CONFIRMING the Documentation second-pass discrepancy #1: the p03/p04 intended
+  "clock-hand-as-pointer" spatial beat is COLLAPSED in the as-built (single always-correct
+  cache hotspot, gated only on the watch clue), yet the clue->location mapping is still
+  unclear, so it reads as obscure rather than cleverly hard. Ties to the standing user
+  decision on p03/p04 depth. (Bears on Theme/Puzzle Designer + Producer clue-clarity/
+  difficulty and Documentation walkthrough clarity — recorded as context, not routed.)
+- THREAD (2) STATE-REFRESH: prying the cache yielded the gear (works) but "visually nothing
+  changed" — the pried-cache / opened-floorboard state isn't rendered. Same systemic
+  state-visual-not-refreshed family as R8-002 / R8-004.)
