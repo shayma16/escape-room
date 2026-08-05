@@ -2440,3 +2440,36 @@ composite correctly, but the CLOSE-UP views are not applying/rendering their sta
 Strong root-cause signal — likely one root fix for the whole R8-002 / R8-004 / R8-009 /
 R8-010 close-up-state cluster. Cross-ref R8-004, R8-009. Developer (close-up state-overlay
 rendering).)
+
+### R8-011 — status: logged
+> i try to give the cat the mouse but it doesn't take it. on the close up i try to put it on the bench as the walkthrough said, visually it takes it, but i don't see it. i go out of the closeup to see the cat disappeared
+
+(context — factual, no classification: Level 2 z1 v-door, p02 (wind-up mouse + cat).
+Build 15, iPad, Level 2. Threads:
+- THREAD (1) DIRECT-OFFER TELL unclear: offering the mouse directly to the cat "doesn't take
+  it." Per design this is INTENDED (D3/D4: direct offer is the "tell" and returns the item;
+  the SOLUTION is to place the wound mouse on the floor/bench so the cat chases it). BUT the
+  cat-tell ANIMATION was DEFERRED (QA-accepted; softened to sound-only, eye-lock animation
+  not built), so the user got no clear "wrong way, place it instead" signal and read it as
+  not working. FLAG: the direct-offer tell needs to read clearly as an intentional refusal/
+  hint (currently easy to miss). Design/UX.
+- THREAD (2) STATE-REFRESH (close-up): placing the mouse on the bench WORKS ("visually it
+  takes it") but the placement isn't shown in the CLOSE-UP ("i don't see it"). Same close-up-
+  state cluster as R8-010 / R8-004 / R8-002 (close-up state overlays not rendering; wide does).
+- THREAD (3) POSITIVE + DEFERRED-ANIM note: p02 SOLVED — exiting to the wide, the cat has
+  DISAPPEARED (chased the mouse / relocated), correctly visible in the wide. Works. But the
+  cat simply VANISHES rather than animating a chase (the deferred cat/mouse animations) —
+  reads abrupt; ties to the walkthrough's "polish state" note. Not a logic bug.)
+
+### R8-012 — status: logged
+> clicking the cushion again shows the cat sleeping, going back to the scene the cat is gone. this is messy
+
+(context — factual, no classification: Level 2 z1 v-door, after p02 solved (cat relocated).
+Build 15, iPad, Level 2. CLOSE-UP STATE STALE / CONTRADICTORY: re-opening the cushion
+CLOSE-UP (cu-cat-cushion) still shows the cat SLEEPING, while the WIDE scene correctly shows
+the cat GONE. The cushion close-up isn't switching to its post-p02 empty/reveal state
+(cu-cushion-empty / cu-cushion-reveal exist) — same close-up-state-overlay-not-rendering root
+as R8-010 / R8-011 / R8-004 / R8-002 (wide updates, close-up doesn't), here producing a
+jarring close-up-vs-wide contradiction the user calls "messy." Reinforces the single-root
+close-up-state cluster. Also ties to the earlier watch-B-under-cushion reveal (QA m4 cushion
+clipping). Developer (close-up state rendering).)
