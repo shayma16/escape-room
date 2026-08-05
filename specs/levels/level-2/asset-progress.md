@@ -1,28 +1,39 @@
 # Level 2 asset generation — z1 CROSS-VIEW CU ECHO PASS (2026-08-05)
 
-PROGRESS: 2/2 done | 0 retrying | 0 failed | 0 remaining | $0.00 spent (this task) | cumulative $12.75 of $15.00 (headroom $2.25) — CU ECHO PASS COMPLETE 2026-08-05
+PROGRESS: 3/3 done | 0 retrying | 0 failed | 0 remaining | $0.00 spent (this task) | cumulative $12.75 of $15.00 (headroom $2.25) — CU ECHO PASS COMPLETE 2026-08-05
 
 The build-16 fix made every L2 close-up state-composited, but two z1/v-door close-up plates
 still carried baked-in NEIGHBOUR-element content with no authored overlay to cover their
-post-state. Both patched deterministically (PIL/OpenCV only, NO generation, $0):
+post-state. All three echoes patched deterministically (PIL/OpenCV only, NO generation, $0);
+the third was added on Producer approval after the first two shipped.
 
-| # | asset | host plate | state key | method | gate | status |
-|---|-------|-----------|-----------|--------|------|--------|
-| 1 | ov-cushion-sill-taken@3x (312x240, rect 0,0,312,240) | cu-cat-cushion | tile XI taken | warp of the approved ov-sill-tile-taken art (ECC cc=0.9995) + colour-match + feathered pure-base ring | seam 0.02 / sharp 1.036 PASS | done |
-| 2 | ov-sill-cat-gone@3x (608x840, rect 1440,696,2048,1536) | cu-sill-tile | p02 solved / cat gone | warp of the approved ov-cushion-empty art (same registration, inverse) | seam 0.17 / sharp 1.192 PASS | done |
+| # | asset | host plate | resolver condition | method | gate | status |
+|---|-------|-----------|--------------------|--------|------|--------|
+| 1 | ov-cushion-sill-taken@3x (312x240, rect 0,0,312,240) | cu-cat-cushion | `Level2Visuals.tileXITaken(s)` | warp of the approved ov-sill-tile-taken art (ECC cc=0.9995) + colour-match + feathered pure-base ring | seam 0.02 / sharp 1.036 PASS | done |
+| 2 | ov-sill-cat-gone@3x (608x840, rect 1440,696,2048,1536) | cu-sill-tile | `s.hasSolved(PuzzleID.catMouse)` | warp of the approved ov-cushion-empty art (same registration, inverse) | seam 0.17 / sharp 1.192 PASS | done |
+| 3 | ov-sill-cushion-lifted@3x (608x840, SAME rect as #2) | cu-sill-tile | `Level2Engine.isWatchBUncollected(s)` | warp of ov-cushion-empty + ov-cushion-reveal, built/gated against the #2 underlay | seam 0.16 / sharp 1.048 PASS | done |
 
 Tool: `specs/tools/l2_cu_echoes.py` (build | gate | sheet). Review sheet:
 `specs/assets/level-2/z1/z1-review-cu-echoes.png`. Registration proof: cu-sill-tile and
 cu-cat-cushion are the SAME render at 4:3 relative zoom — ECC affine converges at
 cc = 0.999507, pure similarity (scale 1.33330, rotation ~6e-5 rad), residual mean |delta|
-0.32/255 across the whole overlap — so the warp is exact, not an approximation. Rects are
-disjoint from every existing overlay on the same host, so composite order is irrelevant.
+0.32/255 across the whole overlap — so the warp is exact, not an approximation.
 
-RESIDUAL FLAG (not built — outside this task's 2-asset scope): the TRANSIENT cushion-lift
-reveal (`ov-cushion-reveal`) is ALSO visible in cu-sill-tile's corner — change bbox in sill
-CU coords = (1462, 719, 2048, 1536). While watch B is uncollected the sill CU would show the
-cushion still lying flat. A third echo (`ov-sill-cushion-lifted`) closes it with the same $0
-technique. Producer's call.
+Layering contract: #3 composites OVER #2 at the IDENTICAL rect (mirroring how
+ov-cushion-reveal composites over ov-cushion-empty on the cushion CU), so dropping #3 when
+watch B is collected restores the flat-cushion corner with no seam bookkeeping. #3 was built
+and gated against the #2 underlay, i.e. against exactly what the renderer will have on
+screen. #1's rect is disjoint from every other overlay on cu-cat-cushion, so order is free.
+
+Watch-B safety check on #3: the revealed watch is OFF-PLATE in the sill crop (its top edge
+maps to sill y = 1611 vs the 1536 plate bottom), so cu-sill-tile can never display an
+untappable duplicate of a collectable — only the tipped-up cushion.
+
+Staging: `tools/stage_level2_assets.py` re-run — 147 canonical assets, zero churn on the
+pre-existing ones, no shadow collision. The three files land as `ov-cushion-sill-taken-cu.png`,
+`ov-sill-cat-gone-cu.png`, `ov-sill-cushion-lifted-cu.png`, exactly the names
+`Level2CloseUpVisuals.layer()` resolves. The only remaining work is the Developer's three
+`append(...)` lines in the resolver.
 
 ---
 

@@ -520,6 +520,10 @@
    "sha256": "f4fe287b082e5e5c37976e45908b82fe0b6d20be40af36595c6ecea57eed2dfa",
    "source": "specs/assets/level-2/z1/v-door/states/ov-sill-cat-gone@3x.png"
   },
+  "ov-sill-cushion-lifted-cu.png": {
+   "sha256": "d800fbe3da37416c97ee02f337927de2936f9be20dad56ac22b24a62bab42850",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-sill-cushion-lifted@3x.png"
+  },
   "ov-sill-tile-taken-cu.png": {
    "sha256": "5d6be90e13bf9f583ddeee8cbf41f9c992f1b783f5de909e8c147c1d28004f1e",
    "source": "specs/assets/level-2/z1/v-door/states/ov-sill-tile-taken@3x.png"
@@ -585,5 +589,5 @@
    "source": "specs/assets/level-2/z4/v-vault-interior/z4-vault-base@2x.png"
   }
  },
- "count": 146
+ "count": 147
 }

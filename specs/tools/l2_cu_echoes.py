@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Level 2 / z1 v-door CROSS-VIEW CLOSE-UP ECHO patches (build-17 gap fix, $0 / no API).
 
-Two z1 close-up plates carry baked-in content that belongs to a NEIGHBOURING element's
+Three z1 close-up regions carried baked-in content belonging to a NEIGHBOURING element's
 state, with no authored overlay to cover the post-state (found after the build-16 fix made
 every L2 close-up state-composited):
 
@@ -9,6 +9,8 @@ every L2 close-up state-composited):
     Once tile XI is taken the wide and cu-sill-tile update, but this corner did not.
   * cu-sill-tile's bottom-right corner shows the CAT asleep on its cushion. Once p02 is
     solved the cat is gone everywhere else, but this corner did not update.
+  * that same cu-sill-tile corner also shows the cushion lying FLAT during the transient
+    cushion-lift reveal (watch B revealed, uncollected), which every other view shows.
 
 Same technique as the existing `ov-cache-cat-gone` echo (cu-floor-cache <- cushion state):
 derive the patch DETERMINISTICALLY from the already-approved state art of the OTHER plate.
@@ -24,7 +26,9 @@ and then exploits:
 Composite rules (identical to l2_fixstates' reblend contract): linear colour match fitted on
 the unchanged surround, feathered blend that keeps a PURE BASE ring at every rect side that
 is not an image edge, so the seam check passes by construction and untouched pixels stay
-bit-identical.
+bit-identical. A patch the runtime composites ON TOP of another overlay declares that
+overlay as its `under`: it is then built AND gated against the exact underlay the renderer
+will have on screen, so its ring blends into the right pixels.
 
 CLI:  python l2_cu_echoes.py [build|gate|sheet]
 """
@@ -52,23 +56,40 @@ W_C2S = np.array([[1.333306e+00, 7.611689e-05, 8.961415e+02],
                   [-9.622778e-05, 1.333276e+00, 5.975354e+02]], np.float32)
 W_S2C = np.linalg.inv(np.vstack([W_C2S, [0, 0, 1]]).astype(np.float64))[:2].astype(np.float32)
 
-# --- the two echo patches ----------------------------------------------------------
+# The cushion-corner rect of the sill CU. The cat-gone echo and the cushion-lifted echo
+# share it EXACTLY (the lifted state simply replaces the flat one, mirroring how
+# ov-cushion-reveal replaces ov-cushion-empty on the cushion CU), so dropping the lifted
+# layer when watch B is collected restores the flat corner with no seam bookkeeping.
+SILL_CUSHION_RECT = (1440, 696, 2048, 1536)
+
+# --- the echo patches --------------------------------------------------------------
 JOBS = {
     # host plate <- source plate's approved state art
     "ov-cushion-sill-taken": dict(
-        host="cu-cat-cushion", src="cu-sill-tile", warp="s2c",
-        src_states=[("ov-sill-tile-taken", 670, 255)],
-        rect=(0, 0, 312, 240), ring=8, feather=12, band=48, sharpen=0.0,
+        host="cu-cat-cushion", src="cu-sill-tile", warp="s2c", under=None,
+        src_states=[("ov-sill-tile-taken", 670, 255)], src_prev_states=[],
+        rect=(0, 0, 312, 240), ring=8, feather=12, sharpen=0.0,
         note="sill corner echo: tile XI gone from the dormer sill as it reads in the "
              "cu-cat-cushion crop; deterministic warp of the approved ov-sill-tile-taken "
              "art (ECC cc=0.9995, no generation). Keyed to the tile-XI-taken state."),
     "ov-sill-cat-gone": dict(
-        host="cu-sill-tile", src="cu-cat-cushion", warp="c2s",
-        src_states=[("ov-cushion-empty", 450, 110)],
-        rect=(1440, 696, 2048, 1536), ring=8, feather=14, band=56, sharpen=0.0,
+        host="cu-sill-tile", src="cu-cat-cushion", warp="c2s", under=None,
+        src_states=[("ov-cushion-empty", 450, 110)], src_prev_states=[],
+        rect=SILL_CUSHION_RECT, ring=8, feather=14, sharpen=0.0,
         note="cat-gone echo for the overlapping cushion corner of the sill CU "
              "(consistency, mirrors ov-cache-cat-gone); deterministic warp of the "
              "approved ov-cushion-empty art. Keyed to p02-solved / cat-gone."),
+    "ov-sill-cushion-lifted": dict(
+        host="cu-sill-tile", src="cu-cat-cushion", warp="c2s", under="ov-sill-cat-gone",
+        src_states=[("ov-cushion-empty", 450, 110), ("ov-cushion-reveal", 420, 80)],
+        src_prev_states=[("ov-cushion-empty", 450, 110)],
+        rect=SILL_CUSHION_RECT, ring=8, feather=14, sharpen=0.0,
+        note="TRANSIENT cushion-lift echo for the sill CU's cushion corner: the cushion "
+             "tipped up exactly as ov-cushion-reveal shows it, warped into the sill frame. "
+             "Composites OVER ov-sill-cat-gone (same rect) and is dropped again once watch "
+             "B is collected. Keyed to Level2Engine.isWatchBUncollected (p02 solved AND "
+             "l2-cushion-lifted AND watch B not taken) - the same window that composites "
+             "ov-cushion-reveal on the cushion CU and the door wide."),
 }
 
 
@@ -89,6 +110,19 @@ def with_states(base, states):
         ov = load(os.path.join(ST, name + "@3x.png"))
         out[y0:y0 + ov.shape[0], x0:x0 + ov.shape[1]] = ov
     return out
+
+
+def host_plate(job):
+    """The plate as the RENDERER will have it under this patch (base + declared underlay)."""
+    h = plate(job["host"])
+    key = job.get("under")
+    if key:
+        u = JOBS[key]
+        p = os.path.join(ST, key + "@3x.png")
+        art = load(p) if os.path.exists(p) else build_one(key, u, save=False)[2]
+        x0, y0, x1, y1 = u["rect"]
+        h[y0:y1, x0:x1] = art
+    return h
 
 
 def edge_sides(rect, w=CU_W, h=CU_H):
@@ -129,21 +163,23 @@ def unsharp(img, amount, sigma=1.2):
 
 
 def build_one(key, job, save=True):
-    host = plate(job["host"])
+    host = host_plate(job)
     src = plate(job["src"])
     src_state = with_states(src, job["src_states"])
+    src_prev = with_states(src, job.get("src_prev_states") or [])
     M = W_S2C if job["warp"] == "s2c" else W_C2S
     warped = cv2.warpAffine(src_state, M, (CU_W, CU_H), flags=cv2.INTER_LANCZOS4)
-    warped_base = cv2.warpAffine(src, M, (CU_W, CU_H), flags=cv2.INTER_LANCZOS4)
+    warped_prev = cv2.warpAffine(src_prev, M, (CU_W, CU_H), flags=cv2.INTER_LANCZOS4)
 
     x0, y0, x1, y1 = job["rect"]
     hc = host[y0:y1, x0:x1]
     wc = unsharp(warped[y0:y1, x0:x1], job["sharpen"])
-    wbc = warped_base[y0:y1, x0:x1]
+    wpc = warped_prev[y0:y1, x0:x1]
 
-    # control = pixels inside the rect that this state change does NOT touch, so the
-    # colour fit is made on genuinely corresponding content only.
-    d = cv2.absdiff(wc, wbc).astype(np.float32).mean(2)
+    # control = pixels inside the rect that THIS state change does not touch, so the colour
+    # fit is made on genuinely corresponding content only (for a stacked patch the
+    # reference is the underlay's own source state, not the raw plate).
+    d = cv2.absdiff(wc, wpc).astype(np.float32).mean(2)
     ctrl = cv2.erode((cv2.GaussianBlur(d, (0, 0), 6) < 3).astype(np.uint8), np.ones((9, 9), np.uint8))
     if ctrl.sum() < 500:
         ctrl = np.ones(d.shape, np.uint8)
@@ -183,7 +219,10 @@ def gate_one(key, job):
 def register_json():
     meta = json.load(open(OVJ, encoding="utf-8"))
     for key, job in JOBS.items():
-        meta[key] = {"base": job["host"], "rect_3x": list(job["rect"]), "note": job["note"]}
+        e = {"base": job["host"], "rect_3x": list(job["rect"]), "note": job["note"]}
+        if job.get("under"):
+            e["composites_over"] = job["under"]
+        meta[key] = e
     json.dump(meta, open(OVJ, "w", encoding="utf-8"), indent=1)
     print("registered %s in %s" % (", ".join(JOBS), OVJ))
 
