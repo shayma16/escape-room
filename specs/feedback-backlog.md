@@ -2303,3 +2303,11 @@ obtainable). Build 15, iPad, Level 2.
   image shifted LEFT on the iPad screen, leaving a big BLACK VOID on the right. A close-up
   positioning/relayout bug on iPad triggered by the pickup (possibly the close-up view
   re-centers/re-lays-out when an item node is removed; iPad-aspect specific).)
+
+### R8-003 — status: logged (POSITIVE / progress narration — no defect)
+> i picked up the II tablet. nothing else to inspect in this scene it seems, going right
+
+(context — factual, no classification: Level 2 z1 v-bench, build 15, iPad. Progress
+narration — the stove tile II (itm-tile-ii) pickup works; user finds nothing else to
+inspect in v-bench and navigates RIGHT to the next view (v-master). No defect reported;
+id retained for sequence.)
