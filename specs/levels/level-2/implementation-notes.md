@@ -887,3 +887,320 @@ they ship without a project change.
   the exact `configureHotspots` inflation rule before pushing, so the first run was green. The
   superseded in-flight run from the preceding asset commit was cancelled to save macOS minutes.
 
+
+---
+
+## BUILD-17 TECHNICAL FIX BATCH (round-8 LATE items on build 16, GATE-1 approved 2026-08-06)
+
+Authority: `specs/levels/level-2/build17-routed-changelist.md` + the "Round 8 — LATE ITEMS ON
+BUILD 16" sections of `specs/feedback-backlog.md`. Nine user-ruled items, code + staging only —
+the p06/p03 clue redesign ran in parallel as a spec-only track and nothing here touches the
+puzzle graph, difficulty, or art direction.
+
+### Per-fix status
+
+| # | Item | Status | Where |
+|---|---|---|---|
+| 1a | R8-020(2) pendulum sprite + `ov-pendulum-absent` registration | **fixed** | `specs/tools/l2_b17_pendulum.py`, `RoomScene.setPendulumSwing`, `Level2Coordinator.updateDialMechanismAnimations` |
+| 1b | R8-020(1) dial hands = authored sprites, anchored on the hub | **fixed** | `Level2SpriteCatalog`, `L2GreatDialControl.hand(_:angle:in:)` |
+| 2 | R8-015 / Q1 cushion close-up has no PLACEMENT target | **fixed** | `catCushionPlan.uses`, `Level2Coordinator.runCloseUpUse` |
+| 3 | R8-018 / Q2 cache close-up collect + systemic parity audit | **fixed (root corrected — see below)** | `L2CacheControl`, plan `uses`, parity matrix tests |
+| 4 | R8-021 z4 stale close-ups + the 22-row guard's coverage gap | **fixed** | `specs/tools/l2_b17_echoes.py`, `plainPlan`, `testEveryForeignElementVisibleInACloseUpIsEchoed` |
+| 5 | R8-022 key-in-socket seam box | **fixed (deterministic, no art help needed)** | `specs/tools/l2_b17_fixes.py` -> `drum_key` |
+| 6 | R8-014 mouse composited outside the drawer | **fixed** | `l2_b17_fixes.py` -> `cabinet_mouse` |
+| 7 | R8-017 arbor-oiled invisible | **verified rendering in BOTH views, then strengthened** | `l2_b17_fixes.py` -> `arbor`; plus a real close-up bug found (below) |
+| 8 | R8-019 + R8-020 +/- chrome -> diegetic affordances | **fixed** | `TurnArc`, `crankHandleRect`, `dialCrankRect` |
+| 9 | R8-016 cat tell mouse-only | **fixed (approved-design reversal, user-confirmed)** | `Level2Coordinator.useItem`, `L2CatCushionView.tellLayers`, `testOnlyTheTinMouseGetsAVisibleCatReaction` |
+
+### 1. R8-020 — the z3 mechanism (user ruling: authored sprites, not procedural)
+
+**The pendulum's root cause was measured, not assumed.** The routed changelist was right that
+`ov-pendulum-absent` *was* being invoked, and right to suspect a stale rect. Measuring the
+CURRENT `z3-dial-base@3x` against the batch-4 rig showed the rig itself had drifted from the
+plate: `sp-pendulum` / `ov-pendulum-absent` were authored for rect `(2030, 70, 2280, 1330)` with
+a mask whose rod leans LEFT and whose bob ellipse is `2048..2192 x 1005..1305`, while the plate's
+pendulum hangs VERTICAL at x~2178..2199 with a bob centred (2197, 1169), semi-axes ~ (100, 170),
+plus a finial down to y~1400. The old rect therefore clipped the bob's **right crescent and its
+finial** — precisely the sliver that survived to the RIGHT of the animated one in the user's
+screenshot. Same family as the L1 R7-001 stale rect.
+
+Rebuild (`l2_b17_pendulum.py`, deterministic, $0):
+- silhouette re-measured against the current plate and verified with a mask overlay sheet;
+- `sp-pendulum@3x.png` re-cut as an RGBA cutout over the FULL silhouette (cord + rod + bob +
+  finial), rect `(2050, 0, 2334, 1440)`, pivot `(2186, 8)` (the suspension point, at the top);
+- `ov-pendulum-absent-wide@3x.png` rebuilt as a **silhouette-only** fill: every pixel outside
+  the feathered silhouette is bit-identical to the plate, so the patch cannot show a
+  rectangular seam — the flat grey column the old dark-median clone produced is gone;
+- rect/pivot/amplitudes re-registered into `z3-state-overlays.json` + `clockwork-sprites.json`.
+
+**Judgment call (flagged): the hole fill.** `cv2.inpaint` (Telea and NS, several radii) all
+dragged the bright dial FACE that abuts the hole on the left across the ~240 px bob span and
+broke the dial's rim arc — visibly worse than the wall it is meant to reveal. The shipped fill
+is a row-wise interpolation weighted `(1-t)^3` toward the WALL-side neighbour, then blurred: the
+rim arc reads continuous and the fill settles onto the wall tone. A soft, slightly flat band
+remains where the bob rested; it reads as an out-of-focus recess and is mostly covered by the
+moving bob. If the Art Director wants it painted properly that is a separate art task — the
+registration defect is fixed either way.
+
+**Hands.** `hand-hour` / `hand-minute` (authored spade + plain silhouettes) now render at CU
+scale, rotated about their authored pivots, with the pivot placed on the **works hub**. Build 16
+rotated SwiftUI capsules about `plate.midX/midY`; the hub is at CU (751, 698) ~ normalized
+(0.367, 0.454), i.e. **nowhere near the plate centre on this crop** — that is the whole
+mis-anchor. Contracts honoured explicitly and pinned by tests:
+- **D1 mirror** — a FRONT angle theta renders at -theta; no time is baked into the plate.
+- **R4-007 sprite/view rotation** — the hand art is authored UPRIGHT with no pre-rotation, so
+  the view rotation applies the angle exactly ONCE (the L1 trap was a pre-rotated sprite plus a
+  view rotation double-applying it).
+
+**Judgment call (flagged): elliptical sweep.** The painted numeral ring is an ellipse (semi-axes
+464.4 x 530.6 at @3x — the dial is seen slightly off-axis), so a rigid circular sweep drifts off
+the numerals. The hands are squashed horizontally by the ring's own axis ratio (0.875) about the
+pivot. Derived from authored metadata, not invented, but it is a presentation choice: a full
+homography (the hub does not project to the ring's centre) was judged out of proportion to the
+benefit. Flagged for the Art Director's eye at QA.
+
+**Metadata, not constants.** All of it is read at runtime from the staged `hand-sprites.json` +
+`clockwork-sprites.json` via the new `Level2SpriteCatalog`, because hand-transcribing rects into
+Swift is exactly how build 16's geometry drifted. `hand-sprites.json` gained a structured
+`great-dial` block (hub, ring ellipse, CU frame) promoted from prose in the old `render_rule`
+and from `l2_z3_build.py`'s `HUB_XY` / `CU_FRAMES`.
+
+### 2-3. Cluster Q — close-up <-> wide interaction parity (systemic, not spot fixes)
+
+**Q1 (R8-015) confirmed exactly as routed.** `L2CatCushionView` hard-coded
+`useItem(armed, on: "cat-cushion")` while p02's placement verb lives on the sibling hotspot
+`cat-floor`, so from the close-up the armed mouse could only ever produce the tell.
+
+**Q2 (R8-018) — the routed root cause is INACCURATE; flagging it.** The changelist states the
+cache close-ups have "no collect target for the revealed item". They do: `chimneyCachePlan`
+emits `collect-itm-oilcan` on `oilcanRect`, `L2CacheControl` passes `onTarget:`, and the rect
+was verified (by compositing) to sit squarely on the painted oil can. The real Q2 defect is
+visible in the same line the changelist quotes: `onPlateTap` was guarded to
+`armedItem == screwdriver`, so the cache close-ups implemented **one verb and one item** and any
+other armed use was silently dead. (The user's report is retrospective and most plausibly
+predates build 16's collect targets.) Recorded here so the Documentation Agent does not
+reconcile the walkthrough against a root cause that was not the one fixed.
+
+**The systemic fix.** A close-up no longer hard-codes hotspot ids or item ids. Its `Plan` now
+declares `UseTarget`s — on-plate regions that proxy a WIDE hotspot — and
+`Level2Coordinator.runCloseUpUse` dispatches them through the **same `useItem` switch a wide tap
+uses**. Regions only hit-test while an item is armed, so unarmed taps keep their old behaviour.
+
+Full audit result (every armed verb + every collect target in the level):
+
+| Verb | Wide | Close-up before | Close-up now |
+|---|---|---|---|
+| p03 pry dormer board (screwdriver) | yes `floor-cache` | yes (screwdriver only) | yes `use-floor-cache` |
+| p04 pry chimney brick (screwdriver) | yes `brick` | yes (screwdriver only) | yes `use-brick` |
+| p05 oil the arbor (oil can) | yes `arbor` / `gear-frame` | **NO — the interactive gear-frame CU had no plate tap at all** | yes `use-arbor` |
+| p02 PLACE the mouse | yes `cat-floor` | **NO — structurally unreachable** | yes `use-cat-floor` |
+| p02 OFFER to the cat | yes `cat-cushion` | yes | yes `use-cat-cushion` |
+| p08 oil the drum | **NO — dead in the wide** | yes | yes `use-drum` (+ wide now works) |
+| p08 wind the drum | **NO — dead in the wide** | yes | yes `use-drum` (+ wide now works) |
+| collect great wheel / oil can / mouse / watch A / tile IV / watch B | wide tap opens the CU | yes | yes (unchanged, now guarded) |
+
+Two gaps beyond the two reported: **p08's drum verbs were close-up-only** (the mirror image of
+R8-018 — an armed oil can or key tapped on the drum in the wide scene did nothing), and
+**p05's oiling was dead on the interactive gear-frame close-up**.
+
+**Related bug found while auditing (fixed).** The `arbor` hotspot presented
+`.plain(image: "cu-gear-frame")` — the same plate as `.gearFrame`, but routed through
+`plainPlan`, which had **no case for it**. That close-up therefore composited nothing: the oiled
+bearing and every mounted gear were invisible on the very close-up the walkthrough sends you to
+for p05. This is a second, independent contributor to R8-017's "it looks identical". One plate
+now means one close-up: `arbor` presents `.gearFrame`.
+
+The wide `cat-floor` / `cat-cushion` non-mouse branches previously returned `true` (consuming
+the tap for a refusal); with R8-016 they return `false` and are inert.
+
+### 4. R8-021 — z4 stale close-ups, and WHY THE 22-ROW GUARD MISSED THEM
+
+The resolver *did* have cases for `cu-key-hook` / `cu-tag-nail`, the `-cu` art *was* staged, and
+the guard *did* have rows for both. All three routed suspicions were false.
+
+The actual defect: **`cu-tag-nail` depicts the winding KEY as well as the tag, and `cu-key-hook`
+depicts the TAG as well as the key** (both are crops of the same vault wall). The resolver
+composited only each plate's OWN element, so after collecting both pickups either close-up still
+showed the other item — the "stale key" the user reported.
+
+**Why the guard missed it: every row in the table paired a close-up with its own element.**
+Nothing tested a close-up against a NEIGHBOUR's state. The two z1 echoes that already existed
+(`ov-cache-cat-gone`, and the build-16 sill/cushion pair) were added ad hoc after user reports,
+never derived from a rule — so the rule's blind spot survived.
+
+Closed two ways:
+1. **Data.** 11 cross-element echo patches generated deterministically by
+   `specs/tools/l2_b17_echoes.py`. Every CU plate is a crop of its wide plate (verified: crop +
+   LANCZOS of the wide reproduces each shipped CU plate to mean |delta| <= 0.2/255), so each
+   patch is the approved wide state art re-cropped through the host's own camera frame —
+   registered by construction, no ECC, no hand-placed rects, no generation. Alternative states
+   of one element (pried/empty) share one rect so they stay interchangeable.
+2. **Guard.** `testEveryForeignElementVisibleInACloseUpIsEchoed` derives the whole matrix from
+   `Level2CloseUpVisuals.cuFrames` x each view's wide overlays: if a foreign overlay covers >=1%
+   of a close-up's frame, that close-up's plan MUST change when the state flips, or the pair
+   must appear in `echoExempt` **with a reason**. `testEchoExemptionsAllStillApply` stops the
+   exemption list rotting into a silencer. 12 rows were also added to the hand-maintained
+   state-flip table (22 -> 34) so a failure names the specific plate.
+
+Echoes shipped: `ov-keyhook-tag-taken`, `ov-tagnail-key-taken` (the reported pair);
+`ov-masterface-door-open`, `ov-crate-door-open` (the workroom door p01 opens, visible in both z1
+master close-ups); `ov-housering-bar-raised` (the time-lock bar in the house-ring clue crop);
+`ov-gearring-brick-pried` / `-empty` (the chimney cache in the gear-ring clue crop);
+`ov-gearframe-panel-open` (the z3 wall panel behind the gear frame);
+`ov-cushion-cache-pried` / `-empty` (the floor cache under the cat's bench);
+`ov-cache-cushion-lifted` (the transient watch-B lift window, seen from the floor-cache crop).
+
+**Judgment calls (exemptions, each recorded in code with its reason):** `cu-door-dial` <-
+workroom door (unreachable — a solved dial navigates into z2 instead of presenting the
+close-up); `cu-hatch-wheels` <- hatch open (same shape of unreachability);
+`cu-clockrow-plates` <- cabinet (the plan's focus zoom crops the cabinet out of the visible
+window); and four rect-padding-only overlaps whose changed pixels measure < 0.3% of the plate.
+
+### 5-7. Deterministic overlay repairs (`specs/tools/l2_b17_fixes.py`)
+
+- **R8-022 key seam.** The batch-4 NB edit darkened/desaturated the *whole* crop, not just the
+  key, which is what made the patch rectangle visible. Rebuilt as base-crop + **key silhouette
+  only**. A colour/luminance key is not usable here (the key's shadow side is darker than the
+  rusty collar behind it, so any threshold either drops half the bow or swallows the collar), so
+  the silhouette is a small authored geometry set — ring annulus + shaft + boss — measured on
+  the NB art and resampled for the wide variant (the two crops differ by a uniform 0.5785x).
+  **No art help needed; not escalated.**
+- **R8-014 drawer mouse.** Rebuilt from the approved `ov-cabinet-empty` art (same rect, drawer
+  open, no mouse) plus the mouse cutout re-seated on the drawer floor at 30% of the patch width,
+  with a soft contact shadow. Idempotent: the cut is always taken from the archived original in
+  `_rejects/`, so re-running cannot shrink the mouse again. **Ownership answered: this was
+  overlay content, not a plate offset — Developer-owned, per the changelist's open question 4.**
+- **R8-017 arbor.** First verified the claim: `ov-arbor-oiled` **does** composite in both the
+  wide and the close-up path; the delta was simply mean |delta| ~ 2.7/255 — invisible at play
+  scale. Strengthened to ~7.8 (rust -> clean iron at 0.80 strength, plus a specular sheen and a
+  wet ring on the boss), with a pure-base ring so the rect edge cannot read as a box. An
+  intermediate pass at ~21 was rejected as blown-out/CG. Note the *other* half of this item was
+  the invisible-plan bug in section 2-3 — the close-up the player was looking at resolved no
+  layers at all.
+
+### 8. Diegetic affordances (R8-019 + the R8-020 +/- sub-item)
+
+The `arrow.triangle.2.circlepath` crank button and the flat white `plus.circle.fill` /
+`minus.circle.fill` dial buttons are gone. Both affordances are now anchored ON the painted art
+— the crank arm in `cu-gear-frame`, the setting crank in `cu-great-dial` — with a `TurnArc` mark
+(a three-quarter arc + arrowhead in the scene's bone-white at low opacity, the same wordless
+grammar as the existing dashed empty-post seat rings). Accessibility identifiers (`gear-crank`,
+`dial-crank-plus`, `dial-crank-minus`) and labels are unchanged so the UI tests and VoiceOver
+keep working. **Scope note:** the global-UI SF-Symbols-only rule is untouched — that rule governs
+the menu chrome layer; these are in-room game affordances, like the seat rings and the tray
+selection ring already shipping.
+
+### 9. R8-016 — the cat tell is mouse-exclusive
+
+Implemented as the user confirmed at GATE 1, overriding approved rev-1.3 playtest tweak 2. A
+non-mouse offer is now fully inert: `useItem` returns `false` before any response is set, so
+there is no `catResponse` beat, no close-up presented, no reaction layer and no sound — and, as
+before, the item is never consumed and p02 is never executed. `ov-cat-slow-blink` is no longer
+composited; it stays staged (and asset-guarded) rather than being deleted, so reverting is a
+one-line change if the "cat feels unresponsive" tradeoff the changelist warned about lands
+badly. `Level2Engine.offerItemToCat` still returns `.refusal` for non-mouse items — that is the
+engine's *classification*, and the discrimination test still asserts it; only the presentation
+changed. `testOnlyTheTinMouseGetsAVisibleCatReaction` replaces the old expectation.
+
+### Guard coverage added this batch
+
+| Guard | What it would have caught |
+|---|---|
+| `testEveryForeignElementVisibleInACloseUpIsEchoed` | R8-021 and every future cross-element stale close-up, derived from plate geometry rather than memory |
+| `testEchoExemptionsAllStillApply` | an exemption outliving the pair it excuses |
+| state-flip table: +12 rows (22 -> 34) | each new echo, named individually |
+| `testEveryArmedVerbWorksFromBothTheWideViewAndItsCloseUp` | R8-015, R8-018, the p05 gear-frame gap and the p08 wide-side gap — the parity matrix QA asked for |
+| `testEveryCloseUpUseRegionProxiesARealWideHotspot` | a close-up proxying a hotspot that does not exist in its view |
+| `testEveryRevealedItemIsCollectableFromItsCloseUpReachedFromTheWideScene` | the collect half of parity: the wide tap opens the CU **and** the CU's target grants the item |
+| `testPendulumAbsentPatchAndSpriteShareOneRect` | the exact R8-020(2) double pendulum (patch rect != sprite rect) |
+| `testPendulumSpriteShipsAndHangsFromItsAuthoredPivot` | an unstaged/rescaled cutout, or a pivot that is not a suspension point |
+| `testGreatDialHandsUseAuthoredSpritesAnchoredOnTheHub` | R8-020(1): placeholder strokes, a tail-less pivot, or a hub assumed to be the plate centre |
+| `testMirroredDialAngleContract` | a D1 mirror regression on the 7:20 release time |
+| `testDiegeticCrankRegionsSitOnThePlateAndClearTheHitFloor` | an affordance region off its art or below the hit floor; PLACE/OFFER regions colliding |
+| `testClockworkSpriteRigsShipAndLoad` | the sprite rigs silently not shipping (the runtime would fall back to defaults) |
+| `testOnlyTheTinMouseGetsAVisibleCatReaction` | a regression back to reacting to every item |
+| asset-staging required list: +13 names | any of the new sprites/echoes silently not shipping |
+
+All are deterministic (pure model + geometry, no simulator UI automation), so they run in the
+**fast lane** per the CI-efficiency directive.
+
+### Asset staging verification (user directive 2026-07-09)
+
+Re-staged after every art change: **160 canonical assets** (was 147) — +11 cross-element echo
+`-cu` crops, +`hand-minute`, +`sp-pendulum` — plus the two sprite-rig JSONs. All 160 hash-match
+their manifest-current source in `specs/assets/level-2/`; zero shadow-marked files
+(`@1x/@2x/@3x`, `-b2pre`, `-b3pre`, `-b4pre`, `-b16pre`, `-preglyph`, `_rejects`) anywhere in the
+staged tree; zero basename collisions. Every superseded original was archived to
+`specs/assets/level-2/_rejects/*-b16pre@3x.png` rather than overwritten, so the pre-build-17 art
+is recoverable and can never be re-staged (the staging script skips `_rejects/` and shadow
+markers, and `Level2AssetStagingTests` fails loudly on either).
+
+Representative staged close-ups were spot-checked against their sources by compositing them onto
+their plates at their authored rects and inspecting the render: `cu-key-hook` + `ov-key-taken`,
+`cu-tag-nail` + `ov-tag-taken` + `ov-tagnail-key-taken`, `cu-winding-drum` + `ov-drum-key-in`,
+`cu-cabinet-drawer` + `ov-cabinet-open-mouse`, `cu-gear-frame` + `ov-arbor-oiled`,
+`cu-brick-cache` + `ov-brick-pried-oilcan`, and the z3 wide + `ov-pendulum-absent` + the swung
+sprite at +/-11 degrees.
+
+### Security checklist (run before this QA handoff)
+
+- **No dev-time secrets in the shipped app.** Re-grepped the whole source tree, the Xcode
+  project, the tools and the staged bundle resources for the fal.ai key and for
+  `api[_-]?key` / `secret` / `token` / `credential` patterns: **zero** hits in anything that
+  ships. This batch adds Swift code, tests, PNG/JSON game assets and offline Python tools; no
+  new build phases, no network code. `.env` remains gitignored and is referenced by nothing in
+  the app target.
+- **Minimal entitlements/permissions.** `Info.plist` and entitlements are **unchanged** by this
+  batch. No camera / microphone / location / contacts usage, no `NS*UsageDescription` strings,
+  no capabilities beyond what the code demonstrably uses.
+
+### Spec ambiguities / corrections to flag to the Producer
+
+1. **The routed Q2 root cause is wrong** (section 2-3): the cache close-ups DO have collect
+   targets. The real defect was the single-item plate-tap guard. Fixed either way, but the
+   walkthrough reconciliation should not be written against the routed wording.
+2. **The routed R8-021 root cause is wrong on all three counts** (section 4): the resolver
+   cases, the `-cu` staging and the guard rows all existed. The defect was cross-element, not
+   own-element, and the guard's blind spot was structural.
+3. **Two parity gaps beyond the two reported** were found and fixed (p05 oil on the interactive
+   gear-frame close-up; p08's drum verbs dead in the wide view). QA's parity matrix should cover
+   both.
+4. **`cu-gear-frame` was reachable through two different close-ups**, one of which resolved no
+   state at all. Collapsed to one. A real, previously unreported contributor to R8-017.
+5. **Presentation judgment calls** an Art Director may want to review at QA: the pendulum hole
+   fill (a soft band where the bob rested), and the 0.875 horizontal squash applied to the dial
+   hands so they track the painted numeral ellipse.
+
+### CI — build-17 fix batch
+
+Per the CI-efficiency directive the whole nine-item batch (art regeneration, staging, code and
+tests) was bundled into ONE push before dispatching a run — no tweak/wait/fail loop.
+
+- **FAST LANE GREEN on the first run:** `31198731186` / push run
+  **`31198731368`** (<https://github.com/shayma16/escape-room/actions/runs/31198731368>),
+  conclusion **success**, `full-lane-ui` correctly skipped on a working-branch push. (The
+  duplicate `workflow_dispatch` run started alongside the push run was cancelled immediately to
+  save macOS minutes.)
+- **204 unit/logic tests, 0 failures on all three device runtimes** (up from 192 — the 12 new
+  guards). Log excerpts:
+
+  ```
+  Unit tests - iPad 13-inch class          Executed 204 tests, with 0 failures (0 unexpected) in 30.838s
+  Unit tests - smallest supported iPhone   Executed 204 tests, with 0 failures (0 unexpected) in 21.477s
+  Unit tests - Dynamic Island iPhone       Executed 204 tests, with 0 failures (0 unexpected) in 36.612s
+
+  ✓ testEveryArmedVerbWorksFromBothTheWideViewAndItsCloseUp   (parity matrix)
+  ✓ testEveryForeignElementVisibleInACloseUpIsEchoed          (the R8-021 coverage guard)
+  ✓ testGreatDialHandsUseAuthoredSpritesAnchoredOnTheHub
+  ✓ testPendulumAbsentPatchAndSpriteShareOneRect
+  ✓ testOnlyTheTinMouseGetsAVisibleCatReaction
+  ```
+
+- **FULL LANE (pre-handoff gate):** see the run linked in the handoff message. Everything the
+  fast lane does plus the cross-level on-device UI regression; the known-flaky iPad full
+  playthrough step remains `continue-on-error` by workflow design, the iPhone-SE + Dynamic
+  Island UI steps are hard gates.
+- No CI iteration loop was needed. Every geometric decision (pendulum silhouette and rect, key
+  silhouette, mouse seat, hub projection, echo rects, the parity matrix and the echo-coverage
+  matrix) was computed and visually verified offline against the shipped plates before the push,
+  so the first macOS run was green.
