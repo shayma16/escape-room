@@ -164,6 +164,10 @@
    "sha256": "10525f002b6334f1dd8f8144f110e31b68d6fba629d3362d1bd1d8362f8eb995",
    "source": "specs/assets/level-2/z3/v-dial/sprites/hand-hour@3x.png"
   },
+  "hand-minute.png": {
+   "sha256": "6b3870197e80a8a1092e15ea248d7d72d250dd59fa232e80e395d4d5e8609fbd",
+   "source": "specs/assets/level-2/z3/v-dial/sprites/hand-minute@3x.png"
+  },
   "inv-great-wheel.png": {
    "sha256": "7853d6e02642bd188ec18b4dad05ad718a7969a1e8bd8836de80c449032ce63a",
    "source": "specs/assets/level-2/z1/icons/inv-great-wheel@2x.png"
@@ -213,11 +217,11 @@
    "source": "specs/assets/level-2/z4/icons/inv-winding-key@2x.png"
   },
   "ov-arbor-oiled-cu.png": {
-   "sha256": "93a8952bd6e421bf3377d344602d836cc5295e239ec84e4143e7f1db27eee739",
+   "sha256": "3eae0de3bd04657fda538d9119cf8d5584bc3d2a1fbcb5fec3b5ae7cf8975350",
    "source": "specs/assets/level-2/z2/v-frame/states/ov-arbor-oiled@3x.png"
   },
   "ov-arbor-oiled-wide.png": {
-   "sha256": "8ab5bcca7de7abd3d5ad2d26ebb2a2a10407a14d37b6d70007ca188bb7bfe0ab",
+   "sha256": "58b4bea3bdac0ca802a06e6365a9002c9efa698971101258996da1023876b918",
    "source": "specs/assets/level-2/z2/v-frame/states/ov-arbor-oiled-wide@3x.png"
   },
   "ov-bar-raised-cu.png": {
@@ -257,16 +261,20 @@
    "source": "specs/assets/level-2/z2/v-clockrow/states/ov-cabinet-empty-wide@3x.png"
   },
   "ov-cabinet-open-mouse-cu.png": {
-   "sha256": "0f9c560f4acd2c798e62bdfe285ea1527666633bece3d4e9b8b90ce994f182ad",
+   "sha256": "0483cbc0ce986ce2564c8ae18cbbd9372c35e4c16f4de11e9da4c107876dcdc8",
    "source": "specs/assets/level-2/z2/v-clockrow/states/ov-cabinet-open-mouse@3x.png"
   },
   "ov-cabinet-open-mouse-wide.png": {
-   "sha256": "bb9b1f4a7332b3b2acd07e5c02bc868350f0b13dfe4da6c2d01fe2e4d470ac88",
+   "sha256": "841fcabf6978531d8f72d65cfa3ffc7d17a4a02f6d749fb193080b0c7bfcc79e",
    "source": "specs/assets/level-2/z2/v-clockrow/states/ov-cabinet-open-mouse-wide@3x.png"
   },
   "ov-cache-cat-gone-cu.png": {
    "sha256": "7ffd5200ca2a9bd23a65f224fd6dc3972fe7d7b2c8b6936848fbc4d902c7d007",
    "source": "specs/assets/level-2/z1/v-door/states/ov-cache-cat-gone@3x.png"
+  },
+  "ov-cache-cushion-lifted-cu.png": {
+   "sha256": "db67248b2a66be0944ddb611eaa25eff581a73d285ef50cff2efd26b06c7f114",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-cache-cushion-lifted@3x.png"
   },
   "ov-cache-empty-cu.png": {
    "sha256": "5189e1fe5325d60ec171d7144f9ba6ed1eee36e44dc5198a885671e51baf2114",
@@ -308,6 +316,10 @@
    "sha256": "a2d9da5b42c4ca4564feb6ef4a9c542eae8a2a0765cc097ae2d86f5d1d582d42",
    "source": "specs/assets/level-2/z1/v-bench/states/ov-coat-watch-taken@3x.png"
   },
+  "ov-crate-door-open-cu.png": {
+   "sha256": "f6cce58e97205946b5706a678fe751662ccee5d1e508d56e3b0446a193a4775d",
+   "source": "specs/assets/level-2/z1/v-master/states/ov-crate-door-open@3x.png"
+  },
   "ov-crate-tile-taken-cu.png": {
    "sha256": "f576b375cba8ef7e94d70f4158394c775724d17619e389d8dd9ecac02a4cdd7c",
    "source": "specs/assets/level-2/z1/v-master/states/ov-crate-tile-taken@3x.png"
@@ -315,6 +327,14 @@
   "ov-crate-tile-taken-wide.png": {
    "sha256": "1d92f4a95f5d99385057b201f1050b2098976a89b7a22417b73a3cedae5fdf2f",
    "source": "specs/assets/level-2/z1/v-master/states/ov-crate-tile-taken-wide@3x.png"
+  },
+  "ov-cushion-cache-empty-cu.png": {
+   "sha256": "f34350babfcbe34671d6b9800c612883cfffe7090fa08166f5db7ef934d7b0c1",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-cushion-cache-empty@3x.png"
+  },
+  "ov-cushion-cache-pried-cu.png": {
+   "sha256": "2e06a72bde40dda49abee47427dfcc8b53c86cb9567d49af3e8261651f8de6f3",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-cushion-cache-pried@3x.png"
   },
   "ov-cushion-empty-cu.png": {
    "sha256": "fa2b38881b35221a4974edadc288c67db0ae6395a79e933f7d64a31eb62f8950",
@@ -369,11 +389,11 @@
    "source": "specs/assets/level-2/z1/v-master/states/ov-dial-seat-xi-wide@3x.png"
   },
   "ov-drum-key-in-cu.png": {
-   "sha256": "835507ce2f72b963a66b482d82805b27499f01f1a3adf194ac5b7b338aca4c19",
+   "sha256": "01f698f80c0b2aa4bf580cae6ab7d3053cce50d7632e081124f1dbdc8a4c4b4d",
    "source": "specs/assets/level-2/z3/v-dial/states/ov-drum-key-in@3x.png"
   },
   "ov-drum-key-in-wide.png": {
-   "sha256": "063121f984108bd83b3fd7d800e821f77fcde6a3cf3c34f9211244bc92dfa6eb",
+   "sha256": "0da1b08bff8a4f190cb67ebb24b4fe20569da0513e2de421907fca0faf62c42c",
    "source": "specs/assets/level-2/z3/v-dial/states/ov-drum-key-in-wide@3x.png"
   },
   "ov-drum-oiled-cu.png": {
@@ -384,6 +404,18 @@
    "sha256": "aeb49a3a09609c5c400936a69ca658d20156d0444dd6351bccc378387dc5faeb",
    "source": "specs/assets/level-2/z3/v-dial/states/ov-drum-oiled-wide@3x.png"
   },
+  "ov-gearframe-panel-open-cu.png": {
+   "sha256": "4d6c1893b44a102a399c03d6edd549e31ae4d30101c838e91fee5108d5470f77",
+   "source": "specs/assets/level-2/z2/v-frame/states/ov-gearframe-panel-open@3x.png"
+  },
+  "ov-gearring-brick-empty-cu.png": {
+   "sha256": "9db21ca0f495947525a3c41ff170baf607a4487b2f7207dc8b419c71ee4fa40e",
+   "source": "specs/assets/level-2/z2/v-frame/states/ov-gearring-brick-empty@3x.png"
+  },
+  "ov-gearring-brick-pried-cu.png": {
+   "sha256": "5733149b2af32fe77c555d3808fc7f05c0ed15a63423e645d58c1783597e8394",
+   "source": "specs/assets/level-2/z2/v-frame/states/ov-gearring-brick-pried@3x.png"
+  },
   "ov-hammer-absent-wide.png": {
    "sha256": "c0b152c307ddf82546a7d46f64de4587e160bd9327edf7220b01007480b4ece2",
    "source": "specs/assets/level-2/z3/v-dial/states/ov-hammer-absent-wide@3x.png"
@@ -392,6 +424,10 @@
    "sha256": "fb4757e72d1953ef14b27f20946af66fe49446295dd866c133f3c618d0fb83d7",
    "source": "specs/assets/level-2/z3/v-dial/states/ov-hatch-open-wide@3x.png"
   },
+  "ov-housering-bar-raised-cu.png": {
+   "sha256": "b7224124a697187d77c16aa87109d2358fbba967d588a3042ea62fe65b59ba87",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-housering-bar-raised@3x.png"
+  },
   "ov-key-taken-cu.png": {
    "sha256": "a7173fc30707834c6441efe18dc9974e4a64359ebe736f610b19008a57e9d375",
    "source": "specs/assets/level-2/z4/v-vault-interior/states/ov-key-taken@3x.png"
@@ -399,6 +435,14 @@
   "ov-key-taken-wide.png": {
    "sha256": "13e8867d0414e715eac762703ff0379b4cbc1a53b8182592673301be7d1e2dfe",
    "source": "specs/assets/level-2/z4/v-vault-interior/states/ov-key-taken-wide@3x.png"
+  },
+  "ov-keyhook-tag-taken-cu.png": {
+   "sha256": "519c9db793c7989ecd121aed2ce97c232c6d87e280f5edc79354d44cb8418292",
+   "source": "specs/assets/level-2/z4/v-vault-interior/states/ov-keyhook-tag-taken@3x.png"
+  },
+  "ov-masterface-door-open-cu.png": {
+   "sha256": "6cefa5d9ae4d9360302a9b906e048623944406ea758cf99c0dd44f167a00dd51",
+   "source": "specs/assets/level-2/z1/v-master/states/ov-masterface-door-open@3x.png"
   },
   "ov-mount-a-16-cu.png": {
    "sha256": "35c567b77b1618a0fc030b8ddddc7929543431621b85f827fc2cb717f1c7f02c",
@@ -461,7 +505,7 @@
    "source": "specs/assets/level-2/z2/v-frame/states/ov-panel-open-wide@3x.png"
   },
   "ov-pendulum-absent-wide.png": {
-   "sha256": "169b75e6a1cbeffe0f640ad5a9ceb94e78ee83edfbd2ea35abf042957e8ba0e6",
+   "sha256": "8df7bcfdeba495278dbe8b96623f766469fa928f61cad9180b5e89dff92b3df4",
    "source": "specs/assets/level-2/z3/v-dial/states/ov-pendulum-absent-wide@3x.png"
   },
   "ov-rack-absent-16-cu.png": {
@@ -552,9 +596,17 @@
    "sha256": "402ee611bdeb42c53a2b2cf94d82ca2cb6e11cf61763d92a459b3f0bb74d82aa",
    "source": "specs/assets/level-2/z4/v-vault-interior/states/ov-tag-taken-wide@3x.png"
   },
+  "ov-tagnail-key-taken-cu.png": {
+   "sha256": "b15458642eefff55b6847a7b8b24db2a08ab87917e43e2cd9408ba22a74c815d",
+   "source": "specs/assets/level-2/z4/v-vault-interior/states/ov-tagnail-key-taken@3x.png"
+  },
   "ov-workroom-door-open-wide.png": {
    "sha256": "7d07b60bde35584e48cfb40f019c3ff04ed888b204f7d2d3885ef02bd0c2232b",
    "source": "specs/assets/level-2/z1/v-master/states/ov-workroom-door-open-wide@3x.png"
+  },
+  "sp-pendulum.png": {
+   "sha256": "1a547ba247822df25d71b229de51d1bc5b11b49d603d521e98a1a75006694455",
+   "source": "specs/assets/level-2/z3/v-dial/sprites/sp-pendulum@3x.png"
   },
   "z1-bench-base.png": {
    "sha256": "335ea548e6635bcbde42a895dc4ee8d9fd92e39fa437be1746332f07c695c4ec",
@@ -589,5 +641,5 @@
    "source": "specs/assets/level-2/z4/v-vault-interior/z4-vault-base@2x.png"
   }
  },
- "count": 147
+ "count": 160
 }

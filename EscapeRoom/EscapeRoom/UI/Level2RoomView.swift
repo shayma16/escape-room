@@ -298,21 +298,21 @@ private struct L2CloseUpHost: View {
 
     @ViewBuilder private func content(_ request: L2CloseUp) -> some View {
         let plan = Level2CloseUpVisuals.plan(for: request, state: state)
+        let armed = interaction.armedItem != nil
         switch request {
         case .plain(let image):
             L2PlainCloseUp(coordinator: coordinator, state: state, plan: plan, image: image)
         case .dialDoor:
             L2DialDoorControl(coordinator: coordinator, plan: plan, interaction: interaction)
         case .gearFrame:
-            L2GearFrameControl(coordinator: coordinator, state: state, plan: plan)
+            L2GearFrameControl(coordinator: coordinator, state: state, plan: plan, isArmed: armed)
         case .vaultWheels:
             L2VaultWheelControl(coordinator: coordinator, state: state)
         case .greatDial:
             L2GreatDialControl(coordinator: coordinator, state: state, plan: plan)
         case .windingDrum:
-            L2Plate(plan: plan, identifier: "winding-drum", onPlateTap: {
-                if let armed = interaction.armedItem, coordinator.useOnDrum(armed) { interaction.disarm() }
-            })
+            L2Plate(plan: plan, identifier: "winding-drum", isArmed: armed,
+                    onUse: { _ = coordinator.runCloseUpUse($0) })
         case .dormerCache:
             L2CacheControl(coordinator: coordinator, plan: plan, kind: .dormer, interaction: interaction)
         case .chimneyCache:
@@ -339,6 +339,12 @@ private struct L2CloseUpHost: View {
 /// top-leading. Every L2 close-up is built on this one container.
 private struct L2Plate<Extra: View>: View {
     let plan: Level2CloseUpVisuals.Plan
+    /// Armed-item USE regions (round 8 Cluster Q). Supplied by the host so every close-up
+    /// routes an armed item through the same `useItem` dispatch a wide tap uses. They only
+    /// hit-test while an item IS armed, so an unarmed tap keeps falling through to the
+    /// close-up's existing plate/backdrop behaviour (dismiss, disarm).
+    let isArmed: Bool
+    let onUse: (Level2CloseUpVisuals.UseTarget) -> Void
     /// Debug/diagnostic name for the close-up. Deliberately NOT applied as an
     /// `accessibilityIdentifier` on the container: an identifier on a container turns it into a
     /// single accessibility element and MASKS its children from XCUITest — the documented L1
@@ -354,11 +360,15 @@ private struct L2Plate<Extra: View>: View {
          identifier: String? = nil,
          onPlateTap: (() -> Void)? = nil,
          onTarget: @escaping (Level2CloseUpVisuals.Target) -> Void = { _ in },
+         isArmed: Bool = false,
+         onUse: @escaping (Level2CloseUpVisuals.UseTarget) -> Void = { _ in },
          @ViewBuilder extra: @escaping (CGRect) -> Extra = { _ in EmptyView() }) {
         self.plan = plan
         self.identifier = identifier
         self.onPlateTap = onPlateTap
         self.onTarget = onTarget
+        self.isArmed = isArmed
+        self.onUse = onUse
         self.extra = extra
     }
 
@@ -390,6 +400,21 @@ private struct L2Plate<Extra: View>: View {
                 .frame(width: g.fitted.width, height: g.fitted.height)
                 .clipped()
                 .position(x: g.fitted.midX, y: g.fitted.midY)
+                // ARMED-ITEM USE REGIONS (round 8 Cluster Q). Drawn BELOW the collect targets
+                // so a revealed item's pickup always wins where the two overlap, and only
+                // hit-testable while something is armed — an unarmed tap must still fall
+                // through to the plate/backdrop behaviour the close-up had before.
+                ForEach(plan.uses, id: \.id) { use in
+                    let r = g.sub(use.rect)
+                    Color.white.opacity(0.001)
+                        .frame(width: max(r.width, 44), height: max(r.height, 44))
+                        .contentShape(Rectangle())
+                        .onTapGesture { onUse(use) }
+                        .allowsHitTesting(isArmed)
+                        .accessibilityLabel(use.label)
+                        .accessibilityIdentifier(use.id)
+                        .position(x: r.midX, y: r.midY)
+                }
                 extra(g.plate)
                 ForEach(plan.targets, id: \.id) { target in
                     let r = g.sub(target.rect)
@@ -403,7 +428,10 @@ private struct L2Plate<Extra: View>: View {
                 }
             }
             .frame(width: geo.size.width, height: geo.size.height, alignment: .topLeading)
-            .modifier(PlateTapModifier(action: onPlateTap))
+            // A close-up that carries USE regions also absorbs stray plate taps (a no-op),
+            // so an unarmed miss near an interactive element does not fall through to the
+            // scrim and dismiss the close-up the player is working in.
+            .modifier(PlateTapModifier(action: onPlateTap ?? (plan.uses.isEmpty ? nil : {})))
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding(24)
@@ -575,6 +603,7 @@ private struct L2GearFrameControl: View {
     @ObservedObject var coordinator: Level2Coordinator
     @ObservedObject var state: GameState
     let plan: Level2CloseUpVisuals.Plan
+    let isArmed: Bool
     @State private var selectedGear: String?
 
     private var pickerGears: [String] {
@@ -583,20 +612,15 @@ private struct L2GearFrameControl: View {
     }
 
     var body: some View {
-        ZStack {
-            L2Plate(plan: plan, identifier: "gear-frame", extra: { plate in
-                postTarget(.a, plate: plate)
-                postTarget(.b, plate: plate)
-            })
-            VStack {
-                gearPicker.padding(.top, 12)
-                Spacer()
-                HStack {
-                    Spacer()
-                    crankButton.padding(.trailing, 20).padding(.bottom, 8)
-                }
-            }
-        }
+        L2Plate(plan: plan, identifier: "gear-frame",
+                isArmed: isArmed,
+                onUse: { _ = coordinator.runCloseUpUse($0) },
+                extra: { plate in
+            postTarget(.a, plate: plate)
+            postTarget(.b, plate: plate)
+            crankTarget(in: plate)
+        })
+        .overlay(alignment: .top) { gearPicker.padding(.top, 12) }
     }
 
     /// The rack, rendered as the ACTUAL gear cutouts (z2/props/gear-*), scaled by tooth count
@@ -656,17 +680,29 @@ private struct L2GearFrameControl: View {
         .position(x: r.midX, y: r.midY)
     }
 
-    private var crankButton: some View {
-        Button(action: { coordinator.crankGearTrain() }) {
-            Image(systemName: "arrow.triangle.2.circlepath")
-                .font(.system(size: 26, weight: .medium))
-                .foregroundColor(NavChevron.boneWhite)
-                .frame(width: 60, height: 60)
-                .background(Circle().fill(Color.black.opacity(0.45)))
-                .overlay(Circle().stroke(NavChevron.boneWhite.opacity(0.18), lineWidth: 1))
+    /// R8-019 — DIEGETIC CRANK. Build 16's near-wordless pass replaced the "Crank" text button
+    /// with an `arrow.triangle.2.circlepath` SF Symbol in a chrome circle, which reads as a
+    /// browser RELOAD button — UI idiom in a painterly scene, and the user found it confusing
+    /// and out of place. The tap target is now the PAINTED CRANK ARM itself, with a faint
+    /// brass turn-arc drawn over it (the same wordless "this moves" grammar as the dashed
+    /// empty-post seat rings), no floating chrome.
+    private func crankTarget(in plate: CGRect) -> some View {
+        let n = Level2CloseUpVisuals.crankHandleRect
+        let r = CGRect(x: plate.minX + n.minX * plate.width, y: plate.minY + n.minY * plate.height,
+                       width: n.width * plate.width, height: n.height * plate.height)
+        return ZStack {
+            TurnArc(clockwise: true)
+                .stroke(NavChevron.boneWhite.opacity(0.34), lineWidth: 3)
+                .frame(width: min(r.width, r.height) * 0.72, height: min(r.width, r.height) * 0.72)
+                .shadow(color: .black.opacity(0.55), radius: 3)
+            Color.white.opacity(0.001)
+                .frame(width: max(r.width, 60), height: max(r.height, 60))
         }
-        .accessibilityLabel("Crank the frame")
+        .contentShape(Rectangle())
+        .onTapGesture { coordinator.crankGearTrain() }
+        .accessibilityLabel("Turn the crank")
         .accessibilityIdentifier("gear-crank")
+        .position(x: r.midX, y: r.midY)
     }
 
     private func tapPost(_ post: Level2Post) {
@@ -752,59 +788,130 @@ private struct GlyphImage: View {
 
 // MARK: p09 great dial (mirrored back view + setting crank)
 
+/// R8-020(1) — THE AUTHORED HANDS, ANCHORED ON THE HUB.
+///
+/// Build 16 drew both hands as SwiftUI capsules centred on the PLATE centre, so they rendered
+/// as placeholder strokes AND the minute hand did not pivot from the dial hub — the player was
+/// asked to read a time off an unreadable clock (a rendering confound on p09's difficulty).
+/// Build 17, per the user's GATE-1 ruling: the authored `hand-hour` / `hand-minute` sprites,
+/// rotated about their authored pivots, placed on the hub the art was cut against
+/// (`hand-sprites.json` -> `Level2SpriteCatalog`, not hand-transcribed constants).
+///
+/// Two contracts are honoured:
+///  * D1 MIRROR — this is the BACK of the dial, so a FRONT angle theta renders at -theta.
+///    (Nothing about the time is baked into the plate; the sprites carry the time.)
+///  * R4-007 SPRITE/VIEW ROTATION — the sprite art is authored UPRIGHT (pointing at 12 with
+///    no pre-rotation baked in), so the view rotation applies the angle exactly ONCE.
 private struct L2GreatDialControl: View {
     @ObservedObject var coordinator: Level2Coordinator
     @ObservedObject var state: GameState
     let plan: Level2CloseUpVisuals.Plan
 
+    private var rig: Level2SpriteCatalog { .shared }
+
     var body: some View {
-        ZStack {
-            L2Plate(plan: plan, identifier: "great-dial", extra: { plate in
-                let side = min(plate.width, plate.height)
-                // Hands render at the MIRRORED angle (D1: front angle theta renders at -theta).
-                hand(lengthFrac: 0.30, widthPt: 10, angle: -hourAngle, side: side)
-                    .position(x: plate.midX, y: plate.midY)
-                hand(lengthFrac: 0.42, widthPt: 6, angle: -minuteAngle, side: side)
-                    .position(x: plate.midX, y: plate.midY)
-            })
-            VStack {
-                Spacer()
-                HStack(spacing: 28) {
-                    crankButton(detents: -1)
-                    crankButton(detents: 1)
-                }
-                Spacer().frame(height: 78)   // clear of the dismiss chevron
-            }
-        }
+        L2Plate(plan: plan, identifier: "great-dial", extra: { plate in
+            hand(rig.hourHand, angle: -hourAngle, in: plate)
+            hand(rig.minuteHand, angle: -minuteAngle, in: plate)
+            crankTarget(detents: -1, in: plate)
+            crankTarget(detents: 1, in: plate)
+        })
     }
 
     private var minutes: Int { state.data.l2ClockFrontMinutes }
     private var hourAngle: Double { Double(minutes) * 0.5 }          // 0.5 deg/min
     private var minuteAngle: Double { Double(minutes % 60) * 6.0 }   // 6 deg/min
 
-    private func hand(lengthFrac: CGFloat, widthPt: CGFloat, angle: Double, side: CGFloat) -> some View {
-        Capsule()
-            .fill(Color.black.opacity(0.7))
-            .frame(width: widthPt, height: side * lengthFrac)
-            .offset(y: -side * lengthFrac / 2)
-            .frame(width: side, height: side)
-            .rotationEffect(.degrees(angle))
+    /// Draw a hand sprite at CU scale, rotated about its own pivot, with that pivot sitting on
+    /// the dial hub. `ringSquashX` compresses the sweep to the painted numeral ELLIPSE (the
+    /// dial is seen slightly off-axis), so a hand tip stays on its numeral all the way round.
+    private func hand(_ h: Level2SpriteCatalog.Hand, angle: Double, in plate: CGRect) -> some View {
+        let d = rig.dial
+        // Plate width is the CU plate (2048 px) drawn at `plate.width` points.
+        let ppx = plate.width / Level2SpriteCatalog.cuRef.width
+        let w = h.size.width * d.cuScale * ppx
+        let ht = h.size.height * d.cuScale * ppx
+        let hub = CGPoint(x: plate.minX + d.hub.x * plate.width,
+                          y: plate.minY + d.hub.y * plate.height)
+        let anchor = h.anchor
+        return GameImage(name: h.image)
+            .aspectRatio(contentMode: .fit)
+            .frame(width: w, height: ht)
+            .rotationEffect(.degrees(angle), anchor: UnitPoint(x: anchor.x, y: anchor.y))
+            .scaleEffect(x: d.ringSquashX, y: 1, anchor: UnitPoint(x: anchor.x, y: anchor.y))
             .allowsHitTesting(false)
+            .accessibilityHidden(true)
+            // `.position` places the view's CENTRE; offset it so the PIVOT lands on the hub.
+            .position(x: hub.x + (0.5 - anchor.x) * w * d.ringSquashX,
+                      y: hub.y + (0.5 - anchor.y) * ht)
     }
 
-    private func crankButton(detents: Int) -> some View {
-        Button(action: { coordinator.adjustClock(byDetents: detents) }) {
-            Image(systemName: detents > 0 ? "plus.circle.fill" : "minus.circle.fill")
-                .font(.system(size: 40)).foregroundColor(.white.opacity(0.85))
-                .frame(width: 56, height: 56).contentShape(Rectangle())
+    /// R8-020 sub-item — DIEGETIC TIME ADJUST. Build 16 floated two flat white
+    /// `plus.circle.fill` / `minus.circle.fill` buttons over the painterly dial: the same
+    /// "UI chrome idiom in a diegetic scene" the crank refresh icon was flagged for. The
+    /// affordances are now brass turn-arcs sitting ON the painted setting crank below the hub
+    /// — counter-clockwise on its left, clockwise on its right — with no chrome plate and no
+    /// symbol. Identifiers are unchanged so the UI tests keep working.
+    private func crankTarget(detents: Int, in plate: CGRect) -> some View {
+        let n = Level2CloseUpVisuals.dialCrankRect
+        let r = CGRect(x: plate.minX + n.minX * plate.width, y: plate.minY + n.minY * plate.height,
+                       width: n.width * plate.width, height: n.height * plate.height)
+        let side = max(min(r.width, r.height) * 0.92, 46)
+        let cx = detents > 0 ? r.maxX + side * 0.42 : r.minX - side * 0.42
+        return ZStack {
+            TurnArc(clockwise: detents > 0)
+                .stroke(NavChevron.boneWhite.opacity(0.42), lineWidth: 3)
+                .frame(width: side * 0.74, height: side * 0.74)
+                .shadow(color: .black.opacity(0.6), radius: 3)
+            Color.white.opacity(0.001).frame(width: max(side, 52), height: max(side, 52))
         }
+        .contentShape(Rectangle())
+        .onTapGesture { coordinator.adjustClock(byDetents: detents) }
         .accessibilityLabel(detents > 0 ? "Advance the hands" : "Turn the hands back")
         .accessibilityIdentifier("dial-crank-" + (detents > 0 ? "plus" : "minus"))
+        .position(x: cx, y: r.midY)
+    }
+}
+
+/// A wordless "turn this" mark: a three-quarter arc with a small arrowhead, drawn in the
+/// scene's bone-white at low opacity. Used for the gear-frame crank and the great dial's
+/// setting crank instead of SF Symbols, which carry a UI-chrome idiom (`arrow.clockwise` reads
+/// as RELOAD — R8-019) that clashes with the painterly room. NOTE: the global menu layer's
+/// SF-Symbols-only rule is unaffected; this is in-room game art, like the dashed seat rings.
+struct TurnArc: Shape {
+    let clockwise: Bool
+
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        let c = CGPoint(x: rect.midX, y: rect.midY)
+        let radius = min(rect.width, rect.height) / 2
+        let start: CGFloat = clockwise ? -200 : 20
+        let sweep: CGFloat = 240
+        let end = clockwise ? start + sweep : start - sweep
+        p.addArc(center: c, radius: radius,
+                 startAngle: .degrees(Double(start)), endAngle: .degrees(Double(end)),
+                 clockwise: !clockwise)
+        // Arrowhead at the finishing end of the sweep, tangent to the arc.
+        let a = CGFloat(end) * .pi / 180
+        let tip = CGPoint(x: c.x + cos(a) * radius, y: c.y + sin(a) * radius)
+        let tangent = a + (clockwise ? .pi / 2 : -.pi / 2)
+        let head = radius * 0.42
+        for side in [CGFloat(2.5), CGFloat(-2.5)] {
+            let d = tangent + .pi + side * 0.35
+            p.move(to: tip)
+            p.addLine(to: CGPoint(x: tip.x + cos(d) * head, y: tip.y + sin(d) * head))
+        }
+        return p
     }
 }
 
 // MARK: p03/p04 pry caches (state-resolved: closed -> pried with the find -> emptied)
 
+/// CLUSTER Q2 (R8-018): build 16 guarded the plate tap to ONE verb —
+/// `armedItem == screwdriver` — so the cache close-ups implemented *pry* and nothing else.
+/// The pry now goes through the plan's `use` region like every other armed verb (the same
+/// `useItem` dispatch the wide `floor-cache`/`brick` taps use), and the revealed item's
+/// collect target comes from the plan, so both verbs work from either view.
 private struct L2CacheControl: View {
     enum Kind { case dormer, chimney }
     @ObservedObject var coordinator: Level2Coordinator
@@ -815,12 +922,9 @@ private struct L2CacheControl: View {
     var body: some View {
         L2Plate(plan: plan,
                 identifier: kind == .dormer ? "dormer-cache" : "chimney-cache",
-                onPlateTap: {
-                    guard interaction.armedItem == Level2Graph.ItemID.screwdriver else { return }
-                    let ok = kind == .dormer ? coordinator.pryDormer() : coordinator.pryChimney()
-                    if ok { interaction.disarm() }
-                },
-                onTarget: { coordinator.runCloseUpTarget($0) })
+                onTarget: { coordinator.runCloseUpTarget($0) },
+                isArmed: interaction.armedItem != nil,
+                onUse: { _ = coordinator.runCloseUpUse($0) })
     }
 }
 
@@ -837,17 +941,19 @@ private struct L2CatCushionView: View {
     let plan: Level2CloseUpVisuals.Plan
     @ObservedObject var interaction: InteractionModel
 
-    /// The visible half of the D3 tell: eye key (+ tail key for the mouse-specific tell).
+    /// The visible half of the D3 tell: eye key + tail key.
+    ///
+    /// R8-016 (user CONFIRMED override of approved rev-1.3 playtest tweak 2): the tell is
+    /// MOUSE-EXCLUSIVE. rev-1.3 gave every other offered item an `ov-cat-slow-blink` refusal,
+    /// but at play scale a slow half-lid blink and the tell's peering eye read as the same
+    /// thing, so the cat appeared to react to everything and the tell stopped meaning "the
+    /// mouse is the key". A non-mouse offer now produces no response at all (the coordinator
+    /// returns false before setting `catResponse`), so this only ever renders `.mouseTell`.
     private var tellLayers: [Level2CloseUpVisuals.Layer] {
         guard !state.hasSolved(Level2Graph.PuzzleID.catMouse),
-              let response = coordinator.catResponse else { return [] }
-        switch response {
-        case .mouseTell:
-            return [Level2CloseUpVisuals.layer("ov-cat-mouse-tell"),
-                    Level2CloseUpVisuals.catTailTellLayer()].compactMap { $0 }
-        case .refusal:
-            return [Level2CloseUpVisuals.layer("ov-cat-slow-blink")].compactMap { $0 }
-        }
+              coordinator.catResponse == .mouseTell else { return [] }
+        return [Level2CloseUpVisuals.layer("ov-cat-mouse-tell"),
+                Level2CloseUpVisuals.catTailTellLayer()].compactMap { $0 }
     }
 
     private var composited: Level2CloseUpVisuals.Plan {
@@ -856,14 +962,17 @@ private struct L2CatCushionView: View {
         return p
     }
 
+    /// CLUSTER Q1 (R8-015): the plate tap used to hard-code `useItem(armed, on: "cat-cushion")`
+    /// — the OFFER hotspot — while p02's placement verb lives on the sibling hotspot
+    /// `cat-floor`. From this close-up the armed mouse could therefore only ever produce the
+    /// tell; placement was structurally unreachable and the player had to back out to the wide
+    /// scene. Both verbs are now regions on the plate (floor in front of the bench = place,
+    /// cushion = offer), routed through the same `useItem` dispatch as the wide taps.
     var body: some View {
         L2Plate(plan: composited, identifier: "cat-cushion",
-                onPlateTap: {
-                    if let armed = interaction.armedItem {
-                        _ = coordinator.useItem(armed, on: "cat-cushion")
-                    }
-                },
-                onTarget: { coordinator.runCloseUpTarget($0) })
+                onTarget: { coordinator.runCloseUpTarget($0) },
+                isArmed: interaction.armedItem != nil,
+                onUse: { _ = coordinator.runCloseUpUse($0) })
             .animation(.easeInOut(duration: 0.25), value: coordinator.catResponse)
     }
 }

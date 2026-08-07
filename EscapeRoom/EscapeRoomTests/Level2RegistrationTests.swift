@@ -316,6 +316,116 @@ final class Level2RegistrationTests: XCTestCase {
             "gear-ring / brick-cache overlap-collapse in v-frame:\n" + offenders.joined(separator: "\n"))
     }
 
+    // MARK: - BUILD 17: the z3 CLOCKWORK SPRITE rig (R8-020)
+    //
+    // Build 16 rendered the pendulum and both dial hands PROCEDURALLY, and the batch-4
+    // `ov-pendulum-absent` rect had drifted from the plate: it clipped the painted bob's right
+    // crescent and its finial, so those pixels survived beside the animated one — the "double
+    // pendulum" in the user's screenshot, the same class as the L1 R7-001 stale rect. These
+    // guards pin the sprite rig to the art it was cut from.
+
+    /// The paint-out patch and the sprite MUST occupy the same rect. If they diverge, part of
+    /// the painted pendulum is left behind (build 16) or the patch shows past the sprite.
+    func testPendulumAbsentPatchAndSpriteShareOneRect() {
+        let sprite = Level2SpriteCatalog.shared.pendulum
+        let patch = Level2OverlayCatalog.shared.wideRect("ov-pendulum-absent")
+        XCTAssertNotEqual(patch, .zero, "ov-pendulum-absent must resolve a wide rect")
+        let eps: CGFloat = 0.0005
+        XCTAssertEqual(sprite.rect.minX, patch.minX, accuracy: eps)
+        XCTAssertEqual(sprite.rect.minY, patch.minY, accuracy: eps)
+        XCTAssertEqual(sprite.rect.width, patch.width, accuracy: eps)
+        XCTAssertEqual(sprite.rect.height, patch.height, accuracy: eps,
+                       "the swinging sprite and the patch that erases the painted pendulum must "
+                       + "be registered on the SAME rect — a drift leaves a second pendulum")
+    }
+
+    /// The authored cutout ships, is pixel-1:1 with its rect, and its pivot is a real
+    /// suspension point at the TOP of the sprite (a pivot in the middle would swing the bob
+    /// about its own centre).
+    func testPendulumSpriteShipsAndHangsFromItsAuthoredPivot() {
+        let p = Level2SpriteCatalog.shared.pendulum
+        guard let art = GameAssetLoader.shared.image(named: p.image) else {
+            return XCTFail("the authored pendulum cutout '\(p.image)' is not staged")
+        }
+        let px = art.size.width * art.scale, py = art.size.height * art.scale
+        XCTAssertEqual(px / (p.rect.width * wideRefW), 1.0, accuracy: 0.02,
+                       "pendulum sprite not pixel-1:1 with its @3x rect (would be rescaled)")
+        XCTAssertEqual(py / (p.rect.height * wideRefH), 1.0, accuracy: 0.02)
+        XCTAssertTrue((0...1).contains(p.pivot.x) && (0...1).contains(p.pivot.y),
+                      "pivot must lie inside the sprite")
+        XCTAssertLessThan(p.pivot.y, 0.15, "the pendulum hangs from a pivot near its TOP")
+        XCTAssertGreaterThan(p.fullDegrees, p.weakDegrees,
+                             "a wound clock must swing wider than an unwound one")
+        XCTAssertTrue(CGRect(x: 0, y: 0, width: 1, height: 1).contains(p.rect))
+    }
+
+    /// R8-020(1): the great dial's hands are the AUTHORED sprites, pivoting on the HUB — not
+    /// capsules centred on the plate. The hub must be the works arbor (well off plate centre
+    /// on this crop), and each hand's pivot must sit near its own tail.
+    func testGreatDialHandsUseAuthoredSpritesAnchoredOnTheHub() {
+        let rig = Level2SpriteCatalog.shared
+        for hand in [rig.hourHand, rig.minuteHand] {
+            XCTAssertNotNil(GameAssetLoader.shared.image(named: hand.image),
+                            "authored hand sprite '\(hand.image)' is not staged")
+            XCTAssertGreaterThan(hand.anchor.y, 0.55,
+                                 "\(hand.image): the pivot must sit near the hand's TAIL, so the "
+                                 + "sprite sweeps from the hub (build 16's minute hand floated "
+                                 + "mid-face because it pivoted on the plate centre)")
+            XCTAssertEqual(hand.anchor.x, 0.5, accuracy: 0.08, "a hand pivots on its own axis")
+            XCTAssertGreaterThan(hand.length, 100)
+        }
+        XCTAssertGreaterThan(rig.minuteHand.length, rig.hourHand.length,
+                             "the minute hand must be the longer of the two, or the dial is "
+                             + "unreadable regardless of anchoring")
+
+        let hub = rig.dial.hub
+        XCTAssertTrue(CGRect(x: 0, y: 0, width: 1, height: 1).contains(hub))
+        XCTAssertGreaterThan(abs(hub.x - 0.5), 0.05,
+                             "the hub is NOT the plate centre on this crop — assuming it was is "
+                             + "exactly the build-16 mis-anchor")
+        // The minute hand must reach into the numeral ring but stay on the plate.
+        let reach = rig.minuteHand.length * rig.dial.cuScale / Level2SpriteCatalog.cuRef.width
+        XCTAssertGreaterThan(reach, 0.15)
+        XCTAssertLessThan(hub.x + reach, 1.0)
+        XCTAssertLessThan(rig.dial.ringSquashX, 1.001)
+        XCTAssertGreaterThan(rig.dial.ringSquashX, 0.6)
+    }
+
+    /// D1: no time is baked into the art — the FRONT time drives the sprite angles, and the
+    /// back view renders them mirrored. This pins the angle contract the hands are drawn with.
+    func testMirroredDialAngleContract() {
+        let s = makeState()
+        s.setL2ClockFrontMinutes(Level2Graph.clockReleaseMinutes)     // 7:20
+        XCTAssertEqual(s.data.l2ClockFrontMinutes, 440)
+        let hourFront = Double(s.data.l2ClockFrontMinutes) * 0.5      // 220 deg
+        let minuteFront = Double(s.data.l2ClockFrontMinutes % 60) * 6 // 120 deg
+        XCTAssertEqual(hourFront, 220, accuracy: 0.001)
+        XCTAssertEqual(minuteFront, 120, accuracy: 0.001)
+        // The view renders -theta (mirror). 7:20 front therefore draws at -220 / -120.
+        XCTAssertEqual(-hourFront, -220, accuracy: 0.001)
+        XCTAssertEqual(-minuteFront, -120, accuracy: 0.001)
+    }
+
+    // MARK: - BUILD 17: diegetic affordance regions (R8-019 / R8-020 sub-item)
+
+    /// The crank and the dial's time-adjust affordances are anchored ON their painted art and
+    /// are big enough to hit. (The idiom itself — no `arrow.clockwise` reload glyph, no flat
+    /// white +/- chrome — lives in the view; this pins the geometry those regions use.)
+    func testDiegeticCrankRegionsSitOnThePlateAndClearTheHitFloor() {
+        let unit = CGRect(x: 0, y: 0, width: 1, height: 1)
+        for (name, r) in [("gear-frame crank", Level2CloseUpVisuals.crankHandleRect),
+                          ("great-dial setting crank", Level2CloseUpVisuals.dialCrankRect),
+                          ("cat floor placement (R8-015)", Level2CloseUpVisuals.catFloorRect),
+                          ("cat offer band", Level2CloseUpVisuals.catOfferRect)] {
+            XCTAssertTrue(unit.contains(r), "\(name) region is off the close-up plate: \(r)")
+            // Smallest supported presentation: ~500x375 pt of plate (iPhone SE landscape).
+            XCTAssertGreaterThan(min(r.width * 500, r.height * 375), 24,
+                                 "\(name) region is too small to hit before the 44pt floor")
+        }
+        XCTAssertFalse(Level2CloseUpVisuals.catFloorRect.intersects(Level2CloseUpVisuals.catOfferRect),
+                       "the PLACE and OFFER regions must be distinct, or p02's two verbs collide")
+    }
+
     // MARK: - 44pt hit-target floor on the smallest iPhone (BUG-009 class)
 
     func testL2HotspotsMeet44ptFloorOniPhoneSE() {

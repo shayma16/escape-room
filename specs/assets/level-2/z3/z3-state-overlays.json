@@ -19,12 +19,12 @@
  "ov-pendulum-absent": {
   "wide_base": "z3-dial-base",
   "wide_rect_3x": [
-   2030,
-   70,
-   2280,
-   1330
+   2050,
+   0,
+   2334,
+   1440
   ],
-  "note": "dark background behind the pendulum (column dark-median clone) so the swing sprite can rotate without ghosting"
+  "note": "BUILD 17 (R8-020): dark background behind the pendulum, RE-REGISTERED against the current plate. The batch-4 rect (2030,70,2280,1330) clipped the bob's right crescent and finial, so the painted pendulum survived to the RIGHT of the animated one (double pendulum). Silhouette-only Telea inpaint: every pixel outside the feathered pendulum silhouette is bit-identical to z3-dial-base@3x, so there is no rectangular seam."
  },
  "ov-hammer-absent": {
   "wide_base": "z3-dial-base",

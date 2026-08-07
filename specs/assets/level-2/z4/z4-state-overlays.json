@@ -32,5 +32,25 @@
    970
   ],
   "note": "return tag + rope loop taken (2026-07-21 TIGHT AI-repaint, gate-passed): tag body + rope removed; beveled sandstone blocks + mortar continue through the gap (no object-shaped region), canonical round mounting peg preserved (no nail). Key left pixel-identical. Method: harmonic shape-free seed -> nano-banana /edit refine, silhouette-masked composite. overlay_gate: CU seam 12.8 / sharpness 2.01; wide seam 7.0 / sharpness 0.99."
+ },
+ "ov-keyhook-tag-taken": {
+  "base": "cu-key-hook",
+  "rect_3x": [
+   59,
+   296,
+   605,
+   1449
+  ],
+  "note": "R8-021 cross-element echo: the KEY-hook close-up also depicts the return TAG. Once the tag is collected this patch clears it here too, exactly as the wide and cu-tag-nail already did. Derived by re-cropping the approved ov-tag-taken wide art through cu-key-hook's own camera frame (no generation)."
+ },
+ "ov-tagnail-key-taken": {
+  "base": "cu-tag-nail",
+  "rect_3x": [
+   1110,
+   127,
+   1728,
+   1417
+  ],
+  "note": "R8-021 THE REPORTED DEFECT: the tag-nail close-up also depicts the winding KEY, so after collecting both z4 pickups this plate still showed a stale key. Derived by re-cropping the approved ov-key-taken wide art through cu-tag-nail's frame."
  }
 }

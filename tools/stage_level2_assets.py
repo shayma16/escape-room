@@ -97,9 +97,14 @@ def collect():
     # Rack-gear cutouts: the p06 gear picker renders the REAL gear art instead of the old
     # Text("16")/Text("24") buttons (near-wordless ruling, round 8 fix 6).
     add("z2/props/gear-*@2x.png", 2)
-    # Canonical hour hand — composited as the wordless ring pointer on the ⌂-ring clue
-    # close-up once watch A has been inspected (round 8 fix 5, p03 clue legibility).
+    # z3 CLOCKWORK SPRITES (build 17 / R8-020, user ruling at GATE 1). The great dial's hands
+    # and the pendulum are no longer drawn procedurally (SwiftUI capsules / an SKShapeNode rod
+    # + bob): they render from the AUTHORED sprite art, anchored on the authored pivots. The
+    # hour hand additionally doubles as the wordless ring pointer on the ⌂/⚙ ring clue
+    # close-ups (round 8 fix 5, p03/p04 clue legibility).
     add("z3/v-dial/sprites/hand-hour@3x.png", 3)
+    add("z3/v-dial/sprites/hand-minute@3x.png", 3)
+    add("z3/v-dial/sprites/sp-pendulum@3x.png", 3)
     # Landmark dies: the p07 vault wheel headers are pictogram matches per the graph
     # (clu-worldclock-row: "landmark identification is NOT required"), replacing the old
     # "Big Ben"/"Burj"/"Liberty"/"Fuji" word labels.
@@ -194,6 +199,12 @@ def main():
     # the sound). Same rect schema, loaded by Level2OverlayCatalog alongside the four zones.
     shutil.copy2(os.path.join(SRC, "z1", "z1-cat-face.json"),
                  os.path.join(DEST, "z1-cat-face.json"))
+    # BUILD 17: the authored sprite rigs (hand pivots/lengths + pendulum rect/pivot/
+    # amplitudes). Shipped so the runtime reads its geometry from the SAME metadata the art
+    # was cut against instead of hand-transcribed constants (Level2SpriteCatalog).
+    for name in ("hand-sprites.json", "clockwork-sprites.json"):
+        shutil.copy2(os.path.join(SRC, "z3", "v-dial", "sprites", name),
+                     os.path.join(DEST, name))
 
     with open(os.path.join(DEST, "staged-manifest.json"), "w") as f:
         json.dump({"count": len(manifest), "assets": manifest}, f, indent=1, sort_keys=True)

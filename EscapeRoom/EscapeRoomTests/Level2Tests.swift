@@ -163,6 +163,42 @@ final class Level2Tests: XCTestCase {
         XCTAssertFalse(s.hasSolved(Level2Graph.PuzzleID.catMouse))
     }
 
+    /// R8-016 — THE TELL IS MOUSE-EXCLUSIVE (user-CONFIRMED override of approved rev-1.3
+    /// playtest tweak 2, which gave non-mouse offers a slow-blink refusal).
+    ///
+    /// On device both reactions were "the cat opens one eye", so the cat appeared to react to
+    /// EVERY item and the tell stopped signalling "the tin mouse is the key". Non-mouse offers
+    /// are now fully inert: no `catResponse` beat, no close-up presented, no reaction layer —
+    /// and, as before, the item is never consumed and p02 is never executed.
+    func testOnlyTheTinMouseGetsAVisibleCatReaction() {
+        let s = makeState()
+        s.addItem(Level2Graph.ItemID.screwdriver)
+        s.addItem(Level2Graph.ItemID.watchA)
+        let coordinator = Level2Coordinator(viewID: .door, state: s,
+                                            size: CGSize(width: 2732, height: 1366))
+
+        for item in [Level2Graph.ItemID.screwdriver, Level2Graph.ItemID.watchA] {
+            for hotspot in ["cat-cushion", "cat-floor"] {
+                XCTAssertFalse(coordinator.useItem(item, on: hotspot),
+                               "\(item) on \(hotspot) must be INERT (R8-016) — the reaction is "
+                               + "reserved for the tin mouse")
+                XCTAssertNil(coordinator.catResponse,
+                             "a non-mouse offer must not produce ANY visible beat")
+            }
+            XCTAssertTrue(s.hasItem(item), "an inert offer still returns the item unspent")
+        }
+        XCTAssertFalse(s.hasSolved(Level2Graph.PuzzleID.catMouse))
+
+        // The mouse — and only the mouse — earns the strong tell.
+        s.addItem(Level2Graph.ItemID.toyMouse)
+        XCTAssertTrue(coordinator.useItem(Level2Graph.ItemID.toyMouse, on: "cat-cushion"))
+        XCTAssertEqual(coordinator.catResponse, .mouseTell)
+        XCTAssertEqual(coordinator.activeCloseUp, .catCushion,
+                       "the tell is shown on the cushion close-up, where its art lives")
+        XCTAssertTrue(s.hasItem(Level2Graph.ItemID.toyMouse), "the tell never consumes the mouse")
+        XCTAssertFalse(s.hasSolved(Level2Graph.PuzzleID.catMouse), "offering never solves p02")
+    }
+
     // MARK: - p03 / p04 clue-gated pry caches (D10 faint-tell)
 
     func testDormerPryGateAndFaintTell() {

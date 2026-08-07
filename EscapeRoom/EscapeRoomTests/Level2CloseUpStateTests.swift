@@ -102,6 +102,42 @@ final class Level2CloseUpStateTests: XCTestCase {
            $0.setFlag(Level2Graph.Flag.cushionLifted) }, "ov-sill-cushion-lifted"),
         ("cushion / tile XI gone from the sill corner", .catCushion,
          { $0.addItem(Level2Graph.ItemID.tileXI) }, "ov-cushion-sill-taken"),
+
+        // ------------------------------------------------------------------------------
+        // BUILD 17 — CROSS-ELEMENT ECHOES (R8-021 and the coverage gap behind it).
+        //
+        // WHY THESE WERE MISSED: every row above pairs a close-up with its OWN element's
+        // state. Nothing paired a close-up with a NEIGHBOUR's state, even though each L2
+        // close-up plate is a CROP of its wide plate and therefore routinely depicts other
+        // elements too (cu-tag-nail shows the winding key; cu-key-hook shows the tag). The
+        // z4 rows below are the reported defect; the rest come from the same systematic
+        // sweep, and `testEveryForeignElementVisibleInACloseUpIsEchoed` now derives the
+        // whole matrix from plate geometry so a future gap fails instead of shipping.
+        ("z4 hook / TAG taken (R8-021)", .plain(image: "cu-key-hook"),
+         { $0.addItem(Level2Graph.ItemID.returnTag) }, "ov-keyhook-tag-taken"),
+        ("z4 nail / KEY taken (R8-021 — the stale key)", .plain(image: "cu-tag-nail"),
+         { $0.addItem(Level2Graph.ItemID.windingKey) }, "ov-tagnail-key-taken"),
+        ("master face / workroom door open", .plain(image: "cu-master-face"),
+         { $0.markSolved(Level2Graph.PuzzleID.dialDoor) }, "ov-masterface-door-open"),
+        ("crate / workroom door open", .plain(image: "cu-crate-straw"),
+         { $0.markSolved(Level2Graph.PuzzleID.dialDoor) }, "ov-crate-door-open"),
+        ("⌂ ring post / time-lock bar raised", .plain(image: "cu-house-ring"),
+         { $0.setFlag(Level2Graph.Flag.doorBarRaised) }, "ov-housering-bar-raised"),
+        ("⚙ ring carve / chimney cache pried", .plain(image: "cu-gear-ring"),
+         { $0.markSolved(Level2Graph.PuzzleID.cacheChimney) }, "ov-gearring-brick-pried"),
+        ("⚙ ring carve / chimney cache emptied", .plain(image: "cu-gear-ring"),
+         { $0.markSolved(Level2Graph.PuzzleID.cacheChimney)
+           $0.addItem(Level2Graph.ItemID.oilcan) }, "ov-gearring-brick-empty"),
+        ("gear frame / z3 wall panel open", .gearFrame,
+         { $0.unlockZone(Level2Graph.ZoneID.z3BehindDial) }, "ov-gearframe-panel-open"),
+        ("cushion / dormer cache pried below", .catCushion,
+         { $0.markSolved(Level2Graph.PuzzleID.cacheDormer) }, "ov-cushion-cache-pried"),
+        ("cushion / dormer cache emptied below", .catCushion,
+         { $0.markSolved(Level2Graph.PuzzleID.cacheDormer)
+           $0.addItem(Level2Graph.ItemID.greatWheel) }, "ov-cushion-cache-empty"),
+        ("floor cache / cushion lifted above", .dormerCache,
+         { $0.markSolved(Level2Graph.PuzzleID.catMouse)
+           $0.setFlag(Level2Graph.Flag.cushionLifted) }, "ov-cache-cushion-lifted"),
     ]
 
     /// THE CORE GUARD: each stateful close-up's composition must CHANGE, and change in the
@@ -274,6 +310,312 @@ final class Level2CloseUpStateTests: XCTestCase {
             XCTAssertTrue(emptied.layers.map(\.key).contains(emptyKey), "collected -> empty cavity")
             XCTAssertTrue(emptied.targets.isEmpty)
         }
+    }
+
+    // MARK: - BUILD 17: the SYSTEMIC coverage guard behind R8-021
+    //
+    // The 22-row table above (and its successors) is hand-maintained, which is exactly why the
+    // z4 gap shipped: someone has to REMEMBER that cu-tag-nail also depicts the winding key.
+    // This guard removes the remembering. Every L2 close-up plate is a crop of its wide plate,
+    // so the pairs are derivable: for each close-up frame x each wide overlay of that view,
+    // if the overlay's rect covers a MEANINGFUL slice of the frame, the close-up's plan MUST
+    // change when that state flips — or the pair must be listed in `echoExempt` WITH A REASON.
+
+    /// Every wide overlay key, with the state mutation that makes it appear.
+    private static let wideOverlayFlips: [String: (GameState) -> Void] = {
+        var m = baseWideOverlayFlips
+        for g in Level2Graph.rackGears {
+            m["ov-rack-absent-\(g)"] = { (s: GameState) in s.setL2GearPost(.a, gear: g) }
+        }
+        return m
+    }()
+
+    private static let baseWideOverlayFlips: [String: (GameState) -> Void] = [
+        "ov-screwdriver-taken": { $0.addItem(Level2Graph.ItemID.screwdriver) },
+        "ov-stove-tile-taken": { $0.addItem(Level2Graph.ItemID.tileII) },
+        "ov-crate-tile-taken": { $0.addItem(Level2Graph.ItemID.tileVII) },
+        "ov-sill-tile-taken": { $0.addItem(Level2Graph.ItemID.tileXI) },
+        "ov-workroom-door-open": { $0.markSolved(Level2Graph.PuzzleID.dialDoor) },
+        "ov-dial-seat-ii": { $0.setL2DialSocket("2", tile: Level2Graph.ItemID.tileII) },
+        "ov-dial-seat-iv": { $0.setL2DialSocket("4", tile: Level2Graph.ItemID.tileIV) },
+        "ov-dial-seat-vii": { $0.setL2DialSocket("7", tile: Level2Graph.ItemID.tileVII) },
+        "ov-dial-seat-xi": { $0.setL2DialSocket("11", tile: Level2Graph.ItemID.tileXI) },
+        "ov-cache-pried-wheel": { $0.markSolved(Level2Graph.PuzzleID.cacheDormer) },
+        "ov-cache-empty": { $0.markSolved(Level2Graph.PuzzleID.cacheDormer)
+                            $0.addItem(Level2Graph.ItemID.greatWheel) },
+        "ov-cushion-empty": { $0.markSolved(Level2Graph.PuzzleID.catMouse) },
+        "ov-cushion-reveal": { $0.markSolved(Level2Graph.PuzzleID.catMouse)
+                               $0.setFlag(Level2Graph.Flag.cushionLifted) },
+        "ov-bar-raised": { $0.setFlag(Level2Graph.Flag.doorBarRaised) },
+        "ov-arbor-oiled": { $0.setFlag(Level2Graph.Flag.arborFreed) },
+        "ov-brick-pried-oilcan": { $0.markSolved(Level2Graph.PuzzleID.cacheChimney) },
+        "ov-brick-empty": { $0.markSolved(Level2Graph.PuzzleID.cacheChimney)
+                            $0.addItem(Level2Graph.ItemID.oilcan) },
+        "ov-panel-open": { $0.unlockZone(Level2Graph.ZoneID.z3BehindDial) },
+        "ov-cabinet-open-mouse": { $0.setFlag(Level2Graph.Flag.cabinetDrawerOpened) },
+        "ov-cabinet-empty": { $0.setFlag(Level2Graph.Flag.cabinetDrawerOpened)
+                              $0.addItem(Level2Graph.ItemID.toyMouse) },
+        "ov-drum-oiled": { $0.setFlag(Level2Graph.Flag.drumOiled) },
+        "ov-drum-key-in": { $0.setFlag(Level2Graph.Flag.clockWound) },
+        "ov-hatch-open": { $0.unlockZone(Level2Graph.ZoneID.z4Vault) },
+        "ov-key-taken": { $0.addItem(Level2Graph.ItemID.windingKey) },
+        "ov-tag-taken": { $0.addItem(Level2Graph.ItemID.returnTag) },
+    ]
+
+    /// Which close-up a plate name is presented as (all others are plain state-resolved zooms).
+    private static let closeUpForPlate: [String: L2CloseUp] = [
+        "cu-door-dial": .dialDoor, "cu-floor-cache": .dormerCache,
+        "cu-brick-cache": .chimneyCache, "cu-cat-cushion": .catCushion,
+        "cu-gear-frame": .gearFrame, "cu-winding-drum": .windingDrum,
+        "cu-cabinet-drawer": .cabinetDrawer, "cu-hatch-wheels": .vaultWheels,
+        "cu-great-dial": .greatDial,
+    ]
+
+    /// A close-up's plan must change for at least this much of its frame being taken up by a
+    /// foreign element's overlay rect. Below it the element is a sliver of authored padding
+    /// at a crop edge, not something a player reads as stale.
+    private static let echoAreaFloor = 0.01
+
+    /// Documented exemptions — each is a JUDGEMENT, recorded here rather than left implicit.
+    private static let echoExempt: [String: String] = [
+        // Unreachable in the state that would need the echo.
+        "cu-door-dial|ov-workroom-door-open":
+            "the door only opens when p01 is SOLVED, and a solved dial navigates into z2 "
+            + "instead of presenting this close-up — the state is unreachable here",
+        "cu-hatch-wheels|ov-hatch-open":
+            "the wheels close-up is only presented while the hatch is SHUT; once it opens the "
+            + "hotspot navigates down to z4",
+        // Presentation crops the element out of the visible window.
+        "cu-clockrow-plates|ov-cabinet-open-mouse":
+            "the plan's focus zoom shows the top 52% clock band; the cabinet is below it",
+        "cu-clockrow-plates|ov-cabinet-empty":
+            "the plan's focus zoom shows the top 52% clock band; the cabinet is below it",
+        // Rect padding only — the overlay's CHANGED PIXELS fall outside this crop (measured
+        // pixel-wise by specs/tools/l2_b17_echoes.py; all under 0.3% of the plate).
+        "cu-barometer|ov-screwdriver-taken": "authored rect padding overlap; no changed pixels in this crop",
+        "cu-slate|ov-screwdriver-taken": "authored rect padding overlap; no changed pixels in this crop",
+        "cu-gear-rack|ov-brick-pried-oilcan": "rect padding overlap; 0.27% of the plate changes",
+        "cu-gear-rack|ov-brick-empty": "rect padding overlap; 0.27% of the plate changes",
+        "cu-brick-cache|ov-rack-absent-72": "rect padding overlap; 0.29% of the plate changes",
+    ]
+
+    /// THE COVERAGE GUARD. Derives every (close-up x foreign element) pair from the authored
+    /// camera frames and overlay rects, and requires each one to be echoed or exempted.
+    func testEveryForeignElementVisibleInACloseUpIsEchoed() {
+        var failures: [String] = []
+        for (plate, entry) in Level2CloseUpVisuals.cuFrames.sorted(by: { $0.key < $1.key }) {
+            guard let view = L2ViewID(rawValue: entry.view) else { continue }
+            let closeUp = Self.closeUpForPlate[plate] ?? .plain(image: plate)
+            let frameArea = entry.frame.width * entry.frame.height
+            guard frameArea > 0 else { continue }
+            for key in Self.wideOverlayKeys(for: view) {
+                let r = Level2OverlayCatalog.shared.wideRect(key)
+                guard r != .zero else { continue }
+                let overlap = entry.frame.intersection(r)
+                guard !overlap.isNull else { continue }
+                let share = (overlap.width * overlap.height) / frameArea
+                guard share >= Self.echoAreaFloor else { continue }
+                if Self.echoExempt["\(plate)|\(key)"] != nil { continue }
+                guard let flip = Self.wideOverlayFlips[key] else {
+                    failures.append("\(plate) <- \(key): no state flip registered for this overlay")
+                    continue
+                }
+                let s = makeState()
+                let before = plan(closeUp, s)
+                flip(s)
+                let after = plan(closeUp, s)
+                if before == after {
+                    failures.append(String(format:
+                        "%@ <- %@ (%.0f%% of the frame): the close-up does NOT change when that "
+                        + "element's state flips — a STALE close-up (the R8-021 class). Add an "
+                        + "echo overlay + resolver case, or an entry in echoExempt with a reason.",
+                        plate, key, share * 100))
+                }
+            }
+        }
+        XCTAssertTrue(failures.isEmpty,
+            "cross-element close-up echo coverage gaps:\n" + failures.joined(separator: "\n"))
+    }
+
+    /// Every exemption must still refer to a real pair, so the list cannot rot into a
+    /// permanent silencer for pairs that no longer exist.
+    func testEchoExemptionsAllStillApply() {
+        var stale: [String] = []
+        for (pair, reason) in Self.echoExempt {
+            let parts = pair.split(separator: "|").map(String.init)
+            guard parts.count == 2, let entry = Level2CloseUpVisuals.cuFrames[parts[0]] else {
+                stale.append("\(pair): unknown close-up"); continue
+            }
+            let r = Level2OverlayCatalog.shared.wideRect(parts[1])
+            if r == .zero || entry.frame.intersection(r).isNull {
+                stale.append("\(pair): no longer overlaps — drop the exemption (\(reason))")
+            }
+        }
+        XCTAssertTrue(stale.isEmpty, "stale echo exemptions:\n" + stale.joined(separator: "\n"))
+    }
+
+    private static func wideOverlayKeys(for view: L2ViewID) -> [String] {
+        // Every overlay the wide resolver can composite in this view, in any state.
+        var keys = Set<String>()
+        for (_, mutate) in phases() {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            let s = GameState(levelID: 2, store: SaveGameStore(directory: dir))
+            mutate(s)
+            keys.formUnion(Level2Visuals.wideOverlays(view, s))
+        }
+        // Plus the states the phases do not reach (they are alternatives of each other).
+        for extra in Self.wideOverlayFlips.keys {
+            let dir = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+            let s = GameState(levelID: 2, store: SaveGameStore(directory: dir))
+            Self.wideOverlayFlips[extra]?(s)
+            keys.formUnion(Level2Visuals.wideOverlays(view, s))
+        }
+        return keys.sorted()
+    }
+
+    // MARK: - BUILD 17: CLOSE-UP <-> WIDE PARITY MATRIX (round 8 Cluster Q, user directive)
+    //
+    // "Once an interaction's gate is satisfied it should work from BOTH the wide view and the
+    // close-up." Build 16 broke that twice, structurally: the cushion close-up hard-coded ONE
+    // hotspot id (`cat-cushion`) while p02's placement verb lives on the sibling `cat-floor`,
+    // and the cache close-ups guarded their only tap on ONE item (`armedItem == screwdriver`),
+    // so they implemented pry and nothing else. Both are now regions declared by the PLAN and
+    // dispatched through the same `useItem` switch as a wide tap — and this matrix proves it
+    // for every armed verb in the level.
+
+    /// (label, view, close-up, wide hotspot, item, state that satisfies the verb's gate).
+    private static let useParity: [(name: String, view: L2ViewID, closeUp: L2CloseUp,
+                                    hotspot: String, item: String, setup: (GameState) -> Void)] = [
+        ("p03 pry the dormer board", .door, .dormerCache, "floor-cache",
+         Level2Graph.ItemID.screwdriver,
+         { $0.addItem(Level2Graph.ItemID.screwdriver); $0.markClueViewed(Level2ClueID.watchA) }),
+        ("p04 pry the chimney brick", .frame, .chimneyCache, "brick",
+         Level2Graph.ItemID.screwdriver,
+         { $0.addItem(Level2Graph.ItemID.screwdriver); $0.markClueViewed(Level2ClueID.watchB)
+           $0.unlockZone(Level2Graph.ZoneID.z2Workroom) }),
+        ("p05 oil the seized arbor", .frame, .gearFrame, "arbor", Level2Graph.ItemID.oilcan,
+         { $0.addItem(Level2Graph.ItemID.oilcan); $0.unlockZone(Level2Graph.ZoneID.z2Workroom) }),
+        ("p02 PLACE the mouse on the floor (R8-015)", .door, .catCushion, "cat-floor",
+         Level2Graph.ItemID.toyMouse, { $0.addItem(Level2Graph.ItemID.toyMouse) }),
+        ("p02 OFFER the mouse to the cat (D3 tell)", .door, .catCushion, "cat-cushion",
+         Level2Graph.ItemID.toyMouse, { $0.addItem(Level2Graph.ItemID.toyMouse) }),
+        ("p08 oil the winding drum", .dial, .windingDrum, "drum", Level2Graph.ItemID.oilcan,
+         { $0.addItem(Level2Graph.ItemID.oilcan); $0.unlockZone(Level2Graph.ZoneID.z3BehindDial) }),
+        ("p08 wind the drum with the key", .dial, .windingDrum, "drum",
+         Level2Graph.ItemID.windingKey,
+         { $0.addItem(Level2Graph.ItemID.windingKey); $0.setFlag(Level2Graph.Flag.drumOiled)
+           $0.unlockZone(Level2Graph.ZoneID.z3BehindDial) }),
+    ]
+
+    /// Every armed verb must succeed from the WIDE hotspot AND from its close-up region.
+    func testEveryArmedVerbWorksFromBothTheWideViewAndItsCloseUp() {
+        var failures: [String] = []
+        for row in Self.useParity {
+            // --- wide
+            let wideState = makeState()
+            row.setup(wideState)
+            let wideInteraction = InteractionModel()
+            wideInteraction.armedItem = row.item
+            let wide = Level2Coordinator(viewID: row.view, state: wideState,
+                                         size: CGSize(width: 2732, height: 1366),
+                                         interaction: wideInteraction)
+            if !wide.useItem(row.item, on: row.hotspot) {
+                failures.append("\(row.name): FAILED from the WIDE view (\(row.hotspot))")
+            }
+
+            // --- close-up, through the plan's declared use region
+            let cuState = makeState()
+            row.setup(cuState)
+            let cuInteraction = InteractionModel()
+            cuInteraction.armedItem = row.item
+            let cu = Level2Coordinator(viewID: row.view, state: cuState,
+                                       size: CGSize(width: 2732, height: 1366),
+                                       interaction: cuInteraction)
+            let cuPlan = plan(row.closeUp, cuState)
+            guard let target = cuPlan.uses.first(where: { $0.hotspot == row.hotspot }) else {
+                failures.append("\(row.name): the \(row.closeUp.id) close-up declares NO use "
+                    + "region for '\(row.hotspot)' — the verb is unreachable from the close-up "
+                    + "(the exact R8-015 / R8-018 defect)")
+                continue
+            }
+            if !cu.runCloseUpUse(target) {
+                failures.append("\(row.name): FAILED from the \(row.closeUp.id) CLOSE-UP")
+            }
+            if !target.rect.isEmpty,
+               !CGRect(x: -0.001, y: -0.001, width: 1.002, height: 1.002).contains(target.rect) {
+                failures.append("\(row.name): use region \(target.id) is off the plate")
+            }
+        }
+        XCTAssertTrue(failures.isEmpty,
+            "close-up <-> wide interaction PARITY failures:\n" + failures.joined(separator: "\n"))
+    }
+
+    /// Every close-up that declares a use region must route it to a hotspot the WIDE scene of
+    /// the same view actually has, so a close-up can never proxy a hotspot that does not exist.
+    func testEveryCloseUpUseRegionProxiesARealWideHotspot() {
+        var offenders: [String] = []
+        let hostView: [String: L2ViewID] = [
+            "cu-floor-cache": .door, "cu-cat-cushion": .door, "cu-brick-cache": .frame,
+            "cu-gear-frame": .frame, "cu-winding-drum": .dial,
+        ]
+        for (label, plan) in Self.allReachablePlans() {
+            for use in plan.uses {
+                guard let view = hostView[plan.base] else {
+                    offenders.append("\(label): use \(use.id) on an unmapped plate \(plan.base)")
+                    continue
+                }
+                let ids = Level2HotspotTable.rects(forView: view.rawValue).map(\.id)
+                if !ids.contains(use.hotspot) {
+                    offenders.append("\(label): use \(use.id) proxies '\(use.hotspot)', which is "
+                        + "not a hotspot in \(view.rawValue) \(ids)")
+                }
+            }
+        }
+        XCTAssertTrue(offenders.isEmpty, "close-up use regions:\n" + offenders.joined(separator: "\n"))
+    }
+
+    /// Every REVEALED item is collectable from its close-up, and the close-up is reachable from
+    /// the wide scene — the collect half of the parity directive (R8-018's oil can).
+    func testEveryRevealedItemIsCollectableFromItsCloseUpReachedFromTheWideScene() {
+        let cases: [(name: String, view: L2ViewID, hotspot: String, closeUp: L2CloseUp,
+                     item: String, setup: (GameState) -> Void)] = [
+            ("great wheel / dormer cache", .door, "floor-cache", .dormerCache,
+             Level2Graph.ItemID.greatWheel, { $0.markSolved(Level2Graph.PuzzleID.cacheDormer) }),
+            ("oil can / chimney cache (R8-018)", .frame, "brick", .chimneyCache,
+             Level2Graph.ItemID.oilcan, { $0.markSolved(Level2Graph.PuzzleID.cacheChimney) }),
+            ("tin mouse / parts drawer", .clockrow, "cabinet", .cabinetDrawer,
+             Level2Graph.ItemID.toyMouse, { $0.setFlag(Level2Graph.Flag.cabinetDrawerOpened) }),
+            ("watch A / coat pocket", .bench, "coat", .coat, Level2Graph.ItemID.watchA, { _ in }),
+            ("tile IV / coat pocket", .bench, "coat", .coat, Level2Graph.ItemID.tileIV, { _ in }),
+            ("watch B / under the cushion", .door, "cat-cushion", .catCushion,
+             Level2Graph.ItemID.watchB, { $0.markSolved(Level2Graph.PuzzleID.catMouse)
+                                          $0.setFlag(Level2Graph.Flag.cushionLifted) }),
+        ]
+        var failures: [String] = []
+        for row in cases {
+            let s = makeState()
+            row.setup(s)
+            let coordinator = Level2Coordinator(viewID: row.view, state: s,
+                                                size: CGSize(width: 2732, height: 1366))
+            // 1. the wide tap opens the close-up that holds the item
+            coordinator.scene.onHotspotTap?(row.hotspot)
+            if coordinator.activeCloseUp != row.closeUp {
+                failures.append("\(row.name): the wide '\(row.hotspot)' tap opened "
+                    + "\(coordinator.activeCloseUp?.id ?? "nothing"), not \(row.closeUp.id)")
+            }
+            // 2. the close-up exposes a collect target that actually grants the item
+            let p = plan(row.closeUp, s)
+            guard let target = p.targets.first(where: { $0.id == "collect-\(row.item)" }) else {
+                failures.append("\(row.name): no collect target '\(row.item)' in \(row.closeUp.id)")
+                continue
+            }
+            coordinator.runCloseUpTarget(target)
+            if !s.hasItem(row.item) {
+                failures.append("\(row.name): tapping the collect target did NOT grant \(row.item)")
+            }
+        }
+        XCTAssertTrue(failures.isEmpty,
+            "collect parity failures:\n" + failures.joined(separator: "\n"))
     }
 
     // MARK: - Art integrity for the close-up layer set

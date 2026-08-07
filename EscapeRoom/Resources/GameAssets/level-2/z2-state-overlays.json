@@ -375,5 +375,35 @@
    1920
   ],
   "note": "wall panel latched open onto the z3 doorway: dark opening + warm amber dial glow leak; panel door swung aside (sanctioned amber leak through an opening, one-sun continuity preserved)."
+ },
+ "ov-gearring-brick-pried": {
+  "base": "cu-gear-ring",
+  "rect_3x": [
+   78,
+   157,
+   1665,
+   1165
+  ],
+  "note": "cross-element echo: the p04 ring-clue plate is cropped from the chimney breast and bakes in the loose cache brick, so it must follow the cache's pried state."
+ },
+ "ov-gearring-brick-empty": {
+  "base": "cu-gear-ring",
+  "rect_3x": [
+   78,
+   157,
+   1665,
+   1165
+  ],
+  "note": "cross-element echo: cache pried AND emptied, as it reads in the ring-clue crop. Shares ov-gearring-brick-pried's rect so the two are interchangeable."
+ },
+ "ov-gearframe-panel-open": {
+  "base": "cu-gear-frame",
+  "rect_3x": [
+   114,
+   1052,
+   1505,
+   1536
+  ],
+  "note": "cross-element echo: the opened z3 wall panel is inside the gear-frame close-up's crop, so the frame plate must show it open once z3 is unlocked."
  }
 }

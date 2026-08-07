@@ -261,14 +261,18 @@ final class RoomScene: SKScene {
         }
     }
 
-    // MARK: - Procedural mechanism animations (level-agnostic; used by L2 z3 for the
-    // pendulum swing (m2) + D11 alive-wrong-time hammer twitch / escapement tick (M3)).
+    // MARK: - Mechanism animations (level-agnostic; used by L2 z3 for the pendulum swing (m2)
+    // + the D11 alive-wrong-time hammer twitch / escapement tick (M3)).
     //
-    // These are drawn PROCEDURALLY (SKShapeNode rod + bob), consistent with L2's other
-    // moving parts being rendered procedurally (the mirrored clock hands are SwiftUI
-    // capsules) rather than from bespoke sprite art. The `ov-pendulum-absent` /
-    // `ov-hammer-absent` dark-background overlays (composited by the coordinator) hide the
-    // at-rest part on the base plate so the swinging node never ghosts against it.
+    // BUILD 17 (R8-020, user ruling at GATE 1): the PENDULUM now renders from the AUTHORED
+    // brass cutout `sp-pendulum`, rotated about its authored suspension pivot. Build 16 drew
+    // it procedurally (SKShapeNode rod + a flat mustard bob) and, with a stale
+    // `ov-pendulum-absent` rect, the painted pendulum survived beside it — the "double
+    // pendulum" in the user's screenshot. The `ov-pendulum-absent` / `ov-hammer-absent`
+    // background patches (composited by the coordinator) hide the at-rest part on the base
+    // plate so the swinging sprite never ghosts against it. The hammer twitch stays
+    // procedural: it is a few dark pixels behind the bells at play scale, and its authored
+    // sprite pair is a rest/lift key set the D11 ambient does not need.
 
     private var procNodes: [String: SKNode] = [:]
     /// Cache of the params each proc node was last built with, so an unrelated state refresh
@@ -286,34 +290,33 @@ final class RoomScene: SKScene {
         CGPoint(x: -size.width / 2 + nx * size.width, y: size.height / 2 - ny * size.height)
     }
 
-    /// A pendulum pivoting at the TOP-CENTER of `rect`, a rod down to a brass bob, oscillating
-    /// ±`amplitudeDegrees` with `period` seconds per full swing. active=false removes it.
-    func setPendulumSwing(active: Bool, rect: CGRect, amplitudeDegrees: CGFloat,
-                          period: TimeInterval, zPosition: CGFloat = 20) {
+    /// The authored pendulum sprite hung from `pivot` (normalized INSIDE `rect`, top-left
+    /// origin) and oscillating ±`amplitudeDegrees` with `period` seconds per full swing.
+    /// `imageNamed` is the staged RGBA cutout; `rect` is its normalized placement on the plate.
+    /// active=false removes it.
+    ///
+    /// The sprite's anchorPoint is set to the pivot so SpriteKit rotates it about the
+    /// suspension point (SpriteKit's anchor is bottom-left-origin, hence the y flip). Nothing
+    /// is clipped by `rect`: the node draws its whole texture wherever the rotation puts it.
+    func setPendulumSwing(active: Bool, rect: CGRect, pivot: CGPoint, imageNamed: String?,
+                          amplitudeDegrees: CGFloat, period: TimeInterval,
+                          zPosition: CGFloat = 20) {
         let key = "proc:pendulum"
-        guard active, rect != .zero else { removeProc(key); return }
-        let params = "\(rect)|\(amplitudeDegrees)|\(period)"
-        let pivot = scenePoint(nx: rect.midX, ny: rect.minY)
+        guard active, rect != .zero, let imageNamed,
+              let texture = Self.texture(named: imageNamed) else { removeProc(key); return }
+        let params = "\(rect)|\(pivot)|\(imageNamed)|\(amplitudeDegrees)|\(period)"
+        let pivotPoint = scenePoint(nx: rect.minX + pivot.x * rect.width,
+                                    ny: rect.minY + pivot.y * rect.height)
         if procNodes[key] != nil, procParams[key] == params {
-            procNodes[key]?.position = pivot   // keep the running swing; just re-affirm placement
+            procNodes[key]?.position = pivotPoint   // keep the running swing; re-affirm placement
             return
         }
         removeProc(key)
-        let rodLen = rect.height * size.height * 0.9
-        let rodW = max(rect.width * size.width * 0.10, 5)
-        let bobR = max(rect.width * size.width * 0.42, 9)
-        let node = SKNode()
+        let node = SKSpriteNode(texture: texture)
         node.name = "l2-pendulum"
-        let rod = SKShapeNode(rectOf: CGSize(width: rodW, height: rodLen))
-        rod.fillColor = SKColor(white: 0.14, alpha: 1); rod.strokeColor = .clear
-        rod.position = CGPoint(x: 0, y: -rodLen / 2)
-        node.addChild(rod)
-        let bob = SKShapeNode(circleOfRadius: bobR)
-        bob.fillColor = SKColor(red: 0.70, green: 0.58, blue: 0.30, alpha: 1)
-        bob.strokeColor = SKColor(white: 0.08, alpha: 1); bob.lineWidth = 2
-        bob.position = CGPoint(x: 0, y: -rodLen)
-        node.addChild(bob)
-        node.position = pivot
+        node.size = CGSize(width: rect.width * size.width, height: rect.height * size.height)
+        node.anchorPoint = CGPoint(x: pivot.x, y: 1 - pivot.y)
+        node.position = pivotPoint
         node.zPosition = zPosition
         let amp = amplitudeDegrees * .pi / 180
         node.zRotation = amp

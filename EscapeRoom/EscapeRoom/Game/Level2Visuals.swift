@@ -58,6 +58,7 @@ final class Level2OverlayCatalog {
 
     private var wideRects: [String: CGRect] = [:]
     private var cuRects: [String: CGRect] = [:]
+    private var stackedOver: [String: String] = [:]
 
     private init() {
         for zone in ["z1", "z2", "z3", "z4"] {
@@ -84,6 +85,7 @@ final class Level2OverlayCatalog {
             if let tailBox = Self.doubles(entry["tail_rect_3x"]), tailBox.count == 4 {
                 cuRects[key + "-tail"] = Self.norm(tailBox, Self.cuW, Self.cuH)
             }
+            if let under = entry["composites_over"] as? String { stackedOver[key] = under }
         }
     }
 
@@ -100,6 +102,153 @@ final class Level2OverlayCatalog {
 
     func wideRect(_ overlay: String) -> CGRect { wideRects[overlay] ?? .zero }
     func cuRect(_ overlay: String) -> CGRect { cuRects[overlay] ?? .zero }
+
+    /// Overlay keys that must composite ON TOP of another overlay at the same/overlapping
+    /// rect (`composites_over` in the JSON). Order is load-bearing for those pairs.
+    func compositesOver(_ overlay: String) -> String? { stackedOver[overlay] }
+}
+
+/// BUILD 17 (R8-020, user ruling at GATE 1) — the AUTHORED z3 clockwork sprite rigs.
+///
+/// Build 16 drew the great-dial hands as SwiftUI capsules and the pendulum as an SKShapeNode
+/// rod + bob. That was a documented choice, but on device it read as placeholder strokes and
+/// a flat mustard bob in a painterly room, and the hands did not pivot from the dial hub. The
+/// user ruled: use the authored sprite art (z3/v-dial/sprites) and anchor it on the authored
+/// pivots. So the geometry is READ FROM THE SAME METADATA THE ART WAS CUT AGAINST
+/// (`hand-sprites.json` + `clockwork-sprites.json`, staged into the bundle) rather than
+/// hand-transcribed into Swift, which is how the build-16 rects drifted from the plate in the
+/// first place (the R7-001 / stale-rect family).
+final class Level2SpriteCatalog {
+    static let shared = Level2SpriteCatalog()
+
+    /// @3x wide-plate reference the sprite rig pixel values are authored against.
+    static let wideRef = CGSize(width: 3840, height: 1920)
+    /// Canonical close-up plate size.
+    static let cuRef = CGSize(width: 2048, height: 1536)
+
+    /// One clock hand. `pivot` and `size` are in the SPRITE's own pixels; `length` is the
+    /// tip-to-pivot distance in @3x wide-plate pixels (the two coincide — the sprites are cut
+    /// at wide-plate scale).
+    struct Hand: Equatable {
+        let image: String
+        let size: CGSize
+        let pivot: CGPoint
+        let length: CGFloat
+        /// The pivot as a UnitPoint inside the sprite (SwiftUI rotation/scale anchor).
+        var anchor: CGPoint {
+            CGPoint(x: size.width > 0 ? pivot.x / size.width : 0.5,
+                    y: size.height > 0 ? pivot.y / size.height : 0.5)
+        }
+    }
+
+    /// The great dial's rig, projected into CLOSE-UP plate space (`cu-great-dial`).
+    struct DialRig: Equatable {
+        /// Hub (the works arbor the hands turn on), normalized to the CU plate.
+        let hub: CGPoint
+        /// Scale from @3x wide-plate pixels to CU pixels (the CU is a crop + resample).
+        let cuScale: CGFloat
+        /// Horizontal squash that makes a circular sweep track the painted numeral ellipse.
+        let ringSquashX: CGFloat
+    }
+
+    struct Pendulum: Equatable {
+        let image: String
+        /// Sprite rect on the WIDE plate, normalized.
+        let rect: CGRect
+        /// Pivot inside that rect, normalized (0…1, top-left origin).
+        let pivot: CGPoint
+        let weakDegrees: CGFloat
+        let fullDegrees: CGFloat
+    }
+
+    private(set) var hourHand = Hand(image: "hand-hour", size: CGSize(width: 120, height: 380),
+                                     pivot: CGPoint(x: 60, y: 290), length: 250)
+    private(set) var minuteHand = Hand(image: "hand-minute", size: CGSize(width: 120, height: 510),
+                                       pivot: CGPoint(x: 60, y: 420), length: 380)
+    private(set) var dial = DialRig(hub: CGPoint(x: 0.3667, y: 0.4543),
+                                    cuScale: 1.2075, ringSquashX: 0.875)
+    private(set) var pendulum = Pendulum(image: "sp-pendulum",
+                                         rect: CGRect(x: 2050/3840.0, y: 0,
+                                                      width: 284/3840.0, height: 1440/1920.0),
+                                         pivot: CGPoint(x: 136/284.0, y: 8/1440.0),
+                                         weakDegrees: 4, fullDegrees: 11)
+
+    private init() {
+        loadHands()
+        loadClockwork()
+    }
+
+    private func json(_ resource: String) -> [String: Any]? {
+        guard let url = Bundle.main.url(forResource: resource, withExtension: "json",
+                                        subdirectory: "GameAssets/level-2")
+                ?? Bundle.main.url(forResource: resource, withExtension: "json"),
+              let data = try? Data(contentsOf: url),
+              let raw = try? JSONSerialization.jsonObject(with: data) as? [String: Any]
+        else { return nil }
+        return raw
+    }
+
+    private static func point(_ any: Any?) -> CGPoint? {
+        guard let a = any as? [Any], a.count == 2,
+              let x = (a[0] as? NSNumber)?.doubleValue, let y = (a[1] as? NSNumber)?.doubleValue
+        else { return nil }
+        return CGPoint(x: x, y: y)
+    }
+    private static func box(_ any: Any?) -> [CGFloat]? {
+        guard let a = any as? [Any], a.count == 4 else { return nil }
+        let d = a.compactMap { ($0 as? NSNumber).map { CGFloat($0.doubleValue) } }
+        return d.count == 4 ? d : nil
+    }
+
+    private func loadHands() {
+        guard let raw = json("hand-sprites") else { return }
+        func hand(_ key: String, image: String, fallback: Hand) -> Hand {
+            guard let e = raw[key] as? [String: Any], let pivot = Self.point(e["pivot_px_at_3x"]),
+                  let len = (e["length_px_at_3x"] as? NSNumber)?.doubleValue,
+                  let art = GameAssetLoader.shared.image(named: image)
+            else { return fallback }
+            return Hand(image: image,
+                        size: CGSize(width: art.size.width * art.scale,
+                                     height: art.size.height * art.scale),
+                        pivot: pivot, length: CGFloat(len))
+        }
+        hourHand = hand("hand-hour", image: "hand-hour", fallback: hourHand)
+        minuteHand = hand("hand-minute", image: "hand-minute", fallback: minuteHand)
+
+        guard let g = raw["great-dial"] as? [String: Any], let hub = Self.point(g["hub_px_at_3x"]),
+              let frame = Self.box(g["cu_frame_3x"]), frame[2] > frame[0] else { return }
+        let scale = Self.cuRef.width / (frame[2] - frame[0])
+        let hubCU = CGPoint(x: (hub.x - frame[0]) * scale, y: (hub.y - frame[1]) * scale)
+        var squash: CGFloat = 1
+        if let axes = Self.point(g["ring_semi_axes_px_at_3x"]), axes.y > 0 {
+            // The painted numeral ring is an ELLIPSE (the dial is seen slightly off-axis), so a
+            // rigid circular sweep would drift off the numerals. Squashing the rotated hand by
+            // the ring's own axis ratio keeps a hand tip on its numeral all the way round.
+            squash = max(0.5, min(1.0, axes.x / axes.y))
+        }
+        dial = DialRig(hub: CGPoint(x: hubCU.x / Self.cuRef.width, y: hubCU.y / Self.cuRef.height),
+                       cuScale: scale, ringSquashX: squash)
+    }
+
+    private func loadClockwork() {
+        guard let raw = json("clockwork-sprites"),
+              let e = raw["sp-pendulum"] as? [String: Any],
+              let rect = Self.box(e["rect_3x"]), let local = Self.point(e["pivot_px_local"]),
+              rect[2] > rect[0], rect[3] > rect[1] else { return }
+        let w = rect[2] - rect[0], h = rect[3] - rect[1]
+        var weak: CGFloat = pendulum.weakDegrees, full: CGFloat = pendulum.fullDegrees
+        if let amps = e["amplitudes_deg"] as? [String: Any] {
+            weak = (amps["weak"] as? NSNumber).map { CGFloat($0.doubleValue) } ?? weak
+            full = (amps["full"] as? NSNumber).map { CGFloat($0.doubleValue) } ?? full
+        }
+        pendulum = Pendulum(image: "sp-pendulum",
+                            rect: CGRect(x: rect[0] / Self.wideRef.width,
+                                         y: rect[1] / Self.wideRef.height,
+                                         width: w / Self.wideRef.width,
+                                         height: h / Self.wideRef.height),
+                            pivot: CGPoint(x: local.x / w, y: local.y / h),
+                            weakDegrees: weak, fullDegrees: full)
+    }
 }
 
 /// State -> visual resolvers for Level 2: base texture selection, the active WIDE overlay

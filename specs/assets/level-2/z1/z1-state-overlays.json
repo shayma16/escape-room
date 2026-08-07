@@ -292,5 +292,66 @@
   ],
   "note": "TRANSIENT cushion-lift echo for the sill CU's cushion corner: the cushion tipped up exactly as ov-cushion-reveal shows it, warped into the sill frame. Composites OVER ov-sill-cat-gone (same rect) and is dropped again once watch B is collected. Keyed to Level2Engine.isWatchBUncollected (p02 solved AND l2-cushion-lifted AND watch B not taken) - the same window that composites ov-cushion-reveal on the cushion CU and the door wide.",
   "composites_over": "ov-sill-cat-gone"
+ },
+ "ov-masterface-door-open": {
+  "base": "cu-master-face",
+  "rect_3x": [
+   1453,
+   0,
+   2048,
+   1506
+  ],
+  "note": "cross-element echo: the workroom door stands behind the master clock and is inside this close-up's crop, so it must read OPEN after p01."
+ },
+ "ov-crate-door-open": {
+  "base": "cu-crate-straw",
+  "rect_3x": [
+   0,
+   0,
+   1375,
+   1153
+  ],
+  "note": "cross-element echo: the straw-crate close-up's crop includes the workroom doorway; it must read OPEN after p01."
+ },
+ "ov-housering-bar-raised": {
+  "base": "cu-house-ring",
+  "rect_3x": [
+   0,
+   670,
+   405,
+   1536
+  ],
+  "note": "cross-element echo: the dormer \u2302-ring clue post crop includes the stair-door time-lock bar, which must read RAISED once the timelock releases."
+ },
+ "ov-cushion-cache-pried": {
+  "base": "cu-cat-cushion",
+  "rect_3x": [
+   11,
+   1389,
+   1048,
+   1536
+  ],
+  "note": "cross-element echo: the cushion close-up's crop includes the dormer floor cache; it must show the pried board + great wheel once p03 is solved."
+ },
+ "ov-cushion-cache-empty": {
+  "base": "cu-cat-cushion",
+  "rect_3x": [
+   11,
+   1389,
+   1048,
+   1536
+  ],
+  "note": "cross-element echo: cache pried AND emptied as it reads in the cushion crop. Shares ov-cushion-cache-pried's rect."
+ },
+ "ov-cache-cushion-lifted": {
+  "base": "cu-floor-cache",
+  "rect_3x": [
+   1450,
+   0,
+   2048,
+   796
+  ],
+  "note": "TRANSIENT cross-element echo: the floor-cache crop includes the cat's bench, and ov-cache-cat-gone already tracks the vacated cushion. This adds the LIFT window (cushion tipped up, watch B on the bench) and composites OVER ov-cache-cat-gone, mirroring ov-sill-cushion-lifted on the sill plate.",
+  "composites_over": "ov-cache-cat-gone"
  }
 }

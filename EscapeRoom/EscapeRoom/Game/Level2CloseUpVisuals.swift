@@ -40,14 +40,29 @@ enum Level2CloseUpVisuals {
         }
     }
 
+    /// An ARMED-ITEM USE target inside a close-up: an on-plate region that proxies a WIDE
+    /// hotspot id. ROUND 8 CLUSTER Q (user parity directive): once an interaction's gate is
+    /// satisfied it must work from BOTH views, so every close-up declares the wide verbs it
+    /// offers instead of hard-coding one hotspot id (build 16's cushion bug) or one item
+    /// (build 16's pry-only cache close-ups).
+    struct UseTarget: Equatable {
+        let id: String        // accessibility identifier, e.g. "use-cat-floor"
+        let hotspot: String   // the WIDE hotspot id this region routes to via useItem
+        let rect: CGRect      // normalized plate rect (whole plate = the default region)
+        let label: String     // VoiceOver label; the art itself is the visible affordance
+    }
+
     /// Everything the host needs to draw a close-up. `focus` is the sub-rect of the plate the
     /// host zooms to (default: the whole plate) — used to make crop-heavy clue plates read.
     struct Plan: Equatable {
         var base: String
         var layers: [Layer] = []
         var targets: [Target] = []
+        var uses: [UseTarget] = []
         var focus: CGRect = CGRect(x: 0, y: 0, width: 1, height: 1)
     }
+
+    static let wholePlate = CGRect(x: 0, y: 0, width: 1, height: 1)
 
     // MARK: - Layer helper
 
@@ -96,6 +111,34 @@ enum Level2CloseUpVisuals {
     static let trayDecoyRect = CGRect(x: 1061/2048.0, y: 1178/1536.0,
                                       width: 118/2048.0, height: 52/1536.0)
 
+    // MARK: - Build-17 interaction regions (measured on the shipped close-up plates)
+
+    /// R8-015 / Cluster Q1: the FLOORBOARDS in front of the cat's bench, inside
+    /// `cu-cat-cushion`. This is the close-up's proxy for the wide `cat-floor` hotspot — the
+    /// hotspot p02's PLACEMENT verb actually lives on. Without it the armed mouse could only
+    /// ever be OFFERED from this close-up, and the user had to back out to the wide scene.
+    static let catFloorRect = CGRect(x: 190/2048.0, y: 1120/1536.0,
+                                     width: 1180/2048.0, height: 380/1536.0)
+    /// The cushion/cat band itself (the OFFER region, which yields the D3 tell).
+    static let catOfferRect = CGRect(x: 300/2048.0, y: 240/1536.0,
+                                     width: 1560/2048.0, height: 620/1536.0)
+    /// R8-019: the painted CRANK ARM + handle on `cu-gear-frame`. The build-16 near-wordless
+    /// pass put a floating `arrow.triangle.2.circlepath` button here, which reads as a
+    /// browser "reload"; the tap target is now the crank art itself.
+    static let crankHandleRect = CGRect(x: 8/2048.0, y: 1030/1536.0,
+                                        width: 320/2048.0, height: 290/1536.0)
+    /// R8-020 sub-item: the painted SETTING CRANK on `cu-great-dial` (the brass arm and knob
+    /// below-right of the hub). Replaces the flat white +/- chrome buttons.
+    static let dialCrankRect = CGRect(x: 862/2048.0, y: 806/1536.0,
+                                      width: 240/2048.0, height: 190/1536.0)
+    /// The oiling target on `cu-gear-frame`: the seized arbor bearing (= the ov-arbor-oiled
+    /// CU rect), so a player oils exactly what they can see change.
+    static var arborRect: CGRect {
+        let r = Level2OverlayCatalog.shared.cuRect("ov-arbor-oiled")
+        return r != .zero ? r : CGRect(x: 40/2048.0, y: 360/1536.0,
+                                       width: 400/2048.0, height: 350/1536.0)
+    }
+
     /// Ring-clue geometry for the wordless pointer annotation (round 8 fix 5): the engraved
     /// 12-notch ring's center + radius on its clue plate, normalized to the plate WIDTH.
     struct RingClue: Equatable {
@@ -138,8 +181,6 @@ enum Level2CloseUpVisuals {
         switch image {
         case "cu-stove-hob":
             if Level2Visuals.tileIITaken(s) { append("ov-stove-tile-taken", to: &layers) }
-        case "cu-crate-straw":
-            if Level2Visuals.tileVIITaken(s) { append("ov-crate-tile-taken", to: &layers) }
         case "cu-sill-tile":
             if Level2Visuals.tileXITaken(s) { append("ov-sill-tile-taken", to: &layers) }
             // CROSS-VIEW ECHO (build 16 gap): this crop's bottom-right corner bakes in the
@@ -156,10 +197,32 @@ enum Level2CloseUpVisuals {
             for g in Level2Graph.rackGears where Level2Visuals.gearMounted(g, s) {
                 append("ov-rack-absent-\(g)", to: &layers)
             }
+        // z4 — R8-021. Both vault plates are crops of the SAME wall and each depicts BOTH
+        // pickups, so each must echo the OTHER element's taken state. Build 16 composited
+        // only a plate's own element, which is why re-opening either close-up after
+        // collecting both still showed a stale winding key.
         case "cu-key-hook":
             if Level2Visuals.windingKeyTaken(s) { append("ov-key-taken", to: &layers) }
+            if Level2Visuals.returnTagTaken(s) { append("ov-keyhook-tag-taken", to: &layers) }
         case "cu-tag-nail":
             if Level2Visuals.returnTagTaken(s) { append("ov-tag-taken", to: &layers) }
+            if Level2Visuals.windingKeyTaken(s) { append("ov-tagnail-key-taken", to: &layers) }
+        // z1 v-master — both plates look through/at the workroom doorway p01 opens.
+        case "cu-master-face":
+            if s.hasSolved(Level2Graph.PuzzleID.dialDoor) { append("ov-masterface-door-open", to: &layers) }
+        case "cu-crate-straw":
+            if Level2Visuals.tileVIITaken(s) { append("ov-crate-tile-taken", to: &layers) }
+            if s.hasSolved(Level2Graph.PuzzleID.dialDoor) { append("ov-crate-door-open", to: &layers) }
+        // z1 v-door — the ⌂-ring clue post crop includes the stair-door time-lock bar.
+        case "cu-house-ring":
+            if s.hasFlag(Level2Graph.Flag.doorBarRaised) { append("ov-housering-bar-raised", to: &layers) }
+        // z2 v-frame — the ⚙-ring clue plate is cropped off the chimney breast and bakes in
+        // the loose cache brick.
+        case "cu-gear-ring":
+            if s.hasSolved(Level2Graph.PuzzleID.cacheChimney) {
+                append(Level2Engine.isOilcanUncollected(s) ? "ov-gearring-brick-pried"
+                                                           : "ov-gearring-brick-empty", to: &layers)
+            }
         default:
             break
         }
@@ -208,6 +271,10 @@ enum Level2CloseUpVisuals {
         var layers: [Layer] = []
         var targets: [Target] = []
         if s.hasSolved(Level2Graph.PuzzleID.catMouse) { append("ov-cache-cat-gone", to: &layers) }
+        // CROSS-ELEMENT ECHO: this crop also shows the cat's bench, so the transient
+        // cushion-lift window (watch B revealed) must read here too. Composites OVER
+        // ov-cache-cat-gone at the same rect, so dropping it restores the flat cushion.
+        if Level2Engine.isWatchBUncollected(s) { append("ov-cache-cushion-lifted", to: &layers) }
         if s.hasSolved(Level2Graph.PuzzleID.cacheDormer) {
             if Level2Engine.isGreatWheelUncollected(s) {
                 append("ov-cache-pried-wheel", to: &layers)
@@ -217,7 +284,9 @@ enum Level2CloseUpVisuals {
                 append("ov-cache-empty", to: &layers)
             }
         }
-        return Plan(base: "cu-floor-cache", layers: layers, targets: targets)
+        return Plan(base: "cu-floor-cache", layers: layers, targets: targets,
+                    uses: [UseTarget(id: "use-floor-cache", hotspot: "floor-cache",
+                                     rect: wholePlate, label: "Loose floorboard")])
     }
 
     /// p04: identical grammar to p03 on the chimney breast.
@@ -233,7 +302,9 @@ enum Level2CloseUpVisuals {
                 append("ov-brick-empty", to: &layers)
             }
         }
-        return Plan(base: "cu-brick-cache", layers: layers, targets: targets)
+        return Plan(base: "cu-brick-cache", layers: layers, targets: targets,
+                    uses: [UseTarget(id: "use-brick", hotspot: "brick",
+                                     rect: wholePlate, label: "Loose brick")])
     }
 
     /// p02 + its yield. THE P0: cat asleep -> cat gone, cushion down (liftable) -> cushion
@@ -245,6 +316,12 @@ enum Level2CloseUpVisuals {
         // SILL, so tile XI must disappear here too once it has been taken. Disjoint rect from
         // every cushion overlay, so it is composited first and order is otherwise irrelevant.
         if Level2Visuals.tileXITaken(s) { append("ov-cushion-sill-taken", to: &layers) }
+        // CROSS-ELEMENT ECHO: the bottom of this crop is the dormer floor cache, so it must
+        // follow p03's pried/emptied state as well as its own cushion state.
+        if s.hasSolved(Level2Graph.PuzzleID.cacheDormer) {
+            append(Level2Engine.isGreatWheelUncollected(s) ? "ov-cushion-cache-pried"
+                                                           : "ov-cushion-cache-empty", to: &layers)
+        }
         if s.hasSolved(Level2Graph.PuzzleID.catMouse) {
             append("ov-cushion-empty", to: &layers)
             if Level2Engine.isWatchBUncollected(s) {
@@ -255,7 +332,17 @@ enum Level2CloseUpVisuals {
                 targets.append(Target(id: "lift-cushion", kind: .liftCushion, rect: cushionLiftRect))
             }
         }
-        return Plan(base: "cu-cat-cushion", layers: layers, targets: targets)
+        // CLUSTER Q1 (R8-015): BOTH p02 verbs are reachable from this close-up — offering the
+        // armed item to the cat (the D3 tell, on the cushion) and SETTING it on the floor in
+        // front of the bench (the placement that actually solves p02). Build 16 wired only the
+        // first, so the mouse could not be placed without backing out to the wide scene.
+        let uses = [
+            UseTarget(id: "use-cat-floor", hotspot: "cat-floor",
+                      rect: catFloorRect, label: "The floor by the bench"),
+            UseTarget(id: "use-cat-cushion", hotspot: "cat-cushion",
+                      rect: catOfferRect, label: "The cat on its cushion"),
+        ]
+        return Plan(base: "cu-cat-cushion", layers: layers, targets: targets, uses: uses)
     }
 
     /// p06: the oiled arbor plus the ACTUAL gear mounted on each post (near-wordless — the
@@ -265,7 +352,16 @@ enum Level2CloseUpVisuals {
         if s.hasFlag(Level2Graph.Flag.arborFreed) { append("ov-arbor-oiled", to: &layers) }
         if let a = s.data.l2GearPostA { append("ov-mount-a-\(a)", to: &layers) }
         if let b = s.data.l2GearPostB { append("ov-mount-b-\(b)", to: &layers) }
-        return Plan(base: "cu-gear-frame", layers: layers)
+        // CROSS-ELEMENT ECHO: the opened z3 wall panel is inside this crop.
+        if s.isZoneUnlocked(Level2Graph.ZoneID.z3BehindDial) {
+            append("ov-gearframe-panel-open", to: &layers)
+        }
+        // PARITY (Cluster Q): p05's oiling verb lives on the wide `arbor` hotspot. The
+        // interactive gear-frame close-up had NO plate-tap at all, so an armed oil can was
+        // dead here even though it worked from the plain cu-gear-frame close-up and the wide.
+        return Plan(base: "cu-gear-frame", layers: layers,
+                    uses: [UseTarget(id: "use-arbor", hotspot: "arbor",
+                                     rect: arborRect, label: "The seized bearing")])
     }
 
     /// p08: oiled bearing, then the key seated in the square socket.
@@ -273,7 +369,9 @@ enum Level2CloseUpVisuals {
         var layers: [Layer] = []
         if s.hasFlag(Level2Graph.Flag.drumOiled) { append("ov-drum-oiled", to: &layers) }
         if s.hasFlag(Level2Graph.Flag.clockWound) { append("ov-drum-key-in", to: &layers) }
-        return Plan(base: "cu-winding-drum", layers: layers)
+        return Plan(base: "cu-winding-drum", layers: layers,
+                    uses: [UseTarget(id: "use-drum", hotspot: "drum",
+                                     rect: wholePlate, label: "The winding drum")])
     }
 
     /// z2 parts cabinet: drawer open with the toy mouse -> emptied once taken.
@@ -291,6 +389,50 @@ enum Level2CloseUpVisuals {
         }
         return Plan(base: "cu-cabinet-drawer", layers: layers, targets: targets)
     }
+
+    // MARK: - Close-up CAMERA FRAMES (the geometry the R8-021 guard gap is closed with)
+    //
+    // Every L2 close-up plate is a CROP of its wide plate (verified: crop + LANCZOS of the
+    // wide reproduces each shipped CU plate to mean |delta| <= 0.2/255). That is why a
+    // close-up so often BAKES IN a neighbouring element — and why "resolve only this plate's
+    // own element" was a structurally incomplete rule. These are the authored crops
+    // (specs/tools/l2_z{1..4}_build.py), normalized to the @3x wide plate, so a test can
+    // enumerate every (close-up x foreign wide overlay) pair instead of relying on someone
+    // remembering to add a row.
+    static let wideRef = CGSize(width: 3840, height: 1920)
+
+    private static func frame(_ x0: CGFloat, _ y0: CGFloat, _ x1: CGFloat, _ y1: CGFloat) -> CGRect {
+        CGRect(x: x0 / wideRef.width, y: y0 / wideRef.height,
+               width: (x1 - x0) / wideRef.width, height: (y1 - y0) / wideRef.height)
+    }
+
+    /// close-up plate name -> (wide view raw value, its camera frame on that wide plate).
+    static let cuFrames: [String: (view: String, frame: CGRect)] = [
+        "cu-slate": ("v-bench", frame(1230, 300, 2630, 1350)),
+        "cu-stove-hob": ("v-bench", frame(2320, 1280, 3160, 1910)),
+        "cu-barometer": ("v-bench", frame(940, 0, 1620, 510)),
+        "cu-master-face": ("v-master", frame(540, 320, 2500, 1790)),
+        "cu-door-dial": ("v-master", frame(1900, 420, 3260, 1440)),
+        "cu-crate-straw": ("v-master", frame(2380, 1230, 3300, 1920)),
+        "cu-sill-tile": ("v-door", frame(2135, 875, 2855, 1415)),
+        "cu-house-ring": ("v-door", frame(1528, 455, 2248, 995)),
+        "cu-cat-cushion": ("v-door", frame(2450, 1085, 3410, 1805)),
+        "cu-floor-cache": ("v-door", frame(1900, 1140, 2940, 1920)),
+        "cu-timelock": ("v-door", frame(620, 420, 1820, 1320)),
+        "cu-gear-frame": ("v-frame", frame(660, 660, 2100, 1740)),
+        "cu-gear-rack": ("v-frame", frame(1905, 940, 2705, 1540)),
+        "cu-gear-ring": ("v-frame", frame(2560, 940, 3120, 1360)),
+        "cu-brick-cache": ("v-frame", frame(2470, 935, 3030, 1355)),
+        "cu-clockrow-plates": ("v-clockrow", frame(760, 180, 3000, 1860)),
+        "cu-cabinet-drawer": ("v-clockrow", frame(2050, 1095, 3150, 1920)),
+        "cu-display-case": ("v-clockrow", frame(620, 840, 2060, 1920)),
+        "cu-great-dial": ("v-dial", frame(900, 300, 2596, 1572)),
+        "cu-winding-drum": ("v-dial", frame(0, 1030, 1187, 1920)),
+        "cu-hatch-wheels": ("v-dial", frame(2150, 870, 3550, 1920)),
+        "cu-tag-nail": ("v-vault", frame(500, 350, 1400, 1025)),
+        "cu-key-hook": ("v-vault", frame(700, 280, 1620, 970)),
+        "cu-shelf": ("v-vault", frame(1700, 300, 2980, 1260)),
+    ]
 
     /// Ring-pointer geometry: where the hour hand's TIP should land for a given ring, as a
     /// fraction of the ring radius (inside the notch circle, unmistakably "this direction").

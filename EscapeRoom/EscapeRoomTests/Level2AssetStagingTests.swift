@@ -108,6 +108,20 @@ final class Level2AssetStagingTests: XCTestCase {
             "gear-16", "gear-36", "gear-72", "die-bigben", "die-fuji", "hand-hour",
             // Close-up plates newly reachable this round.
             "cu-cabinet-drawer", "cu-key-hook",
+            // BUILD 17 / R8-020 (user ruling): the z3 clockwork runs on AUTHORED sprite art —
+            // the great dial's two hands and the brass pendulum cutout. If any of these stop
+            // shipping the mechanism silently falls back to nothing on screen.
+            "hand-minute", "sp-pendulum",
+            // BUILD 17 / R8-021 + the systematic sweep behind it: the CROSS-ELEMENT close-up
+            // echoes. Each of these clears a NEIGHBOURING element that its host plate also
+            // depicts; without them a close-up shows an item the player is already carrying
+            // (the reported stale winding key) or a door the level has already opened.
+            "ov-keyhook-tag-taken-cu", "ov-tagnail-key-taken-cu",
+            "ov-masterface-door-open-cu", "ov-crate-door-open-cu",
+            "ov-housering-bar-raised-cu", "ov-gearring-brick-pried-cu",
+            "ov-gearring-brick-empty-cu", "ov-gearframe-panel-open-cu",
+            "ov-cushion-cache-pried-cu", "ov-cushion-cache-empty-cu",
+            "ov-cache-cushion-lifted-cu",
         ]
         for name in required {
             XCTAssertNotNil(GameAssetLoader.shared.image(named: name), "missing/unloadable staged asset: \(name)")
@@ -136,5 +150,32 @@ final class Level2AssetStagingTests: XCTestCase {
             XCTAssertNotEqual(Level2OverlayCatalog.shared.cuRect(key), .zero,
                               "no CU rect for \(key) — z1-cat-face.json must ship and load")
         }
+        // BUILD 17 cross-element echoes (R8-021 + the systematic sweep).
+        for key in ["ov-keyhook-tag-taken", "ov-tagnail-key-taken", "ov-masterface-door-open",
+                    "ov-crate-door-open", "ov-housering-bar-raised", "ov-gearring-brick-pried",
+                    "ov-gearring-brick-empty", "ov-gearframe-panel-open",
+                    "ov-cushion-cache-pried", "ov-cushion-cache-empty",
+                    "ov-cache-cushion-lifted"] {
+            XCTAssertNotEqual(Level2OverlayCatalog.shared.cuRect(key), .zero,
+                              "no CU rect for the \(key) echo — it would composite NOTHING")
+        }
+    }
+
+    /// BUILD 17: the authored sprite RIGS ship and load. The runtime reads its pendulum rect,
+    /// pivot and amplitudes — and the dial hub the hands turn on — from these files rather
+    /// than from constants, so a missing rig would silently fall back to defaults.
+    func testClockworkSpriteRigsShipAndLoad() {
+        for resource in ["hand-sprites", "clockwork-sprites"] {
+            XCTAssertNotNil(Bundle.main.url(forResource: resource, withExtension: "json",
+                                            subdirectory: "GameAssets/level-2")
+                            ?? Bundle.main.url(forResource: resource, withExtension: "json"),
+                            "\(resource).json must ship in the bundle")
+        }
+        let rig = Level2SpriteCatalog.shared
+        XCTAssertNotEqual(rig.pendulum.rect, .zero)
+        XCTAssertGreaterThan(rig.pendulum.fullDegrees, 0)
+        XCTAssertGreaterThan(rig.hourHand.length, 0)
+        XCTAssertGreaterThan(rig.minuteHand.length, 0)
+        XCTAssertGreaterThan(rig.dial.cuScale, 1.0, "the CU crop is a zoom of the wide plate")
     }
 }

@@ -109,18 +109,25 @@ final class Level2Coordinator: ObservableObject {
     /// order-free and idempotent (the scene guards against restarting a running animation).
     private func updateDialMechanismAnimations() {
         let m = Level2Visuals.dialMechanism(state)
+        // BUILD 17 (R8-020): rect + pivot + amplitudes come from the AUTHORED sprite rig, and
+        // the absent patch is registered against the SAME rect, so the paint-out can never
+        // again miss part of the painted pendulum (the build-16 "double pendulum").
+        let rig = Level2SpriteCatalog.shared.pendulum
         let pendRect = Level2OverlayCatalog.shared.wideRect("ov-pendulum-absent")
         if m.pendulumSwinging, pendRect != .zero {
-            // Dark column background hides the at-rest pendulum on the base plate, then the
-            // procedural bob swings over it (weak when unwound, fuller once wound).
+            // Background patch hides the at-rest pendulum on the base plate, then the authored
+            // brass cutout swings over it (weak when unwound, fuller once wound).
             scene.setOverlay("ov-pendulum-absent", imageNamed: "ov-pendulum-absent-wide",
                              rectNormalized: pendRect, zPosition: 15)
-            scene.setPendulumSwing(active: true, rect: pendRect,
-                                   amplitudeDegrees: m.pendulumFullSwing ? 11 : 5,
+            scene.setPendulumSwing(active: true, rect: rig.rect, pivot: rig.pivot,
+                                   imageNamed: rig.image,
+                                   amplitudeDegrees: m.pendulumFullSwing ? rig.fullDegrees
+                                                                        : rig.weakDegrees,
                                    period: m.pendulumFullSwing ? 1.6 : 2.3)
         } else {
             scene.setOverlay("ov-pendulum-absent", imageNamed: nil, rectNormalized: .zero)
-            scene.setPendulumSwing(active: false, rect: .zero, amplitudeDegrees: 0, period: 1)
+            scene.setPendulumSwing(active: false, rect: .zero, pivot: .zero, imageNamed: nil,
+                                   amplitudeDegrees: 0, period: 1)
         }
         let hamRect = Level2OverlayCatalog.shared.wideRect("ov-hammer-absent")
         if m.aliveWrongTime, hamRect != .zero {
@@ -257,7 +264,12 @@ final class Level2Coordinator: ObservableObject {
 
         // z2 v-frame
         case (.frame, "gear-frame"): present(.gearFrame, from: hotspotID)
-        case (.frame, "arbor"): present(.plain(image: "cu-gear-frame"), from: hotspotID)
+        // PARITY (Cluster Q): the arbor and the frame are the SAME plate. Build 16 opened a
+        // second, PLAIN close-up here whose plan resolved no layers at all — so the oiled
+        // bearing (and every mounted gear) was invisible on the very close-up the walkthrough
+        // sends you to for p05, and no armed verb was wired on the interactive one. One plate,
+        // one close-up, one state resolver.
+        case (.frame, "arbor"): present(.gearFrame, from: hotspotID)
         case (.frame, "gear-rack"): present(.plain(image: "cu-gear-rack"), from: hotspotID)
         case (.frame, "brick"): present(.chimneyCache, from: hotspotID)
         // The ⚙+ring12 carve beside the loose cache brick: the p04 clue plate (clu-ring-chimney).
@@ -353,24 +365,41 @@ final class Level2Coordinator: ObservableObject {
                 present(.catCushion, from: "cat-floor")   // cat gone; the cushion is now liftable
                 return true
             }
-            // A non-mouse item on the floor is a reach: generic refusal (returns unspent).
-            showCatResponse(.refusal); return true
+            return false        // R8-016: anything but the mouse is INERT here (see below)
         // Cat: offering an armed item DIRECTLY to the cat (D3/D4 — never executes p02).
+        //
+        // R8-016 (user CONFIRMED override of approved rev-1.3 playtest tweak 2): ONLY the tin
+        // mouse gets a reaction. rev-1.3 gave every other item a slow-blink refusal, but on
+        // device the two reads were both "the cat opens one eye", so the tell stopped
+        // signalling "the mouse is the key". Non-mouse offers are now fully inert — no
+        // overlay, no sound, item unspent — and the strong tell is exclusive to the mouse.
         case (.door, "cat-cushion"):
-            showCatResponse(Level2Engine.offerItemToCat(itemID) == .mouseTell ? .mouseTell : .refusal)
+            guard Level2Engine.offerItemToCat(itemID) == .mouseTell else { return false }
+            showCatResponse(.mouseTell)
             return true   // intended in-world reaction; item returns unspent
+        // p08 drum: oil / wind. PARITY (round-8 Cluster Q): this used to exist ONLY inside the
+        // drum close-up, so an armed oil can or key tapped on the drum in the WIDE scene was
+        // silently dead. Routing it through useItem gives both views the same verb.
+        case (.dial, "drum"):
+            return useOnDrum(itemID)
         default:
             return false
         }
     }
 
     /// R8-011(1): play the cat's reaction as a VISIBLE beat, not just a sound. The tell art
-    /// (`ov-cat-mouse-tell` eyes + tail, `ov-cat-slow-blink`) is authored on the cushion
-    /// close-up plate, so the offer opens/keeps that close-up and composites the facial key
-    /// for `catResponseDuration`, then clears. No new state, no new art.
+    /// (`ov-cat-mouse-tell` eyes + tail) is authored on the cushion close-up plate, so the
+    /// offer opens/keeps that close-up and composites the facial key for
+    /// `catResponseDuration`, then clears. No new state, no new art.
+    ///
+    /// R8-016: only `.mouseTell` ever reaches here now — a non-mouse offer is inert and
+    /// `useItem` returns false before calling this. `.refusal` is retained as the engine's
+    /// classification (and for the tests that assert the discrimination) but is never
+    /// presented.
     func showCatResponse(_ response: L2CatResponse) {
+        guard response == .mouseTell else { return }
         catResponse = response
-        SoundManager.shared.play(response == .mouseTell ? .tick : .refusal)
+        SoundManager.shared.play(.tick)
         if activeCloseUp != .catCushion { present(.catCushion, from: "cat-cushion") }
         catResponseToken += 1
         let token = catResponseToken
@@ -401,6 +430,24 @@ final class Level2Coordinator: ObservableObject {
     func useArmedItemInCloseUp(defaultHotspot: String? = nil) {
         guard let armed = interaction?.armedItem, let origin = defaultHotspot ?? closeUpOrigin else { return }
         if useItem(armed, on: origin) { interaction?.disarm() }
+    }
+
+    /// ROUND 8 CLUSTER Q — close-up ↔ wide interaction PARITY (user directive, R8-015/R8-018).
+    ///
+    /// A close-up plan declares the WIDE hotspot ids it proxies as `UseTarget`s, and this is
+    /// the single dispatch point for them: the armed item runs through the SAME `useItem`
+    /// switch a wide tap uses, so a verb can never exist in one view and not the other again.
+    ///
+    /// Build 16's failure was structural, not a missing case: the cushion close-up hard-coded
+    /// `useItem(armed, on: "cat-cushion")` while p02's PLACEMENT verb lives on the sibling
+    /// hotspot `cat-floor`, so from the close-up the armed mouse could only ever produce the
+    /// tell — placement was unreachable, which is exactly what cost the user real time.
+    @discardableResult
+    func runCloseUpUse(_ target: Level2CloseUpVisuals.UseTarget) -> Bool {
+        guard let armed = interaction?.armedItem else { return false }
+        guard useItem(armed, on: target.hotspot) else { return false }
+        interaction?.disarm()
+        return true
     }
 
     /// p01: seat a tile from the dial-door close-up.
