@@ -24,11 +24,14 @@ game is near-wordless: no text prompts, no hint system.
   of the loose parts can be picked up.
 - A heavy flat-blade screwdriver standing in a bench rack. It can be taken.
 - A chalk slate propped on the bench, drawn with a wordless diagram: a circle with a
-  crank handle sketched on it, ringed by twenty-four chalk tally marks; a line from it
-  to a small toothed circle marked XII; meshing that, a larger toothed circle chalked
-  only with a "?"; on the same axle as the "?", a small toothed circle marked VIII;
-  meshing that, another toothed circle chalked "?"; and finally a circle bearing a
-  single notch, with a little door sketched beside it. Legible in close-up.
+  crank handle sketched on it, ringed by twenty-four chalk tally marks drawn in groups
+  of five — four uprights struck through by a diagonal fifth stroke, four such groups
+  and four single strokes left over; a line from it to a small toothed circle marked
+  XII; meshing that, a larger toothed circle chalked only with a "?"; on the same axle
+  as the "?", a small toothed circle marked VIII; meshing that, another toothed circle
+  chalked "?"; and finally a circle bearing a single notch and, set clearly apart from
+  it on the same rim, one lone tally stroke of the same kind as the twenty-four, with a
+  little door sketched beside the circle. Legible in close-up.
 - A small iron stove, cold. Lying on the hob: a brass numeral tile engraved **II**. It
   can be taken.
 - The clockmaker's coat hanging on a peg. Its pockets can be searched. In one pocket: a
@@ -72,11 +75,17 @@ game is near-wordless: no text prompts, no hint system.
 - On the dormer windowsill: a numeral tile engraved **XI**. It can be taken.
 - Carved into the beam beside the dormer: a small house symbol (⌂), ringed by an
   engraved circle of twelve notches, like the hour positions of a clock face. Legible
-  in close-up.
+  in close-up. (At the start the ring is bare. Later in the game a single clock hand
+  may be found lying across it, pivoted at its hub and pointing out at one of the
+  twelve notches; when it is there it is there in both the room view and the close-up,
+  and it is never there in one and absent from the other.)
 - The floorboards below and around the dormer are uniform; nothing about any single
-  board stands out. Boards can be pried at with a suitable tool. (One board in this
-  area, if it ever yields, comes up on a shallow cavity holding a large bronze gear
-  wheel — sixty-four countable teeth, "64" stamped on its face. The wheel can be
+  board stands out. (At the start every board is identical. Later in the game a small
+  chalk house mark (⌂) may be found drawn on the face of one of them, in the room view
+  and in the close-up alike; the mark is not there at the start, and it is gone once
+  that board has been lifted.) Boards can be pried at with a suitable tool. (One board
+  in this area, if it ever yields, comes up on a shallow cavity holding a large bronze
+  gear wheel — sixty-four countable teeth, "64" stamped on its face. The wheel can be
   taken.)
 
 ---
@@ -89,9 +98,13 @@ game is near-wordless: no text prompts, no hint system.
   an exposed two-stage gear frame in front of it.
 - The gear frame, left to right: a fold-out hand crank carrying a fixed brass pinion
   stamped **XII** (twelve countable teeth); an empty square-arbor post ("post A") that
-  carries a second fixed pinion on the same axle, stamped **VIII** (eight countable
-  teeth); and a second empty square-arbor post ("post B") connected to a cam whose
-  linkage runs into the wall behind the mural.
+  carries a small second pinion fixed on the same axle, its eight teeth countable and
+  **VIII** stamped around the face of that pinion itself; and a second empty
+  square-arbor post ("post B") connected to a cam whose linkage runs into the wall
+  behind the mural. With both posts bare, the run from crank to cam reads as a single
+  line of drive interrupted by two clear gaps — one at each post — and each gap is
+  visibly sized to take a wheel: the crank's pinion and post A's pinion are turning
+  against nothing at all.
 - The frame's main bearing shows a bloom of rust; the crank rocks a few degrees and
   jams. (If the seizure is ever freed, the crank turns.)
 - A gear rack bolted to the wall beside the frame, holding six loose brass gears of
@@ -106,11 +119,27 @@ game is near-wordless: no text prompts, no hint system.
   the mural: the figures move, visibly faster or slower depending on which gears are
   mounted. At the end of each full cam revolution, something inside the wall ratchets
   and slips back with a single clack — the same clack every time.
+- Chalked on the frame's own timber cheek, beside the fold-out crank, in the same hand
+  as the slate in the attic: a block of twenty-four tally marks grouped in fives,
+  standing at the crank end of the frame, and one lone matching tally stroke down at
+  the cam end. Readable in the room view and in the close-up.
+- Below that block, separated from it by a chalked baseline, a second, empty stretch of
+  cheek. While the crank is turning, chalk strokes appear there one after another — one
+  full stroke for each complete turn of the crank in the cam's current cycle, grouped in
+  fives as they accrue, with any leftover part-turn shown as a single half-height
+  stroke. The accrual can be skipped ahead, and the finished block stays drawn and
+  readable at a glance after the crank stops. It clears the moment any gear is mounted
+  or taken off either post, and starts again from nothing on the next crank. Nothing
+  about it ever glows, flashes or changes colour.
 - The chimney breast passes through this room. One brick bears a small carved gear
-  symbol (⚙) ringed by an engraved twelve-notch circle, legible in close-up. The
-  surrounding bricks are uniform; nothing about any single brick stands out. Bricks
-  can be pried at with a suitable tool. (One brick here, if it ever yields, comes loose
-  on a recess holding a long-spout oil can. The can be taken.)
+  symbol (⚙) ringed by an engraved twelve-notch circle, legible in close-up. (At the
+  start that ring is bare. Later in the game a single clock hand may be found lying
+  across it, pivoted at its hub and pointing out at one of the twelve notches; as with
+  the ring in the attic, it is either present in both the room view and the close-up or
+  absent from both.) The surrounding bricks are uniform; nothing about any single brick
+  stands out, at any point in the game. Bricks can be pried at with a suitable tool.
+  (One brick here, if it ever yields, comes loose on a recess holding a long-spout oil
+  can. The can be taken.)
 
 ### View: World-clock row
 - A row of four dead wall clocks, every one with its hands removed — bare faces with

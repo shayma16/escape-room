@@ -256,6 +256,12 @@ soft sun slash across the bench top.
 - **Chalk slate** — propped upright on the bench, center, on a thirds intersection: the
   view's focal object. Diagram fully inside the dual-safe zone. Chalk on slate is the
   highest-contrast surface in the room (bone on blue-black).
+  Rev 1.4: the 24 tallies are **grouped in fives** (four uprights + a diagonal fifth
+  stroke; four groups plus four singles — exact count still 24, contract-asserted), and
+  the cam circle carries **one matching tally stroke** on its rim beside its notch. The
+  cam tally must be **clearly separated from the 24-block** so no player reads a
+  25-total, and the diagonal must read as a **fifth stroke**, never as a strike-out or
+  cancellation (RC-3).
 - **Screwdriver in bench rack** — left bench end, heavy flat blade catching a rim; its
   silhouette must read "pry tool," rhyming later with boards and bricks.
   *States: present / taken.*
@@ -317,11 +323,21 @@ Town rooftops hazy through the glass.
   height; shadowed groove with rim-caught edges; crisp in close-up.
 - **Floorboards** — run front-to-back so their seams are vertical in view and boards
   are unambiguous countable columns; **at least five boards visible to the RIGHT of the
-  ring's vertical**, all inside the dual-safe zone, ALL uniform. The cache board (third
-  right) has **NO independent visual tell** in any state or view — identical boards, by
-  design (the gate carries the info; D10's faint-tell is animation/SFX only, zero
-  persistent pixels).
-  *Cache states (close-up + wide overlay): flush / pried-open with great wheel / empty.*
+  ring's vertical**, all inside the dual-safe zone, ALL uniform. **PRE-CLUE**
+  (while `clu-watch-a` is unviewed) the cache board (third right) has **NO independent
+  visual tell** — identical boards, by design (the gate carries the info; D10's
+  faint-tell is animation/SFX only, zero persistent pixels). **REV 1.4 SANCTIONED
+  REVERSAL of the rev-1.0 "in any state or view" contract, for p03 ONLY (user-approved
+  A4):** once `clu-watch-a` has been viewed, the cache board carries a small **chalk ⌂**
+  — the canonical `die-house` glyph in chalk value `#E8E4DA` — composited inside the
+  measured `ov-cache-*` rect (x 0.6375–0.7656) in **both** the wide and the close-up,
+  and the ⌂ ring carries the canonical hour hand at the 3-notch in **both** views (D12).
+  The chalk must hold **≥ 3:1 luminance contrast against worn timber in raking light in
+  both views**; discrimination is glyph shape + luminance, **never** the warm/cool hue
+  difference between chalk and timber (RF-7a). The mark is suppressed the moment the
+  board is pried.
+  *Cache states (close-up + wide overlay): **unmarked (pre-clue) / marked** / pried-open
+  with great wheel / empty.*
 - **Stair door** — *states: bar seated / bar raised; door open onto stairs in evening
   light (win).* Bar-rattle and D10 board-shift are animation notes, not art states.
 **Close-ups:** ⌂ ring · cat/cushion (interactive) · floor cache · time-lock housing
@@ -336,22 +352,49 @@ breast** fills the right third, the **⚙ ring** carved on one brick at eye heig
 Cool key light, warm doorway spill from frame-right.
 **Placement intent:**
 - **Gear frame** — left: fold-out crank carrying the fixed pinion stamped **XII**;
-  empty square-arbor **POST A** (with its fixed coaxial pinion stamped **VIII**);
-  empty square-arbor **POST B** driving the cam. The drive path crank→A→B→cam must be
-  visually traceable as a line. **Rust bloom** at the main bearing reads at wide
+  empty square-arbor **POST A**, carrying a **visibly depicted 8-tooth coaxial pinion
+  with VIII stamped on that pinion's own face annulus** (not on a bracket panel — the
+  second stage must be legible as mechanism, or `(A/12)×(B/8)` is unrecoverable from the
+  machine); empty square-arbor **POST B** driving the cam. The drive path must read as
+  **one line of drive with two identified gaps, at posts A and B, each gap visibly sized
+  to receive a wheel** — with the posts empty the crank pinion and the post-A pinion
+  **mesh with nothing and must not be drawn as if they do** (a closed train makes the
+  empty posts read as decorative and destroys the mounting affordance). Cross-reference
+  standing **R3** (slotted / adjustable arbors, so wheels of different diameters
+  plausibly mesh once mounted). **Rust bloom** at the main bearing reads at wide
   (oxide `#8A4B2A` + matte texture vs the surrounding worked metal).
   *States: seized / oiled (sheen + cleared bloom at the bearing only); per-post mounted
   overlays for all six rack gears AND the great wheel (either post — 14 overlays);
   crank fold-out; mural run (animation at variable speed); the one correct full cycle
   (sun crosses the town, watchman strikes the bell — key poses); panel shut / swinging
   / latched open onto the z3 doorway.*
+- **Chalk crib + live tally, frame cheek (rev 1.4)** — the clockmaker's own chalk on the
+  frame's left timber cheek beside the fold-out crank: a **24-tally block grouped in
+  fives** at the crank station and a **single matching tally** at the cam station (F3),
+  with the **live tally block** below it, separated by a visible baseline (D13). Inside
+  the dual-safe zone, clear of the 72 pt iPad pill band, and not overlapping `gear-rack`
+  (left of ≈ x 0.65), `ov-brick-*` (x 0.6711–0.7849) or the `gear-ring` carve
+  (x 0.7350–0.8050, y 0.4620–0.5960). **≥ 3:1 luminance against the timber in both wide
+  and close-up; hue is never load-bearing** (RF-7a). **The crib and the live block are
+  separated by POSITION only — never by hue or chalk value ("old chalk / fresh chalk" is
+  prohibited) — and must never read as one continuous block of 24+N strokes** (RF-7b).
+  **No glow, flash or colour change when the live count reaches 24** (RF-7c). Max 48
+  strokes.
 - **Gear rack** — six brass gears on pegs: **16, 24, 36, 40, 48, 72** — distinct
   diameters proportional to tooth count, stamped Arabic numerals, and **exactly
   countable teeth** (4.4). Differentiation is size + stamp + count — NEVER color; all
   six share the same brass finish. *States: per-gear on-rack / absent.*
 - **Chimney breast** — uniform bricks; ⚙ ring carved on one; **bricks to the LEFT of
   the ring fully visible and inside the safe zone** (9-o'clock = directly left). The
-  cache brick has NO independent visual tell (same rule as 6.3).
+  cache brick has **NO independent visual tell in ANY state or view** — identical to its
+  neighbouring bricks, by design, **before and after** `clu-watch-b` is viewed. **This
+  rule is stated here in full and is NOT a reference to §6.3: the rev-1.4 chalk-mark
+  exception is p03-ONLY (user ruling A5) and does NOT apply to the chimney brick.** The
+  gate carries the information; D10's faint-tell is animation/SFX only, zero persistent
+  pixels. **Rev 1.4 (RC-1) adds one thing here and one thing only:** once `clu-watch-b`
+  has been viewed, the **⚙ ring** carries the canonical hour hand at the **9-notch** in
+  the **wide** view (`z2-frame-base`) as well as in `cu-gear-ring` — a wide↔close-up
+  parity fix on the ring carve, **not** a mark on any brick.
   *Cache states: flush / pried-open with oil can / empty.*
 **Close-ups:** gear frame (interactive — pinion stamps XII/VIII legible, posts, cam) ·
 gear rack (teeth countable at iPhone scale) · ⚙ ring · brick cache.
@@ -631,9 +674,14 @@ posts A/B. The butterfly key rhymes with nothing — that mismatch is its messag
 6. **No Victorian-postcard sepia.** The warmth is golden-hour *light* over a full
    palette (cool steel, slate, sky, verdigris survive intact) — never a global
    brown-tinted grade. If a candidate looks antiqued/monochrome-warm, reject.
-7. **No visual tell on the cache board or brick in ANY state or pre-open frame** —
-   identical to neighbors (D10 is animation/SFX only). No loose edges, no gaps, no
-   discoloration.
+7. **No visual tell on the cache board or brick that is caused by prying, and none at
+   all on the chimney brick.** Specifically: (a) **p04's chimney brick — absolute,
+   unchanged:** no independent visual tell in ANY state or view, identical to neighbours
+   before and after `clu-watch-b`. (b) **p03's cache board — pre-clue only (rev 1.4
+   sanctioned reversal, user-approved A4):** identical to neighbours while `clu-watch-a`
+   is unviewed; once it is viewed the board carries the chalk ⌂ per §6.3, in both views.
+   (c) **Both, always:** no loose edges, no gaps, no discoloration, and no persistent
+   visual change **caused by a pry attempt** — D10 remains animation/SFX only.
 8. **No keyhole on the stair door's time-lock housing** (D8) — a smooth plate; and no
    keyholes invented anywhere else.
 9. **No chalk sketch beside the z3 setting crank** — the D9 easing valve is DORMANT;
