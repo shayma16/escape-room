@@ -2682,3 +2682,19 @@ Retrospective — the user is reporting back on an earlier moment in this same s
 - FOR THE FIX PASS: this should generalize — audit ALL L2 collect/place/use targets for
   close-up<->wide parity rather than fixing them one at a time (the standing L1 lesson about
   treating these as systemic classes).)
+
+### R8-019 — status: logged (BUILD 16)
+> the folding crank button looks like a refresh button and it's weird, out of place. i was confused. i think it should be clearer that this is used to interact with the crank
+
+(context — factual, no classification: z2 gear-frame close-up, build 16, iPad, Level 2.
+- DEFECT: the CRANK interaction affordance — replaced in the build-16 near-wordless pass
+  (text "Crank" label -> pictogram/SF Symbol) — now reads as a REFRESH icon (likely a
+  circular-arrows SF Symbol such as arrow.clockwise / arrow.triangle.2.circlepath), which
+  reads as UI chrome ("reload") rather than a diegetic "turn the crank" control. User found
+  it weird/out-of-place/confusing.
+- USER DIRECTIVE: make it clearly a crank interaction.
+- FIX-PASS OPTIONS (for the owning agent to pick, not chosen here): anchor the affordance ON
+  the crank-arm art itself (tap the crank handle = turn it, no floating button), or use a
+  crank-handle pictogram from the canonical art rather than a generic circular-arrow symbol.
+- NOTE: this is fallout from the text->pictogram swap — the near-wordless rule was satisfied,
+  but the chosen symbol carries a conflicting UI idiom. Existing art.)
