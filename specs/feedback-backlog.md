@@ -2657,6 +2657,15 @@ jargon — the user didn't know what it referred to; the walkthrough step needs 
 plain-language gloss ("the rusty ring where the crank shaft enters the frame"). **Severity
 downgraded from potential-blocker to feedback-clarity + docs wording.**
 
+**USER VISUAL CHECK (final):** after the ping, the bearing looks IDENTICAL — "no it doesn't
+look shinier or anything." So the ov-arbor-oiled state visual is NOT legible on device:
+either the overlay isn't compositing on the view the user is looking at (verify BOTH
+cu-gear-frame and the wide echo composite it — the overlay exists with passing seam scores
+from batch 4), or its bearing-only scope is too subtle at play scale to register as a change.
+Fix-pass: verify the overlay renders in both views; if it renders, STRENGTHEN the visual
+(bigger rust-clear delta / brighter sheen) so an applied tool visibly changes the scene.
+Classification stays feedback-clarity (p05 fires; confirm via gear-mounting).
+
 ### R8-018 — status: logged (BUILD 16) — retrospective report
 > by the way remember when i had to pick the oil can from the brick wall, i couldn't pick it up from the close up of the brick wall, only from the wider scene, i think both options should work if the clue had already been viewed
 
