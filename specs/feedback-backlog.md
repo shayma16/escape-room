@@ -2719,3 +2719,19 @@ Level 2. TWO threads:
   SCREENSHOT PENDING.
 - ALSO FOR THE FIX PASS: verify WHEN the pendulum should be startable (p10 ordering vs
   clicking it early) — the user clicked and it simply started; confirm the intended gating.)
+
+### R8-021 — status: logged (BUILD 16)
+> i was able to get into the hatch. and immediately picked up both the clock tag on the wall and the key next to it. they're now in my inventory. clicking the spot where they used to be shows the stale key there
+
+(context — factual, no classification: z4 vault (down the hatch), build 16, iPad, Level 2.
+- PROGRESS / POSITIVE: the hatch opened — p06 gear train + panel + the z3 route all worked —
+  and both z4 pickups (return tag + winding key) were collected; manual pickups fine.
+- DEFECT: after collecting, tapping the wall spot where they hung opens the CLOSE-UP still
+  showing the STALE KEY — the key/tag-taken states aren't applied in the CLOSE-UP (the wide
+  presumably updated). Same close-up-vs-wide family as R8-010.
+- FOR THE FIX PASS: z4's key/tag-taken CU overlays went through the smear->repaint saga
+  (batch 4 -> tight-NB fix), so verify (a) whether the build-16 close-up resolver has a
+  `case` for the z4 key/tag close-ups at all, and (b) whether the repainted
+  ov-key-taken / ov-tag-taken (-cu names) are staged and wired — the taken states EXIST as
+  art. This is the same class the 22-row guard was built for: check why the guard didn't
+  cover the z4 hook/nail close-ups (possible coverage gap in the state-flip table).)
