@@ -2748,3 +2748,22 @@ Build 16, iPad, Level 2.
   NB-edit look against the surrounding art; or the close-up-vs-wide family again.
 - UNSTATED: which view the user saw it in. ASK THE USER AT PROCESSING rather than assume.
 - Cosmetic severity per the user's own phrasing ("a bit off").)
+
+### R8-completion — status: logged (BUILD 16) — LEVEL 2 CLEARED + design signal
+> ok i cleared it but i don't think i would've been able to do it without the guide to be honest
+
+(context — factual, no classification: build 16, iPad, Level 2.
+- MILESTONE: LEVEL 2 COMPLETED END-TO-END — p01 through p11, including the full endgame
+  chain (oil + wind, mirrored-dial time set, pendulum, timelock release, exit). The build-16
+  fix set held through a complete playthrough.
+- DESIGN SIGNAL (significant, for the Designer/Producer at processing): the user does not
+  believe the level is completable WITHOUT the walkthrough — guide-dependence as an overall
+  difficulty / clue-legibility verdict on the level.
+- Context for processing: combine with R8-009 (p03 unsolvable even WITH the guide,
+  pre-clarification) and this round's other clue-clarity items. The clue->action chain likely
+  needs a discoverability pass; WHICH clues failed to land is NOT yet known (candidates only:
+  the timezone-offset chain, the mirror 7:20 derivation, gear ratios).
+- ASK THE USER AT PROCESSING: which specific steps felt guide-mandatory. Do not infer.
+  Reference point: L1 was solved blind in its playtest.
+- NOTE: the design targeted 6.5 difficulty with fair clues, so "needs the guide" points at
+  clue LEGIBILITY rather than the puzzle logic — to be confirmed with the user, not assumed.)
