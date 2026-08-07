@@ -2812,3 +2812,108 @@ FOR THE DESIGNER AT PROCESSING: the failing clues cluster around **MULTI-STEP IN
 (ratio math, behavioral deduction, mirror transform) while **single-lookup** clues (find
 symbol -> match position) worked. Scope the legibility fixes on the three cited beats + p03,
 with a **Blind Playtester re-check mandatory** per the balance-change rule.
+
+---
+
+### ROUND 8 LATE (BUILD 16) — PROCESSING TRIGGERED (2026-08-07) — user said "process it"
+
+**PROCESSED 2026-08-07 (Feedback Intake). Routed changelist:
+`specs/levels/level-2/build17-routed-changelist.md` (handed to Producer; pending GATE 1
+user review before execution).** Batch = R8-014..R8-022 + R8-completion, all on build 16,
+all screenshots received.
+
+**No progression blockers this batch** — the level was cleared end-to-end on build 16, so
+severity ceiling is **major**. The build-15 P0 (cushion) and Clusters A/B are
+device-confirmed fixed (R8-014, R8-015, R8-021 positives).
+
+**THREE CORRECTIONS to the Producer's clustering read (from independent code verification):**
+
+1. **Cluster P is NOT "authored sprites exist but were left unstaged."** The procedural
+   rendering is a **deliberate, documented build-16 choice**. `RoomScene.swift`:
+   > "These are drawn PROCEDURALLY (SKShapeNode rod + bob), consistent with L2's other
+   > moving parts being rendered procedurally (the mirrored clock hands are SwiftUI capsules)
+   > rather than from bespoke sprite art."
+
+   So the flat mustard bob and the dark hand strokes are the intended code path, not a
+   loading failure. That makes P **two different things**: (a) an **art-direction decision**
+   — procedural shapes vs authored sprite art — which is a real choice with cost/scope
+   implications and is **not mine to make**; and (b) genuine **registration/anchor bugs**
+   that exist either way (see 1b). Routing changes accordingly: it is not a wiring fix.
+1b. **The `ov-pendulum-absent` suppression IS being invoked** — `Level2Coordinator` sets it
+   whenever `pendulumSwinging` and `pendRect != .zero`, and since the swing renders at all,
+   that branch demonstrably ran. So "overlay not applied" is wrong; the painted pendulum
+   still showing (to the **right** of the animated one, per the screenshot) points to the
+   absent-patch **rect being mis-registered against the current plate**, or the
+   `ov-pendulum-absent-wide` image not being staged. Same family as the L1 R7-001 stale-rect
+   bug. On the dial: the mis-anchored minute hand (not pivoting from the hub) is a real bug
+   independent of the sprite-vs-procedural decision.
+
+2. **Cluster T — item discrimination ALREADY FIRES.** `Level2Engine.offerItemToCat` is
+   `itemID == Level2Graph.ItemID.toyMouse ? .mouseTell : .refusal`, and the UI composites
+   genuinely different layers (`ov-cat-mouse-tell` + tail-flick vs `ov-cat-slow-blink`). So
+   R8-016 is **not** a broken code path — it is the "reads too similarly at play scale"
+   case: both reactions are eye-state changes, so the user perceived one behaviour.
+   **This reclassifies R8-016 from bug to DESIGN CHANGE**, and it **conflicts with an
+   already-approved decision**: rev-1.3 playtest tweak 2 deliberately gave non-mouse items
+   the slow-blink refusal. The user's new directive (non-mouse = inert) overrides their own
+   earlier approval — legitimate, but it must be confirmed and the D3/D4 grammar updated in
+   the graph, not silently coded. **Flagged for user confirmation; not resolved here.**
+
+3. **Cluster Q has TWO distinct roots, not one** (both verified in
+   `Level2RoomView.swift`) — a single "parity audit" is the right framing, but it is not one
+   fix:
+   - **Q1 (R8-015):** the cushion close-up's plate tap hardcodes one hotspot id —
+     `coordinator.useItem(armed, on: "cat-cushion")` — while p02's placement verb lives on a
+     **sibling hotspot**, `cat-floor` (`Level2Coordinator`: `case (.door, "cat-floor")`
+     executes `placeMouseAtCat`; `case (.door, "cat-cushion")` only returns the tell). So
+     from the close-up the armed mouse can *only ever* produce the tell — placement is
+     structurally unreachable. Exactly the user's experience.
+   - **Q2 (R8-018):** `L2CacheControl.onPlateTap` is guarded to a single verb —
+     `guard interaction.armedItem == Level2Graph.ItemID.screwdriver else { return }` — so it
+     implements *pry* only. There is no **collect** target for the revealed item, which is
+     why the oil can could not be taken from the brick close-up.
+
+**RESOLVED WITHOUT USER INPUT (spec-determined):** R8-020's open question "when should the
+pendulum be startable" — p10 is **ungated by design** (`Level2Engine`: "p10 start the
+pendulum (free physical act; ungated)"; graph summary: p08/p09/p10 in any order). The user
+clicking it early is **working as designed**; no defect, sub-thread closed.
+
+**CROSS-LINK — read before acting on the difficulty verdict.** Two of the four
+"guide-mandatory" beats have **rendering confounds** that plausibly caused the illegibility:
+**p09** (mirror derivation) is read off a dial whose hands render as mis-anchored placeholder
+strokes (R8-020(1)) — the player may have been asked to derive a time from an unreadable
+clock; and **p02** (mouse behaviour) had placement structurally unreachable from the close-up
+(Q1) plus a tell that reads identically to every refusal (T). **Recommendation: fix P/Q/T
+first, then re-measure p09 and p02 with the Blind Playtester before changing their design.**
+p06 (gear ratios) and p03 (cache location) have no such confound and are genuine design
+items. This is a sequencing recommendation only — the difficulty direction remains the
+**user's call**, not mine.
+
+**Phase-2 status per item:**
+
+| Item(s) | Class | Sev | Status | Target | Cluster |
+|---|---|---|---|---|---|
+| R8-020(1) hands, R8-020(2) pendulum | bug + **art-direction decision** | major | routed (decision at GATE 1) | Developer (anchor/rect) + **Art Director** (sprite-vs-procedural) + Asset-Gen only if cutouts needed | **P** |
+| R8-015 | bug | major | routed | Developer | **Q1** — close-up tap hardcoded to one hotspot id |
+| R8-018 | bug | major | routed | Developer | **Q2** — cache close-up implements pry only, no collect |
+| R8-021 | bug | major | routed | Developer + QA (guard coverage) | **R** — z4 key/tag close-up stale; 22-row guard gap |
+| R8-017 | bug | major | routed | Developer (verify render) then Art Director (strengthen) | **R** — arbor-oiled state not legible |
+| R8-014 | bug | minor | routed | Developer / Asset-Gen (offset ownership TBD) | **R** — mouse composites outside the drawer |
+| R8-022 | bug | minor | routed | Asset-Gen (re-blend) or Developer (re-register) | **R** — dark seam box behind seated key |
+| R8-019 + R8-020 +/- buttons | polish | — | routed | **Art Director** (diegetic affordance direction) + Developer | **S** — UI-chrome idiom in a painterly scene |
+| R8-016 | **design change** (not a bug) | — | **routed + CONFLICT FLAGGED** | Theme & Puzzle Designer (D3/D4 grammar) + Developer | **T** |
+| R8-completion + R8-009 | **balance / design** | — | **BLOCKED — user decision at GATE 1** | Theme & Puzzle Designer + **MANDATORY Blind Playtester re-check** + Validator if graph changes + Documentation | DESIGN |
+| R8-017 jargon | polish (docs) | — | routed | Documentation | — |
+| R8-020 pendulum gating | — | — | **closed, working as designed** | — | — |
+| R8-completion (cleared), R8-014/015/021 positives | positive | — | closed, no action | — | — |
+
+**Conflicts flagged (must be resolved by the user before their items execute):**
+- **R8-016 vs approved rev-1.3 playtest tweak 2** — new directive (non-mouse inert) reverses
+  the approved slow-blink refusal. Confirm the override; note the tradeoff that a fully inert
+  cat may read as unresponsive.
+- **R8-020 sprite-vs-procedural** — adopting authored sprite art reverses a documented
+  build-16 implementation decision and may carry asset cost. User/Art Director call.
+
+**Duplicates:** none new this batch.
+**Vague / unactionable:** none remaining — the three screenshots and the two user
+clarifications (R8-017 interaction + visual check, R8-022 view) closed every open question.
