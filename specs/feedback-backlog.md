@@ -2699,7 +2699,7 @@ Retrospective — the user is reporting back on an earlier moment in this same s
 - NOTE: this is fallout from the text->pictogram swap — the near-wordless rule was satisfied,
   but the chosen symbol carries a conflicting UI idiom. Existing art.)
 
-### R8-020 — status: logged (BUILD 16) — TWO SCREENSHOTS PENDING
+### R8-020 — status: logged (BUILD 16) — TWO SCREENSHOTS RECEIVED
 > inside the room, i see two main issues. first, getting a closeup on the big tower clock (mirrored clock) shows the clock hands mispositioned. let me see if i can try to get u a screenshot. the other thing, this hanging clock bell idk what u call it, the one that moves left and right, is it the winding drum? when clicking it once, it starts moving, but the image behind it also creates a visual bug, i'll also share a screenshot.
 
 (context — factual, no classification: z3 (behind-the-dial chamber), build 16, iPad,
@@ -2720,6 +2720,25 @@ Level 2. TWO threads:
 - ALSO FOR THE FIX PASS: verify WHEN the pendulum should be startable (p10 ordering vs
   clicking it early) — the user clicked and it simply started; confirm the intended gating.)
 
+**THREAD (1) — SCREENSHOT RECEIVED (cu-great-dial close-up).** The runtime hands render as
+PLAIN DARK LINE STROKES, not the authored spade/plain hand sprites (batch-3 z3/v-dial/sprites
+exist with pivot metadata) — and they are MIS-ANCHORED: the minute stroke does not pivot from
+the dial hub; its lower end floats mid-face (starts right of center above the hub). So:
+wrong art (placeholder strokes instead of sprites) AND wrong pivot anchoring. ALSO visible:
+flat white circular +/- buttons on the dial close-up — same "UI chrome idiom in a diegetic
+painterly scene" family as R8-019 (crank refresh icon); note as an additional
+affordance-style sub-item.
+
+**THREAD (2) — SCREENSHOTS RECEIVED (wide z3).** The swing animation renders a FLAT
+PLACEHOLDER-STYLE bob — solid mustard-yellow circle on a plain dark rod stroke —
+stylistically alien to the painterly scene, drawn OVER the plate while the ORIGINAL PAINTED
+brass pendulum remains visible behind/right of it (a "double pendulum": animated flat sprite
++ static painted one). So the defect is twofold: (a) the runtime pendulum sprite is not the
+authored brass pendulum cutout (batch-4 z3 sprites exist — verify the sprite asset is
+staged/loaded; what renders looks like a debug/placeholder shape), and (b) the painted
+pendulum on the base plate isn't suppressed (the ov-pendulum-absent background patch isn't
+being applied under the animated sprite).
+
 ### R8-021 — status: logged (BUILD 16)
 > i was able to get into the hatch. and immediately picked up both the clock tag on the wall and the key next to it. they're now in my inventory. clicking the spot where they used to be shows the stale key there
 
@@ -2736,7 +2755,7 @@ Level 2. TWO threads:
   art. This is the same class the 22-row guard was built for: check why the guard didn't
   cover the z4 hook/nail close-ups (possible coverage gap in the state-flip table).)
 
-### R8-022 — status: logged (BUILD 16)
+### R8-022 — status: logged (BUILD 16) — SCREENSHOT RECEIVED
 > puting the key where it should bve shows a bit of an off image too
 
 (context — factual, no classification: z3 winding drum, p08 — seating the winding key in the
@@ -2748,6 +2767,12 @@ Build 16, iPad, Level 2.
   NB-edit look against the surrounding art; or the close-up-vs-wide family again.
 - UNSTATED: which view the user saw it in. ASK THE USER AT PROCESSING rather than assume.
 - Cosmetic severity per the user's own phrasing ("a bit off").)
+
+**SCREENSHOT RECEIVED (drum close-up).** Confirmed: a visible DARK RECTANGULAR PATCH behind
+the seated key where the key-in overlay composites against the drum arm — a
+registration/blend seam box, clearly visible at play scale. The overlay region needs
+re-blending or re-registration against the current plate. (This also answers the "which view"
+question above: the drum CLOSE-UP.)
 
 ### R8-completion — status: logged (BUILD 16) — LEVEL 2 CLEARED + design signal
 > ok i cleared it but i don't think i would've been able to do it without the guide to be honest
