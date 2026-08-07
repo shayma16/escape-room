@@ -2792,3 +2792,23 @@ question above: the drum CLOSE-UP.)
   Reference point: L1 was solved blind in its playtest.
 - NOTE: the design targeted 6.5 difficulty with fair clues, so "needs the guide" points at
   clue LEGIBILITY rather than the puzzle logic — to be confirmed with the user, not assumed.)
+
+**USER ANSWER (which steps felt guide-mandatory):**
+1. **THE GEAR WALL — p06 gear train** (which gears to mount / the ratio reasoning didn't land
+   from the in-game clues).
+2. **THE TIN [MOUSE] — p02** (that the mouse must be wound and PLACED rather than offered was
+   not inferable in-game; compounded by the R8-015 close-up-placement gap and the pre-fix
+   sound-only tell).
+3. **THE MIRROR CLOCK — p09** (the front-7:20-from-behind mirror derivation was not solvable
+   from the tag + mirrored dial alone).
+
+Combined with R8-009's **p03** (floorboard cache — unsolvable even WITH the guide,
+pre-clarification), that is **4 of the level's core beats needing the guide**.
+
+NOT cited as guide-mandatory: p01 door tiles, p04 chimney (post-clue), p05 oiling, p07 vault
+code, p10/p11 endgame mechanics — those clue-chains apparently landed.
+
+FOR THE DESIGNER AT PROCESSING: the failing clues cluster around **MULTI-STEP INFERENCE**
+(ratio math, behavioral deduction, mirror transform) while **single-lookup** clues (find
+symbol -> match position) worked. Scope the legibility fixes on the three cited beats + p03,
+with a **Blind Playtester re-check mandatory** per the balance-change rule.
