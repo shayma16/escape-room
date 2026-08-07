@@ -2735,3 +2735,16 @@ Level 2. TWO threads:
   ov-key-taken / ov-tag-taken (-cu names) are staged and wired — the taken states EXIST as
   art. This is the same class the 22-row guard was built for: check why the guard didn't
   cover the z4 hook/nail close-ups (possible coverage gap in the state-flip table).)
+
+### R8-022 — status: logged (BUILD 16)
+> puting the key where it should bve shows a bit of an off image too
+
+(context — factual, no classification: z3 winding drum, p08 — seating the winding key in the
+square socket (the ov-drum-key-in overlay, an NB surface edit in batch 4, gated seam 1.0/1.7).
+Build 16, iPad, Level 2.
+- DEFECT: the resulting image looks "a bit off" — a render/composite quality issue on the
+  key-in-socket state.
+- CANDIDATES (none selected): the overlay's registration vs the current/re-framed plate; its
+  NB-edit look against the surrounding art; or the close-up-vs-wide family again.
+- UNSTATED: which view the user saw it in. ASK THE USER AT PROCESSING rather than assume.
+- Cosmetic severity per the user's own phrasing ("a bit off").)
