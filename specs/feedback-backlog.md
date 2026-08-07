@@ -2644,3 +2644,15 @@ already handed to the Producer — they need their own routing pass when the use
 - POTENTIALLY PROGRESSION-RELEVANT: p05 gates the gear train (p06) -> z3, so if the oil
   genuinely cannot be applied anywhere this is a blocker. SEVERITY DELIBERATELY UNSET until
   the user's clarification arrives.)
+
+**USER CLARIFICATION (build 16):** arming the oil can and using it on the gear frame DOES
+fire — a ping (success cue) plays. So **p05 is NOT blocked; the interaction works.** The
+remaining defect is FEEDBACK CLARITY: the user could not tell whether it worked ("does that
+mean i used it?") — audio-only confirmation; the visual state change (rust cleared + oil
+sheen, ov-arbor-oiled) was either not rendered or too subtle to notice at play scale. Same
+"audio success without legible visual change" family as L1 R2-013-class. Producer awaiting
+the user's visual check of the bearing (changed vs identical) to determine whether the
+overlay isn't rendering or just reads too subtle. ALSO note (walkthrough): "arbor bearing" is
+jargon — the user didn't know what it referred to; the walkthrough step needs a
+plain-language gloss ("the rusty ring where the crank shaft enters the frame"). **Severity
+downgraded from potential-blocker to feedback-clarity + docs wording.**
