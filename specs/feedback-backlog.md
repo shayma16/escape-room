@@ -2569,3 +2569,27 @@ strengthen the clue/tell? This is a difficulty call and is NOT mine to make. (2)
 clarification. (3) NEW observation, creative call: the as-built p01/p06 close-ups use literal
 text UI ("VI" button, "Rack", "Crank", "Post A/B"), which sits against the project's
 near-wordless genre decision — does the user want these replaced with wordless affordances?
+
+---
+
+## Round 8 — LATE ITEMS ON BUILD 16 (logging; post-processing, not yet routed)
+
+_The user resumed device testing on **BUILD 16** (R8-001..R8-013 were build 15). Items from
+here on are logged against build 16 and are NOT covered by the Round-8 routed changelist
+already handed to the Producer — they need their own routing pass when the user triggers it._
+
+### R8-014 — status: logged (BUILD 16)
+> closeups are fine, arrow is fine now. but i noticed when opening the drawer to pick up the mouse, the mouse pops outside the drawer like floating in air. i think it should be repositioned properly to be popping from inside the drawer, not outside it?
+
+(context — factual, no classification: BUILD 16, iPad, Level 2.
+- POSITIVES CONFIRMED — the two headline build-16 fixes are verified by the user on device:
+  close-up STATE rendering works ("closeups are fine") = Round-8 Cluster A, and the
+  back/down chevron is visible and working ("arrow is fine now") = Round-8 Cluster B.
+- NEW DEFECT (cosmetic/composition): z2 v-clockrow parts-cabinet drawer
+  (cu-cabinet-open-mouse) — when the drawer opens revealing the toy mouse, the MOUSE renders
+  OUTSIDE/above the drawer, floating in air, instead of sitting INSIDE the open drawer.
+  Likely the mouse overlay/cutout composited at the wrong rect/offset relative to
+  ov-cabinet-open (tin-mouse cutout vs drawer art). User suggestion: reposition so it reads
+  as inside the drawer. FOR THE FIX PASS TO DETERMINE: whether the offset is owned by the
+  art plate (Asset-Gen rect fix) or the overlay rect (Developer) — same ownership question as
+  the L1 R7-001 stale-overlay-rect family.)
