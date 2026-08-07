@@ -322,6 +322,24 @@ per-zone user reviews follow each batch.
   Deferred L1 items: cu-lintel ghost rect (polish), minor build-14 bugs (unitemized),
   CI cert-cap durable fix (.p12 pinning — proposed, undecided).
 
+## BUILD-17 CYCLE (GATE-1 PASSED 2026-08-06)
+
+Round-8 late batch processed (build17-routed-changelist.md; 3 clustering corrections:
+procedural rendering was deliberate/documented; cat-tell code already discriminates;
+parity gap has 2 roots). NO BLOCKERS — L2 cleared end-to-end on build 16. USER RULINGS:
+(1) SPRITES — replace procedural pendulum/hands with the authored sprite art + fix hub
+pivot + ov-pendulum-absent registration; (2) CAT TELL — mouse-only reaction CONFIRMED
+(overrides rev-1.3 tweak 2; non-mouse = inert); (3) DIFficulty SEQUENCED — Designer
+redesigns p06 (gear-ratio legibility) + p03 (location clue) NOW; p09/p02 get a FRESH
+blind-playtest re-measure AFTER the rendering/parity fixes land (their guide-dependence
+had rendering confounds), redesign only if they still fail; (4) changelist APPROVED as
+routed (parity fixes Q1 cushion-placement + Q2 cache-collect, z4 stale CU + guard
+coverage gap, key seam re-blend, mouse-drawer offset, arbor visual strengthen, diegetic
+affordances replacing crank-refresh + dial +/- chrome, walkthrough glosses; full
+screenshot QA w/ parity matrix). DISPATCHED: Developer (tech batch → build 17) +
+Designer (p06/p03 clue spec, validator + blind-playtest gated) in parallel.
+NEXT: build 17 → user verify → GATE 2 → merge level2-clockmakers-attic → main.
+
 ## Level 1 (COMPLETE — for reference)
 
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
