@@ -2625,3 +2625,22 @@ already handed to the Producer — they need their own routing pass when the use
   clearly inert one).
 - FOR THE FIX PASS: verify the code path actually discriminates by item, then make the
   non-mouse reaction visually null/neutral per the user's directive. Existing art only.)
+
+### R8-017 — status: logged (BUILD 16) — severity PENDING user clarification
+> i can't seem to use the oil can
+
+(context — factual, no classification: p05-free-arbor, build 16, iPad, Level 2.
+- SITUATION: user inventory at the time = screwdriver, watch A, watch B, 64-gear, oil can.
+  Per the walkthrough the user was to arm the oil can and tap the seized/rusted arbor bearing
+  (gear-frame close-up, cu-gear-frame). User reports being UNABLE to use the oil can.
+- AWAITING USER CLARIFICATION (Producer asked): was the can armed and tapped in the CLOSE-UP
+  or the WIDE view, and does the tap give any feedback at all vs being fully dead? Item is
+  intentionally left open rather than guessed.
+- CANDIDATE CAUSES for the fix pass (none selected): (a) the arbor oil-target hotspot is
+  missing/mis-anchored in the CLOSE-UP (the build-16 pictogram/post-mount rework touched
+  cu-gear-frame's targets); (b) armed-item use-targets aren't wired on this close-up (same
+  family as R8-015 — use/placement only working in the wide); (c) a gating condition isn't
+  met (verify p05 prerequisites in the graph, though oil-on-arbor should be ungated).
+- POTENTIALLY PROGRESSION-RELEVANT: p05 gates the gear train (p06) -> z3, so if the oil
+  genuinely cannot be applied anywhere this is a blocker. SEVERITY DELIBERATELY UNSET until
+  the user's clarification arrives.)
