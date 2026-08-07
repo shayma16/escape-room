@@ -351,6 +351,17 @@ ceiling $0.45 authorized. PIPELINE: Validator delta-check (V1–V15) → Blind P
 re-check (P1–P11, incl. the untested build-16 p03 clarification measured together) →
 implementation (Asset-Gen $0 edits + Dev wiring, after the build-17 tech batch lands).
 
+✅ USER ACCEPTED TRUE 6.0 (2026-08-06) — all aids ship; ledger updates to 6.0 PENDING the
+blind re-check (Validator's framing: the 6.5 measured obscurity). ✅ BUILD-17 TECH BATCH
+DONE + FULL-LANE GREEN (HEAD 95984b5, runs 31198731368 fast / 31200057793 full, 204
+tests/0 fail): all 9 fixes + 3 corrected diagnoses (pendulum rig drift; z4 = CROSS-ELEMENT
+echo gap w/ new geometric foreign-element guard; cache collect existed — plate-tap guard
+was the gap) + 2 extra parity holes fixed (drum verbs dead in wide; oiling dead on
+gear-frame CU). QA judgment calls on record: pendulum soft band, hands 0.875 squash,
+silent non-mouse cat offers (revert = 1 line). NEXT: Designer revision applying the 9
+validator RFs → Blind Playtester re-check → clue implementation (Asset-Gen $0.45 ceiling
++ Dev wiring) → build 17 release → user verify → GATE 2 → merge.
+
 ## Level 1 (COMPLETE — for reference)
 
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
