@@ -2608,3 +2608,20 @@ already handed to the Producer — they need their own routing pass when the use
 - FOR THE FIX PASS: add a placement target to the cat/cushion close-up (consistent with the
   armed-item-on-close-up model), or make the refusal tell nudge toward backing out.
   Interaction/UX.)
+
+### R8-016 — status: logged (BUILD 16)
+> the cat would open one peering eye for anything i interact it with, not just the mouse. i think it should only do that with the tin mouse to indicate that the tin mouse is the key
+
+(context — factual, no classification: p02 cat tell, build 16, iPad, Level 2.
+- OBSERVED: the cat's reaction is NOT item-discriminating in practice — ANY offered item
+  produces the "one peering eye" read, not just the tin mouse.
+- Per the build-16 implementation the design was two distinct reactions: mouse offer = strong
+  tell (eyes open + locked gaze + tail flick) vs any other item = slow blink half-lid. So
+  either (a) the discrimination isn't firing (all items route to the same reaction), or
+  (b) the two animations read too similarly on device (a slow half-lid blink and a peering
+  eye are visually near-identical at play scale).
+- USER DESIGN DIRECTIVE: the reactive tell should be EXCLUSIVE to the tin mouse, so the
+  reaction itself signals "the mouse is the key"; other items should get no reaction (or a
+  clearly inert one).
+- FOR THE FIX PASS: verify the code path actually discriminates by item, then make the
+  non-mouse reaction visually null/neutral per the user's directive. Existing art only.)
