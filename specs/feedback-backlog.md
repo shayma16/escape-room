@@ -2593,3 +2593,18 @@ already handed to the Producer — they need their own routing pass when the use
   as inside the drawer. FOR THE FIX PASS TO DETERMINE: whether the offset is owned by the
   art plate (Asset-Gen rect fix) or the overlay rect (Developer) — same ownership question as
   the L1 R7-001 stale-overlay-rect family.)
+
+### R8-015 — status: logged (BUILD 16)
+> now the cat refuses the mouse which is fine, but it was difficult figuring out where to place the mouse. i know i have to place it near the cat not give it to it, but trying to place it on the floor from the closeup view of the cat didn't do. i eventually had to do it from the full scene view
+
+(context — factual, no classification: p02 cat/mouse, build 16, iPad, Level 2.
+- POSITIVE: the cat's refusal tell now reads correctly ("refuses the mouse which is fine") —
+  the R8-011(1) fix works on device.
+- UX GAP: the mouse PLACEMENT interaction only works from the WIDE scene view. Attempting to
+  place the mouse on the floor/bench from within the CAT CLOSE-UP does nothing, which cost
+  the user real time, since the close-up is where they naturally were right after the
+  refusal. Expected: either the close-up accepts the placement (a placement target inside the
+  cushion close-up) or a clear affordance redirects them to the wide view.
+- FOR THE FIX PASS: add a placement target to the cat/cushion close-up (consistent with the
+  armed-item-on-close-up model), or make the refusal tell nudge toward backing out.
+  Interaction/UX.)
