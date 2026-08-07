@@ -549,3 +549,154 @@ re-check.
 **Two items go to the user as decisions, not findings:** the provisional drop from 6.5 to 6.0
 (§5.3, with F3 named as the separable 0.5 lever), and the A5 asymmetry (§7, where I concur
 with option (iii) — measure it).
+
+---
+
+## V17 — partial-stroke verdict (micro delta-check, 2026-08-07)
+
+**Scope.** Single-item re-check of the Designer's RF-2(a) application: the half-height partial
+tally stroke in `clue-legibility-p06-p03.md` rev B §1b F4 / §1c Route B, and its verbatim
+graph string §7 **G16 → `developer_notes` D13**. `puzzle-graph.json` on disk is still **rev
+1.3** (it contains no D13), so this verdict binds the G16 D13 string **before the Producer
+commits it**. Read-only everywhere else; nothing below reopens an approved decision.
+
+**VERDICT: APPROVE WITH WORDING TWEAK (W1–W4). 0 Critical. 1 Advisory (playtest probe).
+Does not block the Blind Playtester re-check.**
+
+### V17.1 Ground truth — all 21 pairs re-derived independently
+
+Gear set {16, 24, 36, 40, 48, 72} on the rack + {64} from the cache = 7 wheels,
+C(7,2) = 21 unordered pairs, `R = A·B / 96`:
+
+| R | Pairs |
+|---|---|
+| 4, 6, 8, 9, 10, 12, 12, 15, 16, 18, 18, 20, 27, 30, 32, 36, 48 | the 17 wrong **integer** pairs |
+| **24** | **36 × 64 — the solution. Exactly integer. NO partial.** |
+| 6⅔ / 10⅔ / 26⅔ | 16×40, 16×64, 40×64 — the three **non-integer** pairs |
+
+The Designer's D13 table is arithmetically correct on all four rows, and the 18-integer /
+3-non-integer split is correct. **No fourth non-integer pair exists.**
+
+### V17.2 (a) Does the partial stroke leak solution information? — **NO. PASS.**
+
+Three independent proofs, any one of which is sufficient:
+
+1. **Redundancy — the decisive one.** For all three non-integer pairs the *full-stroke count
+   alone* already eliminates the pair: 6 ≠ 24, 10 ≠ 24, 26 ≠ 24. The sanctioned counting
+   route delivers a complete 21 → 1 discrimination on its own. The partial stroke's
+   proposition ("this pair is non-integer") narrows 21 → 18 — a **strict subset** of an
+   elimination the player has already been handed, with strictly greater force, in the same
+   glance. **Marginal information content of the partial stroke: zero.** It cannot function
+   as an illegitimate elimination tell, because it eliminates nothing the primary readout has
+   not already eliminated. The Producer's framing ("only 3 of 21 are non-integer and none is
+   the solution") is true but does not create a leak: the readout is not a *classifier*
+   handing out 1 bit, it is a *quantity* handing out the exact answer.
+2. **Glyph invariance.** All three residues are **identical**. 640, 1024 and 2560 are each
+   ≡ 64 (mod 96), so every non-integer pair leaves a residue of exactly **⅔** of a turn.
+   There is therefore exactly **one** partial glyph in the entire level, invariant across all
+   three pairs. A single constant symbol carrying one already-redundant bit is the
+   least-informative possible faithful rendering.
+3. **Proximity neutrality — V4 re-verified.** 6⅔ (17.33 from the target) and 26⅔ (2.67 from
+   the target) render byte-identically in form. The readout still never varies with closeness
+   to 24, never varies with any clue-viewed flag, and remains ungated. **V4 stays PASS.** The
+   Designer's core claim is correct as stated.
+
+**Counter-argument considered and rejected.** *"A player can skip counting to 26 by spotting
+the partial."* True, and harmless: it is a **legibility affordance available identically to a
+far wrong pair and a near wrong pair**. It does not order the search, does not reduce the
+number of mounts required, and hill-climbs nothing. Under V4 the prohibited property is
+*variation with closeness to the target*; a constant is not a gradient.
+
+**Recorded for the record — the rejected alternative is the leakier and less honest one.**
+Round-down-with-no-partial would render 26⅔ as "26", a **false** statement about the mounted
+pair on the one readout whose entire legitimacy rests on D13's own "encodes only the true
+realized ratio of the mounted pair". It would also collapse 16×36 (R = 6, genuinely integer)
+and 16×40 (R = 6⅔) onto an identical picture. Since D13's ungated status is justified
+precisely by *"a mechanically true train must report the truth regardless of what has been
+read"* (§3.4), a rendering that lies undermines the justification for the whole element. The
+partial is the more faithful option.
+
+### V17.3 (b) D11-class "reads as broken" risk — **real but bounded; PASS with W1–W3.**
+
+- **No misread of the partial can produce a false 24 or suppress the true 24 — provable.**
+  Rounding the three partials up or down gives 7 / 11 / 27 or 6 / 10 / 26. **None is 23, 24
+  or 25.** The nearest non-integer to the target is 26⅔, a full 2.67 strokes away. And the
+  solution pair renders 24 full strokes with **no partial at all**, so the solve signal can
+  never be corrupted by partial-stroke confusion in either direction. Worst case of a total
+  misread is a wrong pair staying wrong. **No correctness exposure: no soft-lock, no false
+  positive, no false negative on the solution, no new mistake path.** This is what downgrades
+  the D11 concern from structural to cosmetic.
+- **Reproducibility is the anti-glitch cue, and it is already guaranteed.** RF-2(a)'s
+  accumulated-rotation measure makes the picture byte-identical on every cycle of a given
+  pair — the Designer's own reason for prohibiting index-crossing counting. Rendering errors
+  do not reproduce pixel-identically on demand; a mark that survives a re-crank reads as
+  intentional. This is exactly the `anti_softlock_invariants[3]` "repeat-identical
+  presentation" class that G17 already extends to D13, and it is the substantive answer to
+  the D11 worry.
+- **Residual exposure is presentation-only, and W2/W3 close it.** A short stroke that shares
+  the block's baseline and is shortened *at the top* reads as a deliberate mark; one that
+  floats, is clipped at the bottom, or is faded/dashed reads as a render failure. The current
+  D13 string does not say which. That is the whole of the remaining risk.
+- **Stroke bound unaffected (V19/RF-3).** Maximum marks on any partial-bearing pair is
+  26 + 1 = **27**, comfortably inside the RF-3 worst case of **48** (72 × 64, integer, no
+  partial). The five-grouping legibility argument is untouched.
+- **Fairness/RWK: no new demand.** The player is never required to interpret "⅔ of a turn" —
+  the full-stroke count alone settles every one of these pairs. The partial is strictly
+  optional information. **No new RWK register entry needed.**
+
+### V17.4 (c) Colour-blind safety — **PASS (form-based), with one binding addition.**
+
+Height and stroke length are achromatic **form/size** cues; the discrimination survives full
+achromatopsia and all three dichromacies, and it does not depend on hue, saturation or the
+warm/cool chalk-vs-timber relationship that RF-7(a) exists to police. D13 already pins same
+chalk value, same stroke width, same slot pitch — which is the correct instinct.
+
+**Binding addition (folded into W3):** the part-stroke must **not** be rendered lighter,
+faded, ghosted, dashed, translucent or at lower opacity than a full stroke. Any of those
+substitutes a *value* cue for the form cue, and would independently threaten the RF-7(a)
+≥ 3:1 luminance floor at reduced size. The part-stroke must hold **≥ 3:1 luminance contrast
+against the frame timber cheek in its own right, in BOTH the wide and the close-up.** With
+that clause the mandatory colour-blind gate is **PASS**; without it the element sits one NB
+chalk-on-timber blend away from an RF-7(a) violation.
+
+### V17.5 (d) NET — approve with wording tweak
+
+The mechanism is approved as designed; the Designer's reasoning survives adversarial
+checking. Four wording tweaks to the **G16 D13** string, all non-semantic clarifications that
+change no behaviour and require no redesign round-trip:
+
+- **W1 (the one that matters — forward-guard).** Replace *"at roughly HALF HEIGHT"* with a
+  **single fixed canonical part-stroke glyph at a CONSTANT height** (nominal 0.5×, Art
+  Director's call within 0.4–0.6× of a full stroke), and add the clause: **"the part-stroke's
+  height is a CONSTANT and MUST NOT be derived from the residue at runtime."** Today the two
+  implementations are indistinguishable — every residue is exactly ⅔ (V17.2 proof 2) — but a
+  residue-proportional implementation would silently convert stroke height into a *variable*
+  channel the moment the gear set ever changed. That is the only mechanism by which this
+  element could ever become a proximity signal. Freeze it now, while it costs nothing.
+- **W2.** State that the part-stroke is **UPRIGHT — never drawn on the diagonal**, so it can
+  never be confused with a five-group closing strike. D13 currently says only that it never
+  *receives* a diagonal and is never counted into a five; it never says what it is. This
+  matters at 26⅔, where the partial follows a lone single after five complete groups.
+- **W3.** Add: **same baseline as the full strokes, shortened at the top, occupying its own
+  full slot pitch**; plus the RF-7(a) / no-fade / no-dash colour-blind clause from V17.4.
+- **W4 (Advisory — surfaced to the user, non-blocking).** Add Blind Playtester probe **P13**:
+  *"Did you notice the short stroke? Did you read it as broken, and how long did you spend
+  trying to decode it?"* The part-stroke is never load-bearing, so the worst realistic cost is
+  a short rabbit hole — but bug-read perception is the one property here that analysis cannot
+  settle and only measurement can.
+
+**Rejected minimal alternative, recorded with its trade-off.** *Round down, no partial.*
+Trade-off: it removes the cosmetic glitch risk entirely, at the cost of (i) making D13 state
+something false about the mounted pair, undermining the mechanical-truth premise that is the
+sole justification for D13 being ungated, and (ii) collapsing two genuinely distinct
+mechanical states (R = 6 and R = 6⅔) onto one picture. **Strictly worse. Do not adopt.**
+
+| V17 sub-check | Severity | Result |
+|---|---|---|
+| (a) Information leak / illegitimate elimination tell | — | **PASS** — zero marginal information; V4 preserved |
+| (b) D11-class "reads as broken" | Advisory | **PASS with W1–W3** — no correctness exposure, provable |
+| (c) Colour-blind safety (mandatory gate) | Advisory (binding clause) | **PASS with W3** — form/height, never value or hue |
+| (d) NET | — | **APPROVE WITH WORDING TWEAK (W1–W4)** |
+| Critical findings | — | **0** |
+| Difficulty impact | — | **None.** z2 stays 6.5; level stays **6.0 PROVISIONAL** |
+| V17 (rev-1.4 checklist item) | — | **PASS** — accumulated-rotation accrual confirmed, all three non-integer pairs covered, no oscillation possible |
