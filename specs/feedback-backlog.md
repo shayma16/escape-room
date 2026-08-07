@@ -2698,3 +2698,24 @@ Retrospective — the user is reporting back on an earlier moment in this same s
   crank-handle pictogram from the canonical art rather than a generic circular-arrow symbol.
 - NOTE: this is fallout from the text->pictogram swap — the near-wordless rule was satisfied,
   but the chosen symbol carries a conflicting UI idiom. Existing art.)
+
+### R8-020 — status: logged (BUILD 16) — TWO SCREENSHOTS PENDING
+> inside the room, i see two main issues. first, getting a closeup on the big tower clock (mirrored clock) shows the clock hands mispositioned. let me see if i can try to get u a screenshot. the other thing, this hanging clock bell idk what u call it, the one that moves left and right, is it the winding drum? when clicking it once, it starts moving, but the image behind it also creates a visual bug, i'll also share a screenshot.
+
+(context — factual, no classification: z3 (behind-the-dial chamber), build 16, iPad,
+Level 2. TWO threads:
+- THREAD (1) GREAT MIRRORED DIAL close-up (cu-great-dial, p09): the clock HANDS render
+  MISPOSITIONED. The hands are runtime sprites (D1 rule: no time baked into art; hand sprites
+  rotated to the set time). For the fix pass: the batch-4 R4-007-class contract covered
+  sprite pre-rotation vs view rotation on the DOOR dial — check whether the great-dial hand
+  sprites have an analogous pivot/rotation mismatch, especially given the mirrored rendering
+  (hands drawn at -theta for the mirror view). SCREENSHOT PENDING.
+- THREAD (2) THE PENDULUM (user: "hanging clock bell that moves left and right" — naming
+  aside, this is the pendulum, not the winding drum): clicking it once STARTS the swing (the
+  new build-16 swing animation), but "the image behind it creates a visual bug" — candidate
+  (not selected): the ov-pendulum-absent background patch, flagged at batch 4 as the
+  least-crisp deliverable (seam 20.2, an optional animation aid), showing behind the swinging
+  sprite as ghosting / a soft patch / mismatch artifacts while the sprite moves over it.
+  SCREENSHOT PENDING.
+- ALSO FOR THE FIX PASS: verify WHEN the pendulum should be startable (p10 ordering vs
+  clicking it early) — the user clicked and it simply started; confirm the intended gating.)
