@@ -340,6 +340,17 @@ screenshot QA w/ parity matrix). DISPATCHED: Developer (tech batch → build 17)
 Designer (p06/p03 clue spec, validator + blind-playtest gated) in parallel.
 NEXT: build 17 → user verify → GATE 2 → merge level2-clockmakers-attic → main.
 
+CLUE-LEGIBILITY RULINGS (user, 2026-08-06, all as recommended): A1 live crank-tally
+counting feedback APPROVED (delivers the sanctioned counting route); A2 frame-cheek
+chalk target + A4 cache-board chalk ⌂ BOTH approved (A4 gated on clu-watch-a viewed);
+A5 p03/p04 asymmetry → blind playtest judges; A6 rev-1.3 text clarifications approved
+pending Validator; A7 tally-fives fine; A8 CONFIRMED BY PRODUCER against the shipped
+plate — the 8-tooth pinion at post A is NOT drawn (VIII floats on a bare bracket) —
+pinion depiction LEADS the art batch ($0 deterministic via the gear renderer); art
+ceiling $0.45 authorized. PIPELINE: Validator delta-check (V1–V15) → Blind Playtester
+re-check (P1–P11, incl. the untested build-16 p03 clarification measured together) →
+implementation (Asset-Gen $0 edits + Dev wiring, after the build-17 tech batch lands).
+
 ## Level 1 (COMPLETE — for reference)
 
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
