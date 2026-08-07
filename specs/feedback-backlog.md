@@ -2656,3 +2656,20 @@ overlay isn't rendering or just reads too subtle. ALSO note (walkthrough): "arbo
 jargon — the user didn't know what it referred to; the walkthrough step needs a
 plain-language gloss ("the rusty ring where the crank shaft enters the frame"). **Severity
 downgraded from potential-blocker to feedback-clarity + docs wording.**
+
+### R8-018 — status: logged (BUILD 16) — retrospective report
+> by the way remember when i had to pick the oil can from the brick wall, i couldn't pick it up from the close up of the brick wall, only from the wider scene, i think both options should work if the clue had already been viewed
+
+(context — factual, no classification: p04 chimney brick cache, build 16, iPad, Level 2.
+Retrospective — the user is reporting back on an earlier moment in this same session.
+- DEFECT: the revealed OIL CAN could NOT be collected from the brick-wall CLOSE-UP — only
+  from the WIDE scene.
+- THIRD instance of the same family this round: interactions that work in the wide but not
+  in the close-up (R8-015 mouse placement; R8-017's initial confusion; now the oil-can
+  pickup).
+- USER DESIGN PRINCIPLE (recorded as a directive): once an interaction's gate/clue condition
+  is satisfied, the interaction should work from BOTH the wide view and the close-up —
+  parity between views.
+- FOR THE FIX PASS: this should generalize — audit ALL L2 collect/place/use targets for
+  close-up<->wide parity rather than fixing them one at a time (the standing L1 lesson about
+  treating these as systemic classes).)
