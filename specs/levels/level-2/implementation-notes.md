@@ -1196,10 +1196,25 @@ tests) was bundled into ONE push before dispatching a run — no tweak/wait/fail
   ✓ testOnlyTheTinMouseGetsAVisibleCatReaction
   ```
 
-- **FULL LANE (pre-handoff gate):** see the run linked in the handoff message. Everything the
-  fast lane does plus the cross-level on-device UI regression; the known-flaky iPad full
-  playthrough step remains `continue-on-error` by workflow design, the iPhone-SE + Dynamic
-  Island UI steps are hard gates.
+- **FULL LANE GREEN (the one pre-handoff gate):** run **`31200057793`**
+  (<https://github.com/shayma16/escape-room/actions/runs/31200057793>), conclusion **success** —
+  BOTH jobs green, including the usually-flaky non-blocking iPad playthrough:
+
+  ```
+  fast-lane      Unit tests - iPad 13-inch class          Executed 204 tests, 0 failures
+  fast-lane      Unit tests - smallest supported iPhone   Executed 204 tests, 0 failures
+  fast-lane      Unit tests - Dynamic Island iPhone       Executed 204 tests, 0 failures
+  full-lane-ui   UI - smallest supported iPhone (full playthrough + smoke + save-resume)
+                                                          Executed  10 tests, 0 failures  (1056s)
+  full-lane-ui   UI - iPad (full playthrough + smoke + save-resume) [non-blocking]
+                                                          Executed   6 tests, 0 failures  ( 814s)
+  full-lane-ui   UI - Dynamic Island iPhone (safe-area screenshots)
+                                                          Executed   3 tests, 0 failures  (  99s)
+  ```
+
+  Note this is CI's own automation, not a game-flow certification: the level's correctness is
+  QA's call, and per the standing rule state/inventory/collect behaviour must be verified from
+  RENDERED SCREENSHOTS, not engine flags.
 - No CI iteration loop was needed. Every geometric decision (pendulum silhouette and rect, key
   silhouette, mouse seat, hub projection, echo rects, the parity matrix and the echo-coverage
   matrix) was computed and visually verified offline against the shipped plates before the push,
