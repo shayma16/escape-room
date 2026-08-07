@@ -16,17 +16,20 @@
     "description": "The attic's only exit, the stair door, is barred by a vault-style TIME LOCK connected by visible linkage rods to the tower movement behind the wall. Restore the great clock -- oil and wind it, set its hands to the release time shown on the clockmaker's 'will return' tag (set from BEHIND the mirrored dial), and start the pendulum. The strike train fires, the linkage lifts the door bar, and the player leaves down the stairs with the cat.",
     "node": "p11-exit"
   },
-
   "clue_gating": {
     "policy_revision": "inherits L1 rev-1.3 policy (viewed_definition, persistence, D6/D7 semantics); no_tell_rule amended at rev 1.3 (playtest tweak 1, user-approved)",
     "purpose": "Protect code-like entries and sweep-brute-force surfaces from lucky/spoiler shortcuts while never false-blocking an earned solve. Gates reference only clues that carry the code's actual information.",
     "viewed_definition": "A clue counts as VIEWED the moment its designated close-up view has been displayed at least once. No dwell time, no comprehension check, no timers. Multi-instance clues count when ANY instance is displayed.",
     "no_tell_rule": "Gated attempts replay the puzzle's EXISTING failure grammar with no distinguishing tell -- IN FULL for p07 and p09, and for every WRONG spot at p03/p04. REV 1.3 AMENDMENT (playtest tweak 1): the CORRECT board (p03) and CORRECT brick (p04) are the single sanctioned exception -- a pre-clue pry there produces a FAINT-TELL (slight creak + perceptible shift, still firmly not yielding; see D10). Rationale: the playtest's impatient-pryer variant showed a pure no-tell on the correct spot lets an early pry CERTIFY the spot as inert, poisoning the later watch clue (15-25 min stall, 'the game lied to me'). The faint-tell leaves a memory hook without reading as an invitation. The code-entry gates (p07, p09) remain strictly no-tell.",
-    "gated_puzzles": ["p03-cache-dormer", "p04-cache-chimney", "p07-vault-wheels", "p09-set-hands"],
+    "gated_puzzles": [
+      "p03-cache-dormer",
+      "p04-cache-chimney",
+      "p07-vault-wheels",
+      "p09-set-hands"
+    ],
     "ungated_rationale_class": "Free pickups, tool-on-hotspot oiling, tile seating with pop-back, the cat beat, mechanism completions (winding, pendulum push), and the gear train (a mechanically TRUE configuration must work when built -- gating physical truth reads as a broken machine) are physical acts, not code entries.",
     "art_impact": "Rev 1.3: two micro-cues added, both SFX/haptic-tier plus one line of animation each -- the correct-spot faint-tell at p03/p04 (D10) and the cat's mouse-offer tell (D3). Everything else reuses existing failure states (wrong boards/bricks stay dead; vault wheels spin without the hatch releasing; hand-setting does not trigger the strike -- though see D11 for the wound+swinging ambient layer, which is state feedback, not gate feedback). REV 1.4 (scoped clause -- NOT a general permission class): three named annotations are CLUE-STATE RENDERS, not gate tells -- (i) the canonical hour hand on the z1 house ring in the wide view, (ii) the chalk house glyph on the p03 cache board in the wide and the close-up, both functions of clu-watch-a, and (iii) the canonical hour hand on the z2 gear ring in the wide view, a function of clu-watch-b. They render on view entry, never in response to an attempt, so no_tell_rule is untouched: the wrong-spot dead wall and the D10 correct-spot faint-tell are byte-stable, and the pre-clue experience is byte-identical to rev 1.3. p07 AND p09 REMAIN STRICTLY NO-ANNOTATION -- their gates protect code entries where any post-view annotation is spoiler-equivalent. Any future clue-state render requires Validator re-verification."
   },
-
   "zones": [
     {
       "id": "z1-attic",
@@ -37,15 +40,35 @@
       "views": [
         {
           "id": "v-bench",
-          "elements": ["long workbench with clock parts (ambient, none collectible)", "heavy flat-blade screwdriver in a bench rack (takeable)", "chalk slate propped on the bench: wordless two-stage gear-train diagram -- crank circle ringed by 24 tally marks GROUPED IN FIVES, small pinion marked XII, unknown wheel '?', coaxial small pinion marked VIII, unknown wheel '?', cam circle with a single notch, ONE MATCHING TALLY STROKE on its rim, and a door pictogram", "small iron stove; numeral tile II lying on the cold hob", "clockmaker's coat on a peg: pocket watch A in one pocket, numeral tile IV in the other", "wheel barometer on the wall (red herring rh-barometer: clock-like dial, fixed needle, sun/cloud/rain pictograms engraved -- inspect-only)"]
+          "elements": [
+            "long workbench with clock parts (ambient, none collectible)",
+            "heavy flat-blade screwdriver in a bench rack (takeable)",
+            "chalk slate propped on the bench: wordless two-stage gear-train diagram -- crank circle ringed by 24 tally marks GROUPED IN FIVES, small pinion marked XII, unknown wheel '?', coaxial small pinion marked VIII, unknown wheel '?', cam circle with a single notch, ONE MATCHING TALLY STROKE on its rim, and a door pictogram",
+            "small iron stove; numeral tile II lying on the cold hob",
+            "clockmaker's coat on a peg: pocket watch A in one pocket, numeral tile IV in the other",
+            "wheel barometer on the wall (red herring rh-barometer: clock-like dial, fixed needle, sun/cloud/rain pictograms engraved -- inspect-only)"
+          ]
         },
         {
           "id": "v-master",
-          "elements": ["tall master longcase clock, case engraved with a small star (★), STOPPED at exactly 6:00 (hour hand on VI, minute hand on XII); standard subtractive numerals (IV, IX) like every dial in the level (rev 1.2 user ruling)", "workroom door painted with a large hand-less clock dial: 12 tile sockets, 8 numeral tiles still seated (I, III, V, VI, VIII, IX, X, XII), 4 sockets empty at the 2, 4, 7 and 11 positions", "wooden tray fixed below the door dial holding one loose tile: VI (decoy -- glyph-order confusion with the needed IV; NON-COLLECTIBLE, lives in the tray -- R6-003; the dial's own seated VI at position 6 is the in-scene disproof)", "packing crate of straw; numeral tile VII half-buried in the straw", "linkage rods running along the ceiling from the direction of the stair door, vanishing into the workroom wall (foreshadows z3)"]
+          "elements": [
+            "tall master longcase clock, case engraved with a small star (★), STOPPED at exactly 6:00 (hour hand on VI, minute hand on XII); standard subtractive numerals (IV, IX) like every dial in the level (rev 1.2 user ruling)",
+            "workroom door painted with a large hand-less clock dial: 12 tile sockets, 8 numeral tiles still seated (I, III, V, VI, VIII, IX, X, XII), 4 sockets empty at the 2, 4, 7 and 11 positions",
+            "wooden tray fixed below the door dial holding one loose tile: VI (decoy -- glyph-order confusion with the needed IV; NON-COLLECTIBLE, lives in the tray -- R6-003; the dial's own seated VI at position 6 is the in-scene disproof)",
+            "packing crate of straw; numeral tile VII half-buried in the straw",
+            "linkage rods running along the ceiling from the direction of the stair door, vanishing into the workroom wall (foreshadows z3)"
+          ]
         },
         {
           "id": "v-door",
-          "elements": ["stair door (only exit) barred by a heavy horizontal bolt-bar seated in a vault-style time-lock housing; the bar connects to the ceiling linkage rods -- visibly a REMOTE mechanism, no keyhole", "gray cat asleep on a cushion on a low bench in the dormer sunbeam (the cushion visibly has something flat beneath it)", "dormer window over the town roofs, golden light", "numeral tile XI on the dormer windowsill", "small carved house symbol (⌂) on the beam beside the dormer, ringed by an engraved 12-notch circle (a clock-position ring)", "floorboards below and around the dormer, uniform and identical WHILE clu-watch-a IS UNVIEWED (cache board has NO independent VISUAL tell pre-clue -- the gate carries the info; rev 1.3: pre-clue prys on the correct board give the D10 faint-tell, creak + shift only, no visual difference). REV 1.4 SANCTIONED REVERSAL (user-approved A4, 2026-08-06 -- reverses the rev-1.0 'no independent visual tell in ANY state or view' contract for p03 ONLY): once watch A has been inspected the cache board carries a chalk house glyph (canonical die-house) composited INSIDE the ov-cache-* rect x 0.6375-0.7656, in BOTH the wide and the close-up. Pre-clue appearance is byte-identical to rev 1.3; D10's faint-tell remains animation/SFX only. See D12. p04's chimney-brick contract is UNCHANGED and absolute."]
+          "elements": [
+            "stair door (only exit) barred by a heavy horizontal bolt-bar seated in a vault-style time-lock housing; the bar connects to the ceiling linkage rods -- visibly a REMOTE mechanism, no keyhole",
+            "gray cat asleep on a cushion on a low bench in the dormer sunbeam (the cushion visibly has something flat beneath it)",
+            "dormer window over the town roofs, golden light",
+            "numeral tile XI on the dormer windowsill",
+            "small carved house symbol (⌂) on the beam beside the dormer, ringed by an engraved 12-notch circle (a clock-position ring)",
+            "floorboards below and around the dormer, uniform and identical WHILE clu-watch-a IS UNVIEWED (cache board has NO independent VISUAL tell pre-clue -- the gate carries the info; rev 1.3: pre-clue prys on the correct board give the D10 faint-tell, creak + shift only, no visual difference). REV 1.4 SANCTIONED REVERSAL (user-approved A4, 2026-08-06 -- reverses the rev-1.0 'no independent visual tell in ANY state or view' contract for p03 ONLY): once watch A has been inspected the cache board carries a chalk house glyph (canonical die-house) composited INSIDE the ov-cache-* rect x 0.6375-0.7656, in BOTH the wide and the close-up. Pre-clue appearance is byte-identical to rev 1.3; D10's faint-tell remains animation/SFX only. See D12. p04's chimney-brick contract is UNCHANGED and absolute."
+          ]
         }
       ]
     },
@@ -53,15 +76,27 @@
       "id": "z2-workroom",
       "name": "Movement Loft (workroom)",
       "hidden": false,
-      "unlock": { "condition": "p01-dial-door solved", "gate_description": "Workroom door in z1 v-master, faced with the 12-socket painted clock dial; completing the dial with the correct numeral tiles trips its latch." },
+      "unlock": {
+        "condition": "p01-dial-door solved",
+        "gate_description": "Workroom door in z1 v-master, faced with the 12-socket painted clock dial; completing the dial with the correct numeral tiles trips its latch."
+      },
       "views": [
         {
           "id": "v-frame",
-          "elements": ["floor-to-ceiling automaton wall: a carved town-scene mural with jointed figures, driven by an exposed two-stage gear frame -- fold-out hand crank at left carrying a fixed pinion stamped XII (12 teeth), empty square-arbor POST A (carries a fixed coaxial pinion stamped VIII, 8 teeth), empty square-arbor POST B driving the cam that runs the mural and, at cycle-end, a wall panel latch", "the frame's main arbor is visibly SEIZED: rust bloom at the bearing, crank rocks a few degrees and stops", "gear rack bolted to the wall holding six loose-mounted brass gears, each with countable teeth and a stamped Arabic count: 16, 24, 36, 40, 48, 72 (rack gears mount/return freely within the apparatus, NEVER enter inventory; the 48 invites a 48x48 idea -- there is only one 48: red herring rh-48-gear)", "chimney breast passing through the room; one brick bears a small carved gear symbol (⚙) ringed by an engraved 12-notch circle; surrounding bricks uniform (cache brick has NO independent VISUAL tell; rev 1.3: pre-clue prys on the correct brick give the D10 faint-tell, creak + shift only)"]
+          "elements": [
+            "floor-to-ceiling automaton wall: a carved town-scene mural with jointed figures, driven by an exposed two-stage gear frame -- fold-out hand crank at left carrying a fixed pinion stamped XII (12 teeth), empty square-arbor POST A (carries a fixed coaxial pinion stamped VIII, 8 teeth), empty square-arbor POST B driving the cam that runs the mural and, at cycle-end, a wall panel latch",
+            "the frame's main arbor is visibly SEIZED: rust bloom at the bearing, crank rocks a few degrees and stops",
+            "gear rack bolted to the wall holding six loose-mounted brass gears, each with countable teeth and a stamped Arabic count: 16, 24, 36, 40, 48, 72 (rack gears mount/return freely within the apparatus, NEVER enter inventory; the 48 invites a 48x48 idea -- there is only one 48: red herring rh-48-gear)",
+            "chimney breast passing through the room; one brick bears a small carved gear symbol (⚙) ringed by an engraved 12-notch circle; surrounding bricks uniform (cache brick has NO independent VISUAL tell; rev 1.3: pre-clue prys on the correct brick give the D10 faint-tell, creak + shift only)"
+          ]
         },
         {
           "id": "v-clockrow",
-          "elements": ["row of four dead wall clocks, ALL HANDS REMOVED, each with an engraved brass landmark plate beneath and a stamped offset: [1] Burj Khalifa plate stamped '+IV' (Dubai -- user-required city, rev 1.2), [2] Big Ben plate stamped '★' (no offset -- the reference; same star as the master longcase), [3] Mount Fuji plate stamped '+IX', [4] Statue of Liberty plate stamped '−V'; all faces standard numerals", "small parts cabinet; top drawer holds a tin wind-up toy mouse with a butterfly key (takeable)", "glass-front display case of assorted spare clock HANDS, case visibly screwed shut and painted over (red herring rh-hands-case: inspect-only; the world clocks never need hands -- the stamped offsets make the row purely informational)"]
+          "elements": [
+            "row of four dead wall clocks, ALL HANDS REMOVED, each with an engraved brass landmark plate beneath and a stamped offset: [1] Burj Khalifa plate stamped '+IV' (Dubai -- user-required city, rev 1.2), [2] Big Ben plate stamped '★' (no offset -- the reference; same star as the master longcase), [3] Mount Fuji plate stamped '+IX', [4] Statue of Liberty plate stamped '−V'; all faces standard numerals",
+            "small parts cabinet; top drawer holds a tin wind-up toy mouse with a butterfly key (takeable)",
+            "glass-front display case of assorted spare clock HANDS, case visibly screwed shut and painted over (red herring rh-hands-case: inspect-only; the world clocks never need hands -- the stamped offsets make the row purely informational)"
+          ]
         }
       ]
     },
@@ -69,11 +104,21 @@
       "id": "z3-behind-dial",
       "name": "Behind the Great Dial",
       "hidden": true,
-      "unlock": { "condition": "p06-gear-train solved", "gate_description": "When the automaton mural completes one full correct cycle, a counterweight drops and a wall panel in z2 v-frame swings open onto the tower-clock chamber. Panel latches open permanently." },
+      "unlock": {
+        "condition": "p06-gear-train solved",
+        "gate_description": "When the automaton mural completes one full correct cycle, a counterweight drops and a wall panel in z2 v-frame swings open onto the tower-clock chamber. Panel latches open permanently."
+      },
       "views": [
         {
           "id": "v-dial",
-          "elements": ["the tower's great translucent dial seen FROM BEHIND, glowing amber with daylight; all numerals MIRROR-REVERSED (standard IV/IX notation, mirrored); hand silhouettes visible through the glass", "hand-setting crank on the motion works (moves the hands; 5-minute minute detents)", "winding drum with a square key socket; drum bearing dry and squealing (needs oil before the key will turn)", "long pendulum hanging dead still (can be pushed)", "strike train and chime hammers, linked to the ceiling linkage rods that run off toward z1 (the door-bar linkage, seen end-to-end); rev 1.3: alive-wrong-time ambient state per D11 (soft escapement tick + occasional single hammer twitch that never strikes)", "floor hatch in the platform: four brass combination wheels each engraved I-XII, headed left-to-right by pictogram plates: Big Ben ★, Burj Khalifa, Statue of Liberty, Mount Fuji (NOTE: different order than the z2 clock row -- binding is by pictogram, not position)"]
+          "elements": [
+            "the tower's great translucent dial seen FROM BEHIND, glowing amber with daylight; all numerals MIRROR-REVERSED (standard IV/IX notation, mirrored); hand silhouettes visible through the glass",
+            "hand-setting crank on the motion works (moves the hands; 5-minute minute detents)",
+            "winding drum with a square key socket; drum bearing dry and squealing (needs oil before the key will turn)",
+            "long pendulum hanging dead still (can be pushed)",
+            "strike train and chime hammers, linked to the ceiling linkage rods that run off toward z1 (the door-bar linkage, seen end-to-end); rev 1.3: alive-wrong-time ambient state per D11 (soft escapement tick + occasional single hammer twitch that never strikes)",
+            "floor hatch in the platform: four brass combination wheels each engraved I-XII, headed left-to-right by pictogram plates: Big Ben ★, Burj Khalifa, Statue of Liberty, Mount Fuji (NOTE: different order than the z2 clock row -- binding is by pictogram, not position)"
+          ]
         }
       ]
     },
@@ -82,54 +127,282 @@
       "name": "The Clockmaker's Vault (under the dial platform)",
       "hidden": true,
       "nested_in": "z3-behind-dial",
-      "unlock": { "condition": "p07-vault-wheels solved", "gate_description": "Floor hatch in z3 v-dial releases when the four wheels read VI-X-I-III under their pictogram headers." },
+      "unlock": {
+        "condition": "p07-vault-wheels solved",
+        "gate_description": "Floor hatch in z3 v-dial releases when the four wheels read VI-X-I-III under their pictogram headers."
+      },
       "views": [
         {
           "id": "v-vault-interior",
-          "elements": ["small strongroom below the platform", "large square-bit winding key on a hook (takeable)", "brass 'will return' shop tag hanging on a nail: a miniature FRONT-VIEW clock dial with fixed hands at 7:20 above a small door pictogram (takeable clue item)", "second cat cushion and an empty saucer (quiet lore; the cat's other nap spot)", "shelf of ledgers and a wrapped unfinished pocket watch (ambient, inspect-only)"]
+          "elements": [
+            "small strongroom below the platform",
+            "large square-bit winding key on a hook (takeable)",
+            "brass 'will return' shop tag hanging on a nail: a miniature FRONT-VIEW clock dial with fixed hands at 7:20 above a small door pictogram (takeable clue item)",
+            "second cat cushion and an empty saucer (quiet lore; the cat's other nap spot)",
+            "shelf of ledgers and a wrapped unfinished pocket watch (ambient, inspect-only)"
+          ]
         }
       ]
     }
   ],
-
   "derived_conditions": [
     {
       "id": "cond-timelock-release",
       "name": "timelock-release",
       "definition": "clock-wound AND hands-at-release AND pendulum-running",
       "evaluation": "Continuously evaluated boolean over three persistent states, TRUE the moment all three hold REGARDLESS of achievement order. On first TRUE it fires the strike beat and LATCHES state door-bar-raised permanently (later hand-fiddling cannot re-lock the door). This is a condition, never an event sequence. Rev 1.3: the D11 alive-wrong-time ambient (clock-wound AND pendulum-running AND NOT hands-at-release) is PRESENTATION derived from the same inputs -- it introduces no new state and never affects this condition's evaluation or latch.",
-      "inputs": ["state: clock-wound (from p08-oil-wind, latched)", "state: hands-at-release (from p09-set-hands, continuously evaluated until the latch fires)", "state: pendulum-running (from p10-start-pendulum, latched)"],
-      "consumed_by": ["p11-exit"]
+      "inputs": [
+        "state: clock-wound (from p08-oil-wind, latched)",
+        "state: hands-at-release (from p09-set-hands, continuously evaluated until the latch fires)",
+        "state: pendulum-running (from p10-start-pendulum, latched)"
+      ],
+      "consumed_by": [
+        "p11-exit"
+      ]
     }
   ],
-
   "nodes": [
-    { "id": "itm-screwdriver", "type": "item", "name": "Heavy flat-blade screwdriver", "location": "z1 v-bench rack", "obtained_by": "pickup", "uses": ["p03-cache-dormer", "p04-cache-chimney"], "notes": "Multi-use tool; NEVER consumed; retained for the whole level (L1 poker lesson -- full uses list declared)." },
-    { "id": "itm-tile-ii", "type": "item", "name": "Numeral tile II", "location": "z1 v-bench stove hob", "obtained_by": "pickup", "uses": ["p01-dial-door"] },
-    { "id": "itm-tile-iv", "type": "item", "name": "Numeral tile IV", "location": "z1 v-bench coat pocket", "obtained_by": "pickup", "uses": ["p01-dial-door"], "notes": "Rev 1.2: renamed from itm-tile-iiii; standard subtractive notation per user ruling." },
-    { "id": "itm-tile-vii", "type": "item", "name": "Numeral tile VII", "location": "z1 v-master crate straw", "obtained_by": "pickup", "uses": ["p01-dial-door"] },
-    { "id": "itm-tile-xi", "type": "item", "name": "Numeral tile XI", "location": "z1 v-door windowsill", "obtained_by": "pickup", "uses": ["p01-dial-door"] },
-    { "id": "itm-watch-a", "type": "item", "name": "Pocket watch A (single-handed watchman's dial)", "location": "z1 v-bench coat pocket", "obtained_by": "pickup", "uses": [], "notes": "Clue-carrier, inspectable anywhere: case back engraved with the house symbol ⌂; single hand STOPPED on III." },
-    { "id": "itm-toy-mouse", "type": "item", "name": "Tin wind-up mouse", "location": "z2 v-clockrow cabinet top drawer", "obtained_by": "pickup", "uses": ["p02-cat-mouse"], "notes": "Consumed BY DESIGN at p02 (the cat keeps it); it has no other uses, so consumption is soft-lock-safe. Wound-and-placed anywhere else: it skitters a small circle and RETURNS to inventory (developer_notes D4). Rev 1.3: offering it DIRECTLY to the cat triggers the D3 mouse-tell (cat locks eyes, tail flicks, stays put; mouse returns to inventory)." },
-    { "id": "itm-watch-b", "type": "item", "name": "Pocket watch B (single-handed watchman's dial)", "obtained_by": "p02-cat-mouse", "uses": [], "notes": "Clue-carrier, inspectable anywhere: case back engraved with the gear symbol ⚙; single hand STOPPED on IX." },
-    { "id": "itm-great-wheel", "type": "item", "name": "Great wheel (bronze gear, 64 teeth, stamped 64)", "obtained_by": "p03-cache-dormer", "uses": ["p06-gear-train"], "notes": "Mountable/unmountable freely on either post; returns to inventory when unmounted. Never consumed." },
-    { "id": "itm-oilcan", "type": "item", "name": "Long-spout oil can", "obtained_by": "p04-cache-chimney", "uses": ["p05-free-arbor", "p08-oil-wind"], "notes": "Multi-use; NEVER consumed/emptied; retained until both uses satisfied and beyond." },
-    { "id": "itm-winding-key", "type": "item", "name": "Square-bit winding key", "location": "z4 hook", "obtained_by": "pickup", "uses": ["p08-oil-wind"] },
-    { "id": "itm-return-tag", "type": "item", "name": "'Will return' tag (mini dial fixed at 7:20, door pictogram)", "location": "z4 nail", "obtained_by": "pickup", "uses": [], "notes": "Clue-carrier for p09; inspectable anywhere. Shows the FRONT view of a dial." },
-
-    { "id": "clu-slate-ratio", "type": "clue", "location": "z1 v-bench slate", "content": "Wordless chalk schematic of the z2 gear frame: crank circle ringed with 24 tally marks GROUPED IN FIVES (four groups of five plus four singles); fixed pinion XII; unknown wheel '?'; fixed coaxial pinion VIII; unknown wheel '?'; cam circle with one notch AND ONE MATCHING TALLY MARK and a door pictogram. Encodes: (A/12) x (B/8) = 24, i.e. A x B = 2304 -> 36 and 64. REV 1.4: the fives-grouping makes the 24 readable rather than tally-countable (the hard '= 24' count assertion is unchanged), and the cam-rim tally makes the proportion a like-for-like comparison of marks instead of a count compared with a piece of mechanism.", "supports": ["p06-gear-train"], "viewed_when": "slate close-up displayed" },
-    { "id": "clu-frame-tally", "type": "clue", "location": "z2 v-frame, gear-frame timber cheek", "content": "Chalked in the clockmaker's hand on the frame itself: a 24-tally block (grouped in fives) beside the crank station and a single matching tally beside the cam station. Restates the slate's target proportion at the point of use; carries NO structural information -- the two-stage layout is read off the machine (F1). REV 1.4 (F3), user-approved A2.", "supports": ["p06-gear-train"], "viewed_when": "gear-frame close-up displayed (self-satisfying -- the mounting and cranking controls live in this close-up)" },
-    { "id": "clu-watch-a", "type": "clue", "location": "inventory (itm-watch-a inspect)", "content": "House symbol ⌂ on case back; single hand frozen on III. Read at the ⌂ ring by the z1 dormer: 3-o'clock direction.", "supports": ["p03-cache-dormer"], "viewed_when": "watch A inventory inspect close-up displayed" },
-    { "id": "clu-watch-b", "type": "clue", "location": "inventory (itm-watch-b inspect)", "content": "Gear symbol ⚙ on case back; single hand frozen on IX. Read at the ⚙ ring on the z2 chimney: 9-o'clock direction.", "supports": ["p04-cache-chimney"], "viewed_when": "watch B inventory inspect close-up displayed" },
-    { "id": "clu-ring-dormer", "type": "clue", "location": "z1 v-door beam", "content": "Carved house glyph ringed by a 12-notch clock-position circle: the in-scene 'apply a clock direction HERE' anchor. 3-o'clock = toward the marked floorboard right of the dormer. REV 1.4: once clu-watch-a has been viewed, the ring renders the canonical hour hand at the 3-notch in BOTH the wide view (z1-door-base) and the close-up (cu-house-ring), and the cache board carries a chalk house glyph of the same canonical die in both views (D12). The ring stays NON-GATING and, with the board marked, is OPTIONAL for solving p03 -- it is the reasoning route, not the only route (playtest probe P8 measures whether the reasoning survives as an opt-in).", "supports": ["p03-cache-dormer"], "viewed_when": "dormer ring close-up displayed (not part of the gate; anchor only)" },
-    { "id": "clu-ring-chimney", "type": "clue", "location": "z2 v-frame chimney breast", "content": "Carved gear glyph ringed by a 12-notch clock-position circle. 9-o'clock = the brick directly left of the ring. REV 1.4 (RC-1, parity only): once clu-watch-b has been viewed, the ring renders the canonical hour hand at the 9-notch in BOTH the wide view (z2-frame-base) and the close-up (cu-gear-ring) -- the same ringClues table, one more rect, $0. THE CHIMNEY BRICK CARRIES NO CHALK MARK: A5 is ruled p03-only, and the brick's 'no independent visual tell' contract is UNCHANGED and absolute. Reason (RC-2): the 9-o'clock bearing points DIRECTLY at the brick field it selects -- pointer and target share one surface in one frame -- so p04's pointer beat is supportable in-scene and needs no substitute. See p04-cache-chimney.notes.", "supports": ["p04-cache-chimney"], "viewed_when": "chimney ring close-up displayed (not part of the gate; anchor only)" },
-    { "id": "clu-master-time", "type": "clue", "location": "z1 v-master longcase clock", "content": "Master clock stopped at exactly 6:00; case bears the same ★ as the Big Ben plate and the vault's Big Ben wheel header. Establishes reference time = 6.", "supports": ["p07-vault-wheels"], "viewed_when": "master clock face close-up displayed" },
-    { "id": "clu-worldclock-row", "type": "clue", "location": "z2 v-clockrow", "content": "Four hand-less clocks with landmark plates and stamped offsets: Burj Khalifa +IV, Big Ben ★ (reference), Fuji +IX, Liberty −V. With reference 6: Burj Khalifa 6+4=10, Big Ben 6, Fuji 6+9=15 -> III on a 12-hour dial (the single wrap case, ratified), Liberty 6−5=1. Landmark identification is NOT required -- pictogram matching to the vault headers suffices. (Rev 1.2: Dubai replaces Paris per user ruling; real offsets vs London: Dubai +4, Tokyo +9, New York −5.)", "supports": ["p07-vault-wheels"], "viewed_when": "clock-row plates close-up displayed" },
-    { "id": "clu-mirrored-numerals", "type": "clue", "location": "z3 v-dial", "content": "The great dial's numerals read mirror-reversed from behind -- the standing evidence that the back view is a MIRROR of the front, so the return tag's front-view 7:20 must be set as its mirror image. (Art: a mirrored IV reads as a malformed VI and vice versa -- see D1. The playtest confirmed the strongest passive tell is the ABSENCE of any legible 'VII' glyph on the back view.)", "supports": ["p09-set-hands"], "viewed_when": "great dial close-up displayed (self-satisfying: the setting crank lives in this close-up)" },
-    { "id": "clu-return-tag", "type": "clue", "location": "inventory (itm-return-tag inspect)", "content": "Mini FRONT-VIEW dial fixed at 7:20 over a door pictogram: the time-lock's release time.", "supports": ["p09-set-hands"], "viewed_when": "return-tag inventory inspect close-up displayed" },
-    { "id": "clu-linkage-rods", "type": "clue", "location": "z1 (v-door, v-master) and z3 v-dial", "content": "Visible linkage rods run from the stair door's time-lock bar along the ceiling into the wall, and re-emerge in z3 at the strike train: the door is opened BY the clock. Foreshadowing/orientation, not a gate.", "supports": ["p11-exit"], "viewed_when": "any linkage close-up displayed" },
-    { "id": "clu-cat-refusal", "type": "clue", "location": "z1 v-door cat", "content": "Nudging the cat or offering ANY inventory item EXCEPT THE MOUSE gets the same terminal refusal: one slow blink, the cat resettles heavier on the cushion; offered items return unspent. Categorical ('this will never work'), identical on repeat, no escalation. REV 1.3 EXCEPTION (playtest tweak 2, user-approved): offering the TOY MOUSE directly produces a TELL -- the cat's eyes lock onto the mouse and track it, tail flicks, but it stays put; the mouse returns to inventory. Right idea, wrong verb: the tell nudges toward winding the mouse and setting it on the FLOOR without executing it (D3). Petting is allowed (purr, no state change). The only thing that moves a cat is prey -- moving prey.", "supports": ["p02-cat-mouse"], "viewed_when": "n/a (behavioral grammar, developer_notes D3)" },
-
+    {
+      "id": "itm-screwdriver",
+      "type": "item",
+      "name": "Heavy flat-blade screwdriver",
+      "location": "z1 v-bench rack",
+      "obtained_by": "pickup",
+      "uses": [
+        "p03-cache-dormer",
+        "p04-cache-chimney"
+      ],
+      "notes": "Multi-use tool; NEVER consumed; retained for the whole level (L1 poker lesson -- full uses list declared)."
+    },
+    {
+      "id": "itm-tile-ii",
+      "type": "item",
+      "name": "Numeral tile II",
+      "location": "z1 v-bench stove hob",
+      "obtained_by": "pickup",
+      "uses": [
+        "p01-dial-door"
+      ]
+    },
+    {
+      "id": "itm-tile-iv",
+      "type": "item",
+      "name": "Numeral tile IV",
+      "location": "z1 v-bench coat pocket",
+      "obtained_by": "pickup",
+      "uses": [
+        "p01-dial-door"
+      ],
+      "notes": "Rev 1.2: renamed from itm-tile-iiii; standard subtractive notation per user ruling."
+    },
+    {
+      "id": "itm-tile-vii",
+      "type": "item",
+      "name": "Numeral tile VII",
+      "location": "z1 v-master crate straw",
+      "obtained_by": "pickup",
+      "uses": [
+        "p01-dial-door"
+      ]
+    },
+    {
+      "id": "itm-tile-xi",
+      "type": "item",
+      "name": "Numeral tile XI",
+      "location": "z1 v-door windowsill",
+      "obtained_by": "pickup",
+      "uses": [
+        "p01-dial-door"
+      ]
+    },
+    {
+      "id": "itm-watch-a",
+      "type": "item",
+      "name": "Pocket watch A (single-handed watchman's dial)",
+      "location": "z1 v-bench coat pocket",
+      "obtained_by": "pickup",
+      "uses": [],
+      "notes": "Clue-carrier, inspectable anywhere: case back engraved with the house symbol ⌂; single hand STOPPED on III."
+    },
+    {
+      "id": "itm-toy-mouse",
+      "type": "item",
+      "name": "Tin wind-up mouse",
+      "location": "z2 v-clockrow cabinet top drawer",
+      "obtained_by": "pickup",
+      "uses": [
+        "p02-cat-mouse"
+      ],
+      "notes": "Consumed BY DESIGN at p02 (the cat keeps it); it has no other uses, so consumption is soft-lock-safe. Wound-and-placed anywhere else: it skitters a small circle and RETURNS to inventory (developer_notes D4). Rev 1.3: offering it DIRECTLY to the cat triggers the D3 mouse-tell (cat locks eyes, tail flicks, stays put; mouse returns to inventory)."
+    },
+    {
+      "id": "itm-watch-b",
+      "type": "item",
+      "name": "Pocket watch B (single-handed watchman's dial)",
+      "obtained_by": "p02-cat-mouse",
+      "uses": [],
+      "notes": "Clue-carrier, inspectable anywhere: case back engraved with the gear symbol ⚙; single hand STOPPED on IX."
+    },
+    {
+      "id": "itm-great-wheel",
+      "type": "item",
+      "name": "Great wheel (bronze gear, 64 teeth, stamped 64)",
+      "obtained_by": "p03-cache-dormer",
+      "uses": [
+        "p06-gear-train"
+      ],
+      "notes": "Mountable/unmountable freely on either post; returns to inventory when unmounted. Never consumed."
+    },
+    {
+      "id": "itm-oilcan",
+      "type": "item",
+      "name": "Long-spout oil can",
+      "obtained_by": "p04-cache-chimney",
+      "uses": [
+        "p05-free-arbor",
+        "p08-oil-wind"
+      ],
+      "notes": "Multi-use; NEVER consumed/emptied; retained until both uses satisfied and beyond."
+    },
+    {
+      "id": "itm-winding-key",
+      "type": "item",
+      "name": "Square-bit winding key",
+      "location": "z4 hook",
+      "obtained_by": "pickup",
+      "uses": [
+        "p08-oil-wind"
+      ]
+    },
+    {
+      "id": "itm-return-tag",
+      "type": "item",
+      "name": "'Will return' tag (mini dial fixed at 7:20, door pictogram)",
+      "location": "z4 nail",
+      "obtained_by": "pickup",
+      "uses": [],
+      "notes": "Clue-carrier for p09; inspectable anywhere. Shows the FRONT view of a dial."
+    },
+    {
+      "id": "clu-slate-ratio",
+      "type": "clue",
+      "location": "z1 v-bench slate",
+      "content": "Wordless chalk schematic of the z2 gear frame: crank circle ringed with 24 tally marks GROUPED IN FIVES (four groups of five plus four singles); fixed pinion XII; unknown wheel '?'; fixed coaxial pinion VIII; unknown wheel '?'; cam circle with one notch AND ONE MATCHING TALLY MARK and a door pictogram. Encodes: (A/12) x (B/8) = 24, i.e. A x B = 2304 -> 36 and 64. REV 1.4: the fives-grouping makes the 24 readable rather than tally-countable (the hard '= 24' count assertion is unchanged), and the cam-rim tally makes the proportion a like-for-like comparison of marks instead of a count compared with a piece of mechanism.",
+      "supports": [
+        "p06-gear-train"
+      ],
+      "viewed_when": "slate close-up displayed"
+    },
+    {
+      "id": "clu-frame-tally",
+      "type": "clue",
+      "location": "z2 v-frame, gear-frame timber cheek",
+      "content": "Chalked in the clockmaker's hand on the frame itself: a 24-tally block (grouped in fives) beside the crank station and a single matching tally beside the cam station. Restates the slate's target proportion at the point of use; carries NO structural information -- the two-stage layout is read off the machine (F1). REV 1.4 (F3), user-approved A2.",
+      "supports": [
+        "p06-gear-train"
+      ],
+      "viewed_when": "gear-frame close-up displayed (self-satisfying -- the mounting and cranking controls live in this close-up)"
+    },
+    {
+      "id": "clu-watch-a",
+      "type": "clue",
+      "location": "inventory (itm-watch-a inspect)",
+      "content": "House symbol ⌂ on case back; single hand frozen on III. Read at the ⌂ ring by the z1 dormer: 3-o'clock direction.",
+      "supports": [
+        "p03-cache-dormer"
+      ],
+      "viewed_when": "watch A inventory inspect close-up displayed"
+    },
+    {
+      "id": "clu-watch-b",
+      "type": "clue",
+      "location": "inventory (itm-watch-b inspect)",
+      "content": "Gear symbol ⚙ on case back; single hand frozen on IX. Read at the ⚙ ring on the z2 chimney: 9-o'clock direction.",
+      "supports": [
+        "p04-cache-chimney"
+      ],
+      "viewed_when": "watch B inventory inspect close-up displayed"
+    },
+    {
+      "id": "clu-ring-dormer",
+      "type": "clue",
+      "location": "z1 v-door beam",
+      "content": "Carved house glyph ringed by a 12-notch clock-position circle: the in-scene 'apply a clock direction HERE' anchor. 3-o'clock = toward the marked floorboard right of the dormer. REV 1.4: once clu-watch-a has been viewed, the ring renders the canonical hour hand at the 3-notch in BOTH the wide view (z1-door-base) and the close-up (cu-house-ring), and the cache board carries a chalk house glyph of the same canonical die in both views (D12). The ring stays NON-GATING and, with the board marked, is OPTIONAL for solving p03 -- it is the reasoning route, not the only route (playtest probe P8 measures whether the reasoning survives as an opt-in).",
+      "supports": [
+        "p03-cache-dormer"
+      ],
+      "viewed_when": "dormer ring close-up displayed (not part of the gate; anchor only)"
+    },
+    {
+      "id": "clu-ring-chimney",
+      "type": "clue",
+      "location": "z2 v-frame chimney breast",
+      "content": "Carved gear glyph ringed by a 12-notch clock-position circle. 9-o'clock = the brick directly left of the ring. REV 1.4 (RC-1, parity only): once clu-watch-b has been viewed, the ring renders the canonical hour hand at the 9-notch in BOTH the wide view (z2-frame-base) and the close-up (cu-gear-ring) -- the same ringClues table, one more rect, $0. THE CHIMNEY BRICK CARRIES NO CHALK MARK: A5 is ruled p03-only, and the brick's 'no independent visual tell' contract is UNCHANGED and absolute. Reason (RC-2): the 9-o'clock bearing points DIRECTLY at the brick field it selects -- pointer and target share one surface in one frame -- so p04's pointer beat is supportable in-scene and needs no substitute. See p04-cache-chimney.notes.",
+      "supports": [
+        "p04-cache-chimney"
+      ],
+      "viewed_when": "chimney ring close-up displayed (not part of the gate; anchor only)"
+    },
+    {
+      "id": "clu-master-time",
+      "type": "clue",
+      "location": "z1 v-master longcase clock",
+      "content": "Master clock stopped at exactly 6:00; case bears the same ★ as the Big Ben plate and the vault's Big Ben wheel header. Establishes reference time = 6.",
+      "supports": [
+        "p07-vault-wheels"
+      ],
+      "viewed_when": "master clock face close-up displayed"
+    },
+    {
+      "id": "clu-worldclock-row",
+      "type": "clue",
+      "location": "z2 v-clockrow",
+      "content": "Four hand-less clocks with landmark plates and stamped offsets: Burj Khalifa +IV, Big Ben ★ (reference), Fuji +IX, Liberty −V. With reference 6: Burj Khalifa 6+4=10, Big Ben 6, Fuji 6+9=15 -> III on a 12-hour dial (the single wrap case, ratified), Liberty 6−5=1. Landmark identification is NOT required -- pictogram matching to the vault headers suffices. (Rev 1.2: Dubai replaces Paris per user ruling; real offsets vs London: Dubai +4, Tokyo +9, New York −5.)",
+      "supports": [
+        "p07-vault-wheels"
+      ],
+      "viewed_when": "clock-row plates close-up displayed"
+    },
+    {
+      "id": "clu-mirrored-numerals",
+      "type": "clue",
+      "location": "z3 v-dial",
+      "content": "The great dial's numerals read mirror-reversed from behind -- the standing evidence that the back view is a MIRROR of the front, so the return tag's front-view 7:20 must be set as its mirror image. (Art: a mirrored IV reads as a malformed VI and vice versa -- see D1. The playtest confirmed the strongest passive tell is the ABSENCE of any legible 'VII' glyph on the back view.)",
+      "supports": [
+        "p09-set-hands"
+      ],
+      "viewed_when": "great dial close-up displayed (self-satisfying: the setting crank lives in this close-up)"
+    },
+    {
+      "id": "clu-return-tag",
+      "type": "clue",
+      "location": "inventory (itm-return-tag inspect)",
+      "content": "Mini FRONT-VIEW dial fixed at 7:20 over a door pictogram: the time-lock's release time.",
+      "supports": [
+        "p09-set-hands"
+      ],
+      "viewed_when": "return-tag inventory inspect close-up displayed"
+    },
+    {
+      "id": "clu-linkage-rods",
+      "type": "clue",
+      "location": "z1 (v-door, v-master) and z3 v-dial",
+      "content": "Visible linkage rods run from the stair door's time-lock bar along the ceiling into the wall, and re-emerge in z3 at the strike train: the door is opened BY the clock. Foreshadowing/orientation, not a gate.",
+      "supports": [
+        "p11-exit"
+      ],
+      "viewed_when": "any linkage close-up displayed"
+    },
+    {
+      "id": "clu-cat-refusal",
+      "type": "clue",
+      "location": "z1 v-door cat",
+      "content": "Nudging the cat or offering ANY inventory item EXCEPT THE MOUSE gets the same terminal refusal: one slow blink, the cat resettles heavier on the cushion; offered items return unspent. Categorical ('this will never work'), identical on repeat, no escalation. REV 1.3 EXCEPTION (playtest tweak 2, user-approved): offering the TOY MOUSE directly produces a TELL -- the cat's eyes lock onto the mouse and track it, tail flicks, but it stays put; the mouse returns to inventory. Right idea, wrong verb: the tell nudges toward winding the mouse and setting it on the FLOOR without executing it (D3). Petting is allowed (purr, no state change). The only thing that moves a cat is prey -- moving prey.",
+      "supports": [
+        "p02-cat-mouse"
+      ],
+      "viewed_when": "n/a (behavioral grammar, developer_notes D3)"
+    },
     {
       "id": "p01-dial-door",
       "type": "puzzle",
@@ -137,12 +410,31 @@
       "location": "z1 v-master workroom door",
       "mechanic": "environmental scavenger (4 hidden tiles) + positional numeral seating + glyph-order discrimination (IV vs VI decoy)",
       "input": "Seat numeral tiles into the four empty sockets (positions 2, 4, 7, 11).",
-      "solution_fixed": { "socket-2": "itm-tile-ii", "socket-4": "itm-tile-iv", "socket-7": "itm-tile-vii", "socket-11": "itm-tile-xi", "rejected": "tray VI tile in socket-4" },
+      "solution_fixed": {
+        "socket-2": "itm-tile-ii",
+        "socket-4": "itm-tile-iv",
+        "socket-7": "itm-tile-vii",
+        "socket-11": "itm-tile-xi",
+        "rejected": "tray VI tile in socket-4"
+      },
       "derivation": "Standard clock-face layout gives each numeral its position (the 8 seated tiles anchor it; the whole level uses standard subtractive notation -- rev 1.2 user ruling). The modest trap: the tray under the door offers a loose VI tile, inviting glyph-order confusion with the needed IV (I-before-V subtracts, I-after-V adds). The in-scene disproof sits on the dial itself: VI is already seated at position 6. Seating the tray VI in socket-4 whirs, stalls, and pops it back to the tray; seating IV completes the dial and trips the latch.",
-      "requires": ["itm-tile-ii", "itm-tile-iv", "itm-tile-vii", "itm-tile-xi"],
-      "clues": ["8 seated tiles anchor positions (incl. the seated VI at position 6 -- the tray decoy's standing disproof)", "tray VI decoy (in-scene only)"],
-      "clue_gate": { "gated": false, "rationale": "Physical seating with pop-back rejection, self-anchored by the 8 seated tiles. The only fork (IV vs the decoy VI) costs at most one extra attempt and is disproved by the dial itself -- gating would add friction for zero anti-spoiler gain. (Playtest: solved in ~6 min with one tray-tile mis-seat, self-corrected in seconds -- working as intended.)" },
-      "yields": { "zone_unlock": "z2-workroom" },
+      "requires": [
+        "itm-tile-ii",
+        "itm-tile-iv",
+        "itm-tile-vii",
+        "itm-tile-xi"
+      ],
+      "clues": [
+        "8 seated tiles anchor positions (incl. the seated VI at position 6 -- the tray decoy's standing disproof)",
+        "tray VI decoy (in-scene only)"
+      ],
+      "clue_gate": {
+        "gated": false,
+        "rationale": "Physical seating with pop-back rejection, self-anchored by the 8 seated tiles. The only fork (IV vs the decoy VI) costs at most one extra attempt and is disproved by the dial itself -- gating would add friction for zero anti-spoiler gain. (Playtest: solved in ~6 min with one tray-tile mis-seat, self-corrected in seconds -- working as intended.)"
+      },
+      "yields": {
+        "zone_unlock": "z2-workroom"
+      },
       "failure_behavior": "Wrong tile or wrong socket: whir-stall, tile pops back (inventory tiles to inventory, tray tile to tray). Unlimited attempts, correct seats persist.",
       "notes": "Rev 1.2: the IIII-convention trap is removed per user ruling; p01 is deliberately slightly easier now (compensating VI decoy kept modest per Producer instruction -- scope unchanged)."
     },
@@ -155,10 +447,24 @@
       "input": "Wind the tin mouse (built-in butterfly key) and set it on the FLOOR near the cat's bench. (Offering the mouse directly to the cat does NOT execute this -- it triggers the D3 tell instead.)",
       "solution_fixed": "itm-toy-mouse wound and placed on the floor at the cat",
       "derivation": "The cat refuses everything else with the generic slow blink; the mouse specifically earns the locked-eyes/tail-flick tell (rev 1.3 -- right idea, wrong verb), and the cushion visibly has something flat beneath it. Wound and set on the floor, the mouse skitters; the cat pounces and chases it to the stair-door corner, keeping it -- and settles there for the rest of the level (by the exit).",
-      "requires": ["itm-toy-mouse"],
-      "clues": ["clu-cat-refusal (incl. the rev-1.3 mouse-offer tell)", "flat shape under cushion visible in close-up"],
-      "clue_gate": { "gated": false, "rationale": "Physical/character beat with a single affordance; the refusal grammar kills wrong theories categorically (L1 D4 lesson), and the rev-1.3 mouse-tell un-poisons the one refusal that used to punish the right idea (playtest near-stuck, ~5 min)." },
-      "yields": { "items": ["itm-watch-b"], "via": "cushion now liftable; watch B beneath", "state": "cat-by-door" },
+      "requires": [
+        "itm-toy-mouse"
+      ],
+      "clues": [
+        "clu-cat-refusal (incl. the rev-1.3 mouse-offer tell)",
+        "flat shape under cushion visible in close-up"
+      ],
+      "clue_gate": {
+        "gated": false,
+        "rationale": "Physical/character beat with a single affordance; the refusal grammar kills wrong theories categorically (L1 D4 lesson), and the rev-1.3 mouse-tell un-poisons the one refusal that used to punish the right idea (playtest near-stuck, ~5 min)."
+      },
+      "yields": {
+        "items": [
+          "itm-watch-b"
+        ],
+        "via": "cushion now liftable; watch B beneath",
+        "state": "cat-by-door"
+      },
       "notes": "Mouse is consumed by design (cat keeps it); it has no other uses. Placed anywhere but at the cat, it circles and returns to inventory; offered directly to the cat, it returns via the tell (D3/D4)."
     },
     {
@@ -170,16 +476,27 @@
       "input": "Pry the board at the ⌂ ring's 3-o'clock direction with the screwdriver.",
       "solution_fixed": "board at 3-o'clock of the ⌂ ring (board index D3)",
       "derivation": "Watch A: ⌂ on the case back binds it to the dormer ring; its single hand on III reads as a direction on the ring's 12-notch circle -- 3 o'clock, toward the third board to the right.",
-      "requires": ["itm-screwdriver"],
-      "clues": ["clu-watch-a", "clu-ring-dormer"],
+      "requires": [
+        "itm-screwdriver"
+      ],
+      "clues": [
+        "clu-watch-a",
+        "clu-ring-dormer"
+      ],
       "clue_gate": {
         "gated": true,
-        "required_viewed": ["clu-watch-a"],
+        "required_viewed": [
+          "clu-watch-a"
+        ],
         "logic": "all_of",
         "gate_behavior": "REV 1.3 (playtest tweak 1): until watch A has been inspected, no board yields -- but the responses now differ by spot. WRONG boards: dead 'doesn't budge', identical every time (unchanged). The CORRECT board: a slight creak and a perceptible shift under the screwdriver -- still firmly not yielding, no visual change, no loose wobble (D10). Purpose: an early pryer keeps a memory hook ('that one FELT different') instead of certifying the correct spot inert; the faint-tell alone must not read as an invitation to keep grinding. After watch A is viewed: the correct board yields normally. Stale case: none (prying is an explicit act, re-attempted after viewing).",
         "rationale": "Gate KEPT per playtest 2a: ungating lets a brute-pryer obtain the great wheel before the slate and the oil can without ever moving the cat -- skipping the cat, both watches, and both carving-dial beats (the level's best chains). The faint-tell resolves the gated lane's poison (an early 'doesn't budge' on the correct board no longer contradicts the later clue). Watch A still carries the cache's entire location information; the gate cannot false-block an earned solve. (Flag #7 / Validator A1: RESOLVED, user-approved.)"
       },
-      "yields": { "items": ["itm-great-wheel"] },
+      "yields": {
+        "items": [
+          "itm-great-wheel"
+        ]
+      },
       "failure_behavior": "Wrong board (gated or not): dead 'doesn't budge', identical. Correct board while gated: faint-tell per D10 (creak + slight shift, refuses). No damage, unlimited attempts.",
       "notes": "REV 1.4: solution, requires, clue_gate, yields and failure_behavior are BYTE-STABLE. Two presentation-only annotations render off the EXISTING clu-watch-a D7 boolean (D12): the canonical hour hand on the house ring in the WIDE view as well as the close-up (C1), and a chalk house glyph on the cache board inside the ov-cache-* rect in both views (C2). Pre-clue appearance unchanged. C2 is a user-approved DIFFICULTY change (A4), not merely legibility: it replaces a projection hop (an eye-height 3-o'clock bearing onto a floor) that the scene provably cannot support, and it makes clu-ring-dormer optional for solving."
     },
@@ -192,16 +509,28 @@
       "input": "Pry the brick at the ⚙ ring's 9-o'clock direction with the screwdriver.",
       "solution_fixed": "brick at 9-o'clock of the ⚙ ring",
       "derivation": "Watch B: ⚙ binds it to the chimney ring; hand on IX = 9 o'clock = directly left of the ring.",
-      "requires": ["itm-screwdriver", "zone: z2-workroom"],
-      "clues": ["clu-watch-b", "clu-ring-chimney"],
+      "requires": [
+        "itm-screwdriver",
+        "zone: z2-workroom"
+      ],
+      "clues": [
+        "clu-watch-b",
+        "clu-ring-chimney"
+      ],
       "clue_gate": {
         "gated": true,
-        "required_viewed": ["clu-watch-b"],
+        "required_viewed": [
+          "clu-watch-b"
+        ],
         "logic": "all_of",
         "gate_behavior": "Identical grammar to p03 (rev 1.3): wrong bricks dead-identical; the CORRECT brick gives the D10 faint-tell (grinding creak + hair of movement, still refuses) until watch B has been inspected, then yields normally.",
         "rationale": "Same anti-sweep rationale as p03; watch B is the sole information carrier. Faint-tell per playtest tweak 1, user-approved."
       },
-      "yields": { "items": ["itm-oilcan"] },
+      "yields": {
+        "items": [
+          "itm-oilcan"
+        ]
+      },
       "failure_behavior": "Wrong brick (gated or not): dead 'doesn't budge', identical. Correct brick while gated: faint-tell per D10. Unlimited attempts.",
       "notes": "REV 1.4: UNCHANGED in solution, requires, clue_gate, yields and failure_behavior, and the cache brick's 'NO independent visual tell' art contract is UNCHANGED AND ABSOLUTE -- the p03 reversal does NOT propagate here (A5 = p03-only, user ruling). PRINCIPLED BASIS FOR THE ASYMMETRY (RC-2, record so a later reader does not read it as an oversight): p04's 9-o'clock bearing, taken at the gear ring carved at eye height on the chimney breast, points DIRECTLY at the brick field it selects -- pointer and target are the same surface, in the same frame, at the same height. p03's 3-o'clock bearing, taken at the house ring on the dormer beam at eye height, travels HORIZONTALLY INTO EMPTY AIR and never intersects the floor it selects. p04's pointer beat is supportable in-scene; p03's was not. p03 therefore needs a substitute mark and p04 does not -- a reason, not an exception. Secondary: p03 teaches, p04 tests; p04 was explicitly not reported as failing. RC-1 (C3) adds the WIDE-view hand echo at the 9-notch for wide<->close-up parity only -- no mark, no hotspot, no state, and no A5 pre-emption. KNOWN RISK, measured not assumed (playtest probe P12): a player who learns 'the clockmaker marks his caches' at p03 may read the unmarked brick as 'not available yet' -- a false-negative inference. Stall risk only, never a soft-lock: the ring plus watch B carry the full location, attempts are unlimited, nothing is consumable. NOTE: p04's ring beat has never been blind-measured -- its gear-ring hotspot did not exist until the build-16 wiring batch."
     },
@@ -213,10 +542,21 @@
       "mechanic": "tool-on-hotspot (oiling)",
       "input": "Use the oil can on the gear frame's rust-bloomed bearing.",
       "solution_fixed": "itm-oilcan on arbor bearing",
-      "requires": ["itm-oilcan", "zone: z2-workroom"],
-      "clues": ["rust bloom at the bearing; crank visibly rocks a few degrees and stops"],
-      "clue_gate": { "gated": false, "rationale": "Tool-on-hotspot physical act; the seizure is self-evident. Nothing code-like to protect." },
-      "yields": { "state": "arbor-freed", "state_semantics": "Persistent latched flag; crank now turns freely (with whatever gears are mounted)." }
+      "requires": [
+        "itm-oilcan",
+        "zone: z2-workroom"
+      ],
+      "clues": [
+        "rust bloom at the bearing; crank visibly rocks a few degrees and stops"
+      ],
+      "clue_gate": {
+        "gated": false,
+        "rationale": "Tool-on-hotspot physical act; the seizure is self-evident. Nothing code-like to protect."
+      },
+      "yields": {
+        "state": "arbor-freed",
+        "state_semantics": "Persistent latched flag; crank now turns freely (with whatever gears are mounted)."
+      }
     },
     {
       "id": "p06-gear-train",
@@ -225,12 +565,35 @@
       "location": "z2 v-frame",
       "mechanic": "gear-ratio reasoning (two-stage reduction; meshing train) -- LEVEL SIGNATURE MECHANIC (user ratified as the arithmetic peak, flag #2)",
       "input": "Mount one gear on POST A (meshing the crank's fixed 12-tooth pinion; POST A carries a fixed coaxial 8-tooth pinion) and one on POST B (meshed by that pinion, driving the cam). Then crank through one full cam revolution.",
-      "solution_fixed": { "gear_set": ["36-tooth (rack)", "64-tooth (itm-great-wheel)"], "arrangement": "EITHER order -- 36 on A with 64 on B, or 64 on A with 36 on B (ratio product commutes; both are correct by design, multiple valid solves)", "target_ratio": "24 crank turns : 1 cam turn" },
+      "solution_fixed": {
+        "gear_set": [
+          "36-tooth (rack)",
+          "64-tooth (itm-great-wheel)"
+        ],
+        "arrangement": "EITHER order -- 36 on A with 64 on B, or 64 on A with 36 on B (ratio product commutes; both are correct by design, multiple valid solves)",
+        "target_ratio": "24 crank turns : 1 cam turn"
+      },
       "derivation": "Slate: (A/12) x (B/8) = 24 -> A x B = 2304. Available: rack {16, 24, 36, 40, 48, 72} + the found 64-tooth great wheel. Unique pair anywhere in the level: 36 x 64 (the 36 is on the rack; the 64 must be found via p03 -- the great wheel is strictly required; the playtest confirmed 'no rack pair works, so a 64 must be hidden somewhere' lands as the intended deduction). The 48 tempts 48 x 48 = 2304 exactly, but only one 48 exists (rh-48-gear).",
-      "requires": ["state: arbor-freed", "itm-great-wheel", "zone: z2-workroom"],
-      "clues": ["clu-slate-ratio", "stamped tooth counts (Arabic) + physically countable teeth on every loose gear", "Roman XII / VIII stamps on the fixed pinions", "live mechanical feedback: with ANY meshing pair mounted the crank turns and the cam/mural visibly runs at the resulting speed; REV 1.4 -- 'countable' is now realized ON SCREEN by the D13 live crank-tally readout (one chalk stroke per crank revolution in the current cam cycle), because the build ran a whole cam cycle on one press with no countable artifact (playtest 2b: the counting path is a legitimate no-algebra solve route, and D13 is what delivers it)", "clu-frame-tally (F3: the chalked 24:1 target proportion restated on the frame's own cheek)"],
-      "clue_gate": { "gated": false, "rationale": "Mechanical truth: a correctly built 24:1 train MUST work whether or not the slate was seen -- gating it would read as a broken machine. The brute-force surface (~30 ordered pairs, each needing a cranking test) is real but tedious, and the visible too-fast/too-slow cam feedback is INTENDED reasoning material, not a leak. User CONFIRMED ungated at checkpoint (flag #3). REV 1.4: the D13 tally readout is mechanical truth (the realized ratio of the mounted pair, identical in form for correct and incorrect pairs, with no proximity signal), so it too is UNGATED; gating it would reintroduce the broken-machine read this ungated rationale exists to prevent. clu-frame-tally is likewise non-gating and appears in no clue_gate." },
-      "yields": { "zone_unlock": "z3-behind-dial", "via": "at exactly 24:1 the mural completes one full clean cycle (sun crosses the carved town, the watchman figure strikes his bell), a counterweight drops, and the wall panel swings open -- latches open permanently" },
+      "requires": [
+        "state: arbor-freed",
+        "itm-great-wheel",
+        "zone: z2-workroom"
+      ],
+      "clues": [
+        "clu-slate-ratio",
+        "stamped tooth counts (Arabic) + physically countable teeth on every loose gear",
+        "Roman XII / VIII stamps on the fixed pinions",
+        "live mechanical feedback: with ANY meshing pair mounted the crank turns and the cam/mural visibly runs at the resulting speed; REV 1.4 -- 'countable' is now realized ON SCREEN by the D13 live crank-tally readout (one chalk stroke per crank revolution in the current cam cycle), because the build ran a whole cam cycle on one press with no countable artifact (playtest 2b: the counting path is a legitimate no-algebra solve route, and D13 is what delivers it)",
+        "clu-frame-tally (F3: the chalked 24:1 target proportion restated on the frame's own cheek)"
+      ],
+      "clue_gate": {
+        "gated": false,
+        "rationale": "Mechanical truth: a correctly built 24:1 train MUST work whether or not the slate was seen -- gating it would read as a broken machine. The brute-force surface (~30 ordered pairs, each needing a cranking test) is real but tedious, and the visible too-fast/too-slow cam feedback is INTENDED reasoning material, not a leak. User CONFIRMED ungated at checkpoint (flag #3). REV 1.4: the D13 tally readout is mechanical truth (the realized ratio of the mounted pair, identical in form for correct and incorrect pairs, with no proximity signal), so it too is UNGATED; gating it would reintroduce the broken-machine read this ungated rationale exists to prevent. clu-frame-tally is likewise non-gating and appears in no clue_gate."
+      },
+      "yields": {
+        "zone_unlock": "z3-behind-dial",
+        "via": "at exactly 24:1 the mural completes one full clean cycle (sun crosses the carved town, the watchman figure strikes his bell), a counterweight drops, and the wall panel swings open -- latches open permanently"
+      },
       "failure_behavior": "Wrong ratio: the cam visibly runs too fast or too slow; at cycle-end the panel latch ratchets and SLIPS with a clack (identical clack for every wrong ratio -- speed itself is the only differential feedback, by design). Gears freely remountable; rack gears return to the rack, the great wheel returns to inventory if unmounted. No lockout."
     },
     {
@@ -240,18 +603,33 @@
       "location": "z3 v-dial floor hatch",
       "mechanic": "numeric combination lock; time-zone offset reasoning with cross-zone clue binding",
       "input": "Set four wheels (each engraved I-XII) under pictogram headers: Big Ben ★, Burj Khalifa, Liberty, Fuji.",
-      "solution_fixed": ["VI", "X", "I", "III"],
+      "solution_fixed": [
+        "VI",
+        "X",
+        "I",
+        "III"
+      ],
       "derivation": "REV 1.2 -- CODE CHANGED from VI-VII-I-III (Dubai replaces Paris per user ruling). Master clock (z1) stopped at 6:00 and shares the ★ with the Big Ben plate/header -> reference 6. z2 plates give offsets: Burj Khalifa +4 -> 10 (X); Liberty −5 -> 1 (I); Fuji +9 -> 15 -> III on a 12-hour wheel (the single wrap case, ratified at checkpoint, flag #4). Header order at the vault differs from the z2 row order, forcing pictogram matching. Landmark-name knowledge is never required -- pictograms match pictograms; the offsets are stamped in-world. Real-world offsets are authentic (Dubai UTC+4, Tokyo UTC+9, New York UTC−5 vs London).",
-      "requires": ["zone: z3-behind-dial"],
-      "clues": ["clu-master-time", "clu-worldclock-row"],
+      "requires": [
+        "zone: z3-behind-dial"
+      ],
+      "clues": [
+        "clu-master-time",
+        "clu-worldclock-row"
+      ],
       "clue_gate": {
         "gated": true,
-        "required_viewed": ["clu-master-time", "clu-worldclock-row"],
+        "required_viewed": [
+          "clu-master-time",
+          "clu-worldclock-row"
+        ],
         "logic": "all_of",
         "gate_behavior": "Wheels spin freely at all times; while gated the hatch stays shut on ANY setting including the correct one -- presentation-identical to a wrong code. Wheels retain position. Stale-correct-wheels case resolves via D6 re-evaluation on close-up entry. (Strict no-tell here is unchanged by the rev-1.3 pry-gate amendment.)",
         "rationale": "12^4 = 20,736 combinations invites persistent fiddling and walkthrough spoilers; both gating clues carry the code's entire information and live in permanently reachable earlier zones (z1, z2), so no earned solve can be blocked."
       },
-      "yields": { "zone_unlock": "z4-vault" },
+      "yields": {
+        "zone_unlock": "z4-vault"
+      },
       "failure_behavior": "Wrong code OR gated attempt: hatch stays shut, identical. Wheels keep position; no lockout. (Playtest minor note, ships as-is per step-6 ruling: the hatch releases on being tried, not on the last wheel click -- a momentary bug-read the playtester rated cheap to survive.)"
     },
     {
@@ -262,10 +640,22 @@
       "mechanic": "mechanism completion (two-item: oil the dry drum bearing, then crank the winding key)",
       "input": "Oil can on the squealing drum bearing; winding key in the square socket; crank until the drive weight rises fully.",
       "solution_fixed": "itm-oilcan on drum bearing, then itm-winding-key in socket",
-      "requires": ["itm-oilcan", "itm-winding-key", "zone: z3-behind-dial"],
-      "clues": ["dry squeal + rust at the drum bearing; square socket visibly matches the key's square bit; drive weight visible on its line"],
-      "clue_gate": { "gated": false, "rationale": "Mechanism completion; both needs are self-evident (squeal, matching socket). Physical acts, not code entries." },
-      "yields": { "state": "clock-wound", "state_semantics": "Persistent latched flag; drive weight fully raised. Feeds cond-timelock-release and the D11 alive-wrong-time ambient." },
+      "requires": [
+        "itm-oilcan",
+        "itm-winding-key",
+        "zone: z3-behind-dial"
+      ],
+      "clues": [
+        "dry squeal + rust at the drum bearing; square socket visibly matches the key's square bit; drive weight visible on its line"
+      ],
+      "clue_gate": {
+        "gated": false,
+        "rationale": "Mechanism completion; both needs are self-evident (squeal, matching socket). Physical acts, not code entries."
+      },
+      "yields": {
+        "state": "clock-wound",
+        "state_semantics": "Persistent latched flag; drive weight fully raised. Feeds cond-timelock-release and the D11 alive-wrong-time ambient."
+      },
       "failure_behavior": "Key before oil: key seats but won't turn, drum squeals -- oil need is restated diegetically. Nothing consumed. (The mouse's butterfly key visibly does not fit the square socket; offered anyway, it returns -- playtest confirmed this reads cleanly.)"
     },
     {
@@ -277,16 +667,26 @@
       "input": "Turn the setting crank to position the great dial's hands (5-minute detents on the minute hand).",
       "solution_fixed": "mechanism (FRONT) time = 7:20; equivalently, the BACK view the player sees must show the mirror image of 7:20 (see developer_notes D1 for the rendering/state contract)",
       "derivation": "The return tag shows the release time 7:20 as a FRONT view. The player stands BEHIND the dial: numerals are visibly mirror-reversed (clu-mirrored-numerals), so naively copying the tag's hand positions onto the back view sets the front to 4:40 and nothing happens. The aha: mirror the tag (the playtest's unstick path: no legible 'VII' exists anywhere on the back view). Any-order verification: the strike fires the moment all three release conditions hold.",
-      "requires": ["zone: z3-behind-dial"],
-      "clues": ["clu-return-tag", "clu-mirrored-numerals"],
+      "requires": [
+        "zone: z3-behind-dial"
+      ],
+      "clues": [
+        "clu-return-tag",
+        "clu-mirrored-numerals"
+      ],
       "clue_gate": {
         "gated": true,
-        "required_viewed": ["clu-return-tag"],
+        "required_viewed": [
+          "clu-return-tag"
+        ],
         "logic": "all_of",
         "gate_behavior": "Crank always turns and hands always move (a frozen crank would read broken); while gated, hands-at-release simply never asserts, so the condition cannot fire -- indistinguishable from having the wrong time set. clu-mirrored-numerals is self-satisfying (same close-up as the crank) and is deliberately NOT in the gate. Stale case: correct front-time set while gated, tag viewed later -- D6 re-evaluation on close-up entry (or on any subsequent state change) asserts the flag. (Strict no-tell here is unchanged by the rev-1.3 pry-gate amendment; the D11 ambient is state feedback about the MOVEMENT, not about the entered time's correctness.)",
         "rationale": "144 detent combinations plus the tag being on the required path (z4 precedes any possible knowledge of 7:20) means the gate can never false-block; it closes the persistent-fiddling/spoiler path only."
       },
-      "yields": { "state": "hands-at-release", "state_semantics": "Continuously evaluated: TRUE while front-time = 7:20. Once cond-timelock-release latches, later hand movement is irrelevant (door bar stays raised)." },
+      "yields": {
+        "state": "hands-at-release",
+        "state_semantics": "Continuously evaluated: TRUE while front-time = 7:20. Once cond-timelock-release latches, later hand movement is irrelevant (door bar stays raised)."
+      },
       "failure_behavior": "Any non-7:20 front time (including the un-mirrored 4:40 trap) OR gated state: the clock sits at that time and the strike does not fire. REV 1.3 (playtest tweak 3): if clock-wound AND pendulum-running, the movement now shows the D11 sign of life -- soft escapement tick + an occasional single hammer twitch that never strikes -- so the state reads 'alive, wrong input', never 'broken'. The ambient is identical at EVERY wrong time (it encodes nothing about closeness or the correct value). If wind or pendulum is missing: full silence, unchanged. Unlimited adjustment.",
       "easing_valve": "USER RULING (flag #5, 2026-07-18): trap KEPT as designed; the overlay-only softening specified in developer_notes D9 remains DORMANT and is untouched by rev 1.3 (the D11 ambient is a separate, weaker signal: it says 'wrong time', while D9 would help derive the RIGHT one). Activating D9 later must not change this node's solution, gate, or failure grammar.",
       "notes": "User checkpoint ruling: 'i feel it may be a bit hard but i'll have to play it to see, keep for now, with room to make it easier in future.' Playtest S2 (~10 min stall, hasty-reader worst case 15-30 min) is addressed at the bug-read level by D11; the inference difficulty itself is deliberately preserved."
@@ -299,10 +699,20 @@
       "mechanic": "free physical act (latching state)",
       "input": "Push the pendulum bob.",
       "solution_fixed": "push pendulum",
-      "requires": ["zone: z3-behind-dial"],
-      "clues": ["dead-still pendulum in an otherwise restorable machine"],
-      "clue_gate": { "gated": false, "rationale": "Free physical act." },
-      "yields": { "state": "pendulum-running", "state_semantics": "Persistent latched flag (stylized: once pushed it keeps swinging -- weakly if unwound, fully once wound; the flag is order-free either way). Feeds cond-timelock-release and the D11 alive-wrong-time ambient." }
+      "requires": [
+        "zone: z3-behind-dial"
+      ],
+      "clues": [
+        "dead-still pendulum in an otherwise restorable machine"
+      ],
+      "clue_gate": {
+        "gated": false,
+        "rationale": "Free physical act."
+      },
+      "yields": {
+        "state": "pendulum-running",
+        "state_semantics": "Persistent latched flag (stylized: once pushed it keeps swinging -- weakly if unwound, fully once wound; the flag is order-free either way). Feeds cond-timelock-release and the D11 alive-wrong-time ambient."
+      }
     },
     {
       "id": "p11-exit",
@@ -312,94 +722,401 @@
       "mechanic": "endgame free action once the time lock releases",
       "input": "When cond-timelock-release latches: the strike train fires (chimes), the linkage rods articulate along the ceiling in BOTH z3 and z1, and the door bar lifts. Return to z1, open the door.",
       "solution_fixed": "requires state door-bar-raised (latched by cond-timelock-release)",
-      "requires": ["condition: cond-timelock-release"],
-      "clues": ["clu-linkage-rods", "the cat, relocated to the door since p02, stands and stretches when the bar lifts (silent nudge)"],
-      "clue_gate": { "gated": false, "rationale": "Endgame free action; nothing to gate." },
-      "yields": { "win": true, "beat": "the door swings onto the tower stairs in evening light; the cat trots out ahead of the player, tail up" }
+      "requires": [
+        "condition: cond-timelock-release"
+      ],
+      "clues": [
+        "clu-linkage-rods",
+        "the cat, relocated to the door since p02, stands and stretches when the bar lifts (silent nudge)"
+      ],
+      "clue_gate": {
+        "gated": false,
+        "rationale": "Endgame free action; nothing to gate."
+      },
+      "yields": {
+        "win": true,
+        "beat": "the door swings onto the tower stairs in evening light; the cat trots out ahead of the player, tail up"
+      }
     }
   ],
-
   "edges": [
-    { "from": "p01-dial-door", "to": "z2-workroom", "type": "zone_unlock" },
-    { "from": "p06-gear-train", "to": "z3-behind-dial", "type": "zone_unlock" },
-    { "from": "p07-vault-wheels", "to": "z4-vault", "type": "zone_unlock" },
-
-    { "from": "z1-attic", "to": "itm-screwdriver", "type": "contains" },
-    { "from": "z1-attic", "to": "itm-tile-ii", "type": "contains" },
-    { "from": "z1-attic", "to": "itm-tile-iv", "type": "contains" },
-    { "from": "z1-attic", "to": "itm-tile-vii", "type": "contains" },
-    { "from": "z1-attic", "to": "itm-tile-xi", "type": "contains" },
-    { "from": "z1-attic", "to": "itm-watch-a", "type": "contains" },
-    { "from": "z2-workroom", "to": "itm-toy-mouse", "type": "contains" },
-    { "from": "z4-vault", "to": "itm-winding-key", "type": "contains" },
-    { "from": "z4-vault", "to": "itm-return-tag", "type": "contains" },
-
-    { "from": "itm-tile-ii", "to": "p01-dial-door", "type": "requires" },
-    { "from": "itm-tile-iv", "to": "p01-dial-door", "type": "requires" },
-    { "from": "itm-tile-vii", "to": "p01-dial-door", "type": "requires" },
-    { "from": "itm-tile-xi", "to": "p01-dial-door", "type": "requires" },
-    { "from": "itm-toy-mouse", "to": "p02-cat-mouse", "type": "requires" },
-    { "from": "p02-cat-mouse", "to": "itm-watch-b", "type": "yields" },
-    { "from": "itm-screwdriver", "to": "p03-cache-dormer", "type": "requires" },
-    { "from": "p03-cache-dormer", "to": "itm-great-wheel", "type": "yields" },
-    { "from": "itm-screwdriver", "to": "p04-cache-chimney", "type": "requires" },
-    { "from": "z2-workroom", "to": "p04-cache-chimney", "type": "requires" },
-    { "from": "p04-cache-chimney", "to": "itm-oilcan", "type": "yields" },
-    { "from": "itm-oilcan", "to": "p05-free-arbor", "type": "requires" },
-    { "from": "z2-workroom", "to": "p05-free-arbor", "type": "requires" },
-    { "from": "p05-free-arbor", "to": "p06-gear-train", "type": "requires_state" },
-    { "from": "itm-great-wheel", "to": "p06-gear-train", "type": "requires" },
-    { "from": "z2-workroom", "to": "p06-gear-train", "type": "requires" },
-    { "from": "z3-behind-dial", "to": "p07-vault-wheels", "type": "requires" },
-    { "from": "itm-oilcan", "to": "p08-oil-wind", "type": "requires" },
-    { "from": "itm-winding-key", "to": "p08-oil-wind", "type": "requires" },
-    { "from": "z3-behind-dial", "to": "p08-oil-wind", "type": "requires" },
-    { "from": "z3-behind-dial", "to": "p09-set-hands", "type": "requires" },
-    { "from": "z3-behind-dial", "to": "p10-start-pendulum", "type": "requires" },
-    { "from": "p08-oil-wind", "to": "cond-timelock-release", "type": "contributes_condition" },
-    { "from": "p09-set-hands", "to": "cond-timelock-release", "type": "contributes_condition" },
-    { "from": "p10-start-pendulum", "to": "cond-timelock-release", "type": "contributes_condition" },
-    { "from": "cond-timelock-release", "to": "p11-exit", "type": "requires_condition" },
-
-    { "from": "clu-watch-a", "to": "p03-cache-dormer", "type": "clue_gate" },
-    { "from": "clu-watch-b", "to": "p04-cache-chimney", "type": "clue_gate" },
-    { "from": "clu-master-time", "to": "p07-vault-wheels", "type": "clue_gate" },
-    { "from": "clu-worldclock-row", "to": "p07-vault-wheels", "type": "clue_gate" },
-    { "from": "clu-return-tag", "to": "p09-set-hands", "type": "clue_gate" }
+    {
+      "from": "p01-dial-door",
+      "to": "z2-workroom",
+      "type": "zone_unlock"
+    },
+    {
+      "from": "p06-gear-train",
+      "to": "z3-behind-dial",
+      "type": "zone_unlock"
+    },
+    {
+      "from": "p07-vault-wheels",
+      "to": "z4-vault",
+      "type": "zone_unlock"
+    },
+    {
+      "from": "z1-attic",
+      "to": "itm-screwdriver",
+      "type": "contains"
+    },
+    {
+      "from": "z1-attic",
+      "to": "itm-tile-ii",
+      "type": "contains"
+    },
+    {
+      "from": "z1-attic",
+      "to": "itm-tile-iv",
+      "type": "contains"
+    },
+    {
+      "from": "z1-attic",
+      "to": "itm-tile-vii",
+      "type": "contains"
+    },
+    {
+      "from": "z1-attic",
+      "to": "itm-tile-xi",
+      "type": "contains"
+    },
+    {
+      "from": "z1-attic",
+      "to": "itm-watch-a",
+      "type": "contains"
+    },
+    {
+      "from": "z2-workroom",
+      "to": "itm-toy-mouse",
+      "type": "contains"
+    },
+    {
+      "from": "z4-vault",
+      "to": "itm-winding-key",
+      "type": "contains"
+    },
+    {
+      "from": "z4-vault",
+      "to": "itm-return-tag",
+      "type": "contains"
+    },
+    {
+      "from": "itm-tile-ii",
+      "to": "p01-dial-door",
+      "type": "requires"
+    },
+    {
+      "from": "itm-tile-iv",
+      "to": "p01-dial-door",
+      "type": "requires"
+    },
+    {
+      "from": "itm-tile-vii",
+      "to": "p01-dial-door",
+      "type": "requires"
+    },
+    {
+      "from": "itm-tile-xi",
+      "to": "p01-dial-door",
+      "type": "requires"
+    },
+    {
+      "from": "itm-toy-mouse",
+      "to": "p02-cat-mouse",
+      "type": "requires"
+    },
+    {
+      "from": "p02-cat-mouse",
+      "to": "itm-watch-b",
+      "type": "yields"
+    },
+    {
+      "from": "itm-screwdriver",
+      "to": "p03-cache-dormer",
+      "type": "requires"
+    },
+    {
+      "from": "p03-cache-dormer",
+      "to": "itm-great-wheel",
+      "type": "yields"
+    },
+    {
+      "from": "itm-screwdriver",
+      "to": "p04-cache-chimney",
+      "type": "requires"
+    },
+    {
+      "from": "z2-workroom",
+      "to": "p04-cache-chimney",
+      "type": "requires"
+    },
+    {
+      "from": "p04-cache-chimney",
+      "to": "itm-oilcan",
+      "type": "yields"
+    },
+    {
+      "from": "itm-oilcan",
+      "to": "p05-free-arbor",
+      "type": "requires"
+    },
+    {
+      "from": "z2-workroom",
+      "to": "p05-free-arbor",
+      "type": "requires"
+    },
+    {
+      "from": "p05-free-arbor",
+      "to": "p06-gear-train",
+      "type": "requires_state"
+    },
+    {
+      "from": "itm-great-wheel",
+      "to": "p06-gear-train",
+      "type": "requires"
+    },
+    {
+      "from": "z2-workroom",
+      "to": "p06-gear-train",
+      "type": "requires"
+    },
+    {
+      "from": "z3-behind-dial",
+      "to": "p07-vault-wheels",
+      "type": "requires"
+    },
+    {
+      "from": "itm-oilcan",
+      "to": "p08-oil-wind",
+      "type": "requires"
+    },
+    {
+      "from": "itm-winding-key",
+      "to": "p08-oil-wind",
+      "type": "requires"
+    },
+    {
+      "from": "z3-behind-dial",
+      "to": "p08-oil-wind",
+      "type": "requires"
+    },
+    {
+      "from": "z3-behind-dial",
+      "to": "p09-set-hands",
+      "type": "requires"
+    },
+    {
+      "from": "z3-behind-dial",
+      "to": "p10-start-pendulum",
+      "type": "requires"
+    },
+    {
+      "from": "p08-oil-wind",
+      "to": "cond-timelock-release",
+      "type": "contributes_condition"
+    },
+    {
+      "from": "p09-set-hands",
+      "to": "cond-timelock-release",
+      "type": "contributes_condition"
+    },
+    {
+      "from": "p10-start-pendulum",
+      "to": "cond-timelock-release",
+      "type": "contributes_condition"
+    },
+    {
+      "from": "cond-timelock-release",
+      "to": "p11-exit",
+      "type": "requires_condition"
+    },
+    {
+      "from": "clu-watch-a",
+      "to": "p03-cache-dormer",
+      "type": "clue_gate"
+    },
+    {
+      "from": "clu-watch-b",
+      "to": "p04-cache-chimney",
+      "type": "clue_gate"
+    },
+    {
+      "from": "clu-master-time",
+      "to": "p07-vault-wheels",
+      "type": "clue_gate"
+    },
+    {
+      "from": "clu-worldclock-row",
+      "to": "p07-vault-wheels",
+      "type": "clue_gate"
+    },
+    {
+      "from": "clu-return-tag",
+      "to": "p09-set-hands",
+      "type": "clue_gate"
+    }
   ],
-
   "solve_path_notes": {
     "structure": "Spine: z1 tile scavenge -> p01 -> z2. Then THREE parallel workstreams that cross-bind zones: (1) pointer-watch stream: watch A (z1 coat) -> dormer cache -> great wheel; mouse (z2) -> cat (z1) -> watch B -> chimney cache (z2) -> oil can; (2) machine stream: oil arbor -> gear train -> z3; (3) knowledge stream: view master time (z1) + world-clock row (z2) -> vault code. In z3: vault -> z4 (key + tag) -> endgame trio (wind / set hands / pendulum) in ANY order -> strike -> z1 exit. Any interleaving satisfying the requirement edges is valid.",
-    "example_ordering_A": ["take screwdriver", "take coat items (watch A + tile IV)", "take tiles II, VII, XI", "view master clock close-up (satisfies clu-master-time)", "p01", "take mouse (z2)", "view clu-slate-ratio (z1 slate)", "inspect watch A (clu-watch-a)", "p03 (great wheel)", "p02 in z1 (cat -> watch B)", "inspect watch B (clu-watch-b)", "p04 (oil can)", "p05", "p06 -> z3", "view clu-worldclock-row (z2)", "p07 -> z4", "take winding key + return tag", "p08", "inspect return tag (clu-return-tag)", "p09 (mirrored 7:20)", "p10", "cond-timelock-release latches, strike fires", "return to z1", "p11"],
-    "example_ordering_B_pendulum_first": ["take tiles + screwdriver + watch A", "p01", "inspect watch A", "p03", "take mouse", "p02", "inspect watch B", "p04", "p05", "view clu-slate-ratio AFTER experimenting at the frame (slate is confirmatory, not gating)", "p06 -> z3", "p10 (pendulum pushed FIRST -- weak swing)", "view clu-master-time + clu-worldclock-row", "p07 -> z4", "take key + tag, inspect tag", "p09 (hands set before winding)", "p08 (winding completes the trio -- condition latches here)", "return to z1", "p11"],
-    "example_ordering_C_knowledge_first": ["view clu-master-time and note 6:00 before anything else", "take screwdriver + tiles + watch A", "p01", "view clu-worldclock-row and pre-compute VI-X-I-III long before the vault exists", "take mouse", "p02", "inspect watches A and B in either order", "p04 then p03 (cache order is free)", "p05", "p06 -> z3", "p07 first thing in z3 (gates already satisfied) -> z4", "take winding key + return tag (z4 free pickups)", "p08", "p10", "inspect return tag (clu-return-tag)", "p09 (last condition -- latch fires)", "return to z1", "p11"],
+    "example_ordering_A": [
+      "take screwdriver",
+      "take coat items (watch A + tile IV)",
+      "take tiles II, VII, XI",
+      "view master clock close-up (satisfies clu-master-time)",
+      "p01",
+      "take mouse (z2)",
+      "view clu-slate-ratio (z1 slate)",
+      "inspect watch A (clu-watch-a)",
+      "p03 (great wheel)",
+      "p02 in z1 (cat -> watch B)",
+      "inspect watch B (clu-watch-b)",
+      "p04 (oil can)",
+      "p05",
+      "p06 -> z3",
+      "view clu-worldclock-row (z2)",
+      "p07 -> z4",
+      "take winding key + return tag",
+      "p08",
+      "inspect return tag (clu-return-tag)",
+      "p09 (mirrored 7:20)",
+      "p10",
+      "cond-timelock-release latches, strike fires",
+      "return to z1",
+      "p11"
+    ],
+    "example_ordering_B_pendulum_first": [
+      "take tiles + screwdriver + watch A",
+      "p01",
+      "inspect watch A",
+      "p03",
+      "take mouse",
+      "p02",
+      "inspect watch B",
+      "p04",
+      "p05",
+      "view clu-slate-ratio AFTER experimenting at the frame (slate is confirmatory, not gating)",
+      "p06 -> z3",
+      "p10 (pendulum pushed FIRST -- weak swing)",
+      "view clu-master-time + clu-worldclock-row",
+      "p07 -> z4",
+      "take key + tag, inspect tag",
+      "p09 (hands set before winding)",
+      "p08 (winding completes the trio -- condition latches here)",
+      "return to z1",
+      "p11"
+    ],
+    "example_ordering_C_knowledge_first": [
+      "view clu-master-time and note 6:00 before anything else",
+      "take screwdriver + tiles + watch A",
+      "p01",
+      "view clu-worldclock-row and pre-compute VI-X-I-III long before the vault exists",
+      "take mouse",
+      "p02",
+      "inspect watches A and B in either order",
+      "p04 then p03 (cache order is free)",
+      "p05",
+      "p06 -> z3",
+      "p07 first thing in z3 (gates already satisfied) -> z4",
+      "take winding key + return tag (z4 free pickups)",
+      "p08",
+      "p10",
+      "inspect return tag (clu-return-tag)",
+      "p09 (last condition -- latch fires)",
+      "return to z1",
+      "p11"
+    ],
     "state_model": "All progression is satisfied-requirement flags (zone unlocked, item held, state latched, clue viewed) plus one derived condition (cond-timelock-release, an order-free AND over three states -- orderings B and C exercise different completion orders). No step-order tracking anywhere. p06 accepts BOTH gear arrangements (unordered set). Rev 1.3 adds NO new state: the D10 faint-tell and D11 ambient are pure presentation over existing flags. Rev 1.4 likewise adds NO new state: the D12 annotations are pure functions of the existing clu-watch-a / clu-watch-b booleans, and the D13 tally readout is transient view state that is never saved and never readable by any gate or condition.",
     "revision_note": "Rev 1.1 (Validator Required Fix 1): ordering C's z4 pickups made explicit; orderings A/B verified valid as written. Rev 1.2: ordering A's coat step now reads 'tile IV'; ordering C's pre-computed code updated to VI-X-I-III. Rev 1.3: no ordering changes -- the three playtest tweaks are presentation/feedback only. Rev 1.4: no ordering changes -- every delta is presentation-layer; orderings A/B/C are valid as written."
   },
-
   "developer_notes": [
-    { "id": "D1", "topic": "Mirrored-dial contract (p09)", "note": "Canonical clock state is FRONT time; solution_fixed is front 7:20. The z3 close-up RENDERS the back view: numerals and hand angles mirrored across the vertical axis (a front hour-angle of θ renders at −θ). The setting crank changes front time; the render stays consistently mirrored. Do NOT implement a second 'back time' variable. Art: mirrored numerals must be obviously reversed at close-up resolution -- this is the puzzle's entire evidence base. Rev 1.2 detail: with standard notation, a mirrored IV reads as a malformed VI (and vice versa), and VII / IX read distinctly backwards -- render the glyph mirroring crisply; it is the strongest reversal evidence on the plate (the playtest's actual unstick was noticing NO legible 'VII' exists on the back view -- preserve that absence exactly)." },
-    { "id": "D2", "topic": "cond-timelock-release implementation", "note": "Re-evaluate on every change to clock-wound, hands-at-release, or pendulum-running, plus on z3 close-up entry (D6 stale case for p09). On first TRUE: play strike beat (chimes + rod articulation in the current zone), latch door-bar-raised permanently. Never gate on achievement order. Rev 1.3: the D11 alive-wrong-time ambient derives from the SAME three inputs (wound AND swinging AND NOT hands-at-release) -- implement it as a render/audio layer over the existing flags, never as new state, and stop it the moment the strike fires or an input drops." },
-    { "id": "D3", "topic": "Cat refusal grammar + mouse-offer tell (rev 1.3, playtest tweak 2, user-approved)", "note": "Baseline (unchanged for everything except the mouse): nudging the cat OR offering ANY non-mouse inventory item produces the identical terminal refusal (one slow blink, resettles heavier); offered items return unspent; no escalation or variation across repeats. REV 1.3 EXCEPTION -- itm-toy-mouse offered DIRECTLY to the cat: the cat's eyes LOCK onto the mouse and visibly track it, tail flicks once or twice, body stays put; the mouse returns to inventory. Identical tell on every repeat (no escalation into pouncing -- the offer never executes p02). The tell is one line of animation distinct from the slow blink; its message is 'interested in THIS, but not like that', steering toward wind-and-place-on-floor. Petting: purr, no state change, always available. After p02 the cat sits by the stair door; baseline refusal grammar applies there (the mouse is gone by then, so the exception is moot)." },
-    { "id": "D4", "topic": "Toy mouse no-loss rule (rev 1.3 clarified)", "note": "Three mouse interactions, all loss-free until the solve: (1) offered DIRECTLY to the cat (armed-item use on the cat hotspot): D3 tell fires, mouse returns to inventory, p02 does NOT execute; (2) wound and placed on the floor anywhere NOT near the cat: skitters a small circle and returns to inventory automatically; (3) wound and placed on the FLOOR near the cat's bench: p02 fires, mouse leaves inventory permanently (cat keeps it -- it has no other uses; declared soft-lock-safe)." },
-    { "id": "D5", "topic": "Gear-train feedback grammar (p06)", "note": "With any meshing pair mounted and the arbor freed, cranking runs the mural at the true resulting ratio -- visible speed IS intended feedback (mechanical truth, not a leak). Every wrong ratio ends its cam cycle with the SAME latch-slip clack; only speed differs. The cranks-per-clack cadence must be consistent and countable (playtest 2b: counting toward the slate's 24 tallies is a sanctioned no-algebra solve route). Gears mount/unmount freely; rack gears live in the apparatus (never inventory); the great wheel returns to inventory when unmounted. The fixed pinions (XII, VIII) are not removable. REV 1.4: 'countable' is now realized ON SCREEN, not only in audio -- see D13. The build-16 implementation ran a whole cam cycle on ONE press with no countable artifact, so the sanctioned no-algebra route (playtest 2b) was specified and never delivered; D13 delivers it. Note the rack-only straddle that makes the counting route close honestly: no rack-only pair reads 24, and the two nearest bracket it (40x48 = 20 below, 36x72 = 27 above), so a counting player hits a hard numerical bracket and must conclude that a wheel they do not have exists elsewhere." },
-    { "id": "D6", "topic": "Clue-gate evaluation & stale-correct-input", "note": "Inherit L1 D6 verbatim: gated puzzles re-evaluate (gate AND solution) on every input/attempt event AND on entry into the puzzle's close-up. Stale cases here: p07 (wheels pre-set correctly while gated) and p09 (front 7:20 pre-set while gated). p03/p04 have none (pry is an explicit act)." },
-    { "id": "D7", "topic": "Clue-viewed flags persist", "note": "Inherit L1 D7: one persistent saved boolean per gating clue (clu-watch-a, clu-watch-b, clu-master-time, clu-worldclock-row, clu-return-tag). Set on first display of the qualifying view; never cleared; ordinary satisfiable requirements. (Rev 1.2: the non-gating clu-face-convention flag is deleted with its node.)" },
-    { "id": "D8", "topic": "Time-lock is remote and keyless", "note": "The z1 stair door must never accept item use or code input: its housing has no keyhole (art requirement). Any interaction while barred: the bar rattles once against the linkage -- identical every time, pointing attention up the rods (the door teaches 'solve me elsewhere')." },
-    { "id": "D9", "topic": "p09 EASING VALVE -- SPEC ONLY, DO NOT IMPLEMENT (user ruling 2026-07-18, flag #5: 'keep for now, with room to make it easier in future'); STATUS AT REV 1.3: DORMANT, deliberately untouched by playtest tweak 3 (D11 is a separate, weaker signal -- it flags 'wrong time', D9 would help derive the RIGHT one)", "note": "Pre-planned softening for the mirrored-dial trap, designed now so a future 'make it easier' is a small staged change, not a redesign. THE VALVE: add a small wordless chalk sketch beside the setting crank on the EXISTING z3 close-up plate -- two mini-dials joined by a horizontal double-headed arrow, the left dial plain, the right dial its exact mirror image (the clockmaker's own working reminder that the back mirrors the front). STAGING: ships as a per-element overlay / crop-scoped edit on the existing plate (the standing L1 state-variant technique; no full-frame re-roll, est. cost one crop edit or $0 PIL), registered as a new optional clue node clu-mirror-chalk (non-gating, supports p09, viewed_when: setting-crank close-up -- self-satisfying like clu-mirrored-numerals). INVARIANTS WHEN ACTIVATED: solution stays front 7:20; p09's gate, no-tell rule, and failure grammar are untouched; no other node changes. Optional second tier if the first proves insufficient (design intent recorded, NOT specced for staging yet): make the return tag double-sided -- its reverse shows the mirrored dial; this would require new inventory-inspect art, so it is the fallback, not the valve. ACTIVATION AUTHORITY: user, at any post-release feedback round, via Producer to Developer + Asset Generation." },
-    { "id": "D10", "topic": "Pry-gate memory hook (rev 1.3, playtest tweak 1, user-approved -- resolves flag #7 / Validator A1)", "note": "Applies ONLY to the two correct pry spots (p03 dormer board D3, p04 chimney brick at 9-o'clock) while their clue-gate is unsatisfied. Pre-clue pry on the CORRECT spot: a slight creak (SFX) + a perceptible shift (haptic-tier cue + ONE line of subtle animation -- a hair of movement under the blade), then the spot settles back, firmly not yielding. It must NOT read as an invitation on its own: no loose wobble, no gap opening, and NO persistent visual change CAUSED BY THE PRY ATTEMPT -- a pre-clue pry leaves the spot looking identical before and after. (REV 1.4 CLARIFICATION, Validator-confirmed: this constrains the PRY RESPONSE only. The rev-1.4 clue-viewed annotations -- ring hands and the p03 chalk house glyph -- are functions of clu-watch-a / clu-watch-b, never of prying, and are correctly invisible to a player who has not read the watch. See D12.) Pre-clue pry on any WRONG spot: the existing dead 'doesn't budge', identical every time (unchanged; this is the anti-sweep wall). Post-clue pry on the correct spot: yields normally (existing open animation). Purpose (playtest 2a): the early pryer's memory keeps a hook -- 'that one FELT different' -- so the later watch clue confirms rather than contradicts their experience; the wrong-spot wall still makes exhaustive sweeping unrewarding. The faint-tell is identical on every repeat (no escalation toward yielding)." },
-    { "id": "D11", "topic": "Alive-wrong-time movement feedback (rev 1.3, playtest tweak 3, user-approved)", "note": "New PRESENTATION state on the z3 movement, derived (never stored) from existing flags: ACTIVE when clock-wound AND pendulum-running AND NOT hands-at-release. Rendering: soft escapement tick (quiet, rhythmic, clearly mechanical) + an occasional single chime-hammer twitch that lifts slightly and settles WITHOUT striking (no chime sound ever). INACTIVE (full silence, hammers still): whenever wind OR pendulum is missing -- unchanged from rev 1.2. Terminates the moment the strike fires (cond-timelock-release latch takes over; strike grammar unchanged) or an input state drops. CONSTRAINTS: the ambient is IDENTICAL at every wrong time -- tick rate, twitch frequency, and animation never vary with how close the set time is to 7:20 and encode NOTHING about the correct value; it is not a gate tell (it renders regardless of clu-return-tag's viewed state, because it describes the MOVEMENT, not the entered code); D9 stays dormant and separate. Purpose (playtest S2 / hasty-reader 2c): the fully-restored-but-wrong-time state must read 'alive, wrong input', never 'broken' -- every subsystem giving positive feedback while the trigger stays silent was the bug-read that made the mirror trap feel unfair." },
-    { "id": "D12", "topic": "Pointer-resolution annotations (rev 1.4, C1/C2/C3 -- user-approved A4 + RC-1)", "note": "PRESENTATION ONLY, rendered off EXISTING D7 booleans; no new state, no new flag, no new node, no new edge, no new hotspot, no gate change. THREE composites. (1) C1: canonical hour hand (z3/v-dial/sprites/hand-hour) pivoted at the house-ring hub at the 3-notch, composited into the z1-door-base WIDE plate when clu-watch-a is true -- the existing Level2CloseUpVisuals.ringClues pattern extended to a wide rect; scale the hand up as needed for wide legibility (Art Director's factor). The wide is the ONLY frame containing both the ring and the floorboards, which is why the beat needs it. (2) C2: chalk house glyph (canonical masters/glyphs/die-house.png in chalk value #E8E4DA) composited INSIDE the measured ov-cache-* wide rect x 0.6375-0.7656 when clu-watch-a is true, and mirrored into cu-floor-cache at the corresponding crop coordinates -- what is marked is exactly what is tappable, so no new hotspot and no M1 re-registration. (3) C3: canonical hour hand at the 9-notch of the z2 gear ring, composited into the z2-frame-base WIDE plate when clu-watch-b is true (carve measured at x [0.7359, 0.7487], y [0.5589, 0.5844]) -- PARITY ONLY; the chimney brick gets NO chalk mark (A5 = p03-only). CONSTRAINTS: wide and close-up must NEVER disagree about the presence or absence of any of the three (the standing parity directive that generated Cluster A/Q); mark-visibility is exactly (gate-satisfied AND NOT pried), giving the totally ordered state set unmarked -> marked -> pried-with-wheel -> empty, so no chalk mark can ever survive on a lifted board or an empty cavity; the chalk mark must be suppressed the moment the board is pried. RC-6: ov-cache-marked composites against an INDEPENDENT close-up axis, ov-cache-cat-gone (authored in the build-16 batch for cu-floor-cache) -- that pairing must be in the Developer's parity audit and in the Level2CloseUpStateTests state-flip rows. COLOUR-BLIND (RF-7a): the chalk must hold >= 3:1 luminance contrast against worn timber in raking light in BOTH views; discrimination is glyph SHAPE plus luminance, never the warm/cool hue difference between chalk and timber." },
-    { "id": "D13", "topic": "Live crank-tally readout (rev 1.4, F4 -- user-approved A1; delivers the counting route D5 and playtest 2b have promised since rev 1.0)", "note": "PRESENTATION ONLY. A chalk tally block on the gear-frame cheek, directly beneath the F3 crib and separated from it by a visible baseline. ACCRUAL: measured as ACCUMULATED CRANK ROTATION SINCE THE LAST CAM CLACK -- one full chalk stroke per full turn of accumulated rotation, remainder drawn as ONE partial stroke. Counting crossings of a fixed index mark on the crank is PROHIBITED: it drifts in phase and produces a 7/7/6 oscillation across cycles. Because every cam cycle of a given pair consumes exactly R = A*B/96 crank revolutions, the accumulated-rotation measure renders the IDENTICAL picture every cycle -- nothing oscillates. NON-INTEGER PAIRS (exactly three of the 21): 16x40 = 6 2/3 -> 6 full + one partial; 16x64 = 10 2/3 -> 10 full + one partial; 40x64 = 26 2/3 -> 26 full + one partial. All other 18 pairs are integers; the SOLUTION 36x64 = exactly 24 full strokes with NO partial. The partial stroke is the same chalk value, width and slot pitch at roughly HALF HEIGHT so it can never be miscounted as full; it never receives a five-group diagonal and is never counted into a group of five. Non-integrality is mechanical truth, NOT a proximity signal -- 6 2/3 (far) and 26 2/3 (near) render identically in form. PERSISTENCE: the block is TRANSIENT VIEW/SESSION STATE of the same class as an animation frame -- NEVER written to the save, NEVER readable by any gate, condition, requirement or D7 flag; on save/load it re-derives to EMPTY. What is drawn is a pure function of (currently mounted pair, accumulated rotation since the last clack). The completed-cycle count STAYS DRAWN -- so a player who looked away still gets the number -- until any of: (i) any mount or unmount at either post (clears immediately and completely; the frame must NEVER display a count belonging to a configuration that is no longer mounted), (ii) fewer than two gears mounted (no pair, nothing drawn), (iii) scene reload or save load, (iv) the start of the next crank press (redraws from zero). LEAK CONSTRAINTS: identical in form for correct and incorrect pairs; never varies with closeness to 24; never varies with any clue-viewed flag; UNGATED, exactly as p06 is ungated. NO GLOW, FLASH OR COLOUR CHANGE when the count reaches 24 (RF-7c) -- success differentiation stays with the latch taking and the panel opening. LEGIBILITY / TEDIUM: worst case across the whole gear set is 48 STROKES (64x72 = 4608/96 = 48; it is NOT 54 -- that would require two 72-tooth gears and only one exists). The block must stay legible at 48 via the five-grouping; the accrual animation must be skippable/fast-forwardable and the final block fully readable STATICALLY without having watched it accrue (RC-4). One crank press = one full cam cycle -- do NOT implement per-turn tapping. Renders in cu-gear-frame and in the wide if the crank is operable there; the crib and the live block are distinguished by POSITION ONLY (visible baseline/gap), NEVER by hue or chalk value, and must never read as one continuous block of 24+N strokes (RF-7b)." }
+    {
+      "id": "D1",
+      "topic": "Mirrored-dial contract (p09)",
+      "note": "Canonical clock state is FRONT time; solution_fixed is front 7:20. The z3 close-up RENDERS the back view: numerals and hand angles mirrored across the vertical axis (a front hour-angle of θ renders at −θ). The setting crank changes front time; the render stays consistently mirrored. Do NOT implement a second 'back time' variable. Art: mirrored numerals must be obviously reversed at close-up resolution -- this is the puzzle's entire evidence base. Rev 1.2 detail: with standard notation, a mirrored IV reads as a malformed VI (and vice versa), and VII / IX read distinctly backwards -- render the glyph mirroring crisply; it is the strongest reversal evidence on the plate (the playtest's actual unstick was noticing NO legible 'VII' exists on the back view -- preserve that absence exactly)."
+    },
+    {
+      "id": "D2",
+      "topic": "cond-timelock-release implementation",
+      "note": "Re-evaluate on every change to clock-wound, hands-at-release, or pendulum-running, plus on z3 close-up entry (D6 stale case for p09). On first TRUE: play strike beat (chimes + rod articulation in the current zone), latch door-bar-raised permanently. Never gate on achievement order. Rev 1.3: the D11 alive-wrong-time ambient derives from the SAME three inputs (wound AND swinging AND NOT hands-at-release) -- implement it as a render/audio layer over the existing flags, never as new state, and stop it the moment the strike fires or an input drops."
+    },
+    {
+      "id": "D3",
+      "topic": "Cat refusal grammar + mouse-offer tell (rev 1.3, playtest tweak 2, user-approved)",
+      "note": "Baseline (unchanged for everything except the mouse): nudging the cat OR offering ANY non-mouse inventory item produces the identical terminal refusal (one slow blink, resettles heavier); offered items return unspent; no escalation or variation across repeats. REV 1.3 EXCEPTION -- itm-toy-mouse offered DIRECTLY to the cat: the cat's eyes LOCK onto the mouse and visibly track it, tail flicks once or twice, body stays put; the mouse returns to inventory. Identical tell on every repeat (no escalation into pouncing -- the offer never executes p02). The tell is one line of animation distinct from the slow blink; its message is 'interested in THIS, but not like that', steering toward wind-and-place-on-floor. Petting: purr, no state change, always available. After p02 the cat sits by the stair door; baseline refusal grammar applies there (the mouse is gone by then, so the exception is moot)."
+    },
+    {
+      "id": "D4",
+      "topic": "Toy mouse no-loss rule (rev 1.3 clarified)",
+      "note": "Three mouse interactions, all loss-free until the solve: (1) offered DIRECTLY to the cat (armed-item use on the cat hotspot): D3 tell fires, mouse returns to inventory, p02 does NOT execute; (2) wound and placed on the floor anywhere NOT near the cat: skitters a small circle and returns to inventory automatically; (3) wound and placed on the FLOOR near the cat's bench: p02 fires, mouse leaves inventory permanently (cat keeps it -- it has no other uses; declared soft-lock-safe)."
+    },
+    {
+      "id": "D5",
+      "topic": "Gear-train feedback grammar (p06)",
+      "note": "With any meshing pair mounted and the arbor freed, cranking runs the mural at the true resulting ratio -- visible speed IS intended feedback (mechanical truth, not a leak). Every wrong ratio ends its cam cycle with the SAME latch-slip clack; only speed differs. The cranks-per-clack cadence must be consistent and countable (playtest 2b: counting toward the slate's 24 tallies is a sanctioned no-algebra solve route). Gears mount/unmount freely; rack gears live in the apparatus (never inventory); the great wheel returns to inventory when unmounted. The fixed pinions (XII, VIII) are not removable. REV 1.4: 'countable' is now realized ON SCREEN, not only in audio -- see D13. The build-16 implementation ran a whole cam cycle on ONE press with no countable artifact, so the sanctioned no-algebra route (playtest 2b) was specified and never delivered; D13 delivers it. Note the rack-only straddle that makes the counting route close honestly: no rack-only pair reads 24, and the two nearest bracket it (40x48 = 20 below, 36x72 = 27 above), so a counting player hits a hard numerical bracket and must conclude that a wheel they do not have exists elsewhere."
+    },
+    {
+      "id": "D6",
+      "topic": "Clue-gate evaluation & stale-correct-input",
+      "note": "Inherit L1 D6 verbatim: gated puzzles re-evaluate (gate AND solution) on every input/attempt event AND on entry into the puzzle's close-up. Stale cases here: p07 (wheels pre-set correctly while gated) and p09 (front 7:20 pre-set while gated). p03/p04 have none (pry is an explicit act)."
+    },
+    {
+      "id": "D7",
+      "topic": "Clue-viewed flags persist",
+      "note": "Inherit L1 D7: one persistent saved boolean per gating clue (clu-watch-a, clu-watch-b, clu-master-time, clu-worldclock-row, clu-return-tag). Set on first display of the qualifying view; never cleared; ordinary satisfiable requirements. (Rev 1.2: the non-gating clu-face-convention flag is deleted with its node.)"
+    },
+    {
+      "id": "D8",
+      "topic": "Time-lock is remote and keyless",
+      "note": "The z1 stair door must never accept item use or code input: its housing has no keyhole (art requirement). Any interaction while barred: the bar rattles once against the linkage -- identical every time, pointing attention up the rods (the door teaches 'solve me elsewhere')."
+    },
+    {
+      "id": "D9",
+      "topic": "p09 EASING VALVE -- SPEC ONLY, DO NOT IMPLEMENT (user ruling 2026-07-18, flag #5: 'keep for now, with room to make it easier in future'); STATUS AT REV 1.3: DORMANT, deliberately untouched by playtest tweak 3 (D11 is a separate, weaker signal -- it flags 'wrong time', D9 would help derive the RIGHT one)",
+      "note": "Pre-planned softening for the mirrored-dial trap, designed now so a future 'make it easier' is a small staged change, not a redesign. THE VALVE: add a small wordless chalk sketch beside the setting crank on the EXISTING z3 close-up plate -- two mini-dials joined by a horizontal double-headed arrow, the left dial plain, the right dial its exact mirror image (the clockmaker's own working reminder that the back mirrors the front). STAGING: ships as a per-element overlay / crop-scoped edit on the existing plate (the standing L1 state-variant technique; no full-frame re-roll, est. cost one crop edit or $0 PIL), registered as a new optional clue node clu-mirror-chalk (non-gating, supports p09, viewed_when: setting-crank close-up -- self-satisfying like clu-mirrored-numerals). INVARIANTS WHEN ACTIVATED: solution stays front 7:20; p09's gate, no-tell rule, and failure grammar are untouched; no other node changes. Optional second tier if the first proves insufficient (design intent recorded, NOT specced for staging yet): make the return tag double-sided -- its reverse shows the mirrored dial; this would require new inventory-inspect art, so it is the fallback, not the valve. ACTIVATION AUTHORITY: user, at any post-release feedback round, via Producer to Developer + Asset Generation."
+    },
+    {
+      "id": "D10",
+      "topic": "Pry-gate memory hook (rev 1.3, playtest tweak 1, user-approved -- resolves flag #7 / Validator A1)",
+      "note": "Applies ONLY to the two correct pry spots (p03 dormer board D3, p04 chimney brick at 9-o'clock) while their clue-gate is unsatisfied. Pre-clue pry on the CORRECT spot: a slight creak (SFX) + a perceptible shift (haptic-tier cue + ONE line of subtle animation -- a hair of movement under the blade), then the spot settles back, firmly not yielding. It must NOT read as an invitation on its own: no loose wobble, no gap opening, and NO persistent visual change CAUSED BY THE PRY ATTEMPT -- a pre-clue pry leaves the spot looking identical before and after. (REV 1.4 CLARIFICATION, Validator-confirmed: this constrains the PRY RESPONSE only. The rev-1.4 clue-viewed annotations -- ring hands and the p03 chalk house glyph -- are functions of clu-watch-a / clu-watch-b, never of prying, and are correctly invisible to a player who has not read the watch. See D12.) Pre-clue pry on any WRONG spot: the existing dead 'doesn't budge', identical every time (unchanged; this is the anti-sweep wall). Post-clue pry on the correct spot: yields normally (existing open animation). Purpose (playtest 2a): the early pryer's memory keeps a hook -- 'that one FELT different' -- so the later watch clue confirms rather than contradicts their experience; the wrong-spot wall still makes exhaustive sweeping unrewarding. The faint-tell is identical on every repeat (no escalation toward yielding)."
+    },
+    {
+      "id": "D11",
+      "topic": "Alive-wrong-time movement feedback (rev 1.3, playtest tweak 3, user-approved)",
+      "note": "New PRESENTATION state on the z3 movement, derived (never stored) from existing flags: ACTIVE when clock-wound AND pendulum-running AND NOT hands-at-release. Rendering: soft escapement tick (quiet, rhythmic, clearly mechanical) + an occasional single chime-hammer twitch that lifts slightly and settles WITHOUT striking (no chime sound ever). INACTIVE (full silence, hammers still): whenever wind OR pendulum is missing -- unchanged from rev 1.2. Terminates the moment the strike fires (cond-timelock-release latch takes over; strike grammar unchanged) or an input state drops. CONSTRAINTS: the ambient is IDENTICAL at every wrong time -- tick rate, twitch frequency, and animation never vary with how close the set time is to 7:20 and encode NOTHING about the correct value; it is not a gate tell (it renders regardless of clu-return-tag's viewed state, because it describes the MOVEMENT, not the entered code); D9 stays dormant and separate. Purpose (playtest S2 / hasty-reader 2c): the fully-restored-but-wrong-time state must read 'alive, wrong input', never 'broken' -- every subsystem giving positive feedback while the trigger stays silent was the bug-read that made the mirror trap feel unfair."
+    },
+    {
+      "id": "D12",
+      "topic": "Pointer-resolution annotations (rev 1.4, C1/C2/C3 -- user-approved A4 + RC-1)",
+      "note": "PRESENTATION ONLY, rendered off EXISTING D7 booleans; no new state, no new flag, no new node, no new edge, no new hotspot, no gate change. THREE composites. (1) C1: canonical hour hand (z3/v-dial/sprites/hand-hour) pivoted at the house-ring hub at the 3-notch, composited into the z1-door-base WIDE plate when clu-watch-a is true -- the existing Level2CloseUpVisuals.ringClues pattern extended to a wide rect; scale the hand up as needed for wide legibility (Art Director's factor). The wide is the ONLY frame containing both the ring and the floorboards, which is why the beat needs it. (2) C2: chalk house glyph (canonical masters/glyphs/die-house.png in chalk value #E8E4DA) composited INSIDE the measured ov-cache-* wide rect x 0.6375-0.7656 when clu-watch-a is true, and mirrored into cu-floor-cache at the corresponding crop coordinates -- what is marked is exactly what is tappable, so no new hotspot and no M1 re-registration. (3) C3: canonical hour hand at the 9-notch of the z2 gear ring, composited into the z2-frame-base WIDE plate when clu-watch-b is true (carve measured at x [0.7359, 0.7487], y [0.5589, 0.5844]) -- PARITY ONLY; the chimney brick gets NO chalk mark (A5 = p03-only). CONSTRAINTS: wide and close-up must NEVER disagree about the presence or absence of any of the three (the standing parity directive that generated Cluster A/Q); mark-visibility is exactly (gate-satisfied AND NOT pried), giving the totally ordered state set unmarked -> marked -> pried-with-wheel -> empty, so no chalk mark can ever survive on a lifted board or an empty cavity; the chalk mark must be suppressed the moment the board is pried. RC-6: ov-cache-marked composites against an INDEPENDENT close-up axis, ov-cache-cat-gone (authored in the build-16 batch for cu-floor-cache) -- that pairing must be in the Developer's parity audit and in the Level2CloseUpStateTests state-flip rows. COLOUR-BLIND (RF-7a): the chalk must hold >= 3:1 luminance contrast against worn timber in raking light in BOTH views; discrimination is glyph SHAPE plus luminance, never the warm/cool hue difference between chalk and timber."
+    },
+    {
+      "id": "D13",
+      "topic": "Live crank-tally readout (rev 1.4, F4 -- user-approved A1; delivers the counting route D5 and playtest 2b have promised since rev 1.0)",
+      "note": "PRESENTATION ONLY. A chalk tally block on the gear-frame cheek, directly beneath the F3 crib and separated from it by a visible baseline. ACCRUAL: measured as ACCUMULATED CRANK ROTATION SINCE THE LAST CAM CLACK -- one full chalk stroke per full turn of accumulated rotation, remainder drawn as ONE partial stroke. Counting crossings of a fixed index mark on the crank is PROHIBITED: it drifts in phase and produces a 7/7/6 oscillation across cycles. Because every cam cycle of a given pair consumes exactly R = A*B/96 crank revolutions, the accumulated-rotation measure renders the IDENTICAL picture every cycle -- nothing oscillates. NON-INTEGER PAIRS (exactly three of the 21): 16x40 = 6 2/3 -> 6 full + one partial; 16x64 = 10 2/3 -> 10 full + one partial; 40x64 = 26 2/3 -> 26 full + one partial. All other 18 pairs are integers; the SOLUTION 36x64 = exactly 24 full strokes with NO partial. The partial stroke is a FIXED CANONICAL GLYPH: same chalk value, width and slot pitch, drawn UPRIGHT (never diagonal -- it is not a strike and cannot collide with the five-group closing strike) at a CONSTANT height; its height MUST NOT be derived from the residue at runtime (V17-W1: a proportional height would silently turn height into a variable signal channel if the gear set ever changed). It shares the full strokes' baseline and is shortened at the top only (V17-W3). It must NOT be faded, ghosted, dashed or lower-opacity -- that would swap the form cue for a value cue -- and must hold >=3:1 luminance in its own right in BOTH wide and close-up views. It never receives a five-group diagonal and is never counted into a group of five. Non-integrality is mechanical truth, NOT a proximity signal -- 6 2/3 (far) and 26 2/3 (near) render identically in form. PERSISTENCE: the block is TRANSIENT VIEW/SESSION STATE of the same class as an animation frame -- NEVER written to the save, NEVER readable by any gate, condition, requirement or D7 flag; on save/load it re-derives to EMPTY. What is drawn is a pure function of (currently mounted pair, accumulated rotation since the last clack). The completed-cycle count STAYS DRAWN -- so a player who looked away still gets the number -- until any of: (i) any mount or unmount at either post (clears immediately and completely; the frame must NEVER display a count belonging to a configuration that is no longer mounted), (ii) fewer than two gears mounted (no pair, nothing drawn), (iii) scene reload or save load, (iv) the start of the next crank press (redraws from zero). LEAK CONSTRAINTS: identical in form for correct and incorrect pairs; never varies with closeness to 24; never varies with any clue-viewed flag; UNGATED, exactly as p06 is ungated. NO GLOW, FLASH OR COLOUR CHANGE when the count reaches 24 (RF-7c) -- success differentiation stays with the latch taking and the panel opening. LEGIBILITY / TEDIUM: worst case across the whole gear set is 48 STROKES (64x72 = 4608/96 = 48; it is NOT 54 -- that would require two 72-tooth gears and only one exists). The block must stay legible at 48 via the five-grouping; the accrual animation must be skippable/fast-forwardable and the final block fully readable STATICALLY without having watched it accrue (RC-4). One crank press = one full cam cycle -- do NOT implement per-turn tapping. Renders in cu-gear-frame and in the wide if the crank is operable there; the crib and the live block are distinguished by POSITION ONLY (visible baseline/gap), NEVER by hue or chalk value, and must never read as one continuous block of 24+N strokes (RF-7b)."
+    }
   ],
-
   "red_herrings": [
-    { "id": "rh-vi-tile", "node": "z1 door-dial tray VI tile", "design": "Rev 1.2 (replaces rh-iv-tile after the IIII convention was removed by user ruling): the tray under the door dial offers a loose VI tile -- glyph-order bait for the empty 4-socket (IV = one-before-five, VI = one-after-five). Honest and self-disproving: the dial's own seated VI at position 6 is permanently visible one glance away. NON-COLLECTIBLE: lives in the tray, seats-and-pops-back (whir-stall) from any socket. Fairness valve: worst case one extra attempt. (Playtest: cost seconds, taught the socket feedback -- rated 'fine'.)" },
-    { "id": "rh-48-gear", "node": "z2 gear rack 48-tooth gear", "design": "48 x 48 = 2304 exactly -- the arithmetic works, inviting a hunt for 'the second 48'. Only one exists, anywhere. NON-COLLECTIBLE (rack gears never enter inventory); mounting the lone 48 with anything else gives honest wrong-speed feedback. Time-cost trap only; the 36 x 64 solution uses parts the player demonstrably has." },
-    { "id": "rh-hands-case", "node": "z2 display case of spare clock hands", "design": "The hand-less world clocks scream 'find and refit the hands'. The spare-hands case is screwed shut and painted over (inspect-only, NON-COLLECTIBLE contents); the world clocks accept no interaction. The stamped offsets on the plates are the actual payload -- the row is informational, not restorable. Defusal: categorical inertness from first contact, L1 feed-cup lesson. (Playtest: the false goal held ~40 min of game time and the screwdriver-in-hand makes the screwed case a magnet -- rated 'friction', ships as-is per the step-6 ruling; the secondary suggestion to make the paint-over one notch more emphatic in close-up is left to the Art Director's discretion.)" },
-    { "id": "rh-barometer", "node": "z1 wheel barometer", "design": "A clock-like brass dial that is not a clock: fixed needle, engraved sun/cloud/rain pictograms in close-up. Invites hand-setting/code theories; accepts no input. Pure time-cost; the pictograms make its non-clock nature legible without words. (Playtest: inspect-once, no time sink -- rated 'fine'.)" }
+    {
+      "id": "rh-vi-tile",
+      "node": "z1 door-dial tray VI tile",
+      "design": "Rev 1.2 (replaces rh-iv-tile after the IIII convention was removed by user ruling): the tray under the door dial offers a loose VI tile -- glyph-order bait for the empty 4-socket (IV = one-before-five, VI = one-after-five). Honest and self-disproving: the dial's own seated VI at position 6 is permanently visible one glance away. NON-COLLECTIBLE: lives in the tray, seats-and-pops-back (whir-stall) from any socket. Fairness valve: worst case one extra attempt. (Playtest: cost seconds, taught the socket feedback -- rated 'fine'.)"
+    },
+    {
+      "id": "rh-48-gear",
+      "node": "z2 gear rack 48-tooth gear",
+      "design": "48 x 48 = 2304 exactly -- the arithmetic works, inviting a hunt for 'the second 48'. Only one exists, anywhere. NON-COLLECTIBLE (rack gears never enter inventory); mounting the lone 48 with anything else gives honest wrong-speed feedback. Time-cost trap only; the 36 x 64 solution uses parts the player demonstrably has."
+    },
+    {
+      "id": "rh-hands-case",
+      "node": "z2 display case of spare clock hands",
+      "design": "The hand-less world clocks scream 'find and refit the hands'. The spare-hands case is screwed shut and painted over (inspect-only, NON-COLLECTIBLE contents); the world clocks accept no interaction. The stamped offsets on the plates are the actual payload -- the row is informational, not restorable. Defusal: categorical inertness from first contact, L1 feed-cup lesson. (Playtest: the false goal held ~40 min of game time and the screwdriver-in-hand makes the screwed case a magnet -- rated 'friction', ships as-is per the step-6 ruling; the secondary suggestion to make the paint-over one notch more emphatic in close-up is left to the Art Director's discretion.)"
+    },
+    {
+      "id": "rh-barometer",
+      "node": "z1 wheel barometer",
+      "design": "A clock-like brass dial that is not a clock: fixed needle, engraved sun/cloud/rain pictograms in close-up. Invites hand-setting/code theories; accepts no input. Pure time-cost; the pictograms make its non-clock nature legible without words. (Playtest: inspect-once, no time sink -- rated 'fine'.)"
+    }
   ],
-
   "anti_softlock_invariants": [
     "No consumable can be wasted: the toy mouse is the ONLY by-design consumed item and has exactly one use (p02); anywhere else -- including offered directly to the cat (D3 tell) -- it returns to inventory (D4).",
     "itm-screwdriver (2 uses), itm-oilcan (2 uses, never emptied), itm-winding-key, itm-great-wheel, all tiles until seated correctly: retained under the uses-driven lifecycle; nothing multi-use is consumed early (L1 poker lesson).",
@@ -409,7 +1126,6 @@
     "Every clue_gate references only clues in permanently reachable zones or inventory items on the required path (watches A/B, return tag are inspectable anywhere, forever); clue-viewed flags persist in the save (D7). So whenever a gated puzzle is reachable, its gate is satisfiable.",
     "The cat cannot be harmed or blocked into an unwinnable state; it grants watch B exactly once; failed offers return items unspent (D3)."
   ],
-
   "visually_necessary_elements": {
     "global_numeral_rule": "REV 1.2 USER RULING -- ALL dials, faces, tiles, stamps and engravings level-wide use STANDARD SUBTRACTIVE Roman numerals (IV, IX). No IIII anywhere in the level.",
     "rev_1_3_cue_note": "Rev 1.3 adds two SFX/haptic-tier micro-cues with one line of animation each (D10 correct-spot faint-tell; D3 cat mouse-offer tell) and one ambient state layer (D11 tick + hammer twitch). NO new plates, NO persistent visual state changes to boards/bricks, NO re-rolls -- all three are animation/audio/haptic over existing art.",
@@ -458,7 +1174,6 @@
       "ledgers + wrapped unfinished pocket watch (ambient, inspect-only)"
     ]
   },
-
   "colorblind_safety": [
     "No puzzle uses color differentiation anywhere. Gears differ by SIZE + countable teeth + stamped numerals; tiles by engraved numerals; world clocks by landmark SILHOUETTES + stamped offsets; vault wheels by pictogram headers + engraved numerals.",
     "Brass vs bronze vs steel finishes are ambient only, never load-bearing.",
@@ -471,17 +1186,20 @@
     "RF-7(b) BLOCK SEPARATION (mandatory): the F3 crib block and the D13 live block are distinguished by POSITION -- a visible baseline, chalked rule or clear gap -- and NEVER by hue, chalk value, or an 'old chalk vs fresh chalk' treatment. They must never read as one continuous block of 24+N strokes. Distinguishing them by value or hue would be a color-only distinction on a load-bearing comparison.",
     "RF-7(c) NO SUCCESS COLOR CUE (mandatory): the live tally block must NOT glow, flash or change color when the count reaches 24. Success differentiation stays with the latch taking and the wall panel opening -- a color-carried success cue would be both a gate-adjacent tell and a color-only signal."
   ],
-
   "designer_difficulty_estimate": {
     "scale": "1-10 (Validator assigns official ledger score)",
     "estimate": 7.0,
-    "per_zone": { "z1-attic": 5.0, "z2-workroom": 7.0, "z3-behind-dial": 7.5, "z4-vault": 5.0 },
+    "per_zone": {
+      "z1-attic": 5.0,
+      "z2-workroom": 7.0,
+      "z3-behind-dial": 7.5,
+      "z4-vault": 5.0
+    },
     "validator_official_score": 6.0,
     "validator_score_status": "REV 1.4: 6.0 / 10 PROVISIONAL (z1 4.5, z2 6.5, z3 7.0, z4 3.5), down from 6.5 (z1 5.0, z2 7.0, z3 7.0, z4 3.5). Deltas: p03 5.0 -> 3.5 (C1+C2 convert an in-scene-unsupportable projection hop into symbol matching), p06 7.5 -> ~6.25 (F1 is defect repair and moves it ~0; F2 -0.25; F3 -0.5, the separable lever, which the USER RULED SHIPS; F4 -0.75 to -1.0, turning a 21-pair search with weak faster/slower feedback into a ~4-mount bracket). USER RULING 2026-08-07: the true 6.0 is ACCEPTED in preference to a false 6.5 -- the 6.5 was scored against the DESIGN, while the as-built could not be completed without the walkthrough, p06's counting route was specified and never delivered, and p03's projection hop was geometrically impossible in-scene; escalation is to be recovered at Level 3 by design rather than by fog. STILL PROVISIONAL: do NOT write to progression-ledger.md until the Blind Playtester re-check returns -- probes P5 (p06 time-to-solve and route used) and P7 (p03 time-to-pry) are the measurements that settle it. No beat falls below challenging-but-fair into trivial.",
     "blind_solve_estimate": "70-135 min first-time, median ~100 min (playtest-calibrated; supersedes the designer's original 75-120)",
     "escalation_rationale": "vs L1's 6.0: (1) two genuine multi-step inference chains with light arithmetic -- gear-ratio product (A/12 x B/8 = 24) and time-zone offsets with a 12-hour wrap; (2) longer dependency chains (mouse -> cat -> watch B -> chimney cache -> oil -> arbor -> gear train -> zone 3); (3) heavier cross-zone clue binding (z1 master time + z2 plates -> z3 vault; watches found in one zone, applied in another) -- REV 1.4: the z1-slate -> z2-frame binding is SOFTENED, because F3 restates the 24:1 target proportion on the frame itself (user-approved A2, F3 ships); the two-stage STRUCTURE is still derived from the machine rather than carried, and the remaining cross-zone bindings are untouched; (4) one perceptual inversion (mirrored dial) with a designed trap answer (4:40). Difficulty comes from chain depth and layered reasoning, never pixel-hunting: every cache is anchored by an engraved ring, every code's data is stamped in-scene. Playtest verdict: 'the escalation is real' -- one derivation, one cross-zone synthesis, one perceptual reframe."
   },
-
   "mechanics_used_for_ledger": [
     "gear-ratio train reasoning (two-stage reduction, unique pair, live mechanical feedback: visible cam speed plus the D13 on-screen crank-tally readout -- rev 1.4; the pre-1.4 'countable clack cadence' was never implemented) -- NEW, level signature",
     "clock-hand-as-pointer caches (watch angle applied at engraved clock-position rings; D10 faint-tell memory hook) -- NEW",
@@ -492,16 +1210,51 @@
     "tool-on-hotspot pry/oil (screwdriver, oil can) -- deliberate L1 echo, evolved (clue-gated pointer caches)",
     "character-interaction beat (cat + wind-up mouse, with item-specific tell) -- deliberate L1 echo (series' quiet living presence)"
   ],
-
   "real_world_knowledge_register": [
-    { "fact": "Roman numerals I-XII, standard subtractive notation (reading and matching, incl. IV-vs-VI glyph order)", "confidence": "clearly fair; user-requested ingredient; notation per user ruling rev 1.2", "in_room_backup": "8 seated tiles anchor dial positions (seated VI disproves the tray decoy); every clock face in the attic is a reference" },
-    { "fact": "Standard clock-face layout (12 at top, clockwise)", "confidence": "clearly fair", "in_room_backup": "8 seated tiles + every in-room dial" },
-    { "fact": "Different cities keep different times (time zones exist)", "confidence": "clearly fair as a concept; user-named ingredient; playtest: 'I never needed to know a single real time zone'", "in_room_backup": "ALL offsets stamped in-world (+IV, −V, +IX, ★); no memorized offset ever required" },
-    { "fact": "Famous landmark silhouettes (Big Ben, Burj Khalifa, Statue of Liberty, Mt Fuji)", "confidence": "fair, and NOT actually required (Dubai included per user ruling; Tel Aviv/Tehran/Riyadh excluded per user ruling)", "in_room_backup": "pictogram-to-pictogram matching between plates and wheel headers fully suffices; city names never needed" },
-    { "fact": "12-hour dial wrap (6 + 9 = 15 -> 3 o'clock)", "confidence": "mild borderline -- RATIFIED at checkpoint (flag #4); playtest: ~2 min hesitation, resolved by the wheel's own I-XII affordance", "in_room_backup": "the Fuji wheel physically cannot show 15; I-XII is the whole affordance" },
-    { "fact": "Bigger gear turns slower; ratio = tooth quotient; stages multiply", "confidence": "borderline -- RATIFIED at checkpoint (flag #2, arithmetic peak accepted). REV 1.4 CORRECTION (Validator RF-8): the pre-1.4 register claimed a 'countable clack cadence' in-room backup that the build NEVER HAD -- one crank press ran a whole cam cycle with no countable artifact, so the no-algebra route was specified and not delivered. D13 now delivers it on screen, and this entry's in_room_backup is true for the first time.", "in_room_backup": "slate worked diagram (24 tallies grouped in fives vs one matching cam tally -- a like-for-like proportion) + the F3 chalk crib restating that target at the frame + live cam-speed feedback + the D13 LIVE CRANK-TALLY READOUT (one chalk stroke per crank revolution in the current cam cycle, compared at a glance against the chalked 24) + a hard rack straddle (no rack-only pair reads 24; 40x48 = 20 and 36x72 = 27 bracket it, forcing the deduction that a missing wheel exists) + bounded experimentation" },
-    { "fact": "Tally marks grouped in fives (four uprights plus a diagonal fifth stroke) read as a countable quantity", "confidence": "clearly fair, NOT borderline -- Validator-cleared 2026-08-07 (Designer flag A7). A near-universal counting convention, and the player is never required to KNOW it: the F3 crib and the D13 live block use the IDENTICAL notation, so the comparison is shape-matching, and the individual strokes remain countable for anyone who has never seen a five-bar gate. Sits BELOW the already-ratified 12-hour-wrap entry in demand.", "in_room_backup": "two independent zero-knowledge routes -- identical notation on both blocks makes the comparison pure shape-matching, and every stroke is individually countable; the player never performs arithmetic ON the tallies, only compares two blocks" },
-    { "fact": "A translucent dial viewed from behind is mirror-reversed", "confidence": "perception/inference, not trivia -- CONDITIONALLY KEPT at checkpoint (flag #5; D9 valve dormant; D11 protects against the bug-read)", "in_room_backup": "visibly reversed numerals in the same close-up as the setting crank; the absence of any legible 'VII' on the back view" },
-    { "fact": "A barometer is not a clock (red herring only)", "confidence": "no knowledge required", "in_room_backup": "fixed needle + weather pictograms; accepts no input" }
+    {
+      "fact": "Roman numerals I-XII, standard subtractive notation (reading and matching, incl. IV-vs-VI glyph order)",
+      "confidence": "clearly fair; user-requested ingredient; notation per user ruling rev 1.2",
+      "in_room_backup": "8 seated tiles anchor dial positions (seated VI disproves the tray decoy); every clock face in the attic is a reference"
+    },
+    {
+      "fact": "Standard clock-face layout (12 at top, clockwise)",
+      "confidence": "clearly fair",
+      "in_room_backup": "8 seated tiles + every in-room dial"
+    },
+    {
+      "fact": "Different cities keep different times (time zones exist)",
+      "confidence": "clearly fair as a concept; user-named ingredient; playtest: 'I never needed to know a single real time zone'",
+      "in_room_backup": "ALL offsets stamped in-world (+IV, −V, +IX, ★); no memorized offset ever required"
+    },
+    {
+      "fact": "Famous landmark silhouettes (Big Ben, Burj Khalifa, Statue of Liberty, Mt Fuji)",
+      "confidence": "fair, and NOT actually required (Dubai included per user ruling; Tel Aviv/Tehran/Riyadh excluded per user ruling)",
+      "in_room_backup": "pictogram-to-pictogram matching between plates and wheel headers fully suffices; city names never needed"
+    },
+    {
+      "fact": "12-hour dial wrap (6 + 9 = 15 -> 3 o'clock)",
+      "confidence": "mild borderline -- RATIFIED at checkpoint (flag #4); playtest: ~2 min hesitation, resolved by the wheel's own I-XII affordance",
+      "in_room_backup": "the Fuji wheel physically cannot show 15; I-XII is the whole affordance"
+    },
+    {
+      "fact": "Bigger gear turns slower; ratio = tooth quotient; stages multiply",
+      "confidence": "borderline -- RATIFIED at checkpoint (flag #2, arithmetic peak accepted). REV 1.4 CORRECTION (Validator RF-8): the pre-1.4 register claimed a 'countable clack cadence' in-room backup that the build NEVER HAD -- one crank press ran a whole cam cycle with no countable artifact, so the no-algebra route was specified and not delivered. D13 now delivers it on screen, and this entry's in_room_backup is true for the first time.",
+      "in_room_backup": "slate worked diagram (24 tallies grouped in fives vs one matching cam tally -- a like-for-like proportion) + the F3 chalk crib restating that target at the frame + live cam-speed feedback + the D13 LIVE CRANK-TALLY READOUT (one chalk stroke per crank revolution in the current cam cycle, compared at a glance against the chalked 24) + a hard rack straddle (no rack-only pair reads 24; 40x48 = 20 and 36x72 = 27 bracket it, forcing the deduction that a missing wheel exists) + bounded experimentation"
+    },
+    {
+      "fact": "Tally marks grouped in fives (four uprights plus a diagonal fifth stroke) read as a countable quantity",
+      "confidence": "clearly fair, NOT borderline -- Validator-cleared 2026-08-07 (Designer flag A7). A near-universal counting convention, and the player is never required to KNOW it: the F3 crib and the D13 live block use the IDENTICAL notation, so the comparison is shape-matching, and the individual strokes remain countable for anyone who has never seen a five-bar gate. Sits BELOW the already-ratified 12-hour-wrap entry in demand.",
+      "in_room_backup": "two independent zero-knowledge routes -- identical notation on both blocks makes the comparison pure shape-matching, and every stroke is individually countable; the player never performs arithmetic ON the tallies, only compares two blocks"
+    },
+    {
+      "fact": "A translucent dial viewed from behind is mirror-reversed",
+      "confidence": "perception/inference, not trivia -- CONDITIONALLY KEPT at checkpoint (flag #5; D9 valve dormant; D11 protects against the bug-read)",
+      "in_room_backup": "visibly reversed numerals in the same close-up as the setting crank; the absence of any legible 'VII' on the back view"
+    },
+    {
+      "fact": "A barometer is not a clock (red herring only)",
+      "confidence": "no knowledge required",
+      "in_room_backup": "fixed needle + weather pictograms; accepts no input"
+    }
   ]
 }
