@@ -47,20 +47,20 @@
  },
  "overlay_gate": {
   "wide": {
-   "seam_delta": 7.3,
+   "seam_delta": 0.0,
    "seam_pass": true,
-   "interior_hf": 24.739,
-   "base_hf": 1.612,
-   "sharpness_ratio": 15.349,
+   "interior_hf": 25.289,
+   "base_hf": 1.662,
+   "sharpness_ratio": 15.217,
    "sharp_pass": true,
    "PASS": true
   },
   "cu": {
-   "seam_delta": 5.88,
+   "seam_delta": 0.02,
    "seam_pass": true,
-   "interior_hf": 21.468,
-   "base_hf": 1.166,
-   "sharpness_ratio": 18.418,
+   "interior_hf": 21.927,
+   "base_hf": 1.173,
+   "sharpness_ratio": 18.686,
    "sharp_pass": true,
    "PASS": true
   }

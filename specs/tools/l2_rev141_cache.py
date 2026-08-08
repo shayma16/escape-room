@@ -258,7 +258,7 @@ def build():
     mask = np.asarray(lay.split()[3]) > 8
     g = gate_run(np.asarray(base_w), np.asarray(out_w),
                  np.asarray(Image.fromarray(mask.astype(np.uint8) * 255)
-                            .filter(ImageFilter.MaxFilter(9))) > 0)
+                            .filter(ImageFilter.MaxFilter(15))) > 0)
     report["wide_gate"] = g
     print("  overlay_gate wide:", g)
     out_w.save(os.path.join(ST, "ov-cache-marked-wide@3x.png"))
@@ -277,7 +277,7 @@ def build():
     maskc = np.asarray(layc.split()[3]) > 8
     gc = gate_run(np.asarray(base_c), np.asarray(out_c),
                   np.asarray(Image.fromarray(maskc.astype(np.uint8) * 255)
-                             .filter(ImageFilter.MaxFilter(9))) > 0)
+                             .filter(ImageFilter.MaxFilter(15))) > 0)
     report["cu_gate"] = gc
     print("  overlay_gate cu  :", gc)
     out_c.save(os.path.join(ST, "ov-cache-marked@3x.png"))

@@ -1,0 +1,160 @@
+{
+ "revision": "1.4.1 (F3 crib authored; D13 live block is the Developer's)",
+ "owner": "Asset-Gen authors the crib + these sprites; the Developer composites the LIVE block from them at runtime (D13).",
+ "chalk_value": "#E8E4DA seated x0.95 -- IDENTICAL for the crib and the live block (RF-7b: separation is POSITION only, never hue/value; no old-chalk/fresh-chalk treatment)",
+ "sprites": {
+  "sp-tally-full": {
+   "size_px": [
+    16,
+    152
+   ],
+   "pivot": "BOTTOM-LEFT (0, height) -- anchor on the row baseline",
+   "draw_size_cu_px": [
+    4.0,
+    38.0
+   ],
+   "note": "one full crank revolution of accumulated rotation"
+  },
+  "sp-tally-partial": {
+   "size_px": [
+    16,
+    152
+   ],
+   "pivot": "BOTTOM-LEFT (0, height) -- SAME baseline as the full stroke",
+   "draw_size_cu_px": [
+    4.0,
+    38.0
+   ],
+   "ink_height_cu_px": 19.0,
+   "note": "V17-W1/W3: CONSTANT height (never derived from the residue), UPRIGHT, shortened at the TOP only, same chalk value, same stroke width, same slot pitch. NEVER faded/ghosted/dashed/lower-opacity. Never grouped into a five, never struck. At most ONE per block. Occupies a FULL slot pitch."
+  },
+  "sp-tally-strike": {
+   "size_px": [
+    190,
+    152
+   ],
+   "pivot": "BOTTOM-LEFT (0, height) at the first upright of the group",
+   "draw_size_cu_px": [
+    47.6,
+    38.0
+   ],
+   "note": "the group-closing FIFTH stroke; spans exactly the four uprights it closes and never overshoots them (reads as a fifth stroke, never a strike-out)"
+  }
+ },
+ "notation": {
+  "slot_pitch_cu_px": 14.0,
+  "group_gap_cu_px": 16.0,
+  "row_pitch_cu_px": 56.0,
+  "row_capacity_strokes": 20,
+  "max_strokes": 48,
+  "rows_needed_at_max": 3,
+  "grouping": "five = four uprights + one diagonal closing stroke"
+ },
+ "cu_gear_frame": {
+  "plate_px": [
+   2048,
+   1536
+  ],
+  "field_px": [
+   700,
+   470,
+   945,
+   840
+  ],
+  "crib_row_baselines_px": [
+   522.0,
+   578.0
+  ],
+  "crib_x0_px": 702.0,
+  "cam_tally_x_px": 937.0,
+  "rule_y_px": 604.0,
+  "live_row_baselines_px": [
+   664.0,
+   720.0,
+   776.0
+  ],
+  "live_x0_px": 702.0,
+  "live_block_rect_norm": [
+   0.34082,
+   0.403646,
+   0.46582,
+   0.509115
+  ],
+  "live_row_baselines_norm": [
+   [
+    0.342773,
+    0.432292
+   ],
+   [
+    0.342773,
+    0.46875
+   ],
+   [
+    0.342773,
+    0.505208
+   ]
+  ]
+ },
+ "z2_frame_base_wide": {
+  "plate_px": [
+   3840,
+   1920
+  ],
+  "crib_bbox_px": [
+   1145,
+   983,
+   1331,
+   1257
+  ],
+  "live_row_baselines_norm": [
+   [
+    0.300415,
+    0.586914
+   ],
+   [
+    0.300415,
+    0.607422
+   ],
+   [
+    0.300415,
+    0.62793
+   ]
+  ],
+  "note": "the wide crib is drawn at the scaled geometry with a 4 px minimum stroke width (the sanctioned C1 over-scale principle) so it holds its RF-7(a) luminance instead of aliasing away; the close-up carries countability."
+ },
+ "constraints_for_the_developer": [
+  "RF-7(b): the live block NEVER touches or continues the crib -- the chalked rule at rule_y_px is the separator, and the first live row baseline is 60 CU px below it.",
+  "RF-7(c): no glow, flash or colour change when the live count reaches 24.",
+  "D13: transient view state only -- never saved, never gate-readable; cleared on any mount/unmount, on fewer than two gears, on scene/save reload, and redrawn from zero at the start of the next crank press.",
+  "Accrual is ACCUMULATED CRANK ROTATION since the last cam clack; index-mark crossing counting is PROHIBITED.",
+  "The final block must be fully readable STATICALLY and the accrual animation must be skippable (RC-4)."
+ ],
+ "gates": {
+  "cu": {
+   "seam_delta": 0.0,
+   "seam_pass": true,
+   "interior_hf": 49.532,
+   "base_hf": 1.263,
+   "sharpness_ratio": 39.21,
+   "sharp_pass": true,
+   "PASS": true
+  },
+  "wide": {
+   "seam_delta": 0.0,
+   "seam_pass": true,
+   "interior_hf": 53.739,
+   "base_hf": 1.64,
+   "sharpness_ratio": 32.759,
+   "sharp_pass": true,
+   "PASS": true
+  },
+  "rf7a_cu_min_median": [
+   5.14,
+   8.12
+  ],
+  "rf7a_wide_min_median": [
+   5.22,
+   8.18
+  ]
+ }
+}
