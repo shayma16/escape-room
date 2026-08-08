@@ -1219,3 +1219,169 @@ tests) was bundled into ONE push before dispatching a run — no tweak/wait/fail
   silhouette, mouse seat, hub projection, echo rects, the parity matrix and the echo-coverage
   matrix) was computed and visually verified offline against the shipped plates before the push,
   so the first macOS run was green.
+
+---
+
+## REV 1.4.1 FINAL WIRING BATCH → BUILD 17 (teach-at-dormer + D13 live tally)
+
+Authority: `specs/levels/level-2/puzzle-graph.json` **rev 1.4.1** (developer_notes **D5**, **D12**,
+**D13**), `specs/assets/level-2/ring-clue-wide-geometry.json`,
+`specs/assets/level-2/z2/v-frame/sprites/tally-sprites.json`, `z1/z1-state-overlays.json`.
+Code + tests only — the rev-1.4.1 clue art was already authored, staged and committed (166
+canonical assets). **No puzzle logic, no solution value, no gate, no hotspot and no overlay id
+changed in this batch**; everything below is presentation rendered off state that already existed.
+
+### Per-item status
+
+| # | Wired item | Status | Where |
+|---|---|---|---|
+| 1 | Resolver conditions for `ov-cache-marked` (wide + CU) and `ov-cushion-cache-marked` (cushion echo) | **done** | `Level2Engine.isDormerCacheNoteVisible`, `Level2Visuals.wideOverlays(.door,_)`, `Level2CloseUpVisuals.dormerCachePlan` / `catCushionPlan`, `Level2Coordinator.allOverlayNames(.door)` |
+| 2 | The two WIDE ring-hand entries (z1 3-o'clock x1.35; z2 9-notch x2.75) | **done** | `Level2CloseUpVisuals.ringClues` (+ `wideRingClue`, `ringHandLayout`), `RoomScene.setRingHand`, `Level2Coordinator.updateRingHand` |
+| 3 | D13 live tally block (accumulated-rotation accrual, fives + strike, ONE constant-height partial, clearing rules, transient) | **done** | new `Game/Level2Tally.swift` (`Level2Tally` + `L2TallyAccrual`), `Level2Coordinator` tally section, `L2GearFrameControl.liveTally` |
+| 4 | `cu-gear-ring` pointer multiplier 1.0 -> **1.5** (one number) | **done** | `Level2CloseUpVisuals.ringClues["cu-gear-ring"].pointerMultiplier` |
+| 5a | COMMUTATIVE acceptance test (36/64 either order computes 24:1 **and** is accepted) | **done** | `Level2TallyTests.testSolutionPairComputes24AndIsAcceptedInEitherPostOrder` (+ the pre-existing `Level2Tests.testGearTrainBothArrangementsSolve`) |
+| 5b | Tally cycle-stability test (the D13 anti-oscillation contract) | **done** | `Level2TallyTests.testTallyIsCycleStableAcrossManyCyclesForEveryPair` — 21 pairs x 6 cycles, irregular accrual steps |
+| 5c | Luminance (RF-7a) | **no action** — art-side verified (`asset-progress.md`: wide 3.54:1 / CU 3.57:1 / cushion echo 3.34:1 minima) | — |
+| 6 | Tests: state-flip rows, ordering, tally units, registration/containment | **done** | see the test inventory below |
+
+### 1. The chalk note: ONE predicate, three frames
+
+`Level2Engine.isDormerCacheNoteVisible(_:) == hasViewedClue(clu-watch-a) && !hasSolved(p03)`.
+All three frames that depict the board read that single predicate — the z1 WIDE
+(`ov-cache-marked`), `cu-floor-cache` (the same key's CU rect) and `cu-cat-cushion`
+(`ov-cushion-cache-marked`, the crop echo) — so wide and close-up **cannot** disagree about the
+mark's presence, and the totally ordered set `unmarked -> marked -> pried-with-wheel -> empty`
+holds by construction: the note is gone the instant the board is pried and can never return on an
+empty cavity. The mark is emitted BEFORE the pried/empty pair it shares a rect with, so the
+authored order also holds in the layer list, not only in the predicate.
+
+**RC-6** (`ov-cache-marked` x `ov-cache-cat-gone`): both composite together in `cu-floor-cache`
+and their CU rects are disjoint (cat corner `1499..2048 x 0..555` vs board `1080..2048 x
+1150..1536`), so the order between them is free — asserted, not assumed, by
+`testChalkNoteAndCatGoneAreIndependentAndRectDisjoint`, which fails if a future re-cut makes them
+overlap.
+
+### 2. + 4. Ring hands: one composite, four rects
+
+`ringClues` is now keyed by **plate** — the two close-ups plus the two WIDE base plates — and the
+composite maths lives in ONE function, `Level2CloseUpVisuals.ringHandLayout`, used by both the
+SwiftUI close-up path and the new SpriteKit wide path (`RoomScene.setRingHand`). It reproduces the
+shipped close-up composite exactly (sprite aspect-fit into `0.34L x 1.32L`, art centre `0.31L`
+along the pointer, rotated about the hub), i.e. the maths Asset-Gen rendered its C1/C3 proof
+against, so wide and close-up are the same mark at different scale. The wide hand is a plain
+sprite node: it adds no hotspot and is invisible to hit testing (only `hotspot:`-named nodes are
+considered), which `testWideRingHandIsGatedAndNeverStealsATap` pins.
+
+The approved tweak is literally one number: `cu-gear-ring`'s `pointerMultiplier` 1.0 -> 1.5, which
+takes the tip from inside the carved gear glyph to out past the notch circle
+(`testGearRingPointerClearsItsCarvedGlyph` asserts `pointerLength > radius` and that the tip stays
+on the plate). The house-ring close-up is untouched at x1.0.
+
+### 3. D13 live crank tally
+
+`Level2Tally` is a pure, notation-driven model; `L2TallyAccrual` is the transient accrual state,
+held by `Level2Coordinator` and by nothing else.
+
+- **Accrual is accumulated crank rotation**, never index-mark crossings: one cam cycle consumes
+  exactly `R = A*B/96` revolutions (the D5 train `(A/12) x (B/8)`), so the end-of-cycle picture is
+  a pure function of the mounted pair and cannot oscillate. The completed block is computed in
+  **exact integer arithmetic** (`product / 96`, `product % 96 != 0`) and the accrued path is
+  asserted to land on the identical block for all 21 pairs.
+- **Notation is read from the staged `tally-sprites.json`** (slot pitch 14, group gap 16, row
+  pitch 56, capacity 20/row, 3 rows, `x0` 702, baselines 664/720/776, rule 604, block rect) —
+  never hand-transcribed. Fives are four uprights closed by the `sp-tally-strike` diagonal that
+  spans exactly those four.
+- **The partial** is `sp-tally-partial` drawn in the SAME 4x38 box as a full stroke: the shortened
+  top is baked into the sprite, so no runtime height is ever derived from the residue (V17-W1).
+  6 2/3 (far from 24) and 26 2/3 (near) render identically in form.
+- **No branch on the count anywhere** — 24 is drawn exactly like 23 and 25 (RF-7c). Success stays
+  with the latch/panel.
+- **Separation is position-only** (RF-7b): the first live baseline is 60 CU px below the crib's
+  rule, and every mark of every reachable block sits inside the authored block rect (checked for
+  6+partial, 26+partial and the 48-stroke worst case).
+- **Clearing**: (i) any mount/unmount at either post -> cleared immediately (`mountGear` /
+  `unmountGear`), (ii) fewer than two gears -> nothing drawn (`Level2Engine.canCrank` + a
+  view-side guard), (iii) scene reload / save load -> a fresh coordinator starts empty (the block
+  lives nowhere in `LevelSaveData`), (iv) the next crank press redraws from zero.
+- **RC-4 skippable**: a second crank press, or a tap anywhere on the frame plate, fast-forwards to
+  the finished block; the final block is fully readable statically. Accrual duration is a fixed
+  1.6 s regardless of the count, so the timing leaks nothing either.
+
+### Judgment calls flagged (rev-1.4.1 batch)
+
+1. **Where the ONE partial sits when the next mark would be a group's closing diagonal.** V17 says
+   the partial is upright, never diagonal, never grouped into a five and never struck, so it
+   cannot occupy a group's fifth position. Rule implemented: the partial takes the next UPRIGHT
+   slot; if four uprights are already standing it steps to the first upright of the NEXT group,
+   where it can never be closed. **None of the three shipped non-integer pairs lands there**
+   (6, 10 and 26 full strokes leave 1, 0 and 1 uprights standing), so this rule only ever governs
+   frames of the accrual animation — but it is deterministic and unit-tested rather than
+   accidental.
+2. **The live block renders in `cu-gear-frame` only, not in the wide.** D13 says "renders in
+   cu-gear-frame and in the wide **if the crank is operable there**". It is not: a wide tap on the
+   frame/arbor opens the close-up, and the crank verb exists only inside it. The wide row
+   baselines in `tally-sprites.json` are therefore unused for now (they are correct if the crank
+   ever becomes a wide verb). Flagged so the walkthrough describes counting in the close-up.
+3. **The engine outcome is applied on the press, then the tally accrues as animation.** The cam
+   clack/latch (and, on the solution, the panel opening + close-up dismissal) happen immediately;
+   the block fills over 1.6 s and stays. The alternative — deferring the solve to the end of the
+   accrual — would have made a 1.6 s animation load-bearing for progression, which is worse for
+   both QA and accessibility. The counting route is unaffected: the number is readable statically
+   after the press.
+4. **A rejected mount also clears the block.** D13(i) says "any mount or unmount"; a mount the
+   engine refuses cannot change the configuration, but clearing anyway is strictly safer than
+   risking a count that belongs to a different configuration.
+5. **`Level2Engine.canCrank`** is new but derives only from existing state (zone, arbor flag, the
+   two post fields, p06 solved). It introduces no state and no gate; it exists so "the crank
+   actually turns" is stated once and shared by the tally and the tests.
+
+### Test coverage added (all fast-lane, deterministic, no simulator UI)
+
+- `Level2TallyTests` (new): notation loaded from the authored metadata; sprite/draw-box
+  proportionality; **commutative 24:1 acceptance**; exactly-three-non-integer-pairs; worst case 48
+  fits three rows; fives closed by a non-overshooting diagonal; the partial's full V17 contract;
+  far/near partial identity; nothing special at 24; rule clearance + block-rect containment;
+  **cycle stability across 21 pairs x 6 cycles**; monotonic accrual + RC-4 skip parity; clearing
+  on mount/unmount and on fewer than two gears; no tally with a seized arbor; never-saved /
+  re-derives-empty-on-load; never varies with any clue flag.
+- `Level2CloseUpStateTests`: +2 state-flip rows (`ov-cache-marked`, `ov-cushion-cache-marked`),
+  +4 tests (gate -> marked -> pried -> empty across all three frames; same-rect mutual exclusion
+  across every board phase; RC-6 independence + rect disjointness; the note sits on the tappable
+  board), +1 reachable phase ("dormer board marked, unpried") so the art-integrity guards (staged
+  art, pixel-1:1, visible ink, in-bounds) now cover the new overlays, + the gear-ring
+  pointer-multiplier test. The systemic echo-coverage guard automatically extends to the new wide
+  overlay.
+- `Level2RegistrationTests`: `ov-cache-marked` added to the required-wide-overlay set (rect
+  sanity + pixel-1:1 + hotspot registration), +3 ring-hand tests (measured geometry vs the
+  geometry JSON to 1e-6 / 0.15 px; hub-anchor + tip containment via the shipped composite
+  function; gated appearance with no new hotspot and no tap theft).
+- `Level2AssetStagingTests`: the three rev-1.4.1 overlays + three tally sprites are now required
+  canonical assets; `ov-cache-marked` / `ov-cushion-cache-marked` CU rects and `ov-cache-marked`'s
+  wide rect must resolve; new `testTallySpriteRigShipsAndLoads`.
+
+### Asset staging verification (user directive 2026-07-09)
+
+No new staging was needed, but the bundle was re-verified rather than assumed: all **166** entries
+of `staged-manifest.json` were hashed and compared **both** against the manifest sha **and against
+their `specs/assets/level-2/...` source files** — 166/166 byte-identical, zero basename
+collisions, zero staged files outside the manifest, zero manifest-current assets missing. That
+includes the plates the rev-1.4.1 art batch regenerated (`z2-frame-base`, `cu-gear-frame` with the
+F3 crib, `cu-slate`, the cache-note overlays), so no stale close-up can be shadowing a fresh wide
+in this build. The in-CI shadow guard (`testStagedBytesMatchManifest_noStaleShadow` +
+`testNoShadowMarkersInStagedTree` + `testNoBasenameCollisionsInLevel2`) still fails loudly on any
+regression.
+
+### Security checklist (re-run for this batch)
+
+- **No development-time secrets.** Grepped the whole app source tree, the Xcode project and the
+  bundled resource set for `fal.ai` / `api key` / `secret` / `token=` / `bearer` / `password`
+  patterns: the only hits are prose attribution in About/Credits and code comments (plus the
+  unrelated identifier `catResponseToken`). **Zero keys, tokens or credentials** anywhere in the
+  app, the project file or the bundle. `.env` is gitignored, untracked, and not referenced by any
+  build phase; `EscapeRoom/Resources` contains only PNG/JPEG/JSON/WAV art, rig and audio files
+  (356 tracked files, no stray config).
+- **Minimal entitlements/permissions.** `Info.plist` still declares only bundle identity,
+  landscape-locked orientation, launch screen, status-bar and `ITSAppUsesNonExemptEncryption
+  = false`. **No `*UsageDescription` keys** (no camera / microphone / location / contacts), no
+  `.entitlements` file, no `CODE_SIGN_ENTITLEMENTS` setting and no capabilities — unchanged by
+  this batch, which adds no OS-facing API beyond SpriteKit/SwiftUI drawing and a `Timer`.

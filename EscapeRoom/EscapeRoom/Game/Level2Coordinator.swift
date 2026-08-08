@@ -1,5 +1,6 @@
-import SpriteKit
 import Combine
+import Foundation
+import SpriteKit
 
 /// The close-up / inspection layer for Level 2. Interactive close-ups drive Level2Engine
 /// through the coordinator so all state logic stays in one place (same pattern as L1).
@@ -100,8 +101,40 @@ final class Level2Coordinator: ObservableObject {
             scene.setOverlay(key, imageNamed: key + "-wide", rectNormalized: rect, zPosition: z)
             z += 1
         }
+        updateRingHand()
         if viewID == .dial { updateDialMechanismAnimations() }
     }
+
+    /// REV 1.4.1 / D12 C1 + C3 — the WIDE ring-hand echoes.
+    ///
+    /// The canonical `hand-hour` sprite, pivoted at the engraved ring's hub and laid at the
+    /// bearing its paired watch reads, once that watch has been inspected (an existing D7
+    /// boolean — no new state, no new hotspot, no gate change). z1 = the ⌂ ring at the 3-notch
+    /// gated on `clu-watch-a`; z2 = the ⚙ ring at the 9-notch gated on `clu-watch-b`.
+    ///
+    /// The wide matters because it is the ONLY frame containing both the ring and the field it
+    /// selects (the floorboards / the brick field), and because the rev-1.4.1 chalk note on the
+    /// cache board is a scale model of exactly this mark — the rhyme between the two is the
+    /// whole teaching mechanism, so they must be laid at the same rendered attitude.
+    private func updateRingHand() {
+        let key = viewID.baseTexture
+        guard let ring = Level2CloseUpVisuals.wideRingClue(viewID),
+              state.hasViewedClue(ring.gateClue),
+              let art = GameAssetLoader.shared.image(named: Self.ringHandSprite) else {
+            scene.setRingHand(key, imageNamed: nil, hubNormalized: .zero,
+                              sizePoints: .zero, anchorTopLeft: .zero, degrees: 0)
+            return
+        }
+        let length = ring.pointerLengthFracOfWidth * scene.size.width
+        let pixels = CGSize(width: art.size.width * art.scale, height: art.size.height * art.scale)
+        let layout = Level2CloseUpVisuals.ringHandLayout(spritePixelSize: pixels, length: length)
+        scene.setRingHand(key, imageNamed: Self.ringHandSprite, hubNormalized: ring.center,
+                          sizePoints: layout.size, anchorTopLeft: layout.anchor,
+                          degrees: ring.degrees)
+    }
+
+    /// The canonical hour hand (z3/v-dial/sprites/hand-hour) — reused, never re-authored.
+    static let ringHandSprite = "hand-hour"
 
     /// M3 / m2: drives the z3 pendulum swing (visible p10 confirmation) and the D11
     /// alive-wrong-time ambient (soft escapement tick + occasional hammer twitch, NEVER a
@@ -147,8 +180,9 @@ final class Level2Coordinator: ObservableObject {
         case .bench: return ["ov-screwdriver-taken", "ov-stove-tile-taken"]
         case .master: return ["ov-dial-seat-ii", "ov-dial-seat-iv", "ov-dial-seat-vii",
                               "ov-dial-seat-xi", "ov-crate-tile-taken", "ov-workroom-door-open"]
-        case .door: return ["ov-sill-tile-taken", "ov-cache-pried-wheel", "ov-cache-empty",
-                            "ov-cushion-reveal", "ov-cushion-empty", "ov-bar-raised"]
+        case .door: return ["ov-sill-tile-taken", "ov-cache-marked", "ov-cache-pried-wheel",
+                            "ov-cache-empty", "ov-cushion-reveal", "ov-cushion-empty",
+                            "ov-bar-raised"]
         case .frame: return ["ov-arbor-oiled", "ov-brick-pried-oilcan", "ov-brick-empty",
                              "ov-panel-open"] + Level2Graph.rackGears.map { "ov-rack-absent-\($0)" }
         case .clockrow: return ["ov-cabinet-open-mouse", "ov-cabinet-empty"]
@@ -510,19 +544,93 @@ final class Level2Coordinator: ObservableObject {
         if Level2Engine.collectOilcan(state) { SoundManager.shared.play(.pickup); objectWillChange.send() }
     }
 
-    /// p06 gear frame.
+    /// p06 gear frame. Every mount/unmount CLEARS the live tally (D13(i)): the frame must never
+    /// display a count belonging to a configuration that is no longer mounted.
     func mountGear(_ gear: String, on post: Level2Post) {
         if Level2Engine.mountGear(gear, on: post, state: state) { SoundManager.shared.play(.seat) }
         else { SoundManager.shared.play(.wrong) }
+        clearTally()
         objectWillChange.send()
     }
-    func unmountGear(_ post: Level2Post) { Level2Engine.unmountGear(post, state: state); objectWillChange.send() }
+    func unmountGear(_ post: Level2Post) {
+        Level2Engine.unmountGear(post, state: state)
+        clearTally()
+        objectWillChange.send()
+    }
+
     func crankGearTrain() {
+        // RC-4: the accrual must be skippable. A press WHILE the block is still filling in
+        // fast-forwards it to the finished cycle instead of starting another one, so the final
+        // block is always reachable without watching it accrue.
+        if accrual.isAccruing { finishTallyAccrual(); return }
+        startTallyAccrual()
         if Level2Engine.crankGearTrain(state: state) {
             SoundManager.shared.play(.unlock); dismissCloseUp()
         } else { SoundManager.shared.play(.grind) }
         objectWillChange.send()
     }
+
+    // MARK: - D13 live crank-tally readout (TRANSIENT view state)
+    //
+    // Held HERE and nowhere else: never written to the save, never readable by any gate,
+    // condition, requirement or D7 flag. A coordinator is built fresh per scene presentation,
+    // so a scene reload / save load / relaunch re-derives the block EMPTY (D13(iii)) — the only
+    // thing that can make it non-empty is a crank press.
+
+    /// What the gear-frame close-up should draw right now (nil = nothing drawn).
+    @Published private(set) var tallyBlock: Level2Tally.Block?
+    private let accrual = L2TallyAccrual()
+    private var tallyTimer: Timer?
+    /// Wall-clock length of the accrual animation, independent of the count (so the picture
+    /// never encodes "how close to 24" through its timing either).
+    static let tallyAccrualDuration: TimeInterval = 1.6
+    private static let tallyStep: TimeInterval = 1.0 / 30.0
+
+    /// D13(iv): a crank press redraws the block FROM ZERO, then accrues one full cam cycle's
+    /// worth of crank rotation (R = A*B/96 revolutions). Accrual is measured as ACCUMULATED
+    /// ROTATION, never as crossings of an index mark — the crossing measure drifts in phase and
+    /// produces the 7/7/6 oscillation D13 prohibits.
+    private func startTallyAccrual() {
+        tallyTimer?.invalidate(); tallyTimer = nil
+        guard Level2Engine.canCrank(state),
+              accrual.begin(postA: state.data.l2GearPostA, postB: state.data.l2GearPostB) else {
+            clearTally(); return
+        }
+        tallyBlock = accrual.block
+        let rate = accrual.target / Self.tallyAccrualDuration
+        tallyTimer = Timer.scheduledTimer(withTimeInterval: Self.tallyStep, repeats: true) {
+            [weak self] timer in
+            guard let self else { timer.invalidate(); return }
+            self.accrual.advance(by: rate * Self.tallyStep)
+            // Publish only when the PICTURE changes (at most ~R+1 times), not once per tick:
+            // a @Published assignment re-evaluates the whole close-up body, and the plate is a
+            // 10-megapixel image. Nothing about the timing is state — it is animation only.
+            let next = self.accrual.block
+            if next != self.tallyBlock { self.tallyBlock = next }
+            if !self.accrual.isAccruing { timer.invalidate(); self.tallyTimer = nil }
+        }
+    }
+
+    /// Skip to the finished cycle (RC-4): the final block must be fully readable STATICALLY,
+    /// without having watched it accrue. Called by a second crank press and by a tap on the
+    /// plate. The completed count then STAYS DRAWN, so a player who looked away still gets the
+    /// number. A no-op when nothing is drawn.
+    func finishTallyAccrual() {
+        guard accrual.pairKey != nil else { return }
+        tallyTimer?.invalidate(); tallyTimer = nil
+        accrual.finish()
+        let next = accrual.block
+        if next != tallyBlock { tallyBlock = next }
+    }
+
+    /// D13 (i) mount/unmount, (ii) fewer than two gears, (iii) scene/save reload.
+    func clearTally() {
+        tallyTimer?.invalidate(); tallyTimer = nil
+        accrual.clear()
+        tallyBlock = nil
+    }
+
+    deinit { tallyTimer?.invalidate() }
 
     /// p07 vault wheels.
     func setVaultWheel(_ index: Int, delta: Int) {

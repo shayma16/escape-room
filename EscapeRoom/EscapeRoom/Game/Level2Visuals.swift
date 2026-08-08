@@ -347,6 +347,12 @@ enum Level2Visuals {
         case .door:
             var out: [String] = []
             if tileXITaken(s) { out.append("ov-sill-tile-taken") }
+            // REV 1.4.1 / D12(2) C2 — the clockmaker's CHALK NOTE on the cache board (hub dot +
+            // bearing hand + ⌂), composited once watch A has been read. Appended BEFORE the
+            // pried/empty pair, which shares its exact rect: the authored order is
+            // marked -> pried -> empty, so even if the visibility predicate were ever loosened
+            // the pried board would still paint over the note rather than the other way round.
+            if Level2Engine.isDormerCacheNoteVisible(s) { out.append("ov-cache-marked") }
             if s.hasSolved(Level2Graph.PuzzleID.cacheDormer) {
                 out.append(Level2Engine.isGreatWheelUncollected(s) ? "ov-cache-pried-wheel" : "ov-cache-empty")
             }

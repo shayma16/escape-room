@@ -122,6 +122,11 @@ final class Level2AssetStagingTests: XCTestCase {
             "ov-gearring-brick-empty-cu", "ov-gearframe-panel-open-cu",
             "ov-cushion-cache-pried-cu", "ov-cushion-cache-empty-cu",
             "ov-cache-cushion-lifted-cu",
+            // REV 1.4.1: the teach-at-dormer chalk NOTE (wide + close-up + the cushion-crop
+            // echo) and the D13 live-tally stroke sprites. If any of these stop shipping the
+            // p03 teach or the p06 counting route silently render NOTHING.
+            "ov-cache-marked-wide", "ov-cache-marked-cu", "ov-cushion-cache-marked-cu",
+            "sp-tally-full", "sp-tally-partial", "sp-tally-strike",
         ]
         for name in required {
             XCTAssertNotNil(GameAssetLoader.shared.image(named: name), "missing/unloadable staged asset: \(name)")
@@ -131,7 +136,8 @@ final class Level2AssetStagingTests: XCTestCase {
     func testOverlayRectCatalogLoaded() {
         // Every active wide overlay must resolve a non-zero rect (else it silently won't render).
         for key in ["ov-bar-raised", "ov-cache-pried-wheel", "ov-key-taken", "ov-panel-open",
-                    "ov-arbor-oiled", "ov-hatch-open", "ov-workroom-door-open"] {
+                    "ov-arbor-oiled", "ov-hatch-open", "ov-workroom-door-open",
+                    "ov-cache-marked"] {
             XCTAssertNotEqual(Level2OverlayCatalog.shared.wideRect(key), .zero, "no wide rect for \(key)")
         }
     }
@@ -155,10 +161,35 @@ final class Level2AssetStagingTests: XCTestCase {
                     "ov-crate-door-open", "ov-housering-bar-raised", "ov-gearring-brick-pried",
                     "ov-gearring-brick-empty", "ov-gearframe-panel-open",
                     "ov-cushion-cache-pried", "ov-cushion-cache-empty",
-                    "ov-cache-cushion-lifted"] {
+                    "ov-cache-cushion-lifted",
+                    // REV 1.4.1 teach-at-dormer note: the board's own CU rect + the cushion
+                    // crop's echo of the same note.
+                    "ov-cache-marked", "ov-cushion-cache-marked"] {
             XCTAssertNotEqual(Level2OverlayCatalog.shared.cuRect(key), .zero,
                               "no CU rect for the \(key) echo — it would composite NOTHING")
         }
+    }
+
+    /// REV 1.4.1 / D13: the live tally block is composited at runtime from AUTHORED sprites and
+    /// AUTHORED notation. Both must ship, or the counting route (p06's safety net) draws nothing
+    /// — and if the notation silently fell back to defaults the live block could drift off the
+    /// timber cheek the crib is chalked on.
+    func testTallySpriteRigShipsAndLoads() {
+        XCTAssertNotNil(Bundle.main.url(forResource: "tally-sprites", withExtension: "json",
+                                        subdirectory: "GameAssets/level-2")
+                        ?? Bundle.main.url(forResource: "tally-sprites", withExtension: "json"),
+                        "tally-sprites.json must ship in the bundle")
+        for sprite in ["sp-tally-full", "sp-tally-partial", "sp-tally-strike"] {
+            XCTAssertNotNil(GameAssetLoader.shared.image(named: sprite),
+                            "the D13 stroke sprite \(sprite) must ship")
+        }
+        // The notation in force must be the AUTHORED notation (the in-code fallbacks are kept
+        // deliberately identical to it, so this pins the values rather than the code path).
+        let n = Level2Tally.notation
+        XCTAssertEqual(n.rowBaselines.count, 3)
+        XCTAssertEqual(n.x0, 702, accuracy: 0.001)
+        XCTAssertEqual(n.ruleY, 604, accuracy: 0.001)
+        XCTAssertNotEqual(n.blockRect, .zero)
     }
 
     /// BUILD 17: the authored sprite RIGS ship and load. The runtime reads its pendulum rect,

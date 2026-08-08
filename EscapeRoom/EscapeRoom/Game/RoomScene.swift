@@ -331,6 +331,40 @@ final class RoomScene: SKScene {
         procParams[key] = params
     }
 
+    /// REV 1.4.1 / D12 C1+C3 — a canonical clock-hand sprite pivoted at an engraved ring's hub
+    /// and laid at the bearing its paired watch reads, composited into the WIDE plate.
+    ///
+    /// Presentation only, rendered off an existing D7 clue boolean: no new state, no new
+    /// hotspot, no gate change, and (like every other overlay sprite) it is invisible to hit
+    /// testing, which only ever considers `hotspot:`-named nodes.
+    ///
+    /// The geometry is computed ONCE, in `Level2CloseUpVisuals.ringHandLayout`, and shared with
+    /// the SwiftUI close-up renderer, so the wide and the close-up cannot drift apart: this
+    /// method just places the art. `anchorTopLeft` is the hub's position inside the art in
+    /// top-left-origin unit coordinates (SpriteKit's anchor is bottom-left-origin, hence the y
+    /// flip), and `degrees` is the screen-space clockwise rotation (SpriteKit's zRotation is
+    /// counter-clockwise, hence the sign flip).
+    func setRingHand(_ key: String, imageNamed: String?, hubNormalized: CGPoint,
+                     sizePoints: CGSize, anchorTopLeft: CGPoint, degrees: CGFloat,
+                     zPosition: CGFloat = 25) {
+        let nodeKey = "proc:ringhand:\(key)"
+        guard let imageNamed, sizePoints.width > 0, sizePoints.height > 0,
+              let texture = Self.texture(named: imageNamed) else { removeProc(nodeKey); return }
+        let params = "\(hubNormalized)|\(sizePoints)|\(anchorTopLeft)|\(degrees)|\(imageNamed)"
+        if procNodes[nodeKey] != nil, procParams[nodeKey] == params { return }
+        removeProc(nodeKey)
+        let node = SKSpriteNode(texture: texture)
+        node.name = "ringhand:\(key)"
+        node.size = sizePoints
+        node.anchorPoint = CGPoint(x: anchorTopLeft.x, y: 1 - anchorTopLeft.y)
+        node.position = scenePoint(nx: hubNormalized.x, ny: hubNormalized.y)
+        node.zRotation = -degrees * .pi / 180
+        node.zPosition = zPosition
+        addChild(node)
+        procNodes[nodeKey] = node
+        procParams[nodeKey] = params
+    }
+
     /// D11 hammer twitch + escapement tick: a small dark hammer node at `rect` that
     /// occasionally lifts a few degrees and settles (NEVER strikes), and a soft repeating
     /// audio pulse via `onTick`. active=false removes it and stops the pulse.

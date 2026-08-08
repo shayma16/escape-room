@@ -504,15 +504,18 @@ private struct L2PlainCloseUp: View {
                 onPlateTap: { coordinator.useArmedItemInCloseUp() },
                 extra: { plate in
             if let ring = Level2CloseUpVisuals.ringClues[image], state.hasViewedClue(ring.gateClue) {
-                let radius = ring.radiusFracOfWidth * plate.width
                 let center = CGPoint(x: plate.minX + ring.center.x * plate.width,
                                      y: plate.minY + ring.center.y * plate.height)
-                let length = radius * Level2CloseUpVisuals.ringPointerLengthFraction
-                GameImage(name: "hand-hour")
+                // Pointer length = ring radius x 0.86 x the Art Director's scale factor. The
+                // factor is 1.0 on the ⌂ ring and 1.5 on the ⚙ ring (rev 1.4.1 approved tweak:
+                // at 1.0 the ⚙ tip landed inside the carved glyph and the bearing was hard to
+                // read). Same composite the WIDE echoes use — see ringHandLayout.
+                let length = ring.pointerLengthFracOfWidth * plate.width
+                GameImage(name: Level2Coordinator.ringHandSprite)
                     .aspectRatio(contentMode: .fit)
                     .frame(width: length * 0.34, height: length * 1.32)
                     .offset(y: -length * 0.31)
-                    .rotationEffect(.degrees(Double(ring.hour % 12) * 30))
+                    .rotationEffect(.degrees(Double(ring.degrees)))
                     .allowsHitTesting(false)
                     .accessibilityHidden(true)
                     .position(center)
@@ -613,14 +616,58 @@ private struct L2GearFrameControl: View {
 
     var body: some View {
         L2Plate(plan: plan, identifier: "gear-frame",
+                // RC-4: a tap anywhere on the frame fast-forwards a filling tally block to its
+                // finished state (a no-op when nothing is accruing, so unarmed stray taps keep
+                // behaving exactly as before).
+                onPlateTap: { coordinator.finishTallyAccrual() },
                 isArmed: isArmed,
                 onUse: { _ = coordinator.runCloseUpUse($0) },
                 extra: { plate in
+            liveTally(in: plate)
             postTarget(.a, plate: plate)
             postTarget(.b, plate: plate)
             crankTarget(in: plate)
         })
         .overlay(alignment: .top) { gearPicker.padding(.top, 12) }
+    }
+
+    /// REV 1.4.1 / D13 — THE LIVE CRANK-TALLY BLOCK.
+    ///
+    /// Chalk strokes on the frame's timber cheek, directly beneath the F3 crib and BELOW its
+    /// chalked rule: one full stroke per full turn of accumulated crank rotation since the last
+    /// cam clack, grouped in fives (four uprights closed by a diagonal fifth), with the
+    /// remainder as ONE constant-height partial. This is the countable artifact D5 and blind
+    /// playtest 2b have promised since rev 1.0 — build 16 ran a whole cam cycle on one press
+    /// and left nothing on screen to count.
+    ///
+    /// Everything about the picture comes from `Level2Tally` (pure, unit-tested) and the
+    /// authored sprites. Three things this view deliberately does NOT do:
+    ///  * no glow, flash, colour change or animation at 24 (RF-7c) — there is no branch on the
+    ///    count here at all, so a correct pair and a wrong pair are identical in form;
+    ///  * no hue/value difference from the crib (RF-7b) — the sprites carry the crib's own
+    ///    chalk value, and the separation is POSITION only (the crib's rule sits between them);
+    ///  * no residue-derived height on the partial (V17-W1) — the shortened top is baked into
+    ///    `sp-tally-partial`, and it is drawn in the SAME box as a full stroke.
+    @ViewBuilder private func liveTally(in plate: CGRect) -> some View {
+        // D13(ii): with fewer than two gears mounted there is no pair, so nothing is drawn.
+        if let block = coordinator.tallyBlock, !block.isEmpty,
+           state.data.l2GearPostA != nil, state.data.l2GearPostB != nil {
+            let n = Level2Tally.notation
+            let marks = Level2Tally.marks(for: block, notation: n)
+            ForEach(marks.indices, id: \.self) { i in
+                let mark = marks[i]
+                let r = Level2Tally.drawRect(mark, notation: n)
+                let w = r.width / n.plate.width * plate.width
+                let h = r.height / n.plate.height * plate.height
+                GameImage(name: mark.kind.image)
+                    .aspectRatio(contentMode: .fill)
+                    .frame(width: w, height: h)
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+                    .position(x: plate.minX + r.midX / n.plate.width * plate.width,
+                              y: plate.minY + r.midY / n.plate.height * plate.height)
+            }
+        }
     }
 
     /// The rack, rendered as the ACTUAL gear cutouts (z2/props/gear-*), scaled by tooth count

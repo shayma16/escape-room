@@ -43,7 +43,7 @@ final class Level2RegistrationTests: XCTestCase {
         .bench: ["ov-screwdriver-taken", "ov-stove-tile-taken"],
         .master: ["ov-dial-seat-ii", "ov-dial-seat-iv", "ov-dial-seat-vii", "ov-dial-seat-xi",
                   "ov-crate-tile-taken", "ov-workroom-door-open"],
-        .door: ["ov-sill-tile-taken", "ov-cache-pried-wheel", "ov-cache-empty",
+        .door: ["ov-sill-tile-taken", "ov-cache-marked", "ov-cache-pried-wheel", "ov-cache-empty",
                 "ov-cushion-reveal", "ov-cushion-empty", "ov-bar-raised"],
         .frame: ["ov-arbor-oiled", "ov-brick-pried-oilcan", "ov-brick-empty", "ov-panel-open"]
             + Level2Graph.rackGears.map { "ov-rack-absent-\($0)" },
@@ -62,7 +62,7 @@ final class Level2RegistrationTests: XCTestCase {
         (.master, "door-dial", ["ov-dial-seat-ii", "ov-dial-seat-iv", "ov-dial-seat-vii",
                                 "ov-dial-seat-xi", "ov-workroom-door-open"]),
         (.door, "sill", ["ov-sill-tile-taken"]),
-        (.door, "floor-cache", ["ov-cache-pried-wheel", "ov-cache-empty"]),
+        (.door, "floor-cache", ["ov-cache-marked", "ov-cache-pried-wheel", "ov-cache-empty"]),
         (.door, "cat-cushion", ["ov-cushion-reveal", "ov-cushion-empty"]),
         (.door, "stair-door", ["ov-bar-raised"]),
         (.frame, "arbor", ["ov-arbor-oiled"]),
@@ -424,6 +424,104 @@ final class Level2RegistrationTests: XCTestCase {
         }
         XCTAssertFalse(Level2CloseUpVisuals.catFloorRect.intersects(Level2CloseUpVisuals.catOfferRect),
                        "the PLACE and OFFER regions must be distinct, or p02's two verbs collide")
+    }
+
+    // MARK: - REV 1.4.1: the WIDE ring-hand echoes (D12 C1 + C3)
+
+    /// The two new entries are MEASUREMENTS, not choices: they must match
+    /// `specs/assets/level-2/ring-clue-wide-geometry.json` exactly, or the hand is pivoted
+    /// somewhere other than the ring the art was measured against (the R7-001 / stale-rect
+    /// class, pointer edition).
+    func testWideRingHandEntriesMatchTheMeasuredGeometry() {
+        // (plate, hub, radiusFracOfWidth, hour, gate, multiplier, effective length px @3x)
+        let measured: [(String, CGPoint, CGFloat, Int, String, CGFloat, CGFloat)] = [
+            ("z1-door-base", CGPoint(x: 0.491302, y: 0.377969), 0.018672, 3,
+             Level2ClueID.watchA, 1.35, 83.2),
+            ("z2-frame-base", CGPoint(x: 0.742292, y: 0.571667), 0.005495, 9,
+             Level2ClueID.watchB, 2.75, 49.9),
+        ]
+        for (plate, hub, radius, hour, gate, mult, lengthPx) in measured {
+            guard let ring = Level2CloseUpVisuals.ringClues[plate] else {
+                XCTFail("\(plate): no wide ring-hand entry (C1/C3 not wired)"); continue
+            }
+            XCTAssertEqual(ring.center.x, hub.x, accuracy: 0.000001, "\(plate) hub x")
+            XCTAssertEqual(ring.center.y, hub.y, accuracy: 0.000001, "\(plate) hub y")
+            XCTAssertEqual(ring.radiusFracOfWidth, radius, accuracy: 0.000001, "\(plate) radius")
+            XCTAssertEqual(ring.hour, hour, "\(plate) bearing")
+            XCTAssertEqual(ring.gateClue, gate, "\(plate) gate")
+            XCTAssertEqual(ring.pointerMultiplier, mult, accuracy: 0.0001, "\(plate) scale factor")
+            XCTAssertEqual(ring.pointerLengthFracOfWidth * wideRefW, lengthPx, accuracy: 0.15,
+                           "\(plate): effective pointer length must match the measured proof")
+        }
+        // The view lookup must find them by the plate the view actually renders.
+        XCTAssertEqual(Level2CloseUpVisuals.wideRingClue(.door)?.hour, 3)
+        XCTAssertEqual(Level2CloseUpVisuals.wideRingClue(.frame)?.hour, 9)
+        XCTAssertNil(Level2CloseUpVisuals.wideRingClue(.bench), "only two wides carry a ring")
+    }
+
+    /// CONTAINMENT + PIVOT geometry, computed with the SAME function the SwiftUI close-up and
+    /// the SpriteKit wide renderer both use — so this is the composite that actually ships:
+    /// the hub anchor lands inside the art, and both the hub and the pointer tip stay on the
+    /// plate (an over-scaled hand that ran off the plate would read "keep going that way").
+    func testRingHandCompositeIsAnchoredOnTheHubAndStaysOnThePlate() {
+        guard let art = GameAssetLoader.shared.image(named: Level2Coordinator.ringHandSprite) else {
+            return XCTFail("the canonical hour-hand sprite must ship")
+        }
+        let pixels = CGSize(width: art.size.width * art.scale, height: art.size.height * art.scale)
+        let unit = CGRect(x: 0, y: 0, width: 1, height: 1)
+        var offenders: [String] = []
+        for (plate, ring) in Level2CloseUpVisuals.ringClues.sorted(by: { $0.key < $1.key }) {
+            let width: CGFloat = plate.hasPrefix("cu-") ? 2048 : 3840
+            let L = ring.pointerLengthFracOfWidth * width
+            let layout = Level2CloseUpVisuals.ringHandLayout(spritePixelSize: pixels, length: L)
+            if layout.size.width <= 0 || layout.size.height <= 0 {
+                offenders.append("\(plate): degenerate composite"); continue
+            }
+            if !(0...1).contains(layout.anchor.y) {
+                offenders.append(String(format: "%@: the hub anchor (%.3f) falls OUTSIDE the art "
+                    + "— the sprite would not pivot on the ring", plate, layout.anchor.y))
+            }
+            if abs(layout.anchor.x - 0.5) > 0.001 {
+                offenders.append("\(plate): a hand pivots on its own axis")
+            }
+            // Tip, in plate-normalized coordinates: hour*30 clockwise from straight up.
+            let theta = Double(ring.degrees) * .pi / 180
+            let aspect: CGFloat = plate.hasPrefix("cu-") ? 2048.0 / 1536.0 : 2.0
+            let tip = CGPoint(x: ring.center.x + ring.pointerLengthFracOfWidth * CGFloat(sin(theta)),
+                              y: ring.center.y - ring.pointerLengthFracOfWidth * aspect * CGFloat(cos(theta)))
+            if !unit.contains(tip) || !unit.contains(ring.center) {
+                offenders.append("\(plate): hub \(ring.center) / tip \(tip) leaves the plate")
+            }
+        }
+        XCTAssertTrue(offenders.isEmpty, "ring-hand composite geometry:\n" + offenders.joined(separator: "\n"))
+    }
+
+    /// The wide hand is PRESENTATION ONLY: it appears exactly on its D7 clue boolean, adds no
+    /// hotspot, and — the property that keeps it safe — is invisible to hit testing, so it can
+    /// never steal a tap from the ring, the cache or the brick beneath it.
+    func testWideRingHandIsGatedAndNeverStealsATap() {
+        for (view, gate, neighbour) in [(L2ViewID.door, Level2ClueID.watchA, "house-ring"),
+                                        (L2ViewID.frame, Level2ClueID.watchB, "gear-ring")] {
+            let s = makeState()
+            let coord = Level2Coordinator(viewID: view, state: s, size: sceneSize)
+            guard let ring = Level2CloseUpVisuals.wideRingClue(view) else {
+                XCTFail("\(view.rawValue): no wide ring entry"); continue
+            }
+            let idsBefore = Set(coord.scene.hotspots.map(\.id))
+            let hitBefore = coord.scene.hotspotIDAtNormalized(ring.center.x, ring.center.y)
+            let handName = "ringhand:\(view.baseTexture)"
+            XCTAssertFalse(coord.scene.children.contains(where: { $0.name == handName }),
+                           "\(view.rawValue): the hand must NOT be composited before \(gate) is viewed")
+
+            s.markClueViewed(gate)
+            coord.refresh()
+            XCTAssertTrue(coord.scene.children.contains(where: { $0.name == handName }),
+                          "\(view.rawValue): the hand must composite once \(gate) is viewed")
+            XCTAssertEqual(Set(coord.scene.hotspots.map(\.id)), idsBefore,
+                           "\(view.rawValue): the annotation must add NO hotspot")
+            XCTAssertEqual(coord.scene.hotspotIDAtNormalized(ring.center.x, ring.center.y), hitBefore,
+                           "\(view.rawValue): the hand must not change what a tap on the \(neighbour) ring hits")
+        }
     }
 
     // MARK: - 44pt hit-target floor on the smallest iPhone (BUG-009 class)

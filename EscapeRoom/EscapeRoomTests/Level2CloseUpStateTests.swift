@@ -138,6 +138,16 @@ final class Level2CloseUpStateTests: XCTestCase {
         ("floor cache / cushion lifted above", .dormerCache,
          { $0.markSolved(Level2Graph.PuzzleID.catMouse)
            $0.setFlag(Level2Graph.Flag.cushionLifted) }, "ov-cache-cushion-lifted"),
+
+        // ------------------------------------------------------------------------------
+        // REV 1.4.1 — the TEACH-AT-DORMER chalk note (D12(2) C2). ONE composite (hub dot +
+        // chalk bearing hand + chalk ⌂) on the EXISTING overlay pair, gated on clu-watch-a,
+        // rendered in every frame that depicts the board: the wide, the cache close-up, and
+        // — the parity echo — the cushion close-up whose crop contains the same board.
+        ("floor cache / chalk note once watch A is read", .dormerCache,
+         { $0.markClueViewed(Level2ClueID.watchA) }, "ov-cache-marked"),
+        ("cushion / chalk note echoed on the cache below", .catCushion,
+         { $0.markClueViewed(Level2ClueID.watchA) }, "ov-cushion-cache-marked"),
     ]
 
     /// THE CORE GUARD: each stateful close-up's composition must CHANGE, and change in the
@@ -312,6 +322,146 @@ final class Level2CloseUpStateTests: XCTestCase {
         }
     }
 
+    // MARK: - REV 1.4.1: the teach-at-dormer chalk note (D12(2) C2, RC-6)
+
+    /// The note's visibility is EXACTLY (gate satisfied AND NOT pried), which gives the totally
+    /// ordered set `unmarked -> marked -> pried-with-wheel -> empty`. The load-bearing half is
+    /// the suppression: no chalk mark may survive on a lifted board or an empty cavity, in ANY
+    /// of the three frames that depict the board. All three read one predicate, so wide and
+    /// close-up cannot disagree.
+    func testChalkNoteAppearsOnTheGateAndIsSuppressedTheMomentTheBoardIsPried() {
+        var failures: [String] = []
+
+        func keys(_ s: GameState) -> (wide: Set<String>, cache: Set<String>, cushion: Set<String>) {
+            (Set(Level2Visuals.wideOverlays(.door, s)),
+             Set(plan(.dormerCache, s).layers.map(\.key)),
+             Set(plan(.catCushion, s).layers.map(\.key)))
+        }
+
+        // 1. unmarked — before watch A is read the board is byte-identical to rev 1.3.
+        let s = makeState()
+        var k = keys(s)
+        if k.wide.contains("ov-cache-marked") || k.cache.contains("ov-cache-marked")
+            || k.cushion.contains("ov-cushion-cache-marked") {
+            failures.append("the note is visible BEFORE clu-watch-a has been viewed")
+        }
+
+        // 2. marked — one gate, one appearance event, all three frames together.
+        s.markClueViewed(Level2ClueID.watchA)
+        k = keys(s)
+        if !k.wide.contains("ov-cache-marked") { failures.append("wide: no note after clu-watch-a") }
+        if !k.cache.contains("ov-cache-marked") { failures.append("cu-floor-cache: no note after clu-watch-a") }
+        if !k.cushion.contains("ov-cushion-cache-marked") {
+            failures.append("cu-cat-cushion: the parity echo is missing (the wide would show a "
+                            + "marked board while this close-up shows a bare one)")
+        }
+
+        // 3. pried — the mark is suppressed IMMEDIATELY, in every frame.
+        s.markSolved(Level2Graph.PuzzleID.cacheDormer)
+        k = keys(s)
+        if k.wide.contains("ov-cache-marked") || k.cache.contains("ov-cache-marked")
+            || k.cushion.contains("ov-cushion-cache-marked") {
+            failures.append("the note SURVIVED the pry — a chalk mark on a lifted board")
+        }
+        if !k.wide.contains("ov-cache-pried-wheel") || !k.cache.contains("ov-cache-pried-wheel")
+            || !k.cushion.contains("ov-cushion-cache-pried") {
+            failures.append("pried state missing after the pry")
+        }
+
+        // 4. empty — still no mark once the wheel is taken.
+        s.addItem(Level2Graph.ItemID.greatWheel)
+        k = keys(s)
+        if k.wide.contains("ov-cache-marked") || k.cache.contains("ov-cache-marked")
+            || k.cushion.contains("ov-cushion-cache-marked") {
+            failures.append("the note reappeared on an EMPTY cavity")
+        }
+        if !k.wide.contains("ov-cache-empty") || !k.cache.contains("ov-cache-empty")
+            || !k.cushion.contains("ov-cushion-cache-empty") {
+            failures.append("empty state missing after the wheel is collected")
+        }
+
+        XCTAssertTrue(failures.isEmpty,
+            "rev-1.4.1 chalk-note state ordering (marked -> pried -> empty):\n"
+            + failures.joined(separator: "\n"))
+    }
+
+    /// The note is composited BEFORE the pried/empty pair it shares a rect with, so the
+    /// authored order (marked -> pried -> empty) holds in the layer list itself and not only
+    /// via the visibility predicate.
+    func testChalkNoteIsCompositedBeforeTheStateItSharesARectWith() {
+        // The mark and the pried/empty art share ONE rect, so they may never coexist in any
+        // reachable state — checked across every phase of the board's life.
+        let boardPhases: [(String, (GameState) -> Void)] = [
+            ("unmarked", { _ in }),
+            ("marked", { $0.markClueViewed(Level2ClueID.watchA) }),
+            ("pried", { $0.markClueViewed(Level2ClueID.watchA)
+                        $0.markSolved(Level2Graph.PuzzleID.cacheDormer) }),
+            ("empty", { $0.markClueViewed(Level2ClueID.watchA)
+                        $0.markSolved(Level2Graph.PuzzleID.cacheDormer)
+                        $0.addItem(Level2Graph.ItemID.greatWheel) }),
+        ]
+        for (closeUp, marked, siblings) in [
+            (L2CloseUp.dormerCache, "ov-cache-marked", ["ov-cache-pried-wheel", "ov-cache-empty"]),
+            (L2CloseUp.catCushion, "ov-cushion-cache-marked",
+             ["ov-cushion-cache-pried", "ov-cushion-cache-empty"]),
+        ] {
+            for (name, mutate) in boardPhases {
+                let s = makeState()
+                mutate(s)
+                let keys = Level2CloseUpVisuals.plan(for: closeUp, state: s).layers.map(\.key)
+                let collision = keys.contains(marked)
+                    && siblings.contains(where: { keys.contains($0) })
+                XCTAssertFalse(collision,
+                    "\(name): \(marked) coexists with its same-rect sibling in \(keys)")
+            }
+        }
+        // And in the resolver's own ordering, the marked key is emitted first (source order).
+        let s = makeState()
+        s.markClueViewed(Level2ClueID.watchA)
+        let markedIdx = Level2Visuals.wideOverlays(.door, s).firstIndex(of: "ov-cache-marked")
+        XCTAssertNotNil(markedIdx)
+        let s2 = makeState()
+        s2.markClueViewed(Level2ClueID.watchA)
+        s2.markSolved(Level2Graph.PuzzleID.cacheDormer)
+        XCTAssertEqual(Level2Visuals.wideOverlays(.door, s2).filter({ $0.hasPrefix("ov-cache-") }),
+                       ["ov-cache-pried-wheel"],
+                       "a pried board composites the pried art and NOTHING else on that rect")
+    }
+
+    /// RC-6: `ov-cache-marked` composites against the INDEPENDENT `ov-cache-cat-gone` axis in
+    /// `cu-floor-cache`. Both must be able to be on at once, and their rects are disjoint, so
+    /// their relative order is free (recorded here so a future re-ordering is a deliberate act).
+    func testChalkNoteAndCatGoneAreIndependentAndRectDisjoint() {
+        let s = makeState()
+        s.markClueViewed(Level2ClueID.watchA)
+        s.markSolved(Level2Graph.PuzzleID.catMouse)
+        let keys = Set(plan(.dormerCache, s).layers.map(\.key))
+        XCTAssertTrue(keys.isSuperset(of: ["ov-cache-marked", "ov-cache-cat-gone"]),
+                      "RC-6: both axes must composite together (got \(keys.sorted()))")
+        let note = Level2OverlayCatalog.shared.cuRect("ov-cache-marked")
+        let cat = Level2OverlayCatalog.shared.cuRect("ov-cache-cat-gone")
+        XCTAssertNotEqual(note, .zero); XCTAssertNotEqual(cat, .zero)
+        XCTAssertFalse(note.intersects(cat),
+                       "the RC-6 pairing is order-free only while the two rects are disjoint")
+    }
+
+    /// D12: what is MARKED is exactly what is TAPPABLE — the note sits inside the cache rect the
+    /// close-up's use region and the wide `floor-cache` hotspot already cover, so it needs no
+    /// new hotspot and no M1 re-registration.
+    func testChalkNoteSitsOnTheTappableBoard() {
+        let note = Level2OverlayCatalog.shared.wideRect("ov-cache-marked")
+        XCTAssertNotEqual(note, .zero, "the note must resolve a WIDE rect")
+        XCTAssertEqual(note, Level2OverlayCatalog.shared.wideRect("ov-cache-pried-wheel"),
+                       "the note is authored on the SAME rect as the pried board it replaces")
+        let s = makeState()
+        let coord = Level2Coordinator(viewID: .door, state: s, size: CGSize(width: 2732, height: 1366))
+        guard let hs = coord.scene.hotspots.first(where: { $0.id == "floor-cache" }) else {
+            return XCTFail("floor-cache hotspot missing")
+        }
+        XCTAssertTrue(hs.normalizedRect.intersects(note),
+                      "the chalked board must be the board you can tap")
+    }
+
     // MARK: - BUILD 17: the SYSTEMIC coverage guard behind R8-021
     //
     // The 22-row table above (and its successors) is hand-maintained, which is exactly why the
@@ -340,6 +490,8 @@ final class Level2CloseUpStateTests: XCTestCase {
         "ov-dial-seat-iv": { $0.setL2DialSocket("4", tile: Level2Graph.ItemID.tileIV) },
         "ov-dial-seat-vii": { $0.setL2DialSocket("7", tile: Level2Graph.ItemID.tileVII) },
         "ov-dial-seat-xi": { $0.setL2DialSocket("11", tile: Level2Graph.ItemID.tileXI) },
+        // REV 1.4.1: presentation-only, gated on the EXISTING D7 clue boolean.
+        "ov-cache-marked": { $0.markClueViewed(Level2ClueID.watchA) },
         "ov-cache-pried-wheel": { $0.markSolved(Level2Graph.PuzzleID.cacheDormer) },
         "ov-cache-empty": { $0.markSolved(Level2Graph.PuzzleID.cacheDormer)
                             $0.addItem(Level2Graph.ItemID.greatWheel) },
@@ -723,10 +875,28 @@ final class Level2CloseUpStateTests: XCTestCase {
         XCTAssertNotNil(GameAssetLoader.shared.image(named: "hand-hour"),
                         "the canonical hour-hand sprite must ship (the wordless pointer)")
         // The pointer must land inside the plate.
-        let tip = CGPoint(x: ring.center.x + ring.radiusFracOfWidth
-                             * Level2CloseUpVisuals.ringPointerLengthFraction,
-                          y: ring.center.y)
+        let tip = CGPoint(x: ring.center.x + ring.pointerLengthFracOfWidth, y: ring.center.y)
         XCTAssertTrue(CGRect(x: 0, y: 0, width: 1, height: 1).contains(tip))
+    }
+
+    /// REV 1.4.1 approved presentation tweak: at the shipped x1.0 multiplier the ⚙ ring's
+    /// pointer tip landed INSIDE the carved gear glyph, so the 9-o'clock bearing was hard to
+    /// read even in the close-up (Asset-Gen advisory from the C1/C3 parity proof). x1.5 pushes
+    /// the tip past the notch circle onto the 9-notch. This is the one number that changed.
+    func testGearRingPointerClearsItsCarvedGlyph() {
+        guard let ring = Level2CloseUpVisuals.ringClues["cu-gear-ring"] else {
+            return XCTFail("cu-gear-ring must carry a ring-clue entry")
+        }
+        XCTAssertEqual(ring.pointerMultiplier, 1.5, accuracy: 0.0001)
+        XCTAssertGreaterThan(ring.pointerLengthFracOfWidth, ring.radiusFracOfWidth,
+                             "the tip must reach PAST the notch circle, clear of the glyph")
+        // …without running off the plate, and still recognisably a ring pointer.
+        XCTAssertLessThan(ring.pointerLengthFracOfWidth, ring.radiusFracOfWidth * 1.6)
+        let tip = CGPoint(x: ring.center.x - ring.pointerLengthFracOfWidth, y: ring.center.y)
+        XCTAssertTrue(CGRect(x: 0, y: 0, width: 1, height: 1).contains(tip),
+                      "hour 9 points frame-LEFT; the tip must stay on the plate")
+        // The ⌂ ring is untouched at natural scale (its ring already reads).
+        XCTAssertEqual(Level2CloseUpVisuals.ringClues["cu-house-ring"]?.pointerMultiplier, 1.0)
     }
 
     /// Near-wordless ruling: the p07 wheel headers are canonical landmark DIES, not the words
@@ -874,6 +1044,15 @@ final class Level2CloseUpStateTests: XCTestCase {
                 s.addItem(Level2Graph.ItemID.tileII)
                 s.addItem(Level2Graph.ItemID.tileVII)
                 s.addItem(Level2Graph.ItemID.tileXI)
+            }),
+            // REV 1.4.1: the board MARKED but not yet pried — the only phase in which the
+            // teach-at-dormer chalk note is on screen, and (with the cat gone) the RC-6
+            // ov-cache-marked x ov-cache-cat-gone pairing. Without this phase the art-integrity
+            // guards below would never see the new overlays at all.
+            ("dormer board marked, unpried", { s in
+                s.addItem(Level2Graph.ItemID.watchA)
+                s.markClueViewed(Level2ClueID.watchA)
+                s.markSolved(Level2Graph.PuzzleID.catMouse)
             }),
             ("every rack gear mounted", { s in
                 // Exercises the remaining ov-mount-* / ov-rack-absent-* keys.

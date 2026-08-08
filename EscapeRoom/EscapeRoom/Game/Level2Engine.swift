@@ -131,6 +131,23 @@ enum Level2Engine {
                  requiresZone: Level2Graph.ZoneID.z2Workroom, state: state)
     }
 
+    /// REV 1.4.1 / D12(2) — is the clockmaker's CHALK NOTE on the p03 dormer cache board
+    /// visible? Mark-visibility is exactly (gate satisfied AND NOT pried), which gives the
+    /// totally ordered state set `unmarked -> marked -> pried-with-wheel -> empty`: no chalk
+    /// mark can survive on a lifted board or an empty cavity, and the mark is suppressed the
+    /// MOMENT the board is pried. Presentation only — rendered off the EXISTING D7 boolean, no
+    /// new state, no new flag, and it never gates anything (the note tells you WHICH board;
+    /// `clu-watch-a` is what actually opens it, exactly as in rev 1.3).
+    ///
+    /// Rendered in all three frames that depict the board: the z1 v-door WIDE
+    /// (`ov-cache-marked`), `cu-floor-cache` (the same key's CU rect) and — the cross-view
+    /// parity echo — `cu-cat-cushion` (`ov-cushion-cache-marked`). Wide and close-up must NEVER
+    /// disagree about the presence of the mark, so all three read this one predicate.
+    static func isDormerCacheNoteVisible(_ state: GameState) -> Bool {
+        state.hasViewedClue(Level2ClueID.watchA)
+            && !state.hasSolved(Level2Graph.PuzzleID.cacheDormer)
+    }
+
     private static func pryCache(puzzleID: String, isCorrectSpot: Bool, requiresZone: String?,
                                  state: GameState) -> PryResult {
         if state.hasSolved(puzzleID) { return .alreadyOpen }
@@ -201,6 +218,20 @@ enum Level2Engine {
     static func isGearTrainCorrect(_ state: GameState) -> Bool {
         guard let a = state.data.l2GearPostA, let b = state.data.l2GearPostB else { return false }
         return Set([a, b]) == Level2Graph.gearSolutionSet
+    }
+
+    /// TRUE iff pressing the crank actually TURNS THE TRAIN: in z2, arbor freed, a gear on
+    /// BOTH posts, p06 not yet solved. D5's mechanical truth — any meshing pair runs the mural
+    /// at its true ratio and ends its cam cycle with the same latch-slip clack, so this is
+    /// deliberately independent of whether the pair is the correct one. It is also the exact
+    /// precondition for the D13 live tally to accrue (no rotation, no strokes), and D13(ii)
+    /// "fewer than two gears mounted -> nothing drawn" is the two-post half of it.
+    static func canCrank(_ state: GameState) -> Bool {
+        state.isZoneUnlocked(Level2Graph.ZoneID.z2Workroom)
+            && state.hasFlag(Level2Graph.Flag.arborFreed)
+            && state.data.l2GearPostA != nil
+            && state.data.l2GearPostB != nil
+            && !state.hasSolved(Level2Graph.PuzzleID.gearTrain)
     }
 
     /// Crank the frame through one cam revolution. At exactly 24:1 the mural completes a
