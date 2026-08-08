@@ -394,6 +394,17 @@ user verification playthrough (= P12 teach probe + rev-1.4.1 checklist) → GATE
 merge level2-clockmakers-attic → main. Judgment calls for Doc agent second pass:
 partial-placement edge, live block CU-only, tally-as-animation, reject-clears-block.
 
+✅ BUILD 17 SHIPPED TO TESTFLIGHT 2026-08-08 (release run 31258282121, 4m21s, first try,
+no cert-cap; gate delta = 2 markdown files, non-load-bearing, verified; CFBundleVersion
+17 verified in CI log + archive plist + shipped .ipa; independent .ipa security re-check
+PASS). "Within" 1.0 (17) processing on ASC → Ready to Test. ⛔ AWAITING USER VERIFICATION
+PLAYTHROUGH (checklist relayed; item 6 = the P12 teach probe — gut-reaction data).
+ON USER GO → GATE 2 → merge level2-clockmakers-attic → main → L2 COMPLETE.
+STANDING FLAGS: cert-cap durable fix STILL undecided (CI mints a dev cert per run;
+resolution when it hits = user revokes ONE Apple Development cert, never Distribution);
+payload 189MB (fine for TestFlight; consider trim before store submission);
+Documentation second pass owed after GATE 2 (walkthrough must reconcile rev-1.4.1:
+tally route, chalk notes, pinion, plain-language arbor gloss).
 ## Level 1 (COMPLETE — for reference)
 
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
