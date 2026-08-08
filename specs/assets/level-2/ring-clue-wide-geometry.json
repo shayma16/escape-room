@@ -1,0 +1,72 @@
+{
+ "revision": "1.4.1 (C1 + C3 wide ring-hand echoes)",
+ "owner": "Developer wires these two rects into Level2CloseUpVisuals.ringClues; the sprite already ships (z3/v-dial/sprites/hand-hour). NO new asset, NO new state, NO new hotspot, NO gate change.",
+ "sprite": "hand-hour",
+ "pointer_length_fraction": 0.86,
+ "attitude_note": "rotationEffect(hour*30) with the sprite pointing up: hour 3 renders EXACTLY horizontal and hour 9 exactly horizontal-left. The rev-1.4.1 chalk bearing hand on the cache board is laid at 0.0 deg, so the D12 +/-5 deg match with the C1 ring hand is exact.",
+ "entries": {
+  "z1-door-base": {
+   "gate_clue": "clu-watch-a",
+   "hour": 3,
+   "centre_px_3x": [
+    1886.6,
+    725.7
+   ],
+   "centre_norm": [
+    0.491302,
+    0.377969
+   ],
+   "radius_px_3x": 71.7,
+   "radius_frac_of_width": 0.018672,
+   "pointer_multiplier": 1.35,
+   "effective_length_px_3x": 83.2,
+   "effective_length_pt_ipad": 22.2,
+   "effective_length_pt_iphone": 16.9,
+   "note": "natural scale, the ring already reads at room scale"
+  },
+  "z2-frame-base": {
+   "gate_clue": "clu-watch-b",
+   "hour": 9,
+   "centre_px_3x": [
+    2850.4,
+    1097.6
+   ],
+   "centre_norm": [
+    0.742292,
+    0.571667
+   ],
+   "radius_px_3x": 21.1,
+   "radius_frac_of_width": 0.005495,
+   "pointer_multiplier": 2.75,
+   "effective_length_px_3x": 49.9,
+   "effective_length_pt_ipad": 13.3,
+   "effective_length_pt_iphone": 10.1,
+   "note": "SANCTIONED OVER-SCALE (C1 principle): the carve is 42 px across in the wide, so the natural pointer would be ~6 pt; the hand is over-scaled to read at room scale and to reach toward the brick field its bearing selects."
+  },
+  "cu-house-ring": {
+   "shipped": true,
+   "gate_clue": "clu-watch-a",
+   "hour": 3,
+   "centre_norm": [
+    0.498047,
+    0.501302
+   ],
+   "radius_frac_of_width": 0.099609,
+   "pointer_multiplier": 1.0,
+   "note": "already in Level2CloseUpVisuals.ringClues -- unchanged"
+  },
+  "cu-gear-ring": {
+   "shipped": true,
+   "gate_clue": "clu-watch-b",
+   "hour": 9,
+   "centre_norm": [
+    0.515625,
+    0.371745
+   ],
+   "radius_frac_of_width": 0.037598,
+   "pointer_multiplier": 1.0,
+   "note": "already in Level2CloseUpVisuals.ringClues -- unchanged",
+   "advisory_not_a_change": "Asset-Gen observation from the parity proof: at the shipped 1.0 multiplier this pointer's tip lands INSIDE the carved gear glyph, so the bearing is hard to read even in the close-up. A pointer_multiplier of ~1.5 would put the tip on the 9-notch and clear the glyph. Flagged, NOT applied -- the shipped close-up entry is unchanged by this batch."
+  }
+ }
+}
