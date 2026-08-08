@@ -130,14 +130,22 @@ def offset_stamp(text, height=400):
 
 # -------------------------------------------------------------------- gears
 
-def render_gear(teeth, dia_px, ss=6):
+def render_gear(teeth, dia_px, ss=6, depth_frac=None):
     """Deterministic brass rack gear, EXACT tooth count asserted; square arbor
     hole (9.3 rhyme); solid web + 4 small lightening holes; canonical Arabic
-    stamp engraved at 6 o'clock on the web. RGBA."""
+    stamp engraved at 6 o'clock on the web. RGBA.
+
+    `depth_frac` (rev 1.4.1, added for the F1 post-A 8-tooth pinion): tooth height
+    as a fraction of the tip radius, overriding the default 2.6/teeth heuristic.
+    The heuristic is right for the 16..72-tooth rack wheels but degenerates at
+    z=8 into 32%-radius spikes that read as a sunburst rather than a pinion; the
+    override lets a LOW-tooth-count wheel keep the shipped crank pinion's short
+    tooth profile. Default None = previous behaviour, byte-for-byte."""
     D = dia_px * ss
     c = D / 2
     r_tip = c * 0.98
-    r_root = r_tip - max(6 * ss, r_tip * 2.6 / teeth)
+    r_root = (r_tip * (1.0 - depth_frac) if depth_frac
+              else r_tip - max(6 * ss, r_tip * 2.6 / teeth))
     r_hub = c * 0.30
     sq = c * 0.145
     sil = Image.new("L", (D, D), 0)
