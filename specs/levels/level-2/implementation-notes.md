@@ -1385,3 +1385,69 @@ regression.
   = false`. **No `*UsageDescription` keys** (no camera / microphone / location / contacts), no
   `.entitlements` file, no `CODE_SIGN_ENTITLEMENTS` setting and no capabilities — unchanged by
   this batch, which adds no OS-facing API beyond SpriteKit/SwiftUI drawing and a `Timer`.
+
+### CI — rev-1.4.1 wiring batch (build 17)
+
+Per the CI-efficiency directive the whole batch (resolver conditions, wide ring hands, the D13
+tally, the multiplier tweak and all tests) was bundled into ONE push before any run was
+dispatched. No tweak/wait/fail loop: both lanes were green on the first attempt.
+
+- **FAST LANE GREEN, first run** — push run **`31255254769`**
+  (<https://github.com/shayma16/escape-room/actions/runs/31255254769>), conclusion **success**,
+  `full-lane-ui` correctly skipped on a working-branch push. **229 unit/logic tests, 0 failures**
+  on all three device runtimes (up from 204 — the 25 new guards):
+
+  ```
+  Unit tests - iPad 13-inch class          Executed 229 tests, with 0 failures (0 unexpected) in 17.068s
+  Unit tests - smallest supported iPhone   Executed 229 tests, with 0 failures (0 unexpected) in 43.366s
+  Unit tests - Dynamic Island iPhone       Executed 229 tests, with 0 failures (0 unexpected) in 24.292s
+
+  ✓ testChalkNoteAppearsOnTheGateAndIsSuppressedTheMomentTheBoardIsPried
+  ✓ testChalkNoteIsCompositedBeforeTheStateItSharesARectWith
+  ✓ testChalkNoteAndCatGoneAreIndependentAndRectDisjoint          (RC-6)
+  ✓ testChalkNoteSitsOnTheTappableBoard
+  ✓ testWideRingHandEntriesMatchTheMeasuredGeometry               (C1 + C3)
+  ✓ testRingHandCompositeIsAnchoredOnTheHubAndStaysOnThePlate
+  ✓ testWideRingHandIsGatedAndNeverStealsATap
+  ✓ testGearRingPointerClearsItsCarvedGlyph                       (the x1.5 tweak)
+  ✓ testSolutionPairComputes24AndIsAcceptedInEitherPostOrder      (QA flag a — commutativity)
+  ✓ testTallyIsCycleStableAcrossManyCyclesForEveryPair            (QA flag b — anti-oscillation)
+  ✓ testExactlyTheThreeNonIntegerPairsDrawAPartial
+  ✓ testPartialIsUprightConstantHeightAndNeverGroupedOrStruck     (V17-W1/W3)
+  ✓ testNothingSpecialHappensAtTwentyFour                         (RF-7c)
+  ✓ testLiveBlockSitsBelowTheCribRuleAndInsideItsAuthoredRect     (RF-7b)
+  ✓ testFivesAreClosedByADiagonalThatSpansExactlyItsFourUprights
+  ✓ testWorstCaseIs48StrokesAndFitsTheAuthoredRows
+  ✓ testAccrualIsMonotonicAndSkippingLandsOnTheFinalBlock         (RC-4)
+  ✓ testTallyClearsOnMountUnmountAndOnFewerThanTwoGears           (D13 i/ii)
+  ✓ testTallyIsNeverSavedAndReDerivesEmptyOnLoad                  (D13 iii)
+  ✓ testTallyNeverVariesWithAnyClueFlag / testNoTallyWhileTheArborIsSeized
+  ✓ testNotationIsLoadedFromTheAuthoredMetadata / testTallySpriteRigShipsAndLoads
+  ```
+
+- **FULL LANE GREEN (the single pre-release gate)** — dispatch run **`31255684328`**
+  (<https://github.com/shayma16/escape-room/actions/runs/31255684328>), conclusion **success**,
+  BOTH jobs green including the usually-flaky non-blocking iPad playthrough:
+
+  ```
+  fast-lane      Unit tests - iPad 13-inch class          Executed 229 tests, 0 failures
+  fast-lane      Unit tests - smallest supported iPhone   Executed 229 tests, 0 failures
+  fast-lane      Unit tests - Dynamic Island iPhone       Executed 229 tests, 0 failures
+  full-lane-ui   UI - smallest supported iPhone (full playthrough + smoke + save-resume)
+                                                          Executed  10 tests, 0 failures  (1116s)
+  full-lane-ui   UI - iPad (full playthrough + smoke + save-resume) [non-blocking]
+                                                          Executed   6 tests, 0 failures  ( 931s)
+  full-lane-ui   UI - Dynamic Island iPhone (safe-area screenshots)
+                                                          Executed   3 tests, 0 failures  (  93s)
+  ```
+
+  As always this is CI's own automation, not a game-flow certification: level correctness is QA's
+  call, and per the standing rule state/inventory/collect behaviour must be verified from RENDERED
+  SCREENSHOTS, not engine flags. In particular QA should eyeball, on device: the chalk note's
+  appearance at the dormer the moment watch A is inspected (and its disappearance on the pry) in
+  all three frames; both wide ring hands at room scale; and the live tally block filling on the
+  gear-frame close-up for a wrong pair (count it), for one of the three non-integer pairs (N full
+  + one partial), and at the solution (24, with no glow or flash of any kind).
+
+**BUILD-17 READY** — buildable, both lanes green, handed off for QA. Release dispatch is the
+Producer's call; `release.yml` was NOT triggered by this batch.
