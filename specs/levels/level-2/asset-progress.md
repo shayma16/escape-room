@@ -1,3 +1,54 @@
+# Level 2 — asset progress
+
+## rev-1.4.1 clue-legibility batch (2026-08-08)
+
+PROGRESS: 9/9 done | 0 retrying | 0 failed | 0 remaining | $0.00 spent (ceiling $0.45)
+
+Every deliverable in this batch is deterministic PIL over the shipped plates, canonical
+glyph dies and the canonical `hand-hour` sprite. **No generative call was made**, so the
+$0.45 NB fallback ceiling is untouched. Progress was reported live in each Bash call's
+`description` label (the running-shell list), per the standing progress-visibility rule.
+
+| # | Item | Deliverable | Status | Cost |
+|---|---|---|---|---|
+| 1 | **F1** post-A 8-tooth pinion | `z2-frame-base` + `cu-gear-frame` @1x/2x/3x — 8 exact teeth coaxial on the post-A arbor, canonical **VIII** engraved on the pinion's own face annulus, bracket VIII erased | done | $0.00 |
+| 2 | **F2** slate regroup | `z1-bench-base` + `cu-slate` @1x/2x/3x — 24 crank-rim tallies grouped in fives (4 five-groups + 4 singles) + ONE matching tally on the cam rim | done | $0.00 |
+| 3 | **F3** frame-cheek crib | `z2-frame-base` + `cu-gear-frame` @1x/2x/3x — chalked 24-in-fives at the crank station, one tally at the cam station, chalked rule beneath | done | $0.00 |
+| 4 | **D13** tally sprites | `sp-tally-full`, `sp-tally-partial`, `sp-tally-strike` @1x/2x/3x + `tally-sprites.json` (pivots, pitch, capacity, live-block rects) | done | $0.00 |
+| 5 | **C2** cache note (wide) | `ov-cache-marked-wide@3x` — FIRST AUTHORING of the three-part rebus | done | $0.00 |
+| 6 | **C2** cache note (close-up) | `ov-cache-marked@3x` — the SAME note at 1.969x, not elaborated | done | $0.00 |
+| 7 | **C1/C3** wide ring hands | `ring-clue-wide-geometry.json` + `ringhand-wide-proof.png` (Developer rects on the existing sprite) | done | $0.00 |
+| 8 | **C2** cushion echo | `ov-cushion-cache-marked@3x` — the SAME note as it reads in the `cu-cat-cushion` crop (parity hole found during the cross-view sweep) | done | $0.00 |
+| 9 | Registration | `z1-state-overlays.json` (`ov-cache-marked`), `asset-manifest.json`, `tools/stage_level2_assets.py` | done | $0.00 |
+
+### Gate results
+
+| Deliverable | RF-7(a) luminance (min / median) | overlay_gate seam / interior sharpness |
+|---|---|---|
+| `ov-cache-marked-wide` | 3.54:1 / 4.90:1 | 0.00 / 15.22 |
+| `ov-cache-marked` (CU) | 3.57:1 / 5.21:1 | 0.02 / 18.69 |
+| F3 crib (CU) | 5.14:1 / 8.12:1 | 0.00 / 39.21 |
+| F3 crib (wide) | 5.22:1 / 8.18:1 | 0.00 / 32.76 |
+| `ov-cushion-cache-marked` | 3.34:1 / 5.34:1 | 0.01 / 18.51 |
+
+Seam rings are measured on substrate dilated clear of the ink, so the figure reports
+disturbance OUTSIDE the mark rather than the mark's own intended contrast.
+
+Other asserted gates: RF-4 no-mesh (crank→post-A centre gap 449 wide px vs 123 px of
+summed radii; post-A→post-B 301 px); VIII containment inside the tooth-root face ellipse
+and clear of the hub boss; slate `= 24`; crib `= 24`; RC-3 cam-tally separation; A10 layout
+(below).
+
+### A10 outcome
+
+**FIT ACHIEVED at first authoring — no fallback-ladder step used, no Designer escalation.**
+Note bbox (wide @3x) x 2491–2688, y 1759–1821 (197 × 62 px) wholly inside the 492 × 196
+`ov-cache-*` rect; hand 96 px vs house 78 px (ratio 1.23, ladder floor 1.00); tip abuts the
+house's left edge with 2 px overlap and never overshoots; the whole note sits on the cache
+board; attitude delta to the rendered C1 ring hand **0.0°** (tolerance ±5°).
+
+---
+
 # Level 2 asset generation — z1 CROSS-VIEW CU ECHO PASS (2026-08-05)
 
 PROGRESS: 3/3 done | 0 retrying | 0 failed | 0 remaining | $0.00 spent (this task) | cumulative $12.75 of $15.00 (headroom $2.25) — CU ECHO PASS COMPLETE 2026-08-05

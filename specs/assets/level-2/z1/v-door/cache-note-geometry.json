@@ -45,6 +45,19 @@
   "cu_min_contrast": 3.5741512775421143,
   "cu_median_contrast": 5.214571952819824
  },
+ "cushion_echo": {
+  "rect_3x": [
+   11,
+   1389,
+   1048,
+   1536
+  ],
+  "base": "cu-cat-cushion",
+  "rf7a_min_median": [
+   3.3363401889801025,
+   5.336549758911133
+  ]
+ },
  "overlay_gate": {
   "wide": {
    "seam_delta": 0.0,
@@ -61,6 +74,15 @@
    "interior_hf": 21.927,
    "base_hf": 1.173,
    "sharpness_ratio": 18.686,
+   "sharp_pass": true,
+   "PASS": true
+  },
+  "cushion": {
+   "seam_delta": 0.01,
+   "seam_pass": true,
+   "interior_hf": 20.746,
+   "base_hf": 1.121,
+   "sharpness_ratio": 18.51,
    "sharp_pass": true,
    "PASS": true
   }

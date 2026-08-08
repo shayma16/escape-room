@@ -1,7 +1,7 @@
 {
  "level": 2,
- "batch": "batch-1 (sheets + z1) + batch-2 (z2 + z1 dial fix + z1 states) + step-10 z2 fix pass + batch-3 (z3 + z4 + gear-frame fix) + batch-4 (all remaining z1-z4 state overlays + sprites + hatch-wheel fix) + 2026-08-05 z1 cross-view CU echo pass, 3 echoes ($0, deterministic)",
- "spec_revision": "1.3",
+ "batch": "batch-1 (sheets + z1) + batch-2 (z2 + z1 dial fix + z1 states) + step-10 z2 fix pass + batch-3 (z3 + z4 + gear-frame fix) + batch-4 (all remaining z1-z4 state overlays + sprites + hatch-wheel fix) + 2026-08-05 z1 cross-view CU echo pass, 3 echoes ($0, deterministic) + 2026-08-08 rev-1.4.1 clue-legibility batch (F1 post-A pinion, F2 slate regroup, F3 frame crib + D13 tally sprites, C2 cache-board teach-at-dormer note FIRST AUTHORING, C1/C3 wide ring-hand geometry) -- 100% deterministic PIL, $0.00 spent against a $0.45 NB ceiling",
+ "spec_revision": "1.4.1",
  "generated": "2026-07-18/19 (batch 1) + 2026-07-19 (batch 2) + 2026-07-19/20 (fix pass) + 2026-07-20 (batch 3)",
  "model": "fal-ai/nano-banana-pro (t2i + edit) + deterministic PIL glyph/precision passes (l2_glyphs.py canonical source)",
  "pricing_basis": "$0.15/image std (2K), $0.30/image 4K (verified 2026-07-08); PIL passes $0",
@@ -20,7 +20,9 @@
   "batch3_spend_usd": 1.65,
   "batch3_note": "Batch 3 NB, itemized: z3 wide r1 $0.30 (REJECT: ring geometry unfixable - full in-band mirrored ring impossible on r1 disc) + r2 $0.30 (kept, seed 730303); z4 wide $0.30 (730401); z3 hatch-shut edit $0.15 (730302, sunk with r1); z4 key edit $0.15 (730402: square-bit crank key relocated into the iPad band); z3 wheel-row surface edit $0.15 (730304); icon raws $0.30 (730402/730403). All glyph work deterministic PIL $0. Est was $0.90+$0.60 reserve; actual $0.15 over worst case (extra surface edit), flagged.",
   "batch4_spend_usd": 1.65,
-  "batch4_note": "Batch 4 NB, itemized (7 edits + 4 cat raws, no rejects/re-rolls): z4 key+tag combined masonry edit $0.15 (740416, REDO of dead-agent smear); drum key-in $0.15 (740410); z2 panel $0.15 (740406); brick $0.15 (740407); cabinet $0.15 (740408); z3 hatch $0.15 (740415); cat facial $0.15 (740191); cat pose raws 4x$0.15=$0.60 (740181-184) = $1.65 = planned worst case exactly. Everything else (mural/clockwork/weight/mouse-skitter sprites, drum-oiled, mounts/rack, glyph work, seam audit, sheets) deterministic PIL $0. Two flagged deviations: (a) items 16/17 plan was $0 PIL clone-out but the deterministic row-interp SMEARED the beveled stone (forbidden), redone as 1 NB edit; (b) item 10 used its sanctioned $0.15 NB reserve (flat PIL key would not seat in the axle-end socket). Mural strike-pose $0.15 reserve + 1 re-roll $0.15 reserve UNTOUCHED. drum-key-in blob + cabinet tonal seam fixed offline from saved raws (no re-pay)."
+  "batch4_note": "Batch 4 NB, itemized (7 edits + 4 cat raws, no rejects/re-rolls): z4 key+tag combined masonry edit $0.15 (740416, REDO of dead-agent smear); drum key-in $0.15 (740410); z2 panel $0.15 (740406); brick $0.15 (740407); cabinet $0.15 (740408); z3 hatch $0.15 (740415); cat facial $0.15 (740191); cat pose raws 4x$0.15=$0.60 (740181-184) = $1.65 = planned worst case exactly. Everything else (mural/clockwork/weight/mouse-skitter sprites, drum-oiled, mounts/rack, glyph work, seam audit, sheets) deterministic PIL $0. Two flagged deviations: (a) items 16/17 plan was $0 PIL clone-out but the deterministic row-interp SMEARED the beveled stone (forbidden), redone as 1 NB edit; (b) item 10 used its sanctioned $0.15 NB reserve (flat PIL key would not seat in the axle-end socket). Mural strike-pose $0.15 reserve + 1 re-roll $0.15 reserve UNTOUCHED. drum-key-in blob + cabinet tonal seam fixed offline from saved raws (no re-pay).",
+  "rev141_batch_spend_usd": 0.0,
+  "rev141_batch_note": "REV 1.4.1 clue-legibility batch, 2026-08-08: authorised ceiling $0.45 (Designer spec section 4 all-fallback column). ACTUAL SPEND $0.00 -- every deliverable landed deterministically (PIL composites over the shipped plates, canonical dies and the canonical hand-hour sprite); no NB edit was needed on either of the two RF-7(a) risk surfaces (the frame's timber cheek and the worn floorboard in raking light), because both cleared >= 3:1 measured per-pixel without a generative chalk-on-timber blend. $0.45 ceiling UNTOUCHED."
  },
  "reference_anchors": {
   "note": "Cross-level style library: L1 seed anchors + L2 z1 wides. All fresh L2 generations anchor against these (up to 14 refs).",
@@ -908,6 +910,83 @@
    },
    "tool": "specs/tools/l2_cu_echoes.py",
    "note": "Watch B itself is OFF-PLATE in this crop (its top edge maps to sill y=1611 vs the 1536 plate bottom), so the sill CU can never show an untappable duplicate of the watch - only the tipped-up cushion. Staged as ov-sill-cushion-lifted-cu.png."
+  },
+  {
+   "file": "z2/v-frame/{z2-frame-base,cu-gear-frame}@{1x,2x,3x}.png",
+   "zone": "z2-workroom",
+   "view": "v-frame",
+   "element": "F1 -- POST A carries a VISIBLY DEPICTED 8-tooth coaxial pinion with the canonical VIII engraved on its OWN face annulus; the bracket-panel VIII is erased",
+   "state": "base (both views)",
+   "method": "deterministic PIL (l2_rev141_pinion.py; l2_z2_build.render_gear with the new depth_frac override + l2_glyphs.render_numeral)",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "REV 1.4.1. RF-4 NO-MESH gate asserted: crank->postA centre gap 449 wide px vs 123 px summed radii; postA->postB 301 px -- one drive line, two wheel-sized vacancies. VIII containment gate (inside the tooth-root face ellipse, clear of the hub boss). Superseded canonicals -> _rejects/*-b17pre-rev141."
+  },
+  {
+   "file": "z1/v-bench/{z1-bench-base,cu-slate}@{1x,2x,3x}.png",
+   "zone": "z1-attic",
+   "view": "v-bench",
+   "element": "F2 -- slate: the crank rim's 24 tallies GROUPED IN FIVES (4 five-groups closed by a diagonal fifth stroke + 4 singles) and ONE matching tally on the cam rim beside its notch",
+   "state": "base (both views)",
+   "method": "deterministic PIL (l2_rev141_slate.py, the approved ov_slate renderer with only the tally block changed)",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "REV 1.4.1. '= 24' re-asserted in code. RC-3: the diagonal is angle/length matched to the four uprights it closes and does not overshoot; the cam tally sits on a different circle ~700 rectified units away, so no 25-total read. Superseded canonicals -> _rejects/*-b17pre-rev141."
+  },
+  {
+   "file": "z2/v-frame/{z2-frame-base,cu-gear-frame}@{1x,2x,3x}.png (second pass)",
+   "zone": "z2-workroom",
+   "view": "v-frame",
+   "element": "F3 -- chalk crib on the frame's timber cheek: 24-tally block grouped in fives at the crank station, ONE matching tally at the cam station (far right), and a chalked RULE beneath as the RF-7(b) separator for the D13 live block",
+   "state": "base (both views)",
+   "method": "deterministic PIL (l2_rev141_crib.py)",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "REV 1.4.1. Clear of gear-rack, ov-brick-* and the gear-ring carve, and above the wall panel. RF-7(a) measured: close-up min 5.14:1 / median 8.12:1; wide min 5.22:1 / median 8.18:1. Wide drawn at scaled geometry with a 4 px minimum stroke (sanctioned C1 over-scale). Superseded canonicals -> _rejects/*-prerev141crib."
+  },
+  {
+   "file": "z2/v-frame/sprites/sp-tally-{full,partial,strike}@{1x,2x,3x}.png + tally-sprites.json",
+   "zone": "z2-workroom",
+   "view": "v-frame",
+   "element": "D13 -- the canonical chalk tally sprites the DEVELOPER draws the live crank-tally block from, with pivots (bottom-left), slot pitch 14, group gap 16, row pitch 56, row capacity 20, max 48 (3 rows) and the live-block rect in both cu-gear-frame and wide normalized coords",
+   "state": "sprite",
+   "method": "deterministic PIL (l2_rev141_crib.build_sprites)",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "REV 1.4.1. sp-tally-partial obeys V17-W1/W3: CONSTANT height (never residue-derived), UPRIGHT, shortened at the TOP only, shared baseline, same chalk value/width/slot pitch, never faded/ghosted/dashed/lower-opacity, never grouped into a five. Staged as sp-tally-*.png + tally-sprites.json."
+  },
+  {
+   "file": "z1/v-door/states/ov-cache-marked@3x.png + ov-cache-marked-wide@3x.png",
+   "zone": "z1-attic",
+   "view": "v-door",
+   "element": "C2 (rev 1.4.1 teach-at-dormer) -- the cache board's chalk NOTE: hub dot + canonical hand-hour silhouette in chalk #E8E4DA + canonical chalk die-house, ONE composite, read left to right",
+   "state": "marked (gated on clu-watch-a; suppressed the moment the board is pried)",
+   "method": "deterministic PIL (l2_rev141_cache.py); canonical die-house + canonical hand-hour sprite",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "REV 1.4.1 FIRST AUTHORING (the rev-1.4 single-glyph version was specified but never built). A10 layout gate: FIT ACHIEVED, no fallback-ladder step used -- note bbox x 2491..2688 y 1759..1821 inside the 492x196 ov-cache rect, hand 96 px vs house 78 px (ratio 1.23, floor 1.00), tip abuts with 2 px overlap and never overshoots, whole note on the cache board. Attitude delta to the rendered C1 ring hand 0.0 deg (tol 5.0). RF-7(a): wide min 3.54:1 / median 4.90:1, close-up min 3.57:1 / median 5.21:1. RF-7 no-fade: the canonical sprite's alpha peaks at 210/255 and is normalised to full opacity so the hand is never fainter than the house. overlay_gate seam 0.00/0.02, sharpness 15.2/18.7. Same rect as ov-cache-pried-wheel / ov-cache-empty in both views (ordering marked -> pried -> empty); RC-6 pairing with ov-cache-cat-gone in the close-up."
+  },
+  {
+   "file": "ring-clue-wide-geometry.json + ringhand-wide-proof.png",
+   "zone": "z1-attic + z2-workroom",
+   "view": "v-door (wide) + v-frame (wide)",
+   "element": "C1 + C3 -- measured WIDE ring-hand echo geometry (Developer rects on the EXISTING hand-hour sprite; no new asset, no new state, no new hotspot)",
+   "state": "clue-state render (clu-watch-a / clu-watch-b)",
+   "method": "measurement on the shipped @3x wides, cross-checked against the two shipped close-up ringClues entries; proof render replicates Level2RoomView's composite maths",
+   "generation": "measurement",
+   "est_cost_usd": 0.0,
+   "note": "REV 1.4.1. z1-door-base house ring centre (0.491302, 0.377969) radiusFracOfWidth 0.018672 hour 3 pointer x1.35; z2-frame-base gear ring centre (0.742292, 0.571667) radiusFracOfWidth 0.005495 hour 9 pointer x2.75 (sanctioned C1 over-scale -- the carve is 42 px across in the wide). The 3-o'clock hand renders EXACTLY horizontal, which is what makes the C2 chalk hand's attitude match exact. NO chalk mark on any chimney brick -- that contract is unchanged and absolute."
+  },
+  {
+   "file": "z1/v-door/states/ov-cushion-cache-marked@3x.png",
+   "zone": "z1-attic",
+   "view": "v-door",
+   "element": "C2 CROSS-VIEW ECHO -- the same chalk note as it reads in the cu-cat-cushion crop (that crop contains the dormer floor cache and already echoes pried/empty)",
+   "state": "marked (clu-watch-a; suppressed on pry)",
+   "method": "deterministic PIL (l2_rev141_cache.py) -- the identical note geometry mapped into cu-cat-cushion space, clipped by the crop",
+   "generation": "pil",
+   "est_cost_usd": 0.0,
+   "note": "REV 1.4.1. Closes the parity hole the standing wide<->close-up directive exists to catch (the Cluster A/Q class): without it the cushion close-up would show a bare board while the wide and cu-floor-cache show a marked one. Same rect as ov-cushion-cache-pried / -empty. RF-7(a) min 3.34:1 / median 5.34:1; overlay_gate seam 0.01, sharpness 18.51."
   }
  ]
 }

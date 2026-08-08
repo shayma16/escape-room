@@ -41,7 +41,7 @@
    "source": "specs/assets/level-2/z1/v-door/cu-floor-cache@3x.png"
   },
   "cu-gear-frame.png": {
-   "sha256": "6b992362b830e11461ecd5f1578688e051537da96d5025298bced01a64c9a91f",
+   "sha256": "6438b3496cbe98c0fe7978a50a3ce405432f61271b3a3fb572d4f9c04e6b5500",
    "source": "specs/assets/level-2/z2/v-frame/cu-gear-frame@3x.png"
   },
   "cu-gear-rack.png": {
@@ -81,7 +81,7 @@
    "source": "specs/assets/level-2/z1/v-door/cu-sill-tile@3x.png"
   },
   "cu-slate.png": {
-   "sha256": "03b01a05fed124b3049df4b0158064883d5edd2eb8426c49c235d0244fc0f5c3",
+   "sha256": "b8b0ea68859a0cf44cf20ec79783731ea62eb3b18d3eddc1882b5e696e6f0100",
    "source": "specs/assets/level-2/z1/v-bench/cu-slate@3x.png"
   },
   "cu-stove-hob.png": {
@@ -284,6 +284,14 @@
    "sha256": "492ae0c1144dee5296dce78bfbc38374cec077494f3924d9d1b62aa09381f75f",
    "source": "specs/assets/level-2/z1/v-door/states/ov-cache-empty-wide@3x.png"
   },
+  "ov-cache-marked-cu.png": {
+   "sha256": "c8d1550e553c23a6ef2877c532d16751ed0dcc9fe96e886de9e4d92fac33b825",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-cache-marked@3x.png"
+  },
+  "ov-cache-marked-wide.png": {
+   "sha256": "61c6a4261f4760a3137419959846c98fc3fcf0c659d24223c49f2966dfdf1be9",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-cache-marked-wide@3x.png"
+  },
   "ov-cache-pried-wheel-cu.png": {
    "sha256": "6088cf205753178a97f8f967c2e3d66bd65bd4a960a631421c55d2115e30784f",
    "source": "specs/assets/level-2/z1/v-door/states/ov-cache-pried-wheel@3x.png"
@@ -331,6 +339,10 @@
   "ov-cushion-cache-empty-cu.png": {
    "sha256": "f34350babfcbe34671d6b9800c612883cfffe7090fa08166f5db7ef934d7b0c1",
    "source": "specs/assets/level-2/z1/v-door/states/ov-cushion-cache-empty@3x.png"
+  },
+  "ov-cushion-cache-marked-cu.png": {
+   "sha256": "aa24bfd341eba6a9633670f39427b944b3cd0e0cc16c1f96ffd8bbb501ee20e8",
+   "source": "specs/assets/level-2/z1/v-door/states/ov-cushion-cache-marked@3x.png"
   },
   "ov-cushion-cache-pried-cu.png": {
    "sha256": "2e06a72bde40dda49abee47427dfcc8b53c86cb9567d49af3e8261651f8de6f3",
@@ -608,8 +620,20 @@
    "sha256": "1a547ba247822df25d71b229de51d1bc5b11b49d603d521e98a1a75006694455",
    "source": "specs/assets/level-2/z3/v-dial/sprites/sp-pendulum@3x.png"
   },
+  "sp-tally-full.png": {
+   "sha256": "cf67da94b2a9a2ab097168f98fea06ef7382c0d49feea01210115b6a63ac7162",
+   "source": "specs/assets/level-2/z2/v-frame/sprites/sp-tally-full@3x.png"
+  },
+  "sp-tally-partial.png": {
+   "sha256": "90880da1170fb9983217b9cac91b58a5931ac3bec9f24d2b8b4c0fba7080decc",
+   "source": "specs/assets/level-2/z2/v-frame/sprites/sp-tally-partial@3x.png"
+  },
+  "sp-tally-strike.png": {
+   "sha256": "b0f5bf2f868987d0a2b90867748ce3b7558240a75bce0da945da065d2488ab56",
+   "source": "specs/assets/level-2/z2/v-frame/sprites/sp-tally-strike@3x.png"
+  },
   "z1-bench-base.png": {
-   "sha256": "335ea548e6635bcbde42a895dc4ee8d9fd92e39fa437be1746332f07c695c4ec",
+   "sha256": "9d273fbaeec4af57a897c9a7c6c303c54d5c601e4aa8653c7f89426211d1cf72",
    "source": "specs/assets/level-2/z1/v-bench/z1-bench-base@2x.png"
   },
   "z1-door-base.png": {
@@ -629,7 +653,7 @@
    "source": "specs/assets/level-2/z2/v-clockrow/z2-clockrow-base@2x.png"
   },
   "z2-frame-base.png": {
-   "sha256": "417b5b9bdf4cf9ff6f604e6ad8e764f1626e76846e68accfc1816b943a3465b0",
+   "sha256": "c1c29108781f1d00e21c0e171398e902723f18486bc1034635149f95ca3926b6",
    "source": "specs/assets/level-2/z2/v-frame/z2-frame-base@2x.png"
   },
   "z3-dial-base.png": {
@@ -641,5 +665,5 @@
    "source": "specs/assets/level-2/z4/v-vault-interior/z4-vault-base@2x.png"
   }
  },
- "count": 160
+ "count": 166
 }

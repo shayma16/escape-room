@@ -102,6 +102,10 @@ def collect():
     # + bob): they render from the AUTHORED sprite art, anchored on the authored pivots. The
     # hour hand additionally doubles as the wordless ring pointer on the ⌂/⚙ ring clue
     # close-ups (round 8 fix 5, p03/p04 clue legibility).
+    # REV 1.4.1 (D13): the canonical chalk tally-stroke sprites the Developer draws the
+    # LIVE crank-tally block from (full stroke, V17 partial stroke, group-closing strike).
+    # Geometry/pivots/pitch travel with them in tally-sprites.json, copied below.
+    add("z2/v-frame/sprites/sp-tally-*@3x.png", 3)
     add("z3/v-dial/sprites/hand-hour@3x.png", 3)
     add("z3/v-dial/sprites/hand-minute@3x.png", 3)
     add("z3/v-dial/sprites/sp-pendulum@3x.png", 3)
@@ -205,6 +209,12 @@ def main():
     for name in ("hand-sprites.json", "clockwork-sprites.json"):
         shutil.copy2(os.path.join(SRC, "z3", "v-dial", "sprites", name),
                      os.path.join(DEST, name))
+    # REV 1.4.1 (D13): the tally notation rig -- stroke/partial/strike pivots, slot pitch,
+    # group gap, row pitch/capacity and the live-block rect in BOTH cu-gear-frame and wide
+    # normalized coords, so the runtime block is laid out against the numbers the crib was
+    # chalked against (RF-7(b): position-only separation from the crib).
+    shutil.copy2(os.path.join(SRC, "z2", "v-frame", "sprites", "tally-sprites.json"),
+                 os.path.join(DEST, "tally-sprites.json"))
 
     with open(os.path.join(DEST, "staged-manifest.json"), "w") as f:
         json.dump({"count": len(manifest), "assets": manifest}, f, indent=1, sort_keys=True)

@@ -67,6 +67,16 @@ S_CU = 2048.0 / (CU_FRAME[2] - CU_FRAME[0])  # 1.969231 wide -> CU
 RECT_W = (2448, 1724, 2940, 1920)            # ov-cache-* wide rect (M1)
 RECT_CU = (1080, 1150, 2048, 1536)           # ov-cache-* cu-floor-cache rect
 
+# CROSS-VIEW ECHO (the standing wide<->close-up parity directive that generated
+# Cluster A/Q): cu-cat-cushion's crop ALSO contains the dormer floor cache -- the
+# build already echoes the pried/empty states there as ov-cushion-cache-pried /
+# ov-cushion-cache-empty at rect [11,1389,1048,1536].  The MARKED state must echo
+# there too, or the cushion close-up shows a bare board while the wide and
+# cu-floor-cache show a marked one.  Same rect, same note, clipped by the crop.
+CUSH_FRAME = (2450, 1085, 3410, 1805)        # l2_z1_build FRAMES["cu-cat-cushion"]
+S_CUSH = 2048.0 / (CUSH_FRAME[2] - CUSH_FRAME[0])   # 2.133333
+RECT_CUSH = (11, 1389, 1048, 1536)           # == ov-cushion-cache-pried / -empty
+
 # ---- measured cache-board geometry, wide @3x --------------------------------
 # Board seams fitted from second-derivative minima on the shipped plate, and
 # cross-checked against the cavity edges baked into ov-cache-pried-wheel.
@@ -282,6 +292,29 @@ def build():
     print("  overlay_gate cu  :", gc)
     out_c.save(os.path.join(ST, "ov-cache-marked@3x.png"))
 
+    # ---------------- CROSS-VIEW ECHO: cu-cat-cushion ----------------
+    cush = Image.open(os.path.join(VD, "cu-cat-cushion@3x.png")).convert("RGB")
+    base_k = cush.crop(RECT_CUSH)
+    layk = draw_note(L, S_CUSH, (RECT_W[0], RECT_W[1]))
+    # place the note layer (authored in ov-cache-rect space) into the cushion rect
+    off = (int(round((RECT_W[0] - CUSH_FRAME[0]) * S_CUSH - RECT_CUSH[0])),
+           int(round((RECT_W[1] - CUSH_FRAME[1]) * S_CUSH - RECT_CUSH[1])))
+    shifted = Image.new("RGBA", base_k.size, (0, 0, 0, 0))
+    shifted.alpha_composite(layk, off)
+    shifted = grain_modulate(shifted, base_k, np.random.default_rng(20260808))
+    out_k = base_k.convert("RGBA")
+    out_k.alpha_composite(shifted)
+    out_k = out_k.convert("RGB")
+    report["cush_rf7a"] = rf7a_gate(base_k, out_k, shifted.split()[3],
+                                    "ov-cushion-cache-marked")
+    maskk = np.asarray(shifted.split()[3]) > 8
+    report["cush_gate"] = gate_run(
+        np.asarray(base_k), np.asarray(out_k),
+        np.asarray(Image.fromarray(maskk.astype(np.uint8) * 255)
+                   .filter(ImageFilter.MaxFilter(15))) > 0)
+    print("  overlay_gate cushion echo:", report["cush_gate"])
+    out_k.save(os.path.join(ST, "ov-cushion-cache-marked@3x.png"))
+
     # ---------------- parity proof sheet ----------------
     sheet = Image.new("RGB", (1240, 640), (24, 22, 20))
     dd = ImageDraw.Draw(sheet)
@@ -293,7 +326,10 @@ def build():
     sheet.paste(base_c.resize((600, 239), Image.LANCZOS), (620, 26))
     sheet.paste(out_c.resize((600, 239), Image.LANCZOS), (620, 275))
     zw = out_w.crop((40, 20, 260, 120)).resize((600, 273), Image.LANCZOS)
-    sheet.paste(zw, (5, 526 - 160))
+    sheet.paste(zw, (5, 366))
+    sheet.paste(out_k.resize((600, 85), Image.LANCZOS), (620, 526))
+    dd.text((620, 512), "cross-view echo: ov-cushion-cache-marked (cu-cat-cushion)",
+            fill=(150, 230, 150))
     sheet.save(os.path.join(A2, "z1", "cache-note-rev141.png"))
 
     with open(os.path.join(VD, "cache-note-geometry.json"), "w") as f:
@@ -317,7 +353,11 @@ def build():
                 "wide_median_contrast": report["wide_rf7a"][1],
                 "cu_min_contrast": report["cu_rf7a"][0],
                 "cu_median_contrast": report["cu_rf7a"][1]},
-            "overlay_gate": {"wide": report["wide_gate"], "cu": report["cu_gate"]},
+            "cushion_echo": {"rect_3x": list(RECT_CUSH),
+                             "base": "cu-cat-cushion",
+                             "rf7a_min_median": list(report["cush_rf7a"])},
+            "overlay_gate": {"wide": report["wide_gate"], "cu": report["cu_gate"],
+                             "cushion": report["cush_gate"]},
         }, f, indent=1)
     print("C2 done: ov-cache-marked-wide + ov-cache-marked authored (first authoring)")
 

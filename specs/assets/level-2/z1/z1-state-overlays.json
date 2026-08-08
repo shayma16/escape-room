@@ -97,6 +97,23 @@
    1170
   ]
  },
+ "ov-cache-marked": {
+  "base": "cu-floor-cache",
+  "rect_3x": [
+   1080,
+   1150,
+   2048,
+   1536
+  ],
+  "wide_base": "z1-door-base",
+  "wide_rect_3x": [
+   2448,
+   1724,
+   2940,
+   1920
+  ],
+  "note": "REV 1.4.1 (C2 teach-at-dormer, FIRST AUTHORING): the clockmaker's chalk NOTE on the p03 cache board -- ONE composite of three marks read left to right (chalk hub dot, canonical hand-hour silhouette filled in chalk #E8E4DA at the SAME rendered attitude as the C1 ring hand in the same plate (delta 0.0 deg), tip abutting the canonical chalk die-house). Gated on clu-watch-a; NO new state. Same rect as ov-cache-pried-wheel / ov-cache-empty in BOTH views, so ordering marked -> pried -> empty suppresses it completely the moment the board is pried (D12). RC-6: in the close-up it must composite correctly with the independent ov-cache-cat-gone axis. RF-7(a) measured: wide min 3.54:1 / median 4.90:1; close-up min 3.57:1 / median 5.21:1 against worn timber in raking light."
+ },
  "ov-cache-pried-wheel": {
   "base": "cu-floor-cache",
   "rect_3x": [
@@ -322,6 +339,16 @@
    1536
   ],
   "note": "cross-element echo: the dormer \u2302-ring clue post crop includes the stair-door time-lock bar, which must read RAISED once the timelock releases."
+ },
+ "ov-cushion-cache-marked": {
+  "base": "cu-cat-cushion",
+  "rect_3x": [
+   11,
+   1389,
+   1048,
+   1536
+  ],
+  "note": "REV 1.4.1 CROSS-VIEW ECHO (standing wide<->close-up parity directive): the cushion close-up's crop contains the dormer floor cache, and the build already echoes the pried/empty states here. The rev-1.4.1 chalk NOTE must echo here too, or the cushion close-up shows a bare board while the wide and cu-floor-cache show a marked one. SAME note, SAME rect as ov-cushion-cache-pried / ov-cushion-cache-empty, clipped by the crop. Same clu-watch-a gate; ordering marked -> pried -> empty. RF-7(a) measured min 3.34:1 / median 5.34:1."
  },
  "ov-cushion-cache-pried": {
   "base": "cu-cat-cushion",
