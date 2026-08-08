@@ -1643,3 +1643,174 @@ equivalent.*
 *End of rev B.1. Owner: Theme & Puzzle Designer. Next: Producer -> (Validator, if the F-1…F-5
 flags warrant it) -> Art Director for H8 -> Asset-Gen after A10 is measured -> Blind Playtester
 re-run of P8 and the rewritten P12.*
+
+---
+
+## rev B.1c-supplement — three missed graph sites (2026-08-08)
+
+_Raised by the Validator's **B1-A1** advisory against rev B.1 (verdict CONFIRMED, 0 Critical).
+Three sites describing the p03 cache-board mark appeared on **neither** the B.1c H-list **nor**
+the deliberately-not-touched list. That is my omission, not a judgment call, and all three take
+real deltas — **none is a "deliberately unchanged".**_
+
+**Numbering:** these extend the B.1c table as **H9–H11**. Nothing in B.1c is renumbered, and
+the B.1c "sites deliberately NOT touched" list is **unchanged** (p04 and its notes,
+`clu-ring-chimney`, the z2 chimney strings, style-guide S2/S3, `edges`,
+`anti_softlock_invariants`, `solve_path_notes`, `designer_difficulty_estimate`,
+`real_world_knowledge_register`, `red_herrings`, D7, D10, D13 — all still correctly untouched).
+
+| # | Site | Why it was missed | Action |
+|---|---|---|---|
+| **H9** | `zones[z1-attic].views[v-door].elements`, floorboards string (~line 49) | I swept the `visually_necessary_elements` copy of this contract (H2) and treated it as the single art-facing site. It is not — this is the **zone/view content contract Asset-Gen builds to**, and it carries the sanctioned-reversal text independently | **EDIT — substantive** |
+| **H10** | `clue_gating.art_impact` (~line 28) | I asserted in S-1 that this clause was scoped and already covered the render; correct as far as it goes, but the clause **names the render by its content** and would have gone stale | **EDIT** |
+| **H11** | `visually_necessary_elements.rev_1_4_cue_note` (~line 417) | Same — it enumerates what ships and would have gone stale, including a "NO new glyph dies" claim that a reader would reasonably want re-affirmed | **EDIT** |
+
+**H9 is the one that mattered.** Left as-is it would have said "a chalk house glyph… composited
+INSIDE the ov-cache-* rect" while H2 said "a three-part chalk note" — two art-facing strings in
+one file disagreeing about what to draw, with H9 being the one closest to Asset-Gen's hand. The
+likely outcome is exactly what the Validator predicted: the batch authors the **rev-1.4 single
+glyph**, the teach never ships, and P12 measures nothing. This is the same failure class as
+RF-5 last round (a contract restated at several sites, edited at some of them), which makes it
+twice now — I have added the standing habit note at the end of this supplement.
+
+Strings use the file's existing ASCII conventions (`--`, `->`).
+
+---
+
+### H9. `zones[z1-attic].views[v-door].elements` — REPLACE the floorboards element string
+
+OLD (verbatim, current file):
+```
+"floorboards below and around the dormer, uniform and identical WHILE clu-watch-a IS UNVIEWED (cache board has NO independent VISUAL tell pre-clue -- the gate carries the info; rev 1.3: pre-clue prys on the correct board give the D10 faint-tell, creak + shift only, no visual difference). REV 1.4 SANCTIONED REVERSAL (user-approved A4, 2026-08-06 -- reverses the rev-1.0 'no independent visual tell in ANY state or view' contract for p03 ONLY): once watch A has been inspected the cache board carries a chalk house glyph (canonical die-house) composited INSIDE the ov-cache-* rect x 0.6375-0.7656, in BOTH the wide and the close-up. Pre-clue appearance is byte-identical to rev 1.3; D10's faint-tell remains animation/SFX only. See D12. p04's chimney-brick contract is UNCHANGED and absolute."
+```
+
+NEW:
+```
+"floorboards below and around the dormer, uniform and identical WHILE clu-watch-a IS UNVIEWED (cache board has NO independent VISUAL tell pre-clue -- the gate carries the info; rev 1.3: pre-clue prys on the correct board give the D10 faint-tell, creak + shift only, no visual difference). REV 1.4 SANCTIONED REVERSAL (user-approved A4, 2026-08-06 -- reverses the rev-1.0 'no independent visual tell in ANY state or view' contract for p03 ONLY): once watch A has been inspected the cache board carries the clockmaker's CHALK NOTE composited INSIDE the ov-cache-* rect x 0.6375-0.7656, in BOTH the wide and the close-up. REV 1.4.1 (teach-at-dormer, user-approved 2026-08-08) -- AUTHORING CONTRACT, this is the string Asset-Gen builds to: the note is THREE marks in ONE composite, read left to right -- (i) a chalk HUB DOT one stroke-width across (a stroke terminal: NOT a ring, NOT notched, it must never invite counting), (ii) a chalk BEARING HAND, the canonical hand-hour silhouette (z3/v-dial/sprites/hand-hour) filled in chalk value #E8E4DA, radiating from the hub toward frame-right, and (iii) the canonical chalk die-house (masters/glyphs/die-house.png in the same chalk value). DO NOT AUTHOR THE REV-1.4 SINGLE GLYPH. BINDING LAYOUT RULES: the hand's rendered attitude must match the RENDERED attitude of the C1 ring hand in the same plate to within +/- 5 degrees (match the two RENDERED marks, NOT world horizontal -- the ring is drawn in perspective, and the rhyme between the two marks is the entire mechanism); the hand's tip must ABUT the house glyph's left edge (touching or slightly overlapping, within one glyph-width) and must NEVER overshoot it or run toward the rect edge, because a pointer that runs off reads 'keep going further right' at a floorboard field; the WHOLE note sits wholly inside the ov-cache-* rect, so what is marked is exactly what is tappable (no new hotspot, no M1 re-registration); keep a visible waist between the hand's tip and the house's outline so that at wide scale the note reads as TWO PARTS rather than one blob. IF IT WILL NOT FIT: shorten the HAND, floor at the house glyph's own width; then close hub-to-house spacing to zero; NEVER shrink the house glyph below its RF-7(a) wide-legible size; if it still will not fit, escalate to the Designer -- do not improvise. The CLOSE-UP (cu-floor-cache) renders the SAME note larger and must NOT elaborate it (no added notches, strokes, ticks or second hand); present-in-both or absent-from-both in every state. ONE composite baked into the EXISTING ov-cache-marked-wide / ov-cache-marked overlays -- no new overlay id, no new asset, no new state, no new gate, no second appearance event. COLOUR-BLIND: hand and house are told apart by SHAPE and POSITION only; identical chalk value, stroke weight and luminance floor; the hand is NEVER faded, ghosted, dashed, translucent or lower-opacity than the house; no glow, flash or colour change, on appearance or ever. Pre-clue appearance is byte-identical to rev 1.3; D10's faint-tell remains animation/SFX only. See D12. p04's chimney-brick contract is UNCHANGED and absolute."
+```
+
+*Note the deliberate redundancy with H2: this string and the `visually_necessary_elements`
+line now say the same thing in the same words. That is intended — they are two art-facing
+contracts and they must not be allowed to drift again.*
+
+---
+
+### H10. `clue_gating.art_impact` — TWO edits to the existing rev-1.4 clause
+
+**(a) REPLACE the substring naming render (ii).**
+
+OLD substring (verbatim, current file):
+```
+(ii) the chalk house glyph on the p03 cache board in the wide and the close-up, both functions of clu-watch-a,
+```
+
+NEW substring:
+```
+(ii) the clockmaker's chalk note on the p03 cache board in the wide and the close-up -- at rev 1.4.1 a chalk hub dot plus a chalk bearing hand plus the chalk house glyph, ONE composite -- both functions of clu-watch-a,
+```
+
+**(b) APPEND to the end of the `art_impact` string.**
+
+```
+ REV 1.4.1 (teach-at-dormer, user-approved 2026-08-08): NO new clue-state render is added. The CONTENT of named render (ii) changes -- on the SAME clu-watch-a gate, in the SAME single appearance event, on the SAME overlay ids, with no new state -- so this clause's scope is unchanged and NO new permission class is created. The re-verification this clause requires has been performed: Validator delta-check of Designer spec rev B.1, CONFIRMED, 0 Critical, 2026-08-08. p07 AND p09 REMAIN STRICTLY NO-ANNOTATION.
+```
+
+*Rationale for (b): the clause closes with "Any future clue-state render requires Validator
+re-verification." Rev 1.4.1 is not a future render, but a reader six months out cannot tell that
+from the file alone. Recording both the classification and the discharge of the re-verification
+requirement in the clause itself is what stops this from being re-litigated.*
+
+---
+
+### H11. `visually_necessary_elements.rev_1_4_cue_note` — REPLACE one substring
+
+OLD substring (verbatim, current file):
+```
+one chalk house glyph on the p03 cache board,
+```
+
+NEW substring:
+```
+one chalk note on the p03 cache board (REV 1.4.1: a chalk hub dot plus the canonical hand-hour silhouette in chalk value plus the canonical chalk die-house -- ONE composite on the same overlay ids; it reuses existing canonical art in the chalk register, so the "NO new glyph dies" clause below STILL HOLDS),
+```
+
+*The rest of the note — including "NO new plates, NO new glyph dies, NO new hotspots, NO
+generative scene work, NO re-rolls" — is **unchanged and remains true**. The chalked hand is the
+existing `hand-hour` silhouette rendered in the chalk value, exactly as the chalk ⌂ is the
+existing `die-house` rendered in the chalk value. No die is created.*
+
+---
+
+### Validator advisories B1-A2 / B1-A3 / B1-A4 — recorded and applied
+
+**B1-A2 — `ov-cache-marked` / `ov-cache-marked-wide` are UNAUTHORED** (rev-1.4-specified, never
+built). **This is favourable and it retires most of flag F-2.**
+
+- **A10 is restated.** It is no longer "measure the shipped rev-1.4 glyph against the rect, then
+  fit a hand beside it." There is no shipped glyph. A10 becomes: *"At **first authoring** of
+  `ov-cache-marked-wide` / `ov-cache-marked`, lay out the three-part note as a whole inside the
+  `ov-cache-*` rect (x 0.6375–0.7656) per the H9 layout rules and fallback ladder. The house
+  glyph's size is set by its own RF-7(a) wide-legibility floor, not by a prior render, so the
+  hand's budget is planned in rather than retrofitted. No pre-measurement pass and **no
+  rework**; escalate to the Designer only if the ladder bottoms out."*
+- **F-2 is downgraded** from *"geometry may force a compromise on already-shipped art"* to
+  *"a layout constraint at first authoring."* Still real — the rect is 0.128 wide in x and three
+  marks must live in it — but there is no sunk art to fight, no regeneration cost, and the
+  degrees of freedom are larger than I assumed when I wrote F-2. **Net: zero rework, and the
+  odds on F-1 improve, because the house glyph need not be sized as if it were alone.**
+
+**B1-A3 — hub dot retained; null-teach probe folded into P12(a0).** The hub dot stays (it is
+what makes the hand read as pivoted rather than as a stray stroke, and it is what kills the
+"stray chalk scratch" reading at wide scale). But B.1's P12(a0) as written could return a
+false positive from a leading question, and it had no clean way to record *"the teach simply did
+not happen."* **P12(a0) is amended — this text replaces the (a0) bullet in the B.1e rewrite:**
+
+> - **(a0) Describe the chalk note on the board, in your own words, before you pry and before
+>   you have seen the chimney.** Answer these in order, and **do not smooth the answer**:
+>   **(a0-i)** How many marks is it — one, or more than one? *(If your honest answer is "one
+>   chalk mark, a house," say exactly that. "I saw one mark" is a **valid, expected and
+>   important** result, not a failure to pay attention — it is the **null-teach** reading and it
+>   is the specific thing this probe exists to catch. Do not go back and look harder before
+>   answering.)*
+>   **(a0-ii)** If more than one: did you notice a **pointer or hand shape**? Did you notice
+>   **anything on the beam ring above it that looks like the same shape**?
+>   **(a0-iii)** Did the two connect **at the time** — did you form the thought *"the hand is
+>   pointing at that board"* — or did you read the note as *"there's a house mark, that's the
+>   board"*? *(Rev-1.4 baseline answer, for calibration: "Because it had a house mark on it…
+>   it contains no reference to the III bearing.")*
+>   **(a0-iv)** Did the **small dot at the pointer's tail** read as anything in particular — a
+>   pivot or hub, a clock face, a smudge, a full stop, a speck of dirt — or as nothing at all?
+>   *(Must not read as a clock face or as dirt. "A pivot" or "nothing in particular" both pass;
+>   "a tiny clock" means it is inviting counting and must be reduced, and "dirt/smudge" means it
+>   is failing the RF-7(a) luminance floor at wide scale.)*
+>
+> *(a0-i) and (a0-iv) are the null-teach and hub-dot checks. A run in which (e) passes on time
+> but (a0-i) returns "one mark" and (f) does not attribute the re-frame to the dormer is a
+> **null teach with a coincidental pass** and must be reported as a failure of this delta, not a
+> success.*
+
+**B1-A4 — escalation lever E1 requires USER re-ratification if ever pulled.** Recorded and
+accepted. E1 (the beam-side chalk sighting stub + plumb tick) sits **inside the class the user's
+own rev-B ruling rejected** — a chalk sight-line from the ring toward the board. My B.1 view that
+a short stub is materially different from a room-spanning dashed arrow is a *designer's* reading
+of that rejection, and it is not mine to apply. **E1 is therefore not a lever the Producer or I
+may pull on a bad P12 result.** If P12 fails on (f), the finding goes to the **user** with E1
+offered as one option among others, and E1 ships only on explicit user re-ratification plus its
+own Validator pass. **B.1's "do not pull E1 pre-emptively" is upgraded to "E1 cannot be pulled at
+all without the user."**
+
+---
+
+### Standing habit note (for my own file, and for whoever audits the next delta)
+
+Twice now — RF-5 at rev 1.4, B1-A1 at rev B.1 — a delta of mine has edited a contract at some of
+its restatement sites and not all of them, in both cases on the p03/p04 cache-mark contract,
+which is the most-restated contract in this level. **Standing rule for every future delta
+touching it:** before writing any change list, grep the graph, `blind-layout.md` and
+`style-guide.md` for the contract's own words (`ov-cache`, `die-house`, `chalk`,
+`no independent visual tell`) and enumerate **every** hit as either an edit or an explicit
+not-touched entry with a reason. An unlisted site is a defect, not an omission — and the
+art-facing sites (zone/view `elements`, `visually_necessary_elements`, style-guide) are the ones
+where an unlisted site becomes wrong pixels rather than stale prose.
+
+*End of rev B.1c-supplement. Owner: Theme & Puzzle Designer.*
