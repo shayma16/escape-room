@@ -1,0 +1,68 @@
+{
+ "revision": "1.4.1 (teach-at-dormer, C2)",
+ "attitude_deg_from_horizontal": 0.0,
+ "ring_hand_rendered_attitude_deg": 0.0,
+ "attitude_delta_deg": 0.0,
+ "chalk_value": "#E8E4DA seated x0.95, identical for hand and house",
+ "wide_rect_3x": [
+  2448,
+  1724,
+  2940,
+  1920
+ ],
+ "cu_rect_3x": [
+  1080,
+  1150,
+  2048,
+  1536
+ ],
+ "wide": {
+  "hub_centre": [
+   2516.0,
+   1790.0
+  ],
+  "hub_diameter_px": 7.800000000000001,
+  "hand_pivot_to_tip_px": 96.0,
+  "hand_tip_x": 2612.0,
+  "house_rect": [
+   2610.0,
+   1759.0,
+   2688.0,
+   1821.0
+  ],
+  "note_bbox": [
+   2491.1,
+   1759.0,
+   2688.0,
+   1821.0
+  ]
+ },
+ "cu_scale_from_wide": 1.9692307692307693,
+ "a10": "FIT ACHIEVED at first authoring; no fallback-ladder step used",
+ "rf7a": {
+  "wide_min_contrast": 3.5361404418945312,
+  "wide_median_contrast": 4.895233154296875,
+  "cu_min_contrast": 3.5741512775421143,
+  "cu_median_contrast": 5.214571952819824
+ },
+ "overlay_gate": {
+  "wide": {
+   "seam_delta": 7.3,
+   "seam_pass": true,
+   "interior_hf": 24.739,
+   "base_hf": 1.612,
+   "sharpness_ratio": 15.349,
+   "sharp_pass": true,
+   "PASS": true
+  },
+  "cu": {
+   "seam_delta": 5.88,
+   "seam_pass": true,
+   "interior_hf": 21.468,
+   "base_hf": 1.166,
+   "sharpness_ratio": 18.418,
+   "sharp_pass": true,
+   "PASS": true
+  }
+ }
+}
