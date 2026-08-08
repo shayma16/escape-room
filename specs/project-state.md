@@ -362,6 +362,17 @@ silent non-mouse cat offers (revert = 1 line). NEXT: Designer revision applying 
 validator RFs → Blind Playtester re-check → clue implementation (Asset-Gen $0.45 ceiling
 + Dev wiring) → build 17 release → user verify → GATE 2 → merge.
 
+✅ BLIND PLAYTEST rev-1.4 (2026-08-08): READY-WITH-TWEAKS, 6.0 CONFIRMED, NO BEAT
+GUIDE-MANDATORY (gear wall = "best moment in the level", solved blind 1 attempt; mirror
+trap catches-then-releases; dormer <60s). THE finding: chimney stall 8-15min — the
+dormer mark teaches mark-expectation, chimney's absence reads as "locked" (chokepoint:
+oil gates both remaining beats). USER RULING: TEACH AT THE DORMER — chalk bearing-line/
+hand glyph coupled with the ⌂ so hand→location grammar is taught; chimney hand-echo then
+suffices. Micro-delta → Designer spec → Validator sanity → implementation. QA flags from
+playtest: tally cycle-stability on device, chalk wide-view luminance, COMMUTATIVE
+acceptance (36/64 either post order must accept). Ledger 6.0 write now UNBLOCKED (blind
+re-check confirmed) — apply with the implementation batch.
+
 ## Level 1 (COMPLETE — for reference)
 
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
