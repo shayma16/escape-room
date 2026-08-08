@@ -373,6 +373,17 @@ playtest: tally cycle-stability on device, chalk wide-view luminance, COMMUTATIV
 acceptance (36/64 either post order must accept). Ledger 6.0 write now UNBLOCKED (blind
 re-check confirmed) — apply with the implementation batch.
 
+✅ REV-1.4.1 FULLY APPLIED (B.1 + B1c supplement + validator verdicts folded; spec_revision
+1.4.1; ledger 6.0 WRITTEN). ✅ ART BATCH DONE 2026-08-08 ($0.00 of $0.45 ceiling, all
+deterministic): 8t pinion at post A (RF-4 no-mesh asserted), slate regrouped, F3 crib +
+tally sprites delivered w/ metadata, cache-board rebus FIRST-AUTHORED (A10 fit achieved,
+0.0° attitude match, all RF-7 gates cleared incl. an opacity-trap fix), C1/C3 ring-hand
+geometry JSON + proof, staging complete (166 assets). Advisory adopted: cu-gear-ring
+pointer ×1.0→~1.5 (folded into wiring). 🔄 FINAL WIRING BATCH DISPATCHED (Developer):
+resolver conditions, ring hands, D13 live tally + tests, commutative + cycle-stability
+QA flags → fast+full lane green → BUILD 17 READY → Release Manager → TestFlight →
+user verification run (doubles as the P12 teach probe) → GATE 2 → merge.
+
 ## Level 1 (COMPLETE — for reference)
 
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
