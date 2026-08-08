@@ -81,12 +81,14 @@ game is near-wordless: no text prompts, no hint system.
   and it is never there in one and absent from the other.)
 - The floorboards below and around the dormer are uniform; nothing about any single
   board stands out. (At the start every board is identical. Later in the game a small
-  chalk house mark (⌂) may be found drawn on the face of one of them, in the room view
-  and in the close-up alike; the mark is not there at the start, and it is gone once
-  that board has been lifted.) Boards can be pried at with a suitable tool. (One board
-  in this area, if it ever yields, comes up on a shallow cavity holding a large bronze
-  gear wheel — sixty-four countable teeth, "64" stamped on its face. The wheel can be
-  taken.)
+  chalk note may be found drawn on the face of one of them, in the room view and in
+  the close-up alike: a short chalk pointer -- the same shape as the clock hand that
+  lies across the ring on the beam, drawn from a small chalk dot and aimed to the
+  right -- with its tip touching a small chalk house mark (⌂). The note is not there
+  at the start, and it is gone once that board has been lifted.) Boards can be pried
+  at with a suitable tool. (One board in this area, if it ever yields, comes up on a
+  shallow cavity holding a large bronze gear wheel — sixty-four countable teeth, "64"
+  stamped on its face. The wheel can be taken.)
 
 ---
 

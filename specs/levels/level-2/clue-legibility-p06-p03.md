@@ -1102,3 +1102,544 @@ WITH:
 against `blind-layout.md`, which must be refreshed to describe the new visible elements —
 post-A pinion + gaps, regrouped slate, frame chalk blocks, marked board, both wide ring hands
 — with no dependency edges or solution values).*
+
+---
+
+## rev B.1 — teach-at-dormer micro-delta (2026-08-08)
+
+_Theme & Puzzle Designer. Target graph revision: **1.4.1** (an amendment to the applied rev
+1.4; nothing in rev 1.4 is withdrawn). SPEC ONLY — no code. Scope: **one beat, one overlay's
+content**._
+
+> ### Why this exists
+>
+> `playtest-report-rev1.4.md` §3/§4: the dormer's chalk ⌂ works (**P7 under 60 s, zero random
+> clicking**) but it works by *replacing* the bearing hop, not by teaching it. P8 verbatim:
+> *"Because it had a house mark on it… It contains no reference to the III bearing."* P11 at
+> z1: *"Did I read it as a direction? At z1, no — never."* Consequence at p04 (P12): the
+> **absence** of a mark reads as an **unmet precondition** — *"the mark hasn't been triggered"* —
+> and sends the player out of the zone for **8–15 min** of stall, on a sole-thread chokepoint
+> that also gates the oil can, the gear frame and p06's own safety net.
+>
+> **User-approved fix (2026-08-08): teach at the dormer.** Couple the dormer mark to the HAND,
+> so the player learns *"hands point at places"* at the moment the mark pays off. Then the
+> chimney's already-shipping wide-view hand echo (**C3**, gated on `clu-watch-b`) is sufficient
+> and no-mark reads as **learned grammar**, not as a locked state.
+>
+> **Nothing else changes.** No solution value, requirement, gate, dependency, ordering, red
+> herring, consumable, state variable, node, edge, hotspot or overlay id moves. p04 is not
+> touched at all.
+
+---
+
+### B.1a. The decision: hand-glyph, **not** a bearing line — and why the geometry forces it
+
+The user left "bearing line vs hand glyph vs both" to me. **Ruling: a chalked bearing HAND on
+the board. No line spanning the ring→board gap, in any view.**
+
+The gap cannot be honestly drawn. The ring is carved at **eye height** on the dormer beam; the
+cache board is on the **floor**. A true 3-o'clock bearing is horizontal in world space and
+**never intersects the floor** — that is H4, the original defect, and it is unchanged by
+anything in rev 1.4. In the *wide plate's image space* the ring sits high in frame and the
+board low-and-right, so a chalk stroke ruled honestly along the beam at 3 o'clock is **not
+collinear with the board either**. Gestalt completion therefore cannot be recruited. The only
+line that would actually connect them is a three-segment carpenter's transfer (run right along
+the beam → plumb drop → run along the floor), which:
+
+- spans half the scene and lands squarely on the rev-B **considered-and-rejected** finding
+  (*"reads as a modern UI arrow rather than a diegetic mark"*, §2b closing note); and
+- is a **new primitive outside the canon** (a ruled multi-segment guide line), which the same
+  rejection also cited.
+
+**The chosen device dissolves the geometry instead of fudging it: draw a scale model of the
+projection ON the board.** The board's chalk note is a pointer, a few centimetres long,
+terminating on the thing it selects. It states the grammar *"hand → place"* locally, in the
+same frame in which the ring states it at room scale, in the **same silhouette at the same
+attitude**. The player is not asked to trace a line across air; they are asked to notice that
+the same shape means the same thing twice. That is a **rhyme**, and rhymes survive
+foreshortening, scale loss and camera distance in a way that ruled lines do not.
+
+**Diegetic alibi (already established, not newly asserted): this level ALREADY runs one glyph
+through three materials.** ⌂ is *engraved* on the watch case back, *carved* on the beam, and
+*chalked* on the board. The hand gets exactly the same treatment: the canonical hand
+silhouette appears as the **hand lying across the ring** and, in the clockmaker's chalk, **on
+the board**. No new vocabulary is introduced — an existing vocabulary is used one more time,
+which is the level's own established habit.
+
+*Rev-B bookkeeping:* the §2b *"Considered and rejected: a chalk sight-line / dashed stroke from
+the ring to the board"* note **stands, unreversed**. Rev B.1 does not adopt a sight-line. It
+adopts a co-oriented glyph pair inside the existing mark rect. Both of that rejection's stated
+grounds (UI-arrow read; new primitive outside canon) are avoided by construction, and its third
+ground (*"duplicates what C1+C2 already achieve"*) no longer applies because the objective has
+changed from *resolve to a place* to *teach the pointer grammar*.
+
+---
+
+### B.1b. Exact visual spec
+
+**Element.** The p03 cache board's clue-state mark, in `z1-attic` `v-door`.
+**Views.** `z1-door-base` (wide) **and** `cu-floor-cache` (close-up) — both, always.
+**Gate.** `clu-watch-a`. **Unchanged.** Same boolean, same single appearance event, same
+suppression on pry. Rev B.1 adds **no gate, no flag, no state and no second appearance event.**
+
+#### The mark itself
+
+What was a single ⌂ at rev 1.4 becomes **one chalk note of two marks**, read left-to-right:
+
+| Part | What it is | Constraint |
+|---|---|---|
+| **hub dot** | a filled chalk dot the width of one chalk stroke, at the hand's pivot | not a ring, **no notches** — it is a stroke terminal, not a clock face, and must never invite counting |
+| **bearing hand** | the **canonical `hand-hour` silhouette** (`z3/v-dial/sprites/hand-hour`, the same outline C1/C3 composite onto the two rings) filled in chalk value `#E8E4DA` | laid at the **3-o'clock attitude**, radiating from the hub dot toward frame-right, tip **abutting** the house glyph |
+| **house glyph** | canonical `masters/glyphs/die-house.png` in chalk value `#E8E4DA` — **byte-identical to the rev-1.4 mark** | **must not be shrunk** relative to rev 1.4 |
+
+**Attitude — the load-bearing constraint.** The chalked hand's rendered attitude must match
+**the rendered attitude of the composited ring hand in the same plate**, not true world
+horizontal. The ring is a carved circle drawn in perspective, so its 3-o'clock may render a few
+degrees off horizontal; the rhyme is between the *two rendered marks*, and it is what carries
+the lesson. Tolerance: **within ±5° of the ring hand's rendered attitude in that same view.**
+
+**Termination — the anti-misread constraint.** The hand's tip must terminate **on** the house
+glyph: tip within one glyph-width of, and visually touching or overlapping, the house's left
+edge. It must **never** overshoot past the house or run to the edge of the rect. A pointer that
+terminates on a symbol reads *"this one"*; a pointer that runs off reads *"keep going further
+right"*, which at a floorboard field would be an actively harmful misread. The whole note must
+also sit **wholly inside the measured `ov-cache-*` rect (x 0.6375–0.7656)**, preserving the
+rev-1.4 invariant *what is marked is exactly what is tappable* — **no new hotspot, no M1
+re-registration.**
+
+**Sizing fallback ladder (binding on Asset-Gen / Art Director).** If the rect cannot hold hub +
+hand + house at wide-legible size:
+1. shorten the hand, down to a floor of **the house glyph's own width** (below that it stops
+   reading as a hand, at which point the lesson is gone and the element is pointless);
+2. tighten the hub-to-house spacing to zero (hub touching hand touching house);
+3. **do NOT shrink the house glyph** — it carries the ⌂↔⌂↔⌂ symbol match and its wide-view
+   RF-7(a) luminance headroom;
+4. if it still will not fit at step 1's floor, **escalate to the Designer**. Do not improvise.
+
+#### How it reads in the WIDE view (the view that matters)
+
+At room scale the note is small and the player will not resolve fine detail. Three properties
+must survive, in priority order, and Art Direction should be tuned against them:
+
+1. **Attitude** — that there is a *directional* mark, lying along the same line as the mark on
+   the ring. Angle survives scale loss better than any other property; this is why the ±5°
+   match is the binding constraint rather than a nicety.
+2. **Two-part-ness** — that the note is a pointer *plus* a symbol, not one blob. Requires a
+   visible waist between the hand's tip and the house's outline: keep the house's silhouette
+   open (its outline, not a filled mass) so the tip reads as arriving at it.
+3. **Glyph identity** — that the symbol is the ⌂. Already required at rev 1.4 and unchanged.
+
+**The wide is where the lesson is available at all**, because it is the only frame containing
+both the ring and the floorboards. Rev 1.4 already banked that (C1). Rev B.1 gives the player a
+*reason to make the comparison*: two hands, one attitude, one image.
+
+**No line, no arrowhead, no dashes, no glow, no animation on appearance beyond whatever the
+rev-1.4 mark already does.** The note appears exactly as the rev-1.4 ⌂ appeared.
+
+#### Close-up treatment (per the standing echo conventions)
+
+`cu-floor-cache` mirrors the **same note** at the corresponding crop coordinates — same three
+parts, same order, same attitude, larger. **The close-up must not elaborate it**: no added
+notches on the hub, no extra strokes, no second hand, no tick marks. Wide and close-up differ
+in scale only. **Present-in-both or absent-from-both, in every state** — the standing parity
+directive (V13) is re-asserted verbatim and must be re-checked for the new content.
+
+#### Chalk treatment / colour-blind (RF-7 applies unchanged, plus one addition)
+
+- Chalk value `#E8E4DA`, the clockmaker's canonical register. **≥ 3:1 luminance contrast
+  against worn timber in raking light, in BOTH views** (RF-7(a)). The worn floorboard remains
+  one of the batch's two risk surfaces; the fallback NB "sit chalk on worn timber" blend is
+  still the operation that could erode it.
+- **Discrimination between the hand and the house is by SHAPE and POSITION only** — a tapered
+  pointer to the left, a house outline to the right. Never by hue, never by chalk value.
+- **New binding clause, carried over by analogy from V17-W3 (the partial tally stroke):** the
+  hand must **not** be rendered faded, ghosted, dashed, translucent or at lower opacity than
+  the house glyph. Same chalk value, same stroke weight, same luminance floor **in its own
+  right**. Any value difference would substitute a value cue for the form cue and would sit one
+  NB blend away from an RF-7(a) violation on the smaller of the two marks.
+- **No glow, flash or colour change**, on appearance or ever (RF-7(c) family).
+
+#### Art cost
+
+**$0.00 additional.** The note is a deterministic PIL composite of two existing canonical
+assets into the **existing** `ov-cache-marked-wide` / `ov-cache-marked` overlays, which rev 1.4
+already had Asset-Gen authoring. The `≤ $0.15` C2 fallback in §4 is **unchanged and not
+increased** — it was already scoped to one crop-scoped NB chalk-on-timber edit on this exact
+pair of overlays. **§4's totals stand as written.**
+
+#### §3 hand-off table amendment
+
+Row 6 of §3 is amended to read: *"Chalk **note** (bearing hand at the ring hand's rendered
+3-o'clock attitude, tip abutting a chalk ⌂) on the cache board inside x 0.6375–0.7656, gated on
+`clu-watch-a`; overlays `ov-cache-marked-wide` / `ov-cache-marked` (**content change, no new
+asset id**); RF-7(a) ≥ 3:1 luminance on worn timber in raking light in both views; hand never
+faded/dashed relative to the house; RC-6 must composite correctly with `ov-cache-cat-gone`."*
+Owner unchanged (Asset-Gen, deterministic). All other rows unchanged.
+
+---
+
+### B.1c. Exact graph deltas (G-list style, verbatim old → new against the CURRENT rev-1.4 file)
+
+**Site sweep first.** The rev-1.4 round's largest advisory (RF-5) was *missed contract sites*.
+Every site in the repo that describes the p03 cache-board mark is enumerated below; there are
+**eight**, six of them in the graph.
+
+| # | Site | Action |
+|---|---|---|
+| H1 | `nodes[clu-ring-dormer].content` | **EDIT** (delta H1) |
+| H2 | `visually_necessary_elements.z1-attic`, the `⌂ beam mark…` line | **EDIT** (delta H2) |
+| H3 | `developer_notes[D12].note`, composite (2) | **EDIT** (delta H3) |
+| H4 | `nodes[p03-cache-dormer].notes` | **EDIT** (delta H4) |
+| H5 | `colorblind_safety`, the "Rev 1.4 chalk marks…" entry | **EDIT — trivial** (delta H5) |
+| H6 | `revision_notes[]` | **INSERT one new first element** (delta H6) |
+| H7 | `blind-layout.md`, stair-door/dormer floorboards paragraph | **EDIT** (delta H7) |
+| H8 | `style-guide.md` §6.3 floorboards bullet (the rev-B **S1** text) | **ROUTE to Art Director** (delta H8) — do not apply |
+
+Sites deliberately **NOT** touched, recorded so the Validator can confirm the omissions are
+intentional: `p03-cache-dormer.solution_fixed` / `requires` / `clue_gate` / `yields` /
+`failure_behavior` (byte-stable); `p04-cache-chimney` and its `notes` (**p04 is untouched
+entirely**); `clu-ring-chimney.content`; `zones[z2-workroom]` chimney strings; style-guide
+**S2 / S3** (the p04 absolutes); `edges`; `anti_softlock_invariants`; `solve_path_notes`;
+`designer_difficulty_estimate`; `real_world_knowledge_register`; `red_herrings`; D7, D10, D13.
+
+Strings use the file's existing ASCII conventions (`--`, `->`).
+
+---
+
+**H1. `nodes[clu-ring-dormer].content`** — REPLACE the whole string.
+
+OLD (verbatim, current file):
+```
+"Carved house glyph ringed by a 12-notch clock-position circle: the in-scene 'apply a clock direction HERE' anchor. 3-o'clock = toward the marked floorboard right of the dormer. REV 1.4: once clu-watch-a has been viewed, the ring renders the canonical hour hand at the 3-notch in BOTH the wide view (z1-door-base) and the close-up (cu-house-ring), and the cache board carries a chalk house glyph of the same canonical die in both views (D12). The ring stays NON-GATING and, with the board marked, is OPTIONAL for solving p03 -- it is the reasoning route, not the only route (playtest probe P8 measures whether the reasoning survives as an opt-in)."
+```
+
+NEW:
+```
+"Carved house glyph ringed by a 12-notch clock-position circle: the in-scene 'apply a clock direction HERE' anchor. 3-o'clock = toward the marked floorboard right of the dormer. REV 1.4: once clu-watch-a has been viewed, the ring renders the canonical hour hand at the 3-notch in BOTH the wide view (z1-door-base) and the close-up (cu-house-ring), and the cache board carries the clockmaker's chalk note in both views (D12). REV 1.4.1 (TEACH-AT-DORMER micro-delta, user-approved 2026-08-08): that chalk note is TWO marks, not one -- a chalk hub dot, the canonical hand-hour silhouette rendered in chalk value and laid at the SAME rendered attitude as the hand composited on the ring, and the canonical chalk die-house whose left edge the hand's tip ABUTS. ONE composite on the EXISTING ov-cache-marked overlays, on the SAME clu-watch-a gate, appearing in the SAME single event as the rev-1.4 house glyph did: no new state, no new asset id, no new gate, no earlier appearance, no new hotspot. PURPOSE: the dormer must TEACH 'a hand points at a place' rather than bypass it. Blind playtest rev 1.4 measured P7 under 60s but P8 with no reference to the bearing at all, so at p04 the ABSENCE of chalk read as an unmet precondition ('not available yet') and cost 8-15 min of stall in a sole-thread chokepoint; with the grammar taught at p03, p04's already-shipping wide-view hand echo (C3, gated on clu-watch-b) is the instrument the player reaches for and no-mark reads as learned grammar. The ring stays NON-GATING and, with the board marked, is OPTIONAL for solving p03 -- it is the reasoning route, not the only route (P8 measures whether the reasoning survives as an opt-in; P12 now measures whether the bearing grammar TRANSFERS to the chimney)."
+```
+
+---
+
+**H2. `visually_necessary_elements.z1-attic`** — REPLACE the `⌂ beam mark…` line.
+
+OLD (verbatim, current file):
+```
+"⌂ beam mark with 12-notch ring (close-up legible); floorboards uniform; REV 1.4 clu-watch-a-gated annotations (D12): canonical hour hand on the ring at the 3-notch in the WIDE view (z1-door-base) as well as the close-up, and a chalk ⌂ (canonical die-house) on the cache board inside the ov-cache-* rect x 0.6375-0.7656 in BOTH views. Cache board states: unmarked (pre-clue) / marked / pried-open with great wheel / empty -- the mark is suppressed the moment the board is pried. REV 1.4 SANCTIONED REVERSAL of the rev-1.0 'no independent visual tell in ANY state or view' contract, FOR p03 ONLY, scoped to post-clu-watch-a (user-approved A4); the PRE-CLUE board is still byte-identical to its neighbours. RF-7(a): the chalk must hold >= 3:1 luminance contrast against worn timber in raking light in BOTH views -- shape plus luminance, never hue. REV 1.3 (D10) unchanged: pre-clue pry on the CORRECT board = slight-shift animation (a hair of movement under the blade, settles back) + creak SFX + haptic tick, NO persistent visual change CAUSED BY THE PRY; wrong boards keep the existing dead non-response"
+```
+
+NEW:
+```
+"⌂ beam mark with 12-notch ring (close-up legible); floorboards uniform; REV 1.4 clu-watch-a-gated annotations (D12): canonical hour hand on the ring at the 3-notch in the WIDE view (z1-door-base) as well as the close-up, and the clockmaker's CHALK NOTE on the cache board inside the ov-cache-* rect x 0.6375-0.7656 in BOTH views. REV 1.4.1 (teach-at-dormer): the chalk note is TWO marks read left to right -- (i) a chalk HUB DOT one stroke-width across (a stroke terminal, NOT a ring and NOT notched: it must never invite counting), (ii) a chalk BEARING HAND, the canonical hand-hour silhouette filled in chalk value #E8E4DA, radiating from the hub toward frame-right, and (iii) the canonical chalk die-house. BINDING: the hand's rendered attitude must match the RENDERED attitude of the composited ring hand IN THE SAME PLATE to within +/- 5 degrees (not true world horizontal -- the ring is drawn in perspective, and the rhyme between the two rendered marks is what carries the lesson). The hand's tip must ABUT the house glyph -- touching or slightly overlapping its left edge, within one glyph-width -- and must NEVER overshoot past it or run toward the rect edge, because a pointer that runs off reads 'keep going further right' at a floorboard field. The whole note sits WHOLLY inside the ov-cache-* rect (what is marked is exactly what is tappable: no new hotspot, no M1 re-registration). If it will not fit: shorten the HAND, floor at the house glyph's own width; then close the hub-to-house spacing to zero; NEVER shrink the house glyph; if it still will not fit, escalate to the Designer. In the WIDE view three properties must survive, in this priority: attitude (that it is a directional mark lying along the ring hand's line), two-part-ness (a visible waist between the hand tip and the house outline, so the house reads as an outline arrived at rather than a blob), and glyph identity. The CLOSE-UP renders the SAME note at larger scale and must NOT elaborate it (no added notches, strokes, ticks or second hand); present-in-both or absent-from-both in every state. Cache board states: unmarked (pre-clue) / marked / pried-open with great wheel / empty -- the note is suppressed the moment the board is pried. REV 1.4 SANCTIONED REVERSAL of the rev-1.0 'no independent visual tell in ANY state or view' contract, FOR p03 ONLY, scoped to post-clu-watch-a (user-approved A4); the PRE-CLUE board is still byte-identical to its neighbours. RF-7(a): the chalk must hold >= 3:1 luminance contrast against worn timber in raking light in BOTH views -- shape plus luminance, never hue; hand and house are discriminated by SHAPE and POSITION only, and the hand must NOT be faded, ghosted, dashed, translucent or lower-opacity relative to the house (that would swap the form cue for a value cue and would sit one NB blend away from an RF-7(a) breach on the smaller mark). No glow, flash or colour change, on appearance or ever. REV 1.3 (D10) unchanged: pre-clue pry on the CORRECT board = slight-shift animation (a hair of movement under the blade, settles back) + creak SFX + haptic tick, NO persistent visual change CAUSED BY THE PRY; wrong boards keep the existing dead non-response"
+```
+
+---
+
+**H3. `developer_notes[D12].note`** — REPLACE composite (2) only. Everything else in D12 —
+the preamble, composites (1) and (3), the CONSTRAINTS block, RC-6, the COLOUR-BLIND clause —
+is **unchanged**.
+
+OLD substring (verbatim, current file):
+```
+(2) C2: chalk house glyph (canonical masters/glyphs/die-house.png in chalk value #E8E4DA) composited INSIDE the measured ov-cache-* wide rect x 0.6375-0.7656 when clu-watch-a is true, and mirrored into cu-floor-cache at the corresponding crop coordinates -- what is marked is exactly what is tappable, so no new hotspot and no M1 re-registration.
+```
+
+NEW substring:
+```
+(2) C2: the clockmaker's CHALK NOTE composited INSIDE the measured ov-cache-* wide rect x 0.6375-0.7656 when clu-watch-a is true, and mirrored into cu-floor-cache at the corresponding crop coordinates -- what is marked is exactly what is tappable, so no new hotspot and no M1 re-registration. REV 1.4.1 (teach-at-dormer, user-approved 2026-08-08) changes the CONTENT of this one composite and nothing else: it is now a chalk hub dot + the canonical hand-hour silhouette in chalk value #E8E4DA + the canonical masters/glyphs/die-house.png in chalk value #E8E4DA, in that left-to-right order, as ONE composite baked into the EXISTING ov-cache-marked-wide / ov-cache-marked overlays -- NO new overlay id, NO new asset, NO second composite, NO new state, NO change to the gate or to the single appearance event. The hand's rendered attitude must match the RENDERED attitude of the C1 ring hand in the same plate to within +/- 5 degrees (match the rendered marks, not world horizontal -- the ring is drawn in perspective and the rhyme between the two is the entire mechanism). The hand's tip must ABUT the house glyph's left edge within one glyph-width and must NEVER overshoot it or run toward the rect edge. The house glyph is byte-identical in size to rev 1.4 and must never be shrunk to make room; shorten the hand instead, floor at the house's own width, then escalate to the Designer. The close-up renders the SAME note larger and must NOT elaborate it. WHY: the rev-1.4 blind playtest measured p03 at under 60s but with the bearing never read as a direction (P8, P11), so p04's absence of chalk read as an unmet precondition and cost 8-15 min of stall; the note teaches 'a hand points at a place' at the dormer so that C3's chimney hand echo is the instrument the player reaches for. COLOUR-BLIND: hand and house discriminated by SHAPE and POSITION only; identical chalk value, stroke weight and luminance floor; the hand must NOT be faded, ghosted, dashed, translucent or lower-opacity than the house.
+```
+
+---
+
+**H4. `nodes[p03-cache-dormer].notes`** — REPLACE one substring. `solution_fixed`, `requires`,
+`clue_gate`, `yields` and `failure_behavior` are **untouched and byte-stable**.
+
+OLD substring (verbatim, current file):
+```
+and a chalk house glyph on the cache board inside the ov-cache-* rect in both views (C2). Pre-clue appearance unchanged.
+```
+
+NEW substring:
+```
+and the clockmaker's chalk note on the cache board inside the ov-cache-* rect in both views (C2 -- REV 1.4.1: that note is a bearing hand at the ring hand's rendered attitude with its tip abutting the chalk house glyph, a CONTENT change to the same overlay on the same gate in the same single appearance event, adding no state, no asset id and no earlier tell; its purpose is to TEACH the hand-as-pointer grammar that p04 depends on, after the rev-1.4 blind playtest found the bare house glyph bypassed it and left p04's no-mark reading as an unmet precondition). Pre-clue appearance unchanged.
+```
+
+---
+
+**H5. `colorblind_safety`** — trivial accuracy fix so the enumeration still names what ships.
+
+OLD substring (verbatim, current file):
+```
+Rev 1.4 chalk marks (slate regrouping, frame crib, live tally block, cache-board ⌂)
+```
+
+NEW substring:
+```
+Rev 1.4 chalk marks (slate regrouping, frame crib, live tally block, cache-board chalk note -- bearing hand plus house glyph, rev 1.4.1)
+```
+
+---
+
+**H6. `revision_notes[]`** — INSERT as the new FIRST array element (do not edit the rev-1.4
+element; it remains accurate as the record of rev 1.4).
+
+```
+"Rev 1.4.1 (2026-08-08, TEACH-AT-DORMER MICRO-DELTA -- user-approved; Designer spec clue-legibility-p06-p03.md rev B.1; driven by playtest-report-rev1.4.md probes P8, P11 and P12). SCOPE: the CONTENT of ONE existing overlay pair (ov-cache-marked-wide / ov-cache-marked) and nothing else. NOTHING MOVES: every solution value, requirement, clue gate, dependency, ordering, red herring, consumable, state variable, node, edge, hotspot and overlay id is byte-stable from rev 1.4; p04-cache-chimney is not touched at all and its 'no independent visual tell in ANY state or view' contract remains UNCHANGED AND ABSOLUTE. FINDING: rev 1.4's chalk house glyph on the p03 cache board solved the beat (P7 under 60s, zero random clicking) by REPLACING the bearing hop rather than teaching it -- P8 verbatim, 'because it had a house mark on it', with no reference to the III bearing, and P11 at z1, 'did I read it as a direction? no -- never'. Consequence at p04 (P12): the ABSENCE of a chalk mark read as an UNMET PRECONDITION ('the mark hasn't been triggered -- there must be another step'), sending the player out of the zone for 8-15 minutes on a sole-thread chokepoint that also gates the oil can, the gear frame and p06's own tally-readout safety net. FIX: couple the dormer mark to the HAND. The board's chalk note becomes a chalk hub dot + the canonical hand-hour silhouette in chalk value, laid at the SAME rendered attitude as the hand composited on the ring, with its tip ABUTTING the canonical chalk die-house -- one composite, the SAME clu-watch-a gate, the SAME single appearance event, no new state and no earlier tell. It is a scale model of the projection drawn ON the board, NOT a sight-line: the ring is at eye height and the board on the floor, so no honest chalk line connects them in world OR image space, and the rev-B 'considered and rejected: chalk sight-line' finding STANDS UNREVERSED. The device reuses the level's own established habit of running one glyph through three materials (the house glyph is already engraved on the watch, carved on the beam and chalked on the board; the hand is now both laid across the ring and chalked on the board). EXPECTED EFFECT: difficulty at p03 ~0 (it stays 3.5 -- the board is already marked and is already a single always-correct hotspot; nothing changes what to click or when), and NEGATIVE stall at p04, which is the entire point: with the grammar taught, C3's already-shipping wide-view hand echo at the gear ring is the instrument the player reaches for, and no-mark reads as learned grammar rather than as a locked state. The level score is UNCHANGED at 6.0 PROVISIONAL and this delta does NOT release the progression-ledger.md write. Probe P12 is rewritten to verify the teach; it is the measurement that settles this delta."
+```
+
+*Optional and Producer's call:* `spec_revision` `"1.4"` -> `"1.4.1"`. Recommended for
+traceability, but **flag**: if any build-side test or manifest asserts on the literal string
+`"1.4"`, keep `"1.4"` and carry the amendment in `revision_notes` alone. The Developer owns
+that check; nothing in this delta depends on the version string.
+
+---
+
+**H7. `blind-layout.md`** — stair-door/dormer view, the floorboards bullet. Player's-eye
+description only; no edge, no rule, no solution value.
+
+OLD substring (verbatim, current file):
+```
+(At the start every board is identical. Later in the game a small chalk house mark (⌂) may be found drawn on the face of one of them, in the room view and in the close-up alike; the mark is not there at the start, and it is gone once that board has been lifted.)
+```
+
+NEW substring:
+```
+(At the start every board is identical. Later in the game a small chalk note may be found drawn on the face of one of them, in the room view and in the close-up alike: a short chalk pointer -- the same shape as the clock hand that lies across the ring on the beam, drawn from a small chalk dot and aimed to the right -- with its tip touching a small chalk house mark (⌂). The note is not there at the start, and it is gone once that board has been lifted.)
+```
+
+*Isolation check:* this states only what is visible. It does not name the ring's notch, does not
+state that the two hands share an attitude as a rule, does not name the board, and does not
+disclose any dependency. The playtester is left to notice the rhyme or not — which is exactly
+what P12 measures.
+
+---
+
+**H8. `style-guide.md` §6.3 (ART DIRECTOR-OWNED — ROUTE, DO NOT APPLY).** One clause inside the
+rev-B **S1** replacement text. **§6.4 and hard-no #7 are NOT touched** — the p04 absolutes stand
+exactly as rev B left them.
+
+OLD clause (inside S1):
+> *"…the cache board carries a small **chalk ⌂** — the canonical `die-house` glyph in chalk value `#E8E4DA` — composited inside the measured `ov-cache-*` rect (x 0.6375–0.7656) in **both** the wide and the close-up…"*
+
+NEW clause:
+> *"…the cache board carries the clockmaker's **chalk note** — a chalk hub dot, the canonical `hand-hour` silhouette filled in chalk value `#E8E4DA` and laid at the **same rendered attitude as the hand on the ⌂ ring in the same plate (±5°)**, and the canonical `die-house` glyph in the same chalk value, the hand's tip **abutting** the house's left edge and never overshooting it — composited as **one** mark inside the measured `ov-cache-*` rect (x 0.6375–0.7656) in **both** the wide and the close-up. The house glyph is never shrunk to make room; shorten the hand instead (floor: the house's own width), then escalate. The hand is never faded, ghosted, dashed or lower-opacity than the house — hand and house are told apart by **shape and position only** (rev 1.4.1, teach-at-dormer)…"*
+
+---
+
+### B.1d. VALIDATOR SANITY — self-contained argument
+
+*Written to be checkable without re-reading rev B. Each claim states its own evidence.*
+
+**S-1. No-tell compliance — PASS.**
+The note renders off the **existing** `clu-watch-a` D7 boolean, on view entry, exactly as the
+rev-1.4 house glyph did. It is a **content change to a composite that already appears at that
+moment**, not a new appearance event, so nothing appears **earlier** than at rev 1.4 and the
+pre-clue experience is byte-identical to rev 1.4 (and therefore, transitively, to rev 1.3 —
+uniform boards, no hand in either view). It is **not an attempt response**, so `no_tell_rule`
+is untouched: the wrong-spot dead wall and the D10 correct-spot faint-tell are byte-stable.
+The rev-1.4 `art_impact` clause is **scoped** (RF-6) and already names *"the chalk house glyph
+on the p03 cache board"* as a clue-state render; rev B.1 changes the content of that same named
+render and adds no new class, so **p07 and p09 remain strictly no-annotation** with no new
+licence created anywhere.
+
+**S-2. No solution change — PASS.**
+`p03-cache-dormer.solution_fixed`, `requires`, `clue_gate`, `yields` and `failure_behavior` are
+**untouched** (H4 edits only the advisory `notes` field, added at rev 1.4). The pry target is
+the same board, the same single always-correct hotspot, at the same `ov-cache-*` rect. The note
+is required to sit **wholly inside** that rect, so *what is marked is exactly what is tappable*
+holds and **no M1 re-registration** is triggered. p06, p04 and every other beat are untouched.
+
+**S-3. No new state — PASS.**
+No new flag, node, edge, hotspot, gate, consumable or overlay id. The note is baked into the
+**existing** `ov-cache-marked-wide` / `ov-cache-marked` overlays. Consequences worth stating
+explicitly because they are what a state audit would look for:
+- the mark-visibility predicate is unchanged: `gate-satisfied AND NOT pried`;
+- the totally ordered state set is unchanged: `unmarked -> marked -> pried-with-wheel -> empty`
+  (V14 closure re-confirmed: no note can survive on a lifted board or an empty cavity, because
+  suppression is on the same overlay that already suppressed);
+- **RC-6 is unaffected in cardinality**: `ov-cache-marked` x `ov-cache-cat-gone` is still
+  exactly one composite pairing. The Developer's parity audit and the
+  `Level2CloseUpStateTests` state-flip rows need **no new rows** — only a re-render of the
+  existing one.
+
+**S-4. Difficulty at p03 — ~0. PASS.**
+p03 is 3.5 (Validator §5.2, playtest-confirmed at 3.5). The board is **already** marked and is
+**already** a single always-correct hotspot; the added hub-and-hand changes neither what the
+player clicks nor when it becomes clickable, and it removes no hop. The most that can be
+claimed against it is a hair more "this is definitely it" confidence on an object the player was
+already going to pry — inside measurement noise. **z1 stays 4.5, the level stays 6.0
+PROVISIONAL, and this delta does NOT release the `progression-ledger.md` write.** (It cannot:
+the write was already held pending the blind re-check, and P12 is now part of that re-check.)
+
+**S-5. Difficulty at p04 — deliberately NEGATIVE on stall. This is the point. PASS.**
+p04's 6.5 is *"10–20 min, of which 8–15 is pure stall"* and the playtester's own diagnosis is
+that **the bearing is not the problem** — *"once I finally re-framed the hand as a direction… the
+beat resolved in under 30 seconds"* — and that *"getting the player to look at the bearing is the
+problem."* The stall is therefore a **framing** cost, not a reasoning cost, and framing is
+exactly what B.1 attacks. The mechanism, stated so it can be falsified:
+
+1. Rev 1.4 taught the grammar *"seat the watch -> a mark appears -> pry the marked thing."*
+   Under that grammar, no mark at the chimney = **a missing step**, which is the worst of the
+   three available readings because it sends the player to a different zone.
+2. Rev B.1 teaches instead *"seat the watch -> the hand points -> pry where it points; the
+   clockmaker sometimes chalks a note about it."* Under **that** grammar, the mark is a
+   **note**, and the pointer is the **instrument**.
+3. At the chimney the instrument is **already present and already shipping**: C3 puts the
+   canonical hand on the ⚙ ring at the 9-notch in the wide, and build-16's `ringClues` puts it
+   in `cu-gear-ring`. The player arrives holding a learned procedure and finds the tool for it
+   in frame.
+4. The absence of chalk then reads as *"he didn't chalk this one"* — an **absence of a note**,
+   not an **absence of a trigger**. That converts P12(c)'s unmet-precondition reading into the
+   escalation reading the design always intended.
+
+Expected effect: **stall 8–15 min -> targeted under 5 min**, p04 difficulty 6.5 -> roughly
+5.5–6.0 (its designed value is 5.0), with the dead zone in Act 2 correspondingly shortened. I am
+**not** claiming this as a scored change — the number is empirical and P12 settles it.
+
+**S-6. The P12 re-read — why "no mark + hand echo" should now read as grammar.**
+The playtester's own words give the test. P12(e) failed at rev 1.4 for a stated reason:
+*"the escalation cannot land as 'teach, then test' when the teaching step was skipped — I was
+tested on a skill the tutorial handed me the answer to."* B.1 supplies precisely the missing
+teaching step, and supplies it **at the payoff**, which is where procedural lessons stick. The
+recorded RC-2 rationale in `p04-cache-chimney.notes` — p04's bearing is supportable in-scene,
+p03's was not — becomes **experienceable** rather than merely true on paper, because the player
+now arrives at p04 having *used* a bearing rather than having been handed a location. Note also
+what B.1 does **not** do: it does not weaken p04, does not mark the brick, and does not touch
+A5. The asymmetry is preserved exactly; only the teach half of teach-then-test is repaired.
+
+**S-7. Real-world knowledge — no new demand. PASS.**
+Nothing is added to the RWK register and nothing needs to be. Reading a tapered pointer as
+pointing at the thing its tip touches is perceptual, not knowledge; the clock-position reading
+was already ratified at rev 1.0 and is unchanged; and the ⌂ symbol-match route survives intact
+as an independent zero-knowledge path to the same board. A player who reads the chalk note as
+decoration is in **exactly the rev-1.4 position** — they still see a marked board and pry it.
+**The teach is strictly additive; failing to receive it costs nothing at p03.**
+
+**S-8. Colour-blind safety (mandatory gate) — PASS.**
+Every discrimination is achromatic form or position: pointer silhouette vs house outline
+(shape), left vs right (position), tip-touching (topology). RF-7(a)'s ≥ 3:1 luminance floor
+applies to the note as a whole **and to the hand in its own right**, in both views. The new
+binding no-fade / no-ghost / no-dash / no-lower-opacity clause (carried over by analogy from
+V17-W3, which closed the identical hazard for the partial tally stroke) is what prevents a value
+cue substituting for the form cue on the smaller mark. No glow, no flash, no colour change,
+ever. **No colour-only discrimination is introduced anywhere.**
+
+#### What I genuinely cannot self-clear — flag these
+
+- **F-1 (the real one) — does the teach actually land?** A rebus on the board is a *weaker*
+  teacher than a room-scale line would be, and I chose the weaker device deliberately because
+  the strong one is geometrically dishonest and was already rejected on style grounds. Whether
+  a player makes the "same shape, same attitude, twice" connection is a **perception claim that
+  analysis cannot settle**. P12 as rewritten is the instrument. **Pre-specified escalation lever
+  E1, if P12(a0)/P12(f) show the teach did not land:** add a short chalk **sighting stub** ruled
+  along the beam outward from the ring at 3 o'clock, ~1–2 ring-diameters, terminating in a
+  single short **plumb tick** downward — the joiner's "drop it here" notation. It declares the
+  projection without spanning the scene and without an arrowhead. It is a second composite on
+  the same gate and would need its own Validator pass. **Do not pull E1 pre-emptively**; it
+  costs art, spec surface and a round-trip, and B.1 may well be sufficient.
+- **F-2 (geometry may force a compromise) — rect capacity.** The `ov-cache-*` rect is
+  **0.128 wide in x**. I have not measured how much of it the rev-1.4 house glyph consumes, so I
+  cannot promise hub + hand + house all fit at wide-legible size. The B.1b fallback ladder is
+  written to fail safe (shorten the hand, never the house, then escalate), but if the hand ends
+  up floored at the house's own width, its wide-view attitude read is at risk and F-1's odds
+  worsen. **This needs an actual measurement on the shipped plate before art starts** — same
+  class as A8, and I am flagging it as **A10** below.
+- **F-3 — the "keep going right" misread.** A rightward pointer on a floorboard field could be
+  read as *"further right"*. I have designed against it (tip abuts and never overshoots,
+  containment in the rect, hand shorter than the note is wide), but the mitigation is a
+  perception claim too. It is folded into the P12 wording as an explicit question.
+- **F-4 — does partially revisiting the rev-B sight-line rejection need re-ratification?** My
+  position is **no**: B.1 adopts no line, spans no gap, introduces no primitive outside the
+  canon, and both stated grounds of the rejection are avoided by construction. But the rejection
+  is a recorded rev-B finding and I would rather the Validator confirm the reading than assume
+  it.
+- **F-5 — `spec_revision` string.** Whether bumping `"1.4"` -> `"1.4.1"` is safe against
+  build-side assertions is a Developer fact I do not have. Flagged in H6.
+
+**New approval flag for the Producer to carry:**
+
+**A10 — measurement dependency, before art starts.** Someone with the shipped `z1-door-base`
+plate and `cu-floor-cache` crop in front of them must measure the rev-1.4 house glyph's rendered
+width against the `ov-cache-*` rect (x 0.6375–0.7656) and confirm the chalk note fits at
+wide-legible size. If it does not fit at the B.1b step-1 floor, **escalate to the Designer**
+before shrinking anything. Same class as A8; cheap; blocking for Asset-Gen only.
+
+---
+
+### B.1e. P12 — REWRITTEN so a future playtest can verify the teach
+
+*Replaces P12 in §9 wholesale. P1–P11, P13, P14 unchanged. The new leading sub-probe **(a0)** is
+asked at the DORMER, before the chimney, and must be answered before the playtester has any
+reason to think the chimney matters — it is the leading indicator, and the rev-1.4 report had no
+equivalent.*
+
+> **P12 (REWRITTEN, rev 1.4.1 — the teach-at-dormer probe. Report this one at length.)**
+>
+> **At the dormer, before you pry, and before you have seen the chimney:**
+> - **(a0) Describe the chalk note on the board, in your own words.** Is it one mark or more
+>   than one? Did you notice a **pointer / hand shape** in it? Did you notice **anything on the
+>   beam ring above it that looks like the same shape**? Did the two connect for you at the
+>   time — i.e. did you form the thought *"the hand is pointing at that board"* — or did you
+>   read the note as "there's a house mark, that's the board"? *(This is the leading indicator.
+>   Answer it before proceeding, and answer it honestly even if the answer is "I just saw a
+>   house mark." At rev 1.4 the equivalent answer was: "Because it had a house mark on it… it
+>   contains no reference to the III bearing.")*
+> - **(a1) Did the chalk pointer ever make you think you should look FURTHER RIGHT**, past the
+>   marked board? *(Must be "no" — an overshoot misread is a defect, not a wrinkle.)*
+>
+> **Then continue to the chimney as normal, and afterwards:**
+> - **(b) Did you expect a chalk mark on a brick?** If yes, why — what rule did you think you
+>   had learned at the dormer? State the rule in your own words.
+> - **(c) How long did you spend looking for a mark before you used the ⚙ ring?** Give minutes.
+>   *(Rev-1.4 baseline: 8–12 min. Target: under 5 min. Under 2 min is a clean pass.)*
+> - **(d) When you found none, what was your FIRST hypothesis?** Specifically, was it
+>   *"this cache isn't available yet / I've missed a step elsewhere"* (the rev-1.4 failure
+>   reading, which sent the player out of the zone), or *"he didn't chalk this one — read the
+>   hand"* (the intended reading)? **Did you leave the chimney to search other zones?** If so,
+>   for how long? *(Leaving the zone is the specific failure this delta exists to prevent.)*
+> - **(e) How long from arriving at the chimney to the moment you re-framed the hand as a
+>   DIRECTION?** *(This is the single number that settles the delta. Rev-1.4 baseline: ~10 min.
+>   Target: under 3 min.)*
+> - **(f) Where did the re-frame come from?** Did you recall the dormer — the pointer chalked on
+>   the board, or the hand lying on the ⌂ ring — or did you arrive at it some other way (trial
+>   and error, exhausting other options, the walkthrough)? *(If the re-frame did NOT come from
+>   the dormer, the teach did not land, regardless of how fast it happened. Say so plainly; this
+>   is the trigger for escalation lever E1.)*
+> - **(g) Once you did use the ⚙ ring, did the 9-o'clock bearing land on the brick field by
+>   itself, without needing a mark?** *(Rev-1.4 answer was an emphatic yes, under 30 s. Confirm
+>   it still holds.)*
+> - **(h) Overall: did the p03-marked / p04-unmarked difference read as a deliberate
+>   teach-then-test escalation, as an unmet precondition, or as a bug?** *(Rev 1.4: "neither, as
+>   experienced" — the escalation could not land because the teaching step had been skipped. The
+>   target is that "teach-then-test" is now available as a reading, in the moment rather than
+>   only in retrospect.)*
+>
+> **Pass criteria for the delta, stated up front so the result is not argued after the fact:**
+> **(a0)** the player registers a pointer/hand in the note, *whether or not* they connect it to
+> the ring; **(e)** re-frame under 3 min; **(f)** the re-frame is attributed to the dormer;
+> **(d)** the player does not leave the zone. **(a1)** must be "no". Failing **(f)** while
+> passing **(e)** means the stall was fixed by something other than the teach and the finding
+> should be reported as such.
+
+**One-clause amendment to P8** (leading indicator, same measurement, no extra work):
+
+> **P8 (amended).** …*Additionally: if your answer mentions the mark, say whether the mark
+> itself contained a direction and whether you used it. "It had a pointer on it aimed at the
+> house mark" is a materially different answer from "it had a house mark on it", and the
+> difference is the rev-1.4.1 teach-at-dormer delta.*
+
+---
+
+### B.1f. What ships, in one table
+
+| Item | Change | New state? | New asset id? | Cost |
+|---|---|---|---|---|
+| `ov-cache-marked-wide` | content: hub dot + chalk bearing hand + chalk ⌂ (was: chalk ⌂) | No | No | $0 |
+| `ov-cache-marked` (close-up) | same note, mirrored, larger, not elaborated | No | No | $0 |
+| Graph strings H1–H6 | text only | No | — | $0 |
+| `blind-layout.md` H7 | player's-eye text only | — | — | $0 |
+| `style-guide.md` H8 | routed to Art Director | — | — | $0 |
+| **Total additional art cost** | | | | **$0.00** (§4 fallback ceiling unchanged at $0.45) |
+
+*End of rev B.1. Owner: Theme & Puzzle Designer. Next: Producer -> (Validator, if the F-1…F-5
+flags warrant it) -> Art Director for H8 -> Asset-Gen after A10 is measured -> Blind Playtester
+re-run of P8 and the rewritten P12.*

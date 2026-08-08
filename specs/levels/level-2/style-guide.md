@@ -328,9 +328,16 @@ Town rooftops hazy through the glass.
   visual tell** — identical boards, by design (the gate carries the info; D10's
   faint-tell is animation/SFX only, zero persistent pixels). **REV 1.4 SANCTIONED
   REVERSAL of the rev-1.0 "in any state or view" contract, for p03 ONLY (user-approved
-  A4):** once `clu-watch-a` has been viewed, the cache board carries a small **chalk ⌂**
-  — the canonical `die-house` glyph in chalk value `#E8E4DA` — composited inside the
-  measured `ov-cache-*` rect (x 0.6375–0.7656) in **both** the wide and the close-up,
+  A4):** once `clu-watch-a` has been viewed, the cache board carries the clockmaker's
+  **chalk note** — a chalk hub dot, the canonical `hand-hour` silhouette filled in chalk
+  value `#E8E4DA` and laid at the **same rendered attitude as the hand on the ⌂ ring in
+  the same plate (±5°)**, and the canonical `die-house` glyph in the same chalk value,
+  the hand's tip **abutting** the house's left edge and never overshooting it —
+  composited as **one** mark inside the measured `ov-cache-*` rect (x 0.6375–0.7656) in
+  **both** the wide and the close-up. The house glyph is never shrunk to make room;
+  shorten the hand instead (floor: the house's own width), then escalate. The hand is
+  never faded, ghosted, dashed or lower-opacity than the house — hand and house are told
+  apart by **shape and position only** (rev 1.4.1, teach-at-dormer),
   and the ⌂ ring carries the canonical hour hand at the 3-notch in **both** views (D12).
   The chalk must hold **≥ 3:1 luminance contrast against worn timber in raking light in
   both views**; discrimination is glyph shape + luminance, **never** the warm/cool hue
