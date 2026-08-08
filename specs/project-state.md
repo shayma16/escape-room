@@ -384,6 +384,16 @@ resolver conditions, ring hands, D13 live tally + tests, commutative + cycle-sta
 QA flags → fast+full lane green → BUILD 17 READY → Release Manager → TestFlight →
 user verification run (doubles as the P12 teach probe) → GATE 2 → merge.
 
+✅ WIRING DONE 2026-08-08: resolver conditions (single shared predicate — wide/CU cannot
+disagree), ring hands (one shared layout maths = the proof's), D13 live tally
+(Level2Tally.swift, transient, no branch on count), pointer ×1.5, commutativity +
+cycle-stability tests; 229 tests green both lanes first-try (31255254769 fast /
+31255684328 full). Staging byte-verified 166/166. BUILD-17 READY → Release Manager
+DISPATCHED (stamp 17, watch cert-cap, .ipa security re-check). NEXT: TestFlight →
+user verification playthrough (= P12 teach probe + rev-1.4.1 checklist) → GATE 2 →
+merge level2-clockmakers-attic → main. Judgment calls for Doc agent second pass:
+partial-placement edge, live block CU-only, tally-as-animation, reject-clears-block.
+
 ## Level 1 (COMPLETE — for reference)
 
 Level 1 — "Wizard's cabin": abandoned wizard's cabin in the woods, gloomy atmosphere,
